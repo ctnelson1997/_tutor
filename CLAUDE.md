@@ -1,4 +1,4 @@
-# CLAUDE.md — Project Instructions for JSTutor
+# CLAUDE.md — Project Instructions for Tutor
 
 ## What This Is
 
@@ -43,7 +43,7 @@ Each build bundles **only one language engine**. Controlled by:
 - **`src/engines/registry.ts`** — conditionally registers only the target engine based on `import.meta.env.VITE_LANGUAGE`; Vite tree-shakes the unused engine's code out of the bundle
 - **`vite.config.ts`** — function form; `mode` determines `outDir` (`docs/` for JS, `docs-py/` for Python)
 
-All hardcoded "JSTutor" references and `#DD030B` colors have been replaced with `branding.*` imports. To add a new language target, create a new `.env.<lang>` file and add corresponding `dev:<lang>` / `build:<lang>` scripts.
+All hardcoded branding references and `#DD030B` colors have been replaced with `branding.*` imports. To add a new language target, create a new `.env.<lang>` file and add corresponding `dev:<lang>` / `build:<lang>` scripts.
 
 ### Engine Layer (`src/engines/`)
 

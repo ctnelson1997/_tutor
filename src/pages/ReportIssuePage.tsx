@@ -30,7 +30,7 @@ export default function ReportIssuePage() {
               </div>
             </div>
             <a
-              href="https://github.com/ctnelson1997/jstutor/issues"
+              href="https://github.com/ctnelson1997/_tutor/issues"
               target="_blank"
               rel="noreferrer"
               className="btn btn-danger px-4"

@@ -3,7 +3,7 @@ import type { ExecutionSnapshot } from '../types/snapshot';
 import type { LanguageId } from '../types/engine';
 import { branding } from '../config/branding';
 
-export interface JSTutorState {
+export interface TutorState {
   // ── Language ──
   language: LanguageId;
   setLanguage: (language: LanguageId) => void;
@@ -39,7 +39,7 @@ let x = 1;`;
 
 const DEFAULT_CODE = SANDBOX_CODE;
 
-export const useStore = create<JSTutorState>((set, get) => ({
+export const useStore = create<TutorState>((set, get) => ({
   // ── Language ──
   language: branding.languageId,
   setLanguage: (language) => set({ language }),

@@ -20,7 +20,7 @@ export function getRuntimeCode(): string {
   // This is a self-contained JS string — no imports, no TypeScript.
   return `
 // ══════════════════════════════════════
-// JSTutor Runtime Helpers
+// JS Runtime Helpers
 // ══════════════════════════════════════
 
 var __snapshots__ = [];

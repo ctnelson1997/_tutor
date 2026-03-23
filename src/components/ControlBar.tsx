@@ -42,7 +42,7 @@ function IconSkipEnd(props: React.SVGProps<SVGSVGElement>) {
 
 export default function ControlBar({ embed = false }: { embed?: boolean }) {
   const location = useLocation();
-  const openInJSTutorUrl = embed
+  const openInTutorUrl = embed
     ? `${window.location.origin}${window.location.pathname}#${location.pathname.replace('/embed/', '/share/')}`
     : '';
   const code = useStore((s) => s.code);
@@ -203,7 +203,7 @@ export default function ControlBar({ embed = false }: { embed?: boolean }) {
         <div className="vr" />
         {embed ? (
           <a
-            href={openInJSTutorUrl}
+            href={openInTutorUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="btn btn-sm btn-outline-primary"

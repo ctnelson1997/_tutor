@@ -12,7 +12,7 @@ export default function App({ embed = false }: { embed?: boolean }) {
   const stepBackward = useStore((s) => s.stepBackward);
   const code = useStore((s) => s.code);
 
-  const shouldShowToast = !embed && localStorage.getItem('jstutor-hide-warning') !== 'true';
+  const shouldShowToast = !embed && localStorage.getItem('tutor-hide-warning') !== 'true';
   const [showToast, setShowToast] = useState(false);
 
   const [splitPercent, setSplitPercent] = useState(40);
@@ -142,7 +142,7 @@ export default function App({ embed = false }: { embed?: boolean }) {
                 variant="dark"
                 size="sm"
                 onClick={() => {
-                  localStorage.setItem('jstutor-hide-warning', 'true');
+                  localStorage.setItem('tutor-hide-warning', 'true');
                   setShowToast(false);
                 }}
               >

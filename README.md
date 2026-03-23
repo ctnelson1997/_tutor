@@ -1,14 +1,17 @@
-# JSTutor
+# Tutor
 
-A free, browser-based code execution visualizer. Write a snippet of code, step through it line by line, and watch the call stack, heap, and console update in real time.
+A free, browser-based code execution visualizer for multiple programming languages. Write a snippet of code, step through it line by line, and watch the call stack, heap, and console update in real time.
 
-**Live sites:** [jstutor.org](https://jstutor.org) (JavaScript) · [pytutor.org](https://pytutor.org) (Python)
+Each language gets its own standalone site and domain:
+
+- [jstutor.org](https://jstutor.org) — JavaScript
+- [pytutor.org](https://pytutor.org) — Python
 
 ---
 
 ## What It Does
 
-JSTutor instruments your code, runs it inside a sandboxed Web Worker, and captures a snapshot of program state at every step. You can then step forward and backward through execution to see exactly what the runtime is doing at each moment.
+Tutor instruments your code, runs it inside a sandboxed Web Worker, and captures a snapshot of program state at every step. You can then step forward and backward through execution to see exactly what the runtime is doing at each moment.
 
 At each step the visualizer shows:
 
@@ -69,8 +72,8 @@ The **JavaScript engine** uses Acorn for AST instrumentation, a runtime preamble
 **Prerequisites:** Node.js 18+
 
 ```bash
-git clone https://github.com/<your-org>/jstutor.git
-cd jstutor
+git clone https://github.com/ctnelson1997/_tutor.git
+cd _tutor
 npm install
 npm run dev          # JS dev server at http://localhost:3000
 npm run dev:py       # Python dev server
@@ -199,7 +202,7 @@ npm run build:py     # outputs to docs-py/ → pytutor.org
 npm run build:all    # build everything
 ```
 
-GitHub Pages serves `docs/` at [jstutor.org](https://jstutor.org) (configured via `docs/CNAME`). Non-JS output directories (`docs-*/`) are gitignored and deployed separately to their respective domains. HashRouter is used so all routes resolve correctly without server rewrites.
+GitHub Pages serves `docs/` at [jstutor.org](https://jstutor.org). Non-JS output directories (`docs-*/`) are gitignored and deployed separately to their respective domains. The CNAME file is generated at build time based on the target language. HashRouter is used so all routes resolve correctly without server rewrites.
 
 ---
 

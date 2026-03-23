@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://jstutor.org/sitemap.xml
