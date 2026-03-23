@@ -1,0 +1,400 @@
+:root {
+  --console-bg: #1e1e1e;
+  --console-fg: #d4d4d4;
+  /* Darker than Bootstrap default (#d63384) to meet WCAG AA 4.5:1 on white */
+  --bs-code-color: #b5006e;
+}
+
+/* Prevent .text-muted's !important from washing out code elements */
+.text-muted code {
+  color: var(--bs-code-color) !important;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Main layout fills remaining space below navbar, above fixed footer */
+.main-layout {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 20px;
+}
+
+/* Draggable split divider */
+.split-divider {
+  width: 5px;
+  flex-shrink: 0;
+  cursor: col-resize;
+  background: #dee2e6;
+  transition: background 0.15s;
+  touch-action: none;
+}
+
+.split-divider:hover,
+.split-divider:active {
+  background: rgba(100, 149, 237, 0.6);
+}
+
+/* Editor column */
+.editor-column {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Visualization column */
+.viz-column {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Scrollable visualization area */
+.viz-scroll {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+}
+
+/* Console panel — vertically resizable */
+.console-panel-wrapper {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 60px;
+  max-height: 60vh;
+  height: 150px;
+  border-top: 1px solid #444;
+  overflow: hidden;
+}
+
+.console-resize-handle {
+  height: 5px;
+  cursor: ns-resize;
+  background: transparent;
+  flex-shrink: 0;
+  transition: background 0.15s;
+  touch-action: none;
+}
+
+.console-resize-handle:hover,
+.console-resize-handle.active {
+  background: rgba(100, 149, 237, 0.5);
+}
+
+.console-panel {
+  background: var(--console-bg);
+  color: var(--console-fg);
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 0.85rem;
+  padding: 0.5rem;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.console-panel .log-warn {
+  color: #e6db74;
+}
+
+.console-panel .log-error {
+  color: #f44747;
+}
+
+/* Toast fade duration override */
+.toast.fade {
+  transition: opacity 0.5s ease !important;
+}
+
+/* Gutter background fills the visible editor area even when code is short */
+.cm-editor .cm-gutters {
+  min-height: 100% !important;
+}
+
+/* Current line highlight in editor */
+.cm-current-step-line {
+  background-color: rgba(255, 255, 100, 0.25) !important;
+}
+
+/* Sub-line highlight for specific expressions (e.g. for-loop parts) */
+.cm-current-step-highlight {
+  background-color: rgba(255, 220, 50, 0.4);
+  border-radius: 2px;
+}
+
+/* Condition badge (true/false pill in editor) */
+.condition-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 0 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-family: system-ui, sans-serif;
+  border-radius: 8px;
+  vertical-align: middle;
+  animation: conditionPop 0.35s ease-out;
+  pointer-events: auto;
+  cursor: default;
+}
+
+.condition-true {
+  background-color: rgba(25, 135, 84, 0.15);
+  color: #198754;
+  border: 1px solid rgba(25, 135, 84, 0.3);
+}
+
+.condition-false {
+  background-color: rgba(220, 53, 69, 0.15);
+  color: #dc3545;
+  border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+@keyframes conditionPop {
+  0%   { opacity: 0; transform: translateY(-4px) scale(0.85); }
+  60%  { opacity: 1; transform: translateY(1px) scale(1.02); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Value-changed flash animation */
+@keyframes valueFlash {
+  0%   { background-color: rgba(255, 220, 50, 0.55); }
+  100% { background-color: transparent; }
+}
+
+.value-changed {
+  animation: valueFlash 0.6s ease-out;
+  border-radius: 3px;
+}
+
+/* Frame cards */
+.frame-card {
+  font-size: 0.85rem;
+}
+
+.frame-card .card-header {
+  font-weight: 600;
+  padding: 0.3rem 0.6rem;
+}
+
+.frame-card .card-body {
+  padding: 0.3rem 0.6rem;
+}
+
+.frame-card table {
+  margin-bottom: 0;
+}
+
+.frame-card td {
+  padding: 0.15rem 0.4rem;
+  vertical-align: middle;
+}
+
+/* Block-scope section nested inside a frame card */
+.block-scope-section {
+  margin-top: 0.3rem;
+  padding: 0.25rem 0.4rem;
+  border-left: 2px solid #6c757d;
+  margin-left: 0.15rem;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 0 3px 3px 0;
+}
+
+.block-scope-label {
+  font-size: 0.65rem;
+  color: #6c757d;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.1rem;
+}
+
+/* Closure scope section (similar to block scope but visually distinct) */
+.closure-scope-section {
+  margin-bottom: 0.3rem;
+  padding: 0.25rem 0.4rem;
+  border-left: 2px solid #6f42c1;
+  margin-left: 0.15rem;
+  background: rgba(111, 66, 193, 0.04);
+  border-radius: 0 3px 3px 0;
+}
+
+.closure-scope-label {
+  font-size: 0.65rem;
+  color: #6f42c1;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.1rem;
+}
+
+/* This context section */
+.this-scope-section {
+  margin-bottom: 0.3rem;
+  padding: 0.25rem 0.4rem;
+  border-left: 2px solid #0dcaf0;
+  margin-left: 0.15rem;
+  background: rgba(13, 202, 240, 0.04);
+  border-radius: 0 3px 3px 0;
+}
+
+.this-scope-label {
+  font-size: 0.65rem;
+  color: #0dcaf0;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.1rem;
+}
+
+/* Heap object cards */
+.heap-card {
+  font-size: 0.8rem;
+  min-width: 110px;
+  align-self: start;
+  animation: heapFadeIn 0.25s ease-out;
+}
+
+@keyframes heapFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.heap-card .card-header {
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+.heap-card .card-body {
+  padding: 0.25rem 0.5rem;
+}
+
+/* Array cells */
+.array-cells {
+  display: flex;
+  gap: 0;
+}
+
+.array-cell {
+  border: 1px solid #aaa;
+  padding: 0.15rem 0.4rem;
+  text-align: center;
+  min-width: 32px;
+  font-size: 0.8rem;
+}
+
+.array-cell .cell-index {
+  font-size: 0.6rem;
+  color: #888;
+  display: block;
+  line-height: 1;
+}
+
+/* Ref dot (arrow source) */
+.ref-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #0d6efd;
+  cursor: default;
+}
+
+/* Pointer arrows SVG overlay */
+.pointer-arrows-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  overflow: visible;
+  z-index: 10;
+}
+
+.pointer-arrow {
+  fill: none;
+  stroke: #0d6efd;
+  stroke-width: 1.5;
+  opacity: 0.7;
+}
+
+/* Control bar */
+.control-bar {
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.step-slider {
+  width: 100%;
+}
+
+/* Warning page */
+.warning-page {
+  max-width: 800px;
+  margin: 3rem auto;
+}
+
+/* Stack editor on top of viz on narrow screens */
+@media (max-width: 700px) {
+  .main-layout {
+    flex-direction: column;
+  }
+  .main-layout .split-divider {
+    width: 100%;
+    height: 5px;
+  }
+}
+
+/* Wrap control bar buttons on very narrow screens */
+@media (max-width: 480px) {
+  .control-bar .d-flex {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+}
+
+/* Fixed footer */
+.app-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background: #212529;
+  color: #6c757d;
+  font-size: 0.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  z-index: 1030;
+  border-top: 1px solid #343a40;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.app-footer-link {
+  color: #adb5bd;
+  text-decoration: none;
+}
+
+.app-footer-link:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.app-footer-sep {
+  color: #495057;
+}
