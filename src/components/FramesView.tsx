@@ -3,6 +3,7 @@ import { Card } from 'react-bootstrap';
 import { useStore } from '../store/useStore';
 import type { RuntimeValue, StackFrame } from '../types/snapshot';
 import { getChangedKeys } from '../utils/diffSnapshots';
+import { promoteToHeap } from '../utils/promoteToHeap';
 
 function ValueDisplay({ value }: { value: RuntimeValue }) {
   if (value.type === 'ref') {
@@ -227,13 +228,21 @@ function FrameCard({ group, changedKeys, step }: { group: FrameGroup; changedKey
 export default memo(function FramesView() {
   const snapshots = useStore((s) => s.snapshots);
   const currentStep = useStore((s) => s.currentStep);
+  const showReferences = useStore((s) => s.showReferences);
+  const language = useStore((s) => s.language);
 
   const changedKeys = useMemo(
     () => getChangedKeys(snapshots[currentStep - 1], snapshots[currentStep]),
     [snapshots, currentStep],
   );
 
-  const snapshot = snapshots.length > 0 ? snapshots[currentStep] : null;
+  const rawSnapshot = snapshots.length > 0 ? snapshots[currentStep] : null;
+
+  // When "show references" is on for Python, promote primitives to heap refs
+  const snapshot = useMemo(
+    () => rawSnapshot && showReferences && language === 'py' ? promoteToHeap(rawSnapshot) : rawSnapshot,
+    [rawSnapshot, showReferences, language],
+  );
 
   const reversed = useMemo(() => {
     if (!snapshot) return [];

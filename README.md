@@ -6,6 +6,7 @@ Each language gets its own standalone site and domain:
 
 - [jstutor.org](https://jstutor.org) — JavaScript
 - [pytutor.org](https://pytutor.org) — Python
+- [javatutor.org](https://javatutor.org) — Java
 
 ---
 
@@ -34,11 +35,12 @@ The app is built around a **pluggable engine system**. Each language implements 
 | Target | Dev server | Production build | Output | Domain |
 |--------|-----------|-----------------|--------|--------|
 | JavaScript | `npm run dev:js` | `npm run build:js` | `docs/` | jstutor.org |
-| Python | `npm run dev:py` | `npm run build:py` | `docs-py/` | pytutor.org |
+| Python | `npm run dev:py` | `npm run build:py` | `docs/` | pytutor.org |
+| Java | `npm run dev:java` | `npm run build:java` | `docs/` | javatutor.org |
 
-Build targets use Vite's `--mode` flag, which loads per-language env files (`.env.js`, `.env.py`) containing branding variables (app name, color, domain, tagline). Each build bundles only its target engine — tree-shaking removes everything else.
+Build targets use Vite's `--mode` flag, which loads per-language env files (`.env.js`, `.env.py`, `.env.java`) containing branding variables (app name, color, domain, tagline). Each build bundles only its target engine — tree-shaking removes everything else.
 
-The **JavaScript engine** uses Acorn AST transformation to inject tracing hooks, then runs the instrumented code in disposable blob-URL Web Workers. The **Python engine** uses [Pyodide](https://pyodide.org) (CPython compiled to WebAssembly) with `sys.settrace()` to intercept execution events, running in a persistent module Web Worker. Pyodide (~12 MB) is loaded eagerly from CDN at page load so it's ready by the time the user clicks "Visualize".
+The **JavaScript engine** uses Acorn AST transformation to inject tracing hooks, then runs the instrumented code in disposable blob-URL Web Workers. The **Python engine** uses [Pyodide](https://pyodide.org) (CPython compiled to WebAssembly) with `sys.settrace()` to intercept execution events, running in a persistent module Web Worker. Pyodide (~12 MB) is loaded eagerly from CDN at page load so it's ready by the time the user clicks "Visualize". The **Java engine** uses [java-parser](https://github.com/nicolo-ribaudo/java-parser) (Chevrotain-based) to parse Java source into a CST, then interprets it directly in a disposable Web Worker — supporting primitives, strings, arrays, objects, static methods, recursion, and standard control flow.
 
 ---
 
@@ -63,7 +65,7 @@ React UI  (src/components/)
   EditorPanel  ·  FramesView  ·  HeapView  ·  PointerArrows  ·  ConsolePanel
 ```
 
-The **JavaScript engine** uses Acorn for AST instrumentation, a runtime preamble for state capture, and disposable blob-URL Web Workers for sandboxed execution. The **Python engine** uses Pyodide (CPython/WASM) with `sys.settrace()` in a persistent module Web Worker for step-by-step tracing.
+The **JavaScript engine** uses Acorn for AST instrumentation, a runtime preamble for state capture, and disposable blob-URL Web Workers for sandboxed execution. The **Python engine** uses Pyodide (CPython/WASM) with `sys.settrace()` in a persistent module Web Worker for step-by-step tracing. The **Java engine** uses an AST-walking interpreter over a Chevrotain CST in disposable Web Workers.
 
 ---
 
@@ -86,11 +88,13 @@ npm run dev:py       # Python dev server
 | `npm run dev` | JS dev server (alias for `dev:js`) |
 | `npm run dev:js` | JS dev server with HMR |
 | `npm run dev:py` | Python dev server with HMR |
+| `npm run dev:java` | Java dev server with HMR |
 | `npm run build` | JS type-check + build to `docs/` |
 | `npm run build:js` | Same as `build` |
-| `npm run build:py` | Python build to `docs-py/` |
+| `npm run build:py` | Python build to `docs/` |
+| `npm run build:java` | Java build to `docs/` |
 | `npm run build:all` | Build all language targets |
-| `npm run test` | Run tests (Vitest, 263 tests) |
+| `npm run test` | Run tests (Vitest) |
 | `npm run lint` | Run ESLint |
 | `npm run preview` | Preview the production build locally |
 
@@ -111,12 +115,21 @@ src/
 │   │   ├── executor.ts         # instrument → worker → snapshots (no store coupling)
 │   │   ├── examples.ts         # Built-in JS example snippets
 │   │   └── security.ts         # Suspicious code pattern detection
-│   └── py/                     # Python engine (Pyodide + sys.settrace)
+│   ├── py/                     # Python engine (Pyodide + sys.settrace)
+│   │   ├── index.ts            # LanguageEngine implementation
+│   │   ├── tracer.ts           # Python tracing script (sys.settrace) as a string
+│   │   ├── worker.ts           # Persistent Pyodide Web Worker (module worker)
+│   │   ├── executor.ts         # Pyodide worker lifecycle management
+│   │   ├── examples.ts         # Python example snippets
+│   │   └── security.ts         # Suspicious code pattern detection
+│   └── java/                   # Java engine (AST-walking interpreter)
 │       ├── index.ts            # LanguageEngine implementation
-│       ├── tracer.ts           # Python tracing script (sys.settrace) as a string
-│       ├── worker.ts           # Persistent Pyodide Web Worker (module worker)
-│       ├── executor.ts         # Pyodide worker lifecycle management
-│       ├── examples.ts         # Python example snippets
+│       ├── interpreter.ts      # CST-walking interpreter (~1960 lines, the core engine)
+│       ├── parser.ts           # java-parser wrapper: parseJava(), CST navigation helpers
+│       ├── types.ts            # Java runtime type system (primitives, strings, arrays, objects)
+│       ├── executor.ts         # Ephemeral Web Worker executor
+│       ├── worker.ts           # Web Worker: parse + interpret Java source
+│       ├── examples.ts         # Java example snippets
 │       └── security.ts         # Suspicious code pattern detection
 ├── engine/
 │   └── executor.ts             # Thin dispatcher: store → engine → store
@@ -141,7 +154,8 @@ src/
 │   └── engine.ts               # LanguageEngine interface, LanguageId, CodeExample
 ├── utils/
 │   ├── share.ts                # LZ-string URL compression
-│   └── diffSnapshots.ts        # Detects changed values between steps (yellow flash)
+│   ├── diffSnapshots.ts        # Detects changed values between steps (yellow flash)
+│   └── promoteToHeap.ts        # Promotes inline primitives to heap objects (Python reference mode)
 ├── App.tsx                     # Main layout (resizable split, keyboard shortcuts)
 ├── main.tsx                    # React entry point + HashRouter routes
 ├── env.d.ts                    # TypeScript declarations for VITE_* env vars
@@ -150,6 +164,7 @@ src/
 # Root config files
 .env.js                         # JS build branding (VITE_APP_NAME=JSTutor, etc.)
 .env.py                         # Python build branding (VITE_APP_NAME=PyTutor, etc.)
+.env.java                       # Java build branding (VITE_APP_NAME=JavaTutor, etc.)
 vite.config.ts                  # Build config — mode-based outDir + language targeting
 ```
 
@@ -159,11 +174,13 @@ vite.config.ts                  # Build config — mode-based outDir + language 
 
 **Single-language builds** — each `npm run build:<lang>` produces a standalone site bundling only that language's engine. Vite's `--mode` flag loads the matching `.env.<mode>` file, and `import.meta.env.VITE_LANGUAGE` is statically replaced at build time so tree-shaking eliminates the unused engines entirely.
 
-**Branding via env vars** — app name, colors, domain, and tagline are defined in `.env.js` / `.env.py` and flow through `src/config/branding.ts` to all components. No hardcoded "JSTutor" strings exist in the UI code.
+**Branding via env vars** — app name, colors, domain, and tagline are defined in `.env.js` / `.env.py` / `.env.java` and flow through `src/config/branding.ts` to all components. No hardcoded "JSTutor" strings exist in the UI code.
 
 **JS engine: Native JS in disposable Web Workers** — code runs as real JavaScript in blob-URL workers, so the full Web API surface is available. A fresh worker is created for each run; no shared state can leak between executions.
 
 **Python engine: Pyodide + sys.settrace** — CPython compiled to WebAssembly runs in a persistent module Web Worker. Python's built-in `sys.settrace()` intercepts call/line/return events to build snapshots without needing an AST transformer. Pyodide is loaded eagerly from CDN at page load to minimize wait time on first run.
+
+**Java engine: CST interpreter** — Java source is parsed into a Concrete Syntax Tree using java-parser (Chevrotain-based), then interpreted directly. Supports Java primitives, strings, arrays, objects, static methods, recursion, and standard control flow. Runs in disposable Web Workers like the JS engine.
 
 **TDZ-aware instrumentation** — `let`/`const` declarations are tracked incrementally so the visualizer never reads variables before they are initialized.
 
@@ -186,6 +203,7 @@ vite.config.ts                  # Build config — mode-based outDir + language 
 - [Acorn](https://github.com/acornjs/acorn) — JavaScript parser (AST instrumentation)
 - [Astring](https://github.com/davidbonnet/astring) — JavaScript code generator
 - [Pyodide](https://pyodide.org) — CPython compiled to WebAssembly (Python engine, loaded from CDN)
+- [java-parser](https://github.com/nicolo-ribaudo/java-parser) — Chevrotain-based Java parser (Java engine, CST interpretation)
 - [Zustand](https://zustand.docs.pmnd.rs) — state management
 - [React Router](https://reactrouter.com) 7 — client-side routing (HashRouter)
 - [lz-string](https://github.com/pieroxy/lz-string) — URL-compressed share links
@@ -198,7 +216,8 @@ Each language target builds to its own output directory and deploys to its own d
 
 ```bash
 npm run build:js     # outputs to docs/  → jstutor.org
-npm run build:py     # outputs to docs-py/ → pytutor.org
+npm run build:py     # outputs to docs/  → pytutor.org
+npm run build:java   # outputs to docs/  → javatutor.org
 npm run build:all    # build everything
 ```
 

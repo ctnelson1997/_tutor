@@ -19,5 +19,10 @@ export const pyEngine: LanguageEngine = {
     set: { label: 'Set', variant: 'warning' },
     function: { label: 'Function', variant: 'dark' },
     object: { label: 'Object', variant: 'warning' },
+    int: { label: 'int', variant: 'primary' },
+    float: { label: 'float', variant: 'primary' },
+    str: { label: 'str', variant: 'success' },
+    bool: { label: 'bool', variant: 'warning' },
+    NoneType: { label: 'NoneType', variant: 'secondary' },
   },
 };

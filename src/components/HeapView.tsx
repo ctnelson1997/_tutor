@@ -5,6 +5,7 @@ import { useEngine } from '../engines/useEngine';
 import type { HeapObject, RuntimeValue, StackFrame } from '../types/snapshot';
 import type { HeapTypeDisplay } from '../types/engine';
 import { getChangedKeys } from '../utils/diffSnapshots';
+import { promoteToHeap } from '../utils/promoteToHeap';
 
 function ValueDisplay({ value }: { value: RuntimeValue }) {
   if (value.type === 'ref') {
@@ -94,6 +95,25 @@ function FunctionDisplay({ obj }: { obj: HeapObject }) {
   );
 }
 
+const PRIMITIVE_HEAP_TYPES = new Set(['int', 'float', 'str', 'bool', 'NoneType']);
+
+function PrimitiveDisplay({ obj }: { obj: HeapObject }) {
+  const colorMap: Record<string, string> = {
+    int: '#0d6efd',
+    float: '#0d6efd',
+    str: '#198754',
+    bool: '#fd7e14',
+    NoneType: '#6c757d',
+  };
+  const color = colorMap[obj.objectType] || '#333';
+
+  return (
+    <div style={{ fontFamily: 'monospace', fontSize: '0.85rem', color, textAlign: 'center', padding: '0.15rem 0' }}>
+      {obj.label}
+    </div>
+  );
+}
+
 const defaultTypeConfig: Record<string, HeapTypeDisplay> = {
   array: { label: 'Array', variant: 'info' },
   object: { label: 'Object', variant: 'warning' },
@@ -124,7 +144,9 @@ function HeapCard({ obj, changedKeys, step, typeConfig }: { obj: HeapObject; cha
         </span>
       </Card.Header>
       <Card.Body>
-        {obj.objectType === 'array' || obj.objectType === 'list' || obj.objectType === 'tuple' ? (
+        {PRIMITIVE_HEAP_TYPES.has(obj.objectType) ? (
+          <PrimitiveDisplay obj={obj} />
+        ) : obj.objectType === 'array' || obj.objectType === 'list' || obj.objectType === 'tuple' ? (
           <ArrayDisplay obj={obj} changedKeys={changedKeys} step={step} />
         ) : obj.objectType === 'function' ? (
           <FunctionDisplay obj={obj} />
@@ -193,6 +215,8 @@ export default memo(function HeapView() {
   const [filter, setFilter] = useState<HeapFilter>('all');
   const hideFunctions = useStore((s) => s.hideFunctions);
   const setHideFunctions = useStore((s) => s.setHideFunctions);
+  const showReferences = useStore((s) => s.showReferences);
+  const setShowReferences = useStore((s) => s.setShowReferences);
   const language = useStore((s) => s.language);
 
   const engine = useEngine(language);
@@ -201,8 +225,15 @@ export default memo(function HeapView() {
     [engine],
   );
 
-  const snapshot = snapshots[currentStep];
+  const rawSnapshot = snapshots[currentStep];
 
+  // When "show references" is on for Python, promote primitives to heap objects
+  const snapshot = useMemo(
+    () => rawSnapshot && showReferences && language === 'py' ? promoteToHeap(rawSnapshot) : rawSnapshot,
+    [rawSnapshot, showReferences, language],
+  );
+
+  // Diff is always computed from original snapshots so change detection works correctly
   const changedKeys = useMemo(
     () => getChangedKeys(snapshots[currentStep - 1], snapshots[currentStep]),
     [snapshots, currentStep],
@@ -225,44 +256,59 @@ export default memo(function HeapView() {
   }, [snapshot, filter, hideFunctions]);
 
   if (snapshots.length === 0) return null;
-  if (!snapshot || snapshot.heap.length === 0) {
-    return <div className="text-muted" style={{ fontSize: '0.85rem' }}>No heap objects</div>;
-  }
+  if (!snapshot) return null;
+
+  const hasRawHeapObjects = rawSnapshot && rawSnapshot.heap.length > 0;
 
   return (
     <div>
       <div className="d-flex align-items-center gap-2 mb-2 flex-wrap">
-        <ButtonGroup size="sm">
+        {hasRawHeapObjects && (
+          <>
+            <ButtonGroup size="sm">
+              <Button
+                variant={filter === 'all' ? 'primary' : 'outline-primary'}
+                onClick={() => setFilter('all')}
+                style={{ fontSize: '0.7rem' }}
+                aria-pressed={filter === 'all'}
+              >
+                All frames
+              </Button>
+              <Button
+                variant={filter === 'current' ? 'primary' : 'outline-primary'}
+                onClick={() => setFilter('current')}
+                style={{ fontSize: '0.7rem' }}
+                aria-pressed={filter === 'current'}
+              >
+                Current frame
+              </Button>
+            </ButtonGroup>
+            <Button
+              variant={hideFunctions ? 'secondary' : 'outline-secondary'}
+              size="sm"
+              onClick={() => setHideFunctions(!hideFunctions)}
+              style={{ fontSize: '0.7rem' }}
+              aria-pressed={hideFunctions}
+            >
+              Hide functions
+            </Button>
+          </>
+        )}
+        {language === 'py' && (
           <Button
-            variant={filter === 'all' ? 'primary' : 'outline-primary'}
-            onClick={() => setFilter('all')}
+            variant={showReferences ? 'secondary' : 'outline-secondary'}
+            size="sm"
+            onClick={() => setShowReferences(!showReferences)}
             style={{ fontSize: '0.7rem' }}
-            aria-pressed={filter === 'all'}
+            aria-pressed={showReferences}
           >
-            All frames
+            Show primitives as references
           </Button>
-          <Button
-            variant={filter === 'current' ? 'primary' : 'outline-primary'}
-            onClick={() => setFilter('current')}
-            style={{ fontSize: '0.7rem' }}
-            aria-pressed={filter === 'current'}
-          >
-            Current frame
-          </Button>
-        </ButtonGroup>
-        <Button
-          variant={hideFunctions ? 'secondary' : 'outline-secondary'}
-          size="sm"
-          onClick={() => setHideFunctions(!hideFunctions)}
-          style={{ fontSize: '0.7rem' }}
-          aria-pressed={hideFunctions}
-        >
-          Hide functions
-        </Button>
+        )}
       </div>
       {visibleObjects.length === 0 ? (
         <div className="text-muted" style={{ fontSize: '0.85rem', fontStyle: 'italic' }}>
-          No objects in this frame
+          {hasRawHeapObjects ? 'No objects in this frame' : 'No heap objects'}
         </div>
       ) : (
         <div className="d-flex flex-column gap-2">

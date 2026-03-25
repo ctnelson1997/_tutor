@@ -73,7 +73,7 @@ _self.onmessage = async (e: MessageEvent) => {
       const message = err instanceof Error ? err.message : String(err);
       // Try to extract line number from Python traceback
       let line: number | undefined;
-      const lineMatch = message.match(/File "<exec>", line (\d+)/);
+      const lineMatch = message.match(/File "<(?:exec|user_code)>", line (\d+)/);
       if (lineMatch) {
         line = parseInt(lineMatch[1], 10);
       }

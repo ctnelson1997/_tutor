@@ -21,6 +21,13 @@ export interface TutorState {
   // ── View options ──
   hideFunctions: boolean;
   setHideFunctions: (hide: boolean) => void;
+  showReferences: boolean;
+  setShowReferences: (show: boolean) => void;
+
+  // ── Heap layout ──
+  heapPositions: Record<string, { x: number; y: number }>;
+  setHeapPosition: (heapId: string, x: number, y: number) => void;
+  clearHeapPositions: () => void;
 
   // ── Actions ──
   setSnapshots: (snapshots: ExecutionSnapshot[]) => void;
@@ -34,8 +41,13 @@ export interface TutorState {
   reset: () => void;
 }
 
-export const SANDBOX_CODE = `// Write your code below!
-let x = 1;`;
+const SANDBOX_CODES: Record<string, string> = {
+  js: `// Write your code below!\nlet x = 1;`,
+  py: `# Write your code below!\nx = 1\nprint(x)`,
+  java: `public class Main {\n  public static void main(String[] args) {\n    int x = 1;\n    System.out.println(x);\n  }\n}`,
+};
+
+export const SANDBOX_CODE = SANDBOX_CODES[branding.languageId] || SANDBOX_CODES.js;
 
 const DEFAULT_CODE = SANDBOX_CODE;
 
@@ -57,6 +69,8 @@ export const useStore = create<TutorState>((set, get) => ({
   // ── View options ──
   hideFunctions: false,
   setHideFunctions: (hide) => set({ hideFunctions: hide }),
+  showReferences: false,
+  setShowReferences: (show) => set({ showReferences: show }),
 
   // ── Actions ──
   setSnapshots: (snapshots) => set({ snapshots, currentStep: 0, error: null }),

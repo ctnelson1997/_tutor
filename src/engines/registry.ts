@@ -10,6 +10,9 @@ if (lang === 'js') {
 if (lang === 'py') {
   engines['py'] = async () => (await import('./py/index')).pyEngine;
 }
+if (lang === 'java') {
+  engines['java'] = async () => (await import('./java/index')).javaEngine;
+}
 
 const loaded = new Map<LanguageId, LanguageEngine>();
 

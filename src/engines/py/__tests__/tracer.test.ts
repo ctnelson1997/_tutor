@@ -23,6 +23,10 @@ describe('getTracerCode', () => {
     expect(code).toContain('import math');
   });
 
+  it('imports ast for comprehension detection', () => {
+    expect(code).toContain('import ast');
+  });
+
   // ── Entry point ──
 
   it('defines run_traced function', () => {
@@ -36,6 +40,7 @@ describe('getTracerCode', () => {
     expect(code).toContain('_heap_map = {}');
     expect(code).toContain('_heap_counter = 0');
     expect(code).toContain('_step_counter = 0');
+    expect(code).toContain('_active_comp = None');
   });
 
   it('returns JSON from run_traced', () => {
@@ -70,7 +75,16 @@ describe('getTracerCode', () => {
   });
 
   it('only traces user code via filename check', () => {
-    expect(code).toContain("frame.f_code.co_filename != '<exec>'");
+    expect(code).toContain("frame.f_code.co_filename != '<user_code>'");
+  });
+
+  it('compiles user code with a distinct filename from the tracer', () => {
+    // User code must use a different filename than what pyodide.runPython()
+    // uses for the tracer module (which defaults to '<exec>'). Otherwise
+    // internal tracer frames (e.g. genexpr inside _capture_print) would be
+    // traced as if they were user code.
+    expect(code).toContain("compile(source_code, '<user_code>', 'exec')");
+    expect(code).not.toContain("compile(source_code, '<exec>', 'exec')");
   });
 
   // ── Serialization ──
@@ -216,13 +230,137 @@ describe('getTracerCode', () => {
     expect(code).toContain("name.startswith('__') and name.endswith('__')");
   });
 
-  // ── Comprehension filtering ──
+  it('filters internal positional variables (e.g. .0 iterator)', () => {
+    expect(code).toContain("name.startswith('.')");
+  });
 
-  it('skips comprehension frames', () => {
-    expect(code).toContain("'<listcomp>'");
-    expect(code).toContain("'<dictcomp>'");
-    expect(code).toContain("'<setcomp>'");
-    expect(code).toContain("'<genexpr>'");
+  // ── Comprehension tracing (Python 3.12+ inlined comprehensions) ──
+
+  it('defines _scan_comprehensions to pre-scan source with ast', () => {
+    expect(code).toContain('def _scan_comprehensions(source_code):');
+    expect(code).toContain('_ast.parse(source_code)');
+  });
+
+  it('calls _scan_comprehensions before execution', () => {
+    // Must be called in run_traced before exec()
+    const scanCall = code.indexOf('_scan_comprehensions(source_code)');
+    const execCall = code.indexOf('exec(code, namespace)');
+    expect(scanCall).toBeGreaterThan(-1);
+    expect(execCall).toBeGreaterThan(-1);
+    expect(scanCall).toBeLessThan(execCall);
+  });
+
+  it('detects all four comprehension types via ast', () => {
+    expect(code).toContain("'ListComp'");
+    expect(code).toContain("'SetComp'");
+    expect(code).toContain("'DictComp'");
+    expect(code).toContain("'GeneratorExp'");
+  });
+
+  it('maps comprehension types to friendly display names', () => {
+    expect(code).toContain("'list comprehension'");
+    expect(code).toContain("'set comprehension'");
+    expect(code).toContain("'dict comprehension'");
+    expect(code).toContain("'generator expression'");
+  });
+
+  it('extracts iteration variable names from comprehension generators', () => {
+    expect(code).toContain('node.generators');
+    expect(code).toContain('gen.target');
+    expect(code).toContain("target_vars.add(n.id)");
+  });
+
+  it('pushes synthetic comp frame on entering a comprehension line', () => {
+    expect(code).toContain("_comp_info.get(line)");
+    expect(code).toContain("_active_comp = comp");
+    expect(code).toContain("'_is_comp': True");
+  });
+
+  it('pops synthetic comp frame on leaving a comprehension line', () => {
+    expect(code).toContain('_active_comp and not comp');
+    expect(code).toContain('_active_comp = None');
+  });
+
+  it('splits variables between comp frame and enclosing frame', () => {
+    // Comp frame shows only target vars; enclosing frame hides them
+    expect(code).toContain("_active_comp['target_vars']");
+    expect(code).toContain("is_comp_frame and not is_target");
+    expect(code).toContain("not is_comp_frame and is_target");
+  });
+
+  it('compiles element expression for eval during tracing', () => {
+    expect(code).toContain('elt_code');
+    expect(code).toContain('elt_label');
+    expect(code).toContain("compile(elt_label, '<comp>', 'eval')");
+  });
+
+  it('compiles filter conditions (if clauses) for comprehensions', () => {
+    expect(code).toContain('filter_codes');
+    expect(code).toContain('gen.ifs');
+    expect(code).toContain("compile(_ast.unparse(if_clause), '<comp>', 'eval')");
+  });
+
+  it('evals element expression each iteration and tracks partial result', () => {
+    expect(code).toContain("eval(_active_comp['elt_code'], frame.f_globals, frame.f_locals)");
+    expect(code).toContain("_active_comp['partial_result'].append(elt_val)");
+    expect(code).toContain("_active_comp['current_elt'] = elt_val");
+  });
+
+  it('checks filter conditions before including element in partial result', () => {
+    // Must eval filters BEFORE eval-ing the element expression
+    const filterCheck = code.indexOf('passes_filter');
+    const eltEval = code.indexOf("eval(_active_comp['elt_code']");
+    expect(filterCheck).toBeGreaterThan(-1);
+    expect(eltEval).toBeGreaterThan(-1);
+    expect(filterCheck).toBeLessThan(eltEval);
+  });
+
+  it('shows element value in comp frame snapshots', () => {
+    // The element label (e.g. "x * x") is shown as a variable in the comp frame
+    expect(code).toContain("_active_comp.get('current_elt')");
+    expect(code).toContain("_active_comp.get('elt_label'");
+  });
+
+  it('finds assignment targets for comprehensions via AST', () => {
+    expect(code).toContain("_comp_info[value.lineno]['result_var'] = target.id");
+  });
+
+  it('shows return value when popping comp frame', () => {
+    expect(code).toContain('def _pop_comp_frame(frame):');
+    expect(code).toContain('has_return=True');
+    expect(code).toContain("_active_comp.get('result_var')");
+  });
+
+  it('cleans up comp frame on return events', () => {
+    // If a comprehension is on the last line, the return event fires
+    // while the synthetic frame is still active — must clean up
+    const returnSection = code.slice(
+      code.indexOf("elif event == 'return':"),
+      code.indexOf("return _tracer", code.indexOf("elif event == 'return':")),
+    );
+    expect(returnSection).toContain('if _active_comp:');
+    expect(returnSection).toContain('_pop_comp_frame');
+  });
+
+  it('resets _active_comp in run_traced', () => {
+    // Must reset between executions so stale state doesn't leak
+    const runTracedSection = code.slice(code.indexOf('def run_traced'));
+    expect(runTracedSection).toContain('_active_comp = None');
+  });
+
+  it('handles dict comprehensions with key-value element expressions', () => {
+    expect(code).toContain("'DictComp'");
+    expect(code).toContain("_ast.unparse(node.key)");
+    expect(code).toContain("_ast.unparse(node.value)");
+  });
+
+  it('still skips tracer-internal frames', () => {
+    const skipSection = code.slice(
+      code.indexOf('_SKIP_FRAME_NAMES'),
+      code.indexOf(')', code.indexOf('_SKIP_FRAME_NAMES')) + 1,
+    );
+    expect(skipSection).toContain('_capture_print');
+    expect(skipSection).toContain('_safe_import');
   });
 
   // ── Error handling ──
@@ -232,7 +370,7 @@ describe('getTracerCode', () => {
   });
 
   it('extracts line numbers from traceback', () => {
-    expect(code).toContain("tb.tb_frame.f_code.co_filename == '<exec>'");
+    expect(code).toContain("tb.tb_frame.f_code.co_filename == '<user_code>'");
     expect(code).toContain('err_line = tb.tb_lineno');
   });
 
@@ -261,7 +399,7 @@ describe('getTracerCode', () => {
   });
 
   it('pushes named frame on function call event', () => {
-    expect(code).toContain('_call_stack.append({"name": fname');
+    expect(code).toContain('_call_stack.append({"name": display_name');
   });
 
   it('pops frame on return event', () => {
@@ -284,10 +422,6 @@ describe('getTracerCode', () => {
   });
 
   // ── Compilation ──
-
-  it('compiles user code with exec filename marker', () => {
-    expect(code).toContain("compile(source_code, '<exec>', 'exec')");
-  });
 
   it('sets __name__ to __main__ in execution namespace', () => {
     expect(code).toContain("namespace['__name__'] = '__main__'");

@@ -14,7 +14,12 @@ export default defineConfig(({ mode }) => {
       {
         name: 'generate-deploy-files',
         generateBundle() {
-          const domain = lang === 'py' ? 'pytutor.org' : 'jstutor.org';
+          const domainMap: Record<string, string> = { js: 'jstutor.org', py: 'pytutor.org', java: 'javatutor.org' };
+          const nameMap: Record<string, string> = { js: 'JSTutor', py: 'PyTutor', java: 'JavaTutor' };
+          const displayMap: Record<string, string> = { js: 'JavaScript', py: 'Python', java: 'Java' };
+          const domain = domainMap[lang];
+          const appName = nameMap[lang];
+          const langDisplay = displayMap[lang];
           this.emitFile({
             type: 'asset',
             fileName: 'CNAME',
@@ -27,6 +32,11 @@ export default defineConfig(({ mode }) => {
           });
           this.emitFile({
             type: 'asset',
+            fileName: 'README.md',
+            source: `# ${appName}\n\nBuild output for [${domain}](https://${domain}) — a free, browser-based ${langDisplay} execution visualizer.\n\nSource code: [github.com/ctnelson1997/_tutor](https://github.com/ctnelson1997/_tutor)\n`,
+          });
+          this.emitFile({
+            type: 'asset',
             fileName: 'sitemap.xml',
             source: `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url>\n    <loc>https://${domain}/</loc>\n    <changefreq>weekly</changefreq>\n    <priority>1.0</priority>\n  </url>\n</urlset>\n`,
           });
@@ -35,7 +45,16 @@ export default defineConfig(({ mode }) => {
     ],
     base: '/',
     build: {
-      outDir: lang === 'js' ? 'docs' : `docs-${lang}`,
+      outDir: 'docs'
+    },
+    test: {
+      // SWC's native binary has a race condition on Windows when multiple
+      // worker processes initialize it simultaneously, causing intermittent
+      // "Cannot read properties of undefined (reading 'config')" errors.
+      // Disabling file parallelism ensures only one file is processed at a
+      // time, eliminating the race entirely.
+      pool: 'forks',
+      fileParallelism: false,
     },
   };
 })
