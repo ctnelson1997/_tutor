@@ -103,19 +103,18 @@ Zustand store with: `language`, `code`, `snapshots`, `currentStep`, `isRunning`,
 
 ### Routing (`src/main.tsx`)
 
-HashRouter with language-parameterized routes:
+HashRouter with routes:
 
 ```
 /                           Main editor
-/examples/:slug             Example (legacy compat)
-/examples/:lang/:slug       Language-specific example
+/examples/:slug             Example
 /share/:encoded             Shared code (legacy, defaults to build target)
 /share/:lang/:encoded       Language-specific shared code
 /embed/:encoded             Embed (legacy)
 /embed/:lang/:encoded       Language-specific embed
 ```
 
-Legacy routes (without `:lang`) default to `branding.languageId` — the build target language.
+Legacy share/embed routes (without `:lang`) default to `branding.languageId` — the build target language.
 
 ## TypeScript Constraints
 

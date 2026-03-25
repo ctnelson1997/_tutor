@@ -49,33 +49,47 @@ function ValueDisplay({ value }: { value: RuntimeValue }) {
 function VariableTable({ frame, frameIndex, changedKeys, step }: { frame: StackFrame; frameIndex: number; changedKeys: Set<string>; step: number }) {
   if (frame.variables.length === 0) return null;
 
+  // Separate the synthetic comp-building indicator from real variables
+  const compResult = frame.variables.find((v) => v.name === '__comp_result__');
+  const displayVars = frame.variables.filter((v) => v.name !== '__comp_result__');
+
   return (
-    <table className="w-100">
-      <tbody>
-        {frame.variables.map((v) => {
-          const isReturn = v.name === 'return \u21b5';
-          const isChanged = changedKeys.has(`var:${frameIndex}:${v.name}`);
-          return (
-            <tr key={v.name} style={isReturn ? { borderTop: '1px dashed #0d6efd' } : undefined}>
-              <td
-                className="fw-semibold"
-                style={{
-                  fontFamily: 'monospace',
-                  ...(isReturn ? { color: '#0d6efd', fontStyle: 'italic' } : {}),
-                }}
-              >
-                {v.name}
-              </td>
-              <td className="text-end">
-                <span key={isChanged ? step : undefined} className={isChanged ? 'value-changed' : undefined}>
-                  <ValueDisplay value={v.value} />
-                </span>
-              </td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
+    <>
+      {compResult && (
+        <div className="comp-building-indicator">
+          <span className="comp-building-label">building</span>
+          <ValueDisplay value={compResult.value} />
+        </div>
+      )}
+      {displayVars.length > 0 && (
+        <table className="w-100">
+          <tbody>
+            {displayVars.map((v) => {
+              const isReturn = v.name === 'return \u21b5';
+              const isChanged = changedKeys.has(`var:${frameIndex}:${v.name}`);
+              return (
+                <tr key={v.name} style={isReturn ? { borderTop: '1px dashed #0d6efd' } : undefined}>
+                  <td
+                    className="fw-semibold"
+                    style={{
+                      fontFamily: 'monospace',
+                      ...(isReturn ? { color: '#0d6efd', fontStyle: 'italic' } : {}),
+                    }}
+                  >
+                    {v.name}
+                  </td>
+                  <td className="text-end">
+                    <span key={isChanged ? step : undefined} className={isChanged ? 'value-changed' : undefined}>
+                      <ValueDisplay value={v.value} />
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+    </>
   );
 }
 

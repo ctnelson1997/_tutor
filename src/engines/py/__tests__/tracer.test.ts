@@ -526,15 +526,14 @@ describe('getTracerCode', () => {
 
   // ── Partial result display ──
 
-  it('shows partial result in the comp frame with a generic "result" label', () => {
-    // The partial result should be inside the _is_comp check, with a generic
-    // label — NOT the assignment target name like "squares"
+  it('shows partial result in the comp frame with a __comp_result__ marker name', () => {
+    // Uses a marker name so the UI can render it distinctly (not as a variable)
     const compFrameSection = code.slice(
       code.indexOf("frame_info.get(\"_is_comp\") and not has_return"),
       code.indexOf("# Add return value display"),
     );
     expect(compFrameSection).toContain("_active_comp.get('partial_result')");
-    expect(compFrameSection).toContain('"result"');
+    expect(compFrameSection).toContain('"__comp_result__"');
   });
 
   it('does not inject synthetic partial result into the enclosing frame', () => {
@@ -552,23 +551,22 @@ describe('getTracerCode', () => {
 
   // ── Heap ID cleanup for synthetic objects ──
 
-  it('cleans up synthetic partial list heap ID after comp return snapshot', () => {
+  it('bridges heap ID from synthetic partial to real Python variable', () => {
+    // So the UI shows the same heap object before and after assignment
+    const popSection = code.slice(
+      code.indexOf('def _pop_comp_frame'),
+      code.indexOf('def _tracer'),
+    );
+    expect(popSection).toContain('_heap_map[id(real_obj)] = _heap_map[id(partial)]');
+  });
+
+  it('cleans up synthetic partial heap ID after bridging', () => {
     // Prevents id() reuse contamination after the partial list is GC'd
     const popSection = code.slice(
       code.indexOf('def _pop_comp_frame'),
       code.indexOf('def _tracer'),
     );
     expect(popSection).toContain('del _heap_map[id(partial)]');
-  });
-
-  it('does not bridge heap IDs between synthetic and real objects', () => {
-    // The old bridge (_heap_map[id(real_obj)] = _heap_map[id(partial)])
-    // caused multiple variables to share heap IDs after GC reuse
-    const popSection = code.slice(
-      code.indexOf('def _pop_comp_frame'),
-      code.indexOf('def _tracer'),
-    );
-    expect(popSection).not.toContain('_heap_map[id(real_obj)]');
   });
 
   // ── Enclosing frame locals sync ──
@@ -653,9 +651,12 @@ describe('getTracerCode', () => {
     expect(code).toContain('obj_id = id(val)');
   });
 
-  it('tracks visited objects to prevent circular serialization', () => {
-    expect(code).toContain('if obj_id not in visited:');
+  it('tracks visited objects to prevent circular and duplicate serialization', () => {
+    // Tracks both obj_id (Python identity) and heap_id (logical identity)
+    // so bridged objects (e.g. comp partial → real variable) aren't serialized twice
+    expect(code).toContain('if obj_id not in visited and heap_id not in visited:');
     expect(code).toContain('visited.add(obj_id)');
+    expect(code).toContain('visited.add(heap_id)');
   });
 
   // ── Compilation ──

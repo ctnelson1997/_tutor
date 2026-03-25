@@ -289,6 +289,27 @@ html, body, #root {
   margin-bottom: 0.1rem;
 }
 
+/* Comprehension "building" indicator — distinct from normal variable rows */
+.comp-building-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 4px;
+  margin-bottom: 4px;
+  border: 1px dashed #adb5bd;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.comp-building-label {
+  font-size: 0.65rem;
+  color: #6c757d;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-style: italic;
+}
+
 /* Draggable card wrapper */
 .draggable-card {
   cursor: grab;

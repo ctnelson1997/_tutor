@@ -217,8 +217,9 @@ def _serialize_value(val, heap_objects, visited):
     # Heap objects: list, dict, tuple, set, function, class instances
     obj_id = id(val)
     heap_id = _get_heap_id(val)
-    if obj_id not in visited:
+    if obj_id not in visited and heap_id not in visited:
         visited.add(obj_id)
+        visited.add(heap_id)
         heap_obj = _serialize_heap_object(val, heap_id, heap_objects, visited)
         heap_objects.append(heap_obj)
     return {"type": "ref", "heapId": heap_id}
@@ -333,12 +334,12 @@ def _capture_snapshot(line, current_locals, return_value=None, has_return=False,
 
         # Show the partial result and current element in the comprehension frame
         if _active_comp and frame_info.get("_is_comp") and not has_return:
-            # Show the collection being built (generic label — the variable
-            # name like "squares" isn't assigned until the comp finishes)
+            # Show the collection being built — uses a marker name so the UI
+            # can render it distinctly (not as a regular variable)
             partial = _active_comp.get('partial_result')
             if partial is not None:
                 partial_serialized = _serialize_value(partial, heap_objects, visited)
-                variables.append({"name": "result", "value": partial_serialized})
+                variables.append({"name": "__comp_result__", "value": partial_serialized})
 
             elt = _active_comp.get('current_elt')
             if elt is not None:
@@ -397,16 +398,23 @@ def _pop_comp_frame(frame):
 
     if partial is not None:
         _active_comp['current_elt'] = None
+
+        # Bridge BEFORE the return snapshot so the real variable and
+        # return value share the same heap ID in that snapshot.
+        if id(partial) in _heap_map and result_var and result_var in frame.f_locals:
+            real_obj = frame.f_locals[result_var]
+            if id(real_obj) != id(partial):
+                _heap_map[id(real_obj)] = _heap_map[id(partial)]
+
         # Sync enclosing frame locals so the return snapshot shows all variables
         if len(_call_stack) >= 2:
             _call_stack[-2]["locals"] = dict(frame.f_locals)
         _capture_snapshot(comp_line, frame.f_locals, return_value=partial, has_return=True)
 
-    # Clean up our synthetic list's heap ID entry to prevent id() reuse
-    # issues — once partial is GC'd, CPython can reuse its memory address
-    # for a new object, which would incorrectly inherit the old heap ID.
-    if partial is not None and id(partial) in _heap_map:
-        del _heap_map[id(partial)]
+        # Clean up synthetic entry — once partial is GC'd, CPython can
+        # reuse its address for an unrelated object.
+        if id(partial) in _heap_map:
+            del _heap_map[id(partial)]
 
     _call_stack.pop()
     _active_comp = None

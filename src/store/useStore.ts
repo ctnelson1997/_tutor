@@ -72,6 +72,13 @@ export const useStore = create<TutorState>((set, get) => ({
   showReferences: false,
   setShowReferences: (show) => set({ showReferences: show }),
 
+  // ── Heap layout ──
+  heapPositions: {},
+  setHeapPosition: (heapId, x, y) => set((state) => ({
+    heapPositions: { ...state.heapPositions, [heapId]: { x, y } },
+  })),
+  clearHeapPositions: () => set({ heapPositions: {} }),
+
   // ── Actions ──
   setSnapshots: (snapshots) => set({ snapshots, currentStep: 0, error: null }),
 

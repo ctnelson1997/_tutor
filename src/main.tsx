@@ -24,7 +24,6 @@ createRoot(document.getElementById('root')!).render(
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/examples/:slug" element={<ExamplePage />} />
-        <Route path="/examples/:lang/:slug" element={<ExamplePage />} />
         <Route path="/embed/:encoded" element={<EmbedPage />} />
         <Route path="/embed/:lang/:encoded" element={<EmbedPage />} />
         <Route path="/share/:encoded" element={<ShareWarningPage />} />

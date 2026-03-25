@@ -49,7 +49,7 @@ export default function AppNavbar() {
                 {examples.filter((e) => e.category === cat).map((ex) => (
                   <NavDropdown.Item
                     key={ex.slug}
-                    onClick={() => navigate(`/examples/${language}/${ex.slug}`)}
+                    onClick={() => navigate(`/examples/${ex.slug}`)}
                   >
                     {ex.title}
                   </NavDropdown.Item>
