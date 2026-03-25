@@ -4,6 +4,7 @@ import { useStore } from '../store/useStore';
 import type { RuntimeValue, StackFrame } from '../types/snapshot';
 import { getChangedKeys } from '../utils/diffSnapshots';
 import { promoteToHeap } from '../utils/promoteToHeap';
+import DraggableCard from './DraggableCard';
 
 function ValueDisplay({ value }: { value: RuntimeValue }) {
   if (value.type === 'ref') {
@@ -254,7 +255,9 @@ export default memo(function FramesView() {
   return (
     <div>
       {reversed.map((group, i) => (
-        <FrameCard key={`${group.frame.name}-${i}`} group={group} changedKeys={changedKeys} step={currentStep} />
+        <DraggableCard key={`${group.frame.name}-${i}`}>
+          <FrameCard group={group} changedKeys={changedKeys} step={currentStep} />
+        </DraggableCard>
       ))}
     </div>
   );

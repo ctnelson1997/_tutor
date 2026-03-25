@@ -6,6 +6,7 @@ import type { HeapObject, RuntimeValue, StackFrame } from '../types/snapshot';
 import type { HeapTypeDisplay } from '../types/engine';
 import { getChangedKeys } from '../utils/diffSnapshots';
 import { promoteToHeap } from '../utils/promoteToHeap';
+import DraggableCard from './DraggableCard';
 
 function ValueDisplay({ value }: { value: RuntimeValue }) {
   if (value.type === 'ref') {
@@ -311,9 +312,11 @@ export default memo(function HeapView() {
           {hasRawHeapObjects ? 'No objects in this frame' : 'No heap objects'}
         </div>
       ) : (
-        <div className="d-flex flex-column gap-2">
+        <div className="d-flex flex-wrap gap-2 align-items-start">
           {visibleObjects.map((obj) => (
-            <HeapCard key={obj.id} obj={obj} changedKeys={changedKeys} step={currentStep} typeConfig={typeConfig} />
+            <DraggableCard key={obj.id}>
+              <HeapCard obj={obj} changedKeys={changedKeys} step={currentStep} typeConfig={typeConfig} />
+            </DraggableCard>
           ))}
         </div>
       )}

@@ -289,6 +289,14 @@ html, body, #root {
   margin-bottom: 0.1rem;
 }
 
+/* Draggable card wrapper */
+.draggable-card {
+  cursor: grab;
+  position: relative;
+  touch-action: none;
+  user-select: none;
+}
+
 /* Heap object cards */
 .heap-card {
   font-size: 0.8rem;

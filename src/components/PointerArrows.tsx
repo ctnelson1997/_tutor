@@ -113,6 +113,7 @@ export default memo(function PointerArrows({ containerRef }: { containerRef: Rea
     const container = containerRef.current;
     const svg = svgRef.current;
     window.addEventListener('resize', scheduleRedraw);
+    window.addEventListener('arrows:redraw', scheduleRedraw);
     container?.addEventListener('scroll', scheduleRedraw, { passive: true });
 
     let observer: MutationObserver | undefined;
@@ -135,6 +136,7 @@ export default memo(function PointerArrows({ containerRef }: { containerRef: Rea
 
     return () => {
       window.removeEventListener('resize', scheduleRedraw);
+      window.removeEventListener('arrows:redraw', scheduleRedraw);
       container?.removeEventListener('scroll', scheduleRedraw);
       observer?.disconnect();
       resizeObs?.disconnect();
