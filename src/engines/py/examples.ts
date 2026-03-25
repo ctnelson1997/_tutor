@@ -129,4 +129,18 @@ evens = [x for x in nums if x % 2 == 0]
 print(squares)
 print(evens)`,
   },
+  {
+    title: 'Named Tuples',
+    slug: 'named-tuples',
+    category: 'Data Structures',
+    language: 'py',
+    code: `from collections import namedtuple
+
+Point = namedtuple("Point", ["x", "y"])
+p1 = Point(3, 4)
+p2 = Point(1, 2)
+dist_x = p1.x - p2.x
+dist_y = p1.y - p2.y
+print(p1, p2)`,
+  },
 ];

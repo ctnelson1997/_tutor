@@ -130,6 +130,30 @@ html, body, #root {
   background-color: white;
 }
 
+/* Step arrow gutter */
+.cm-step-gutter {
+  width: 14px;
+  text-align: center;
+}
+
+.cm-step-arrow {
+  font-size: 9px;
+  line-height: 1;
+}
+
+.cm-step-arrow-current {
+  color: rgba(180, 140, 0, 0.9);
+}
+
+.cm-step-arrow-prev {
+  color: rgba(180, 140, 0, 0.35);
+}
+
+/* Previous line highlight (lighter) */
+.cm-previous-step-line {
+  background-color: rgba(255, 255, 100, 0.1) !important;
+}
+
 /* Current line highlight in editor */
 .cm-current-step-line {
   background-color: rgba(255, 255, 100, 0.25) !important;

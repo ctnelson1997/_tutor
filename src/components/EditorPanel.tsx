@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
-import { EditorView, Decoration, WidgetType, type DecorationSet } from '@codemirror/view';
-import { StateField, StateEffect } from '@codemirror/state';
+import { EditorView, Decoration, WidgetType, GutterMarker, gutter, type DecorationSet } from '@codemirror/view';
+import { StateField, StateEffect, RangeSet } from '@codemirror/state';
 import { useStore } from '../store/useStore';
 import { useEngine } from '../engines/useEngine';
 import type { ColumnRange, ConditionResult } from '../types/snapshot';
@@ -12,6 +12,8 @@ interface HighlightInfo {
   line: number;
   columnRange?: ColumnRange;
 }
+
+// ── Current line highlight ──
 
 const setHighlightLine = StateEffect.define<HighlightInfo | null>();
 
@@ -40,6 +42,94 @@ const highlightField = StateField.define<DecorationSet>({
     return decos;
   },
   provide: (f) => EditorView.decorations.from(f),
+});
+
+// ── Previous line highlight ──
+
+const setPrevHighlightLine = StateEffect.define<HighlightInfo | null>();
+
+const prevHighlightField = StateField.define<DecorationSet>({
+  create() {
+    return Decoration.none;
+  },
+  update(decos, tr) {
+    for (const effect of tr.effects) {
+      if (effect.is(setPrevHighlightLine)) {
+        if (effect.value === null) return Decoration.none;
+        const { line } = effect.value;
+        if (line < 1 || line > tr.state.doc.lines) return Decoration.none;
+        const lineObj = tr.state.doc.line(line);
+        const deco = Decoration.line({ class: 'cm-previous-step-line' });
+        return Decoration.set([deco.range(lineObj.from)]);
+      }
+    }
+    return decos;
+  },
+  provide: (f) => EditorView.decorations.from(f),
+});
+
+// ── Step arrow gutter markers ──
+
+class CurrentArrowMarker extends GutterMarker {
+  toDOM() {
+    const el = document.createElement('span');
+    el.className = 'cm-step-arrow cm-step-arrow-current';
+    el.textContent = '▶';
+    return el;
+  }
+}
+
+class PrevArrowMarker extends GutterMarker {
+  toDOM() {
+    const el = document.createElement('span');
+    el.className = 'cm-step-arrow cm-step-arrow-prev';
+    el.textContent = '▶';
+    return el;
+  }
+}
+
+const currentArrow = new CurrentArrowMarker();
+const prevArrow = new PrevArrowMarker();
+
+const gutterMarkerField = StateField.define<RangeSet<GutterMarker>>({
+  create() {
+    return RangeSet.of<GutterMarker>([]);
+  },
+  update(markers, tr) {
+    let currentLine: number | null = null;
+    let prevLine: number | null = null;
+
+    for (const effect of tr.effects) {
+      if (effect.is(setHighlightLine)) {
+        currentLine = effect.value?.line ?? null;
+      }
+      if (effect.is(setPrevHighlightLine)) {
+        prevLine = effect.value?.line ?? null;
+      }
+    }
+
+    // Only rebuild if one of our effects fired
+    if (currentLine === null && prevLine === null) return markers;
+
+    const ranges: { from: number; marker: GutterMarker }[] = [];
+    if (prevLine && prevLine >= 1 && prevLine <= tr.state.doc.lines) {
+      if (prevLine !== currentLine) {
+        ranges.push({ from: tr.state.doc.line(prevLine).from, marker: prevArrow });
+      }
+    }
+    if (currentLine && currentLine >= 1 && currentLine <= tr.state.doc.lines) {
+      ranges.push({ from: tr.state.doc.line(currentLine).from, marker: currentArrow });
+    }
+
+    // RangeSet requires sorted ranges
+    ranges.sort((a, b) => a.from - b.from);
+    return RangeSet.of<GutterMarker>(ranges.map((r) => r.marker.range(r.from)));
+  },
+});
+
+const stepGutter = gutter({
+  class: 'cm-step-gutter',
+  markers: (v) => v.state.field(gutterMarkerField),
 });
 
 // ── Condition result widget ──
@@ -103,7 +193,7 @@ export default function EditorPanel() {
   const language = useStore((s) => s.language);
   const engine = useEngine(language);
   const extensions = useMemo(
-    () => [engine?.editorExtension() ?? [], highlightField, conditionField],
+    () => [engine?.editorExtension() ?? [], highlightField, prevHighlightField, conditionField, gutterMarkerField, stepGutter],
     [engine],
   );
 
@@ -117,8 +207,12 @@ export default function EditorPanel() {
 
   // Determine which line to highlight
   const snapshot = snapshots.length > 0 ? snapshots[currentStep] : null;
+  const prevSnapshot = currentStep > 0 ? snapshots[currentStep - 1] : null;
   const highlightInfo: HighlightInfo | null = snapshot
     ? { line: snapshot.line, columnRange: snapshot.columnRange }
+    : null;
+  const prevHighlightInfo: HighlightInfo | null = prevSnapshot
+    ? { line: prevSnapshot.line }
     : null;
   const condition = snapshot?.condition ?? null;
 
@@ -143,7 +237,7 @@ export default function EditorPanel() {
       const view = viewUpdate.view;
       const effects: StateEffect<unknown>[] = [];
 
-      // Check if highlight needs updating
+      // Check if current highlight needs updating
       const decoSet = view.state.field(highlightField);
       let currentlyHighlighted: number | null = null;
       const iter = decoSet.iter();
@@ -152,6 +246,17 @@ export default function EditorPanel() {
       }
       if (currentlyHighlighted !== (highlightInfo?.line ?? null) || highlightInfo?.columnRange) {
         effects.push(setHighlightLine.of(highlightInfo));
+      }
+
+      // Check if previous highlight needs updating
+      const prevDecoSet = view.state.field(prevHighlightField);
+      let currentlyPrevHighlighted: number | null = null;
+      const prevIter = prevDecoSet.iter();
+      if (prevIter.value) {
+        currentlyPrevHighlighted = view.state.doc.lineAt(prevIter.from).number;
+      }
+      if (currentlyPrevHighlighted !== (prevHighlightInfo?.line ?? null)) {
+        effects.push(setPrevHighlightLine.of(prevHighlightInfo));
       }
 
       // Sync condition badge only when it changed (dispatching unconditionally
@@ -167,7 +272,7 @@ export default function EditorPanel() {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [highlightInfo, conditionKey],
+    [highlightInfo, prevHighlightInfo, conditionKey],
   );
 
   return (

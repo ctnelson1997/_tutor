@@ -272,12 +272,12 @@ describe('getTracerCode', () => {
 
   it('pushes synthetic comp frame on entering a comprehension line', () => {
     expect(code).toContain("_comp_info.get(line)");
-    expect(code).toContain("_active_comp = comp");
-    expect(code).toContain("'_is_comp': True");
+    expect(code).toContain("_active_comp = dict(comp)");
+    expect(code).toContain('"_is_comp": True');
   });
 
   it('pops synthetic comp frame on leaving a comprehension line', () => {
-    expect(code).toContain('_active_comp and not comp');
+    expect(code).toContain("_active_comp.get('_line') != line");
     expect(code).toContain('_active_comp = None');
   });
 
@@ -302,7 +302,7 @@ describe('getTracerCode', () => {
 
   it('evals element expression each iteration and tracks partial result', () => {
     expect(code).toContain("eval(_active_comp['elt_code'], frame.f_globals, frame.f_locals)");
-    expect(code).toContain("_active_comp['partial_result'].append(elt_val)");
+    expect(code).toContain("pr.append(elt_val)");
     expect(code).toContain("_active_comp['current_elt'] = elt_val");
   });
 
@@ -348,10 +348,247 @@ describe('getTracerCode', () => {
     expect(runTracedSection).toContain('_active_comp = None');
   });
 
+  // ── Multi-line statement collapsing ──
+
+  it('defines _scan_continuation_lines to detect multi-line statements', () => {
+    expect(code).toContain('def _scan_continuation_lines(source_code):');
+    expect(code).toContain('_continuation_lines');
+  });
+
+  it('calls _scan_continuation_lines before execution', () => {
+    const scanCall = code.indexOf('_scan_continuation_lines(source_code)');
+    const execCall = code.indexOf('exec(code, namespace)');
+    expect(scanCall).toBeGreaterThan(-1);
+    expect(execCall).toBeGreaterThan(-1);
+    expect(scanCall).toBeLessThan(execCall);
+  });
+
+  it('resets _continuation_lines in run_traced', () => {
+    const runTracedSection = code.slice(code.indexOf('def run_traced'));
+    expect(runTracedSection).toContain('_continuation_lines = set()');
+  });
+
+  it('collects statement start lines to avoid skipping real statements', () => {
+    expect(code).toContain('isinstance(node, _ast.stmt)');
+    expect(code).toContain('_start_lines.add(node.lineno)');
+  });
+
+  it('identifies continuation lines from multi-line simple statements', () => {
+    // Should handle Assign, Expr, Return, etc.
+    expect(code).toContain('_ast.Assign');
+    expect(code).toContain('_ast.Expr');
+    expect(code).toContain('_ast.Return');
+  });
+
+  it('skips continuation lines in the tracer line handler', () => {
+    expect(code).toContain('line in _continuation_lines');
+  });
+
   it('handles dict comprehensions with key-value element expressions', () => {
     expect(code).toContain("'DictComp'");
     expect(code).toContain("_ast.unparse(node.key)");
     expect(code).toContain("_ast.unparse(node.value)");
+  });
+
+  // ── Multi-type comprehension support ──
+
+  it('stores comp_type in _comp_info for container initialization', () => {
+    expect(code).toContain("'comp_type': type_name");
+  });
+
+  it('initializes partial_result with the correct container per comp type', () => {
+    // ListComp -> [], SetComp -> set(), DictComp -> {}
+    // The initialization must handle all three container types
+    expect(code).toContain("'comp_type'");
+    expect(code).toContain("comp.get('comp_type')");
+    // Check that the init line uses all three types
+    const initLine = code.slice(
+      code.indexOf("_active_comp['partial_result']"),
+      code.indexOf('\n', code.indexOf("_active_comp['partial_result']")),
+    );
+    expect(initLine).toContain('DictComp');
+    expect(initLine).toContain('SetComp');
+    expect(initLine).toContain('set()');
+  });
+
+  it('adds elements to set with .add() and dict with key assignment', () => {
+    expect(code).toContain('pr.add(elt_val)');
+    expect(code).toContain('pr[elt_val[0]] = elt_val[1]');
+    expect(code).toContain('pr.append(elt_val)');
+  });
+
+  it('handles empty partial_result correctly in _pop_comp_frame', () => {
+    // Empty containers are falsy in Python — must use "is not None" check
+    const popSection = code.slice(
+      code.indexOf('def _pop_comp_frame'),
+      code.indexOf('_call_stack.pop()'),
+    );
+    expect(popSection).toContain('if partial is not None:');
+    // Must NOT use "if partial:" which would skip empty sets/dicts
+    expect(popSection).not.toMatch(/if partial[^_ ]/);
+  });
+
+  // ── Back-to-back comprehension handling ──
+
+  it('pops comp frame when moving to a different line, not just non-comp lines', () => {
+    // The condition must check _active_comp's stored line vs current line,
+    // NOT whether the current line is a comp. This fixes back-to-back comps
+    // like: squares = [...]; evens = [...]
+    expect(code).toContain("_active_comp.get('_line') != line");
+    // Must NOT use the old broken condition that required current line to be non-comp
+    expect(code).not.toContain('_active_comp and not comp');
+  });
+
+  it('pops comp frame before entering a new one on a different line', () => {
+    // The pop must happen BEFORE the push for the new comp
+    const popCheck = code.indexOf("_active_comp.get('_line') != line");
+    const pushCheck = code.indexOf('comp and _active_comp is None');
+    expect(popCheck).toBeGreaterThan(-1);
+    expect(pushCheck).toBeGreaterThan(-1);
+    expect(popCheck).toBeLessThan(pushCheck);
+  });
+
+  // ── Phased comprehension snapshots ──
+
+  it('captures column ranges for comprehension sub-expressions in AST scan', () => {
+    expect(code).toContain("'iter_range'");
+    expect(code).toContain("'elt_range'");
+    expect(code).toContain("'filter_ranges'");
+    expect(code).toContain("'filter_texts'");
+  });
+
+  it('stores iteration clause column range from target to iter end', () => {
+    expect(code).toContain('gen.target.col_offset');
+    expect(code).toContain("getattr(gen.iter, 'end_col_offset'");
+  });
+
+  it('stores element expression column range', () => {
+    expect(code).toContain('node.elt.col_offset');
+    expect(code).toContain("getattr(node.elt, 'end_col_offset'");
+  });
+
+  it('stores filter expression column ranges and text', () => {
+    expect(code).toContain('if_clause.col_offset');
+    expect(code).toContain("getattr(if_clause, 'end_col_offset'");
+    expect(code).toContain('_ast.unparse(if_clause)');
+  });
+
+  it('emits phased snapshots: iteration, then filter, then element', () => {
+    // The comprehension block must emit multiple _capture_snapshot calls
+    // with column_range for each phase, then return early
+    const compBlock = code.slice(
+      code.indexOf("# Phase 1"),
+      code.indexOf("return _tracer", code.indexOf("# Phase 1")),
+    );
+    expect(compBlock).toContain('column_range=iter_range');
+    expect(compBlock).toContain('column_range=fr');
+    expect(compBlock).toContain('column_range=elt_range');
+  });
+
+  it('emits condition result for filter evaluation', () => {
+    const compBlock = code.slice(
+      code.indexOf("# Phase 2"),
+      code.indexOf("# Phase 3"),
+    );
+    expect(compBlock).toContain('"expression":');
+    expect(compBlock).toContain('"result":');
+    expect(compBlock).toContain('"line":');
+    expect(compBlock).toContain('condition=cond');
+  });
+
+  it('only emits element snapshot when all filters pass', () => {
+    const compBlock = code.slice(
+      code.indexOf("# Phase 3"),
+      code.indexOf("return _tracer", code.indexOf("# Phase 3")),
+    );
+    expect(compBlock).toContain('if passes_filter:');
+    expect(compBlock).toContain('column_range=elt_range');
+  });
+
+  // ── Snapshot columnRange and condition fields ──
+
+  it('_capture_snapshot accepts column_range and condition parameters', () => {
+    expect(code).toContain(
+      'def _capture_snapshot(line, current_locals, return_value=None, has_return=False, column_range=None, condition=None):',
+    );
+  });
+
+  it('adds columnRange to snapshot when column_range is provided', () => {
+    expect(code).toContain('"columnRange"');
+    expect(code).toContain('"startCol"');
+    expect(code).toContain('"endCol"');
+  });
+
+  it('adds condition to snapshot when condition is provided', () => {
+    expect(code).toContain('if condition:');
+    expect(code).toContain('snapshot["condition"] = condition');
+  });
+
+  // ── Partial result display ──
+
+  it('shows partial result in the comp frame with a generic "result" label', () => {
+    // The partial result should be inside the _is_comp check, with a generic
+    // label — NOT the assignment target name like "squares"
+    const compFrameSection = code.slice(
+      code.indexOf("frame_info.get(\"_is_comp\") and not has_return"),
+      code.indexOf("# Add return value display"),
+    );
+    expect(compFrameSection).toContain("_active_comp.get('partial_result')");
+    expect(compFrameSection).toContain('"result"');
+  });
+
+  it('does not inject synthetic partial result into the enclosing frame', () => {
+    // The old pattern of showing partial in the enclosing frame caused heap ID issues.
+    // The "not frame_info.get('_is_comp')" + partial_result pattern must NOT exist.
+    const lines = code.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes('not frame_info.get') && lines[i].includes('_is_comp')) {
+        // Check the next few lines don't reference partial_result
+        const nearby = lines.slice(i, i + 5).join('\n');
+        expect(nearby).not.toContain('partial_result');
+      }
+    }
+  });
+
+  // ── Heap ID cleanup for synthetic objects ──
+
+  it('cleans up synthetic partial list heap ID after comp return snapshot', () => {
+    // Prevents id() reuse contamination after the partial list is GC'd
+    const popSection = code.slice(
+      code.indexOf('def _pop_comp_frame'),
+      code.indexOf('def _tracer'),
+    );
+    expect(popSection).toContain('del _heap_map[id(partial)]');
+  });
+
+  it('does not bridge heap IDs between synthetic and real objects', () => {
+    // The old bridge (_heap_map[id(real_obj)] = _heap_map[id(partial)])
+    // caused multiple variables to share heap IDs after GC reuse
+    const popSection = code.slice(
+      code.indexOf('def _pop_comp_frame'),
+      code.indexOf('def _tracer'),
+    );
+    expect(popSection).not.toContain('_heap_map[id(real_obj)]');
+  });
+
+  // ── Enclosing frame locals sync ──
+
+  it('syncs enclosing frame locals during comprehension iterations', () => {
+    // The module frame needs up-to-date locals so previously-assigned
+    // variables (like squares) are visible during the next comprehension
+    const compBlock = code.slice(
+      code.indexOf("# If in a comprehension, emit phased"),
+      code.indexOf("return _tracer", code.indexOf("# Phase 1")),
+    );
+    expect(compBlock).toContain('_call_stack[-2]["locals"]');
+  });
+
+  it('syncs enclosing frame locals in _pop_comp_frame before return snapshot', () => {
+    const popSection = code.slice(
+      code.indexOf('def _pop_comp_frame'),
+      code.indexOf('_call_stack.pop()'),
+    );
+    expect(popSection).toContain('_call_stack[-2]["locals"]');
   });
 
   it('still skips tracer-internal frames', () => {
