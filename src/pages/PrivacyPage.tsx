@@ -10,7 +10,7 @@ export default function PrivacyPage() {
       <AppNavbar />
       <div className="container py-5" style={{ maxWidth: '760px' }}>
         <h1 className="fw-bold mb-1">Privacy Policy</h1>
-        <p className="text-muted mb-4" style={{ fontSize: '0.875rem' }}>Last updated: March 19, 2026</p>
+        <p className="text-muted mb-4" style={{ fontSize: '0.875rem' }}>Last updated: March 26, 2026</p>
 
         <section className="mb-4">
           <div
@@ -22,8 +22,9 @@ export default function PrivacyPage() {
               <div className="fw-semibold mb-1">The short version</div>
               <div className="text-muted" style={{ fontSize: '0.92rem' }}>
                 <span style={{ color: BRAND, fontWeight: 600 }}>{branding.brandPrefix}</span>{branding.brandSuffix} runs entirely in your
-                browser. Your code never leaves your device, we don't require an account, and we
-                don't sell or share any data.
+                browser. Your code never leaves your device and we don't require an account.
+                Anonymous usage data may be collected for research purposes, but we never sell or
+                share personally identifiable information.
               </div>
             </div>
           </div>
@@ -57,6 +58,11 @@ export default function PrivacyPage() {
                 icon: '⬡',
                 label: 'Analytics',
                 desc: `${branding.appName} may use a third-party analytics service to collect anonymous, aggregate usage data such as page views and general traffic patterns. No personally identifiable information is intentionally collected. You can opt out via your browser's privacy settings or an ad blocker.`,
+              },
+              {
+                icon: '◎',
+                label: 'Research',
+                desc: `Anonymous, aggregate usage data may be collected and used for academic research purposes, such as studying how students learn programming concepts. This data contains no personally identifiable information and may appear in published research findings in aggregate form only.`,
               },
             ].map(({ icon, label, desc }) => (
               <div key={label} className="d-flex gap-3 align-items-start">

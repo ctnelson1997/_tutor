@@ -227,4 +227,4 @@ GitHub Pages serves `docs/` at [jstutor.org](https://jstutor.org). Non-JS output
 
 ## License
 
-MIT — Copyright 2026 [Cole Nelson](https://coletnelson.us), University of Wisconsin–Madison ([cs.wisc.edu](https://cs.wisc.edu)).
+GPL-3.0 — Copyright 2026 [Cole Nelson](https://coletnelson.us), University of Wisconsin–Madison ([cs.wisc.edu](https://cs.wisc.edu)). See [LICENSE](LICENSE) for details.

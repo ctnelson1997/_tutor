@@ -10,7 +10,7 @@ export default function AppFooter() {
         University of Wisconsin–Madison
       </a>
       <span className="app-footer-sep" aria-hidden="true">·</span>
-      <span>MIT License</span>
+      <span>GPL-3.0 License</span>
       <span className="app-footer-sep" aria-hidden="true">·</span>
       <span>v0.0.1</span>
     </footer>

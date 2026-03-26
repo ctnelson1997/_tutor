@@ -133,6 +133,16 @@ export default function AboutPage() {
               { href: 'https://zustand.docs.pmnd.rs', label: 'Zustand', desc: 'state management' },
               { href: 'https://reactrouter.com', label: 'React Router', desc: 'client-side routing' },
               { href: 'https://github.com/pieroxy/lz-string', label: 'lz-string', desc: 'URL compression' },
+              ...(branding.languageId === 'js' ? [
+                { href: 'https://github.com/acornjs/acorn', label: 'Acorn', desc: 'JavaScript parser' },
+                { href: 'https://github.com/nicolo-ribaudo/astring', label: 'astring', desc: 'AST code generator' },
+              ] : []),
+              ...(branding.languageId === 'py' ? [
+                { href: 'https://pyodide.org', label: 'Pyodide', desc: 'CPython in WebAssembly' },
+              ] : []),
+              ...(branding.languageId === 'java' ? [
+                { href: 'https://github.com/jhipster/prettier-java/tree/main/packages/java-parser', label: 'java-parser', desc: 'Java CST parser' },
+              ] : []),
             ].map(({ href, label, desc }) => (
               <a
                 key={label}
