@@ -90,6 +90,51 @@ describe('instrument', () => {
     expect(out).toContain('return');
   });
 
+  // ── Pre-call capture ──
+
+  it('inserts a pre-call capture before statements containing function calls', () => {
+    const out = instrument('function foo() { return 1; }\nlet x = foo();');
+    const lines = out.split('\n');
+    const letLine = lines.findIndex(l => l.includes('let x'));
+    // There should be a __capture__ on a line before the let statement
+    const before = lines.slice(0, letLine);
+    const preCallCaptures = before.filter(l => l.includes('__capture__'));
+    // At least 2: initial capture + pre-call capture
+    expect(preCallCaptures.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('inserts a pre-call capture for bare function call statements', () => {
+    const out = instrument('function foo() { return 1; }\nfoo();');
+    const lines = out.split('\n');
+    const callLine = lines.findIndex(l => l.match(/^foo\(\)/));
+    // There should be a capture before foo() — either a dedicated pre-call
+    // or the initial capture (which doubles as the pre-call when foo() is
+    // the first executable statement after function declarations).
+    const before = lines.slice(0, callLine);
+    const hasCaptureBefore = before.some(l => l.includes('__capture__'));
+    expect(hasCaptureBefore).toBe(true);
+  });
+
+  it('does not insert pre-call capture for statements without calls', () => {
+    const out = instrument('let x = 1;\nlet y = 2;');
+    const captures = (out.match(/__capture__/g) || []).length;
+    // initial capture + 1 per statement = 3, no pre-call captures
+    expect(captures).toBe(3);
+  });
+
+  it('does not insert pre-call capture for function definitions containing calls', () => {
+    // Arrow function body that contains a call — should NOT trigger pre-call capture
+    // because the call is inside a function definition, not at the statement level
+    const out = instrument('let f = () => { return foo(); };');
+    const lines = out.split('\n');
+    const letLine = lines.findIndex(l => l.includes('let f'));
+    // Only the initial capture should precede the let statement (no pre-call)
+    const before = lines.slice(0, letLine);
+    const capturesBefore = before.filter(l => l.includes('__capture__'));
+    // Just the initial capture
+    expect(capturesBefore.length).toBe(1);
+  });
+
   // ── Condition wrapping ──
 
   it('wraps if-statement test with __condition__', () => {
@@ -137,6 +182,28 @@ describe('instrument', () => {
     // Should not throw during instrumentation
     expect(out).toContain('__capture__');
     expect(out).toContain('__pushFrame__');
+  });
+
+  it('skips capture after top-level function declarations', () => {
+    const out = instrument('function foo() { return 1; }\nlet x = foo();');
+    // Between the function declaration and `let x`, the only capture allowed
+    // is the pre-call capture for `let x = foo()` (which contains a call).
+    // There should be NO capture for the function declaration itself.
+    const lines = out.split('\n');
+    const funcEnd = lines.findIndex(l => l.trim() === '}');
+    const letLine = lines.findIndex(l => l.includes('let x'));
+    const between = lines.slice(funcEnd + 1, letLine);
+    const capturesBetween = between.filter(l => l.includes('__capture__'));
+    // At most 1 capture (the pre-call capture for the let statement's foo() call)
+    expect(capturesBetween.length).toBeLessThanOrEqual(1);
+  });
+
+  it('sets initial capture line to first non-function-declaration line', () => {
+    const out = instrument('function foo() { return 1; }\nfunction bar() { return 2; }\nlet x = 1;');
+    // The initial capture (first __capture__ call) should use line 3 (the let statement)
+    const match = out.match(/__capture__\((\d+)/);
+    expect(match).not.toBeNull();
+    expect(match![1]).toBe('3');
   });
 
   // ── Block scope ──

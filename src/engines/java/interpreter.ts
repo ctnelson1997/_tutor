@@ -1601,7 +1601,8 @@ export class JavaInterpreter {
     if (parts.length === 1) {
       const method = this.methods.get(methodName);
       if (method) {
-        return this.callMethod(method, args);
+        const callLine = getLine(primary);
+        return this.callMethod(method, args, callLine);
       }
     }
 
@@ -1616,7 +1617,7 @@ export class JavaInterpreter {
     throw new InterpreterError(`Unknown method: ${parts.join('.')}()`, 0);
   }
 
-  private callMethod(method: MethodDef, args: JavaValue[]): JavaValue {
+  private callMethod(method: MethodDef, args: JavaValue[], callSiteLine?: number): JavaValue {
     const methodScope = createScope(this.staticFields);
 
     // Bind parameters
@@ -1624,6 +1625,11 @@ export class JavaInterpreter {
       const param = method.params[i];
       const arg = i < args.length ? args[i] : defaultValue(param.type);
       setVariable(methodScope, param.name, arg, param.type);
+    }
+
+    // Pre-call snapshot: show the call site line before entering the method
+    if (callSiteLine) {
+      this.emitSnapshot(callSiteLine);
     }
 
     this.callStack.push({ name: method.name, scope: methodScope, currentScope: methodScope });

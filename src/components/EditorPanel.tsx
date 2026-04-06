@@ -76,6 +76,7 @@ class CurrentArrowMarker extends GutterMarker {
     const el = document.createElement('span');
     el.className = 'cm-step-arrow cm-step-arrow-current';
     el.textContent = '▶';
+    el.title = 'About to execute';
     return el;
   }
 }
@@ -84,7 +85,8 @@ class PrevArrowMarker extends GutterMarker {
   toDOM() {
     const el = document.createElement('span');
     el.className = 'cm-step-arrow cm-step-arrow-prev';
-    el.textContent = '▶';
+    el.textContent = '✓';
+    el.title = 'Just executed';
     return el;
   }
 }

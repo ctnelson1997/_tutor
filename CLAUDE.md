@@ -29,6 +29,22 @@ npm run lint         # ESLint
 
 Build targets use Vite's `--mode` flag, which loads the corresponding `.env.<mode>` file (`.env.js`, `.env.py`). The env file sets `VITE_LANGUAGE`, `VITE_APP_NAME`, branding colors, domain, etc.
 
+### Quick Instrumenter Testing
+
+To inspect instrumented output without running the full test suite, use `npx tsx -e` with a direct import. This is the fastest way to verify instrumentation changes:
+
+```bash
+npx tsx -e "import { instrument } from './src/engines/js/instrumenter'; console.log(instrument('let x = 1;\nconsole.log(x);'));"
+```
+
+- **Import path**: `'./src/engines/js/instrumenter'` (no `.ts` extension, relative from project root)
+- **Use single quotes** inside the JS source string passed to `instrument()`, or escape double quotes
+- **The output is the full instrumented JS source** — look for `__capture__`, `__pushFrame__`, `__popFrame__`, `__condition__`, and `__loopCount` calls
+- To check specific details, filter the output:
+  ```bash
+  npx tsx -e "import { instrument } from './src/engines/js/instrumenter'; const out = instrument('function foo() { return 1; }\nlet x = foo();'); const match = out.match(/__capture__\((\d+)/); console.log('first capture line:', match[1]);"
+  ```
+
 ## Architecture
 
 ```
@@ -158,6 +174,7 @@ Note: In test mode, `VITE_LANGUAGE` is unset so branding defaults to JS. The Pyt
 - **TDZ-aware instrumentation** — `let`/`const` tracked incrementally; `var`/`function` hoisted
 - **Block scopes** — Loops with `let`/`const` use `isBlockScope` flag, rendered nested inside parent frame
 - **Condition tracking** — `__condition__()` wraps if/else-if tests, emits snapshots with `condition` field
+- **Pre-call capture** — Statements containing function calls get a snapshot *before* the call executes, so the line indicator pauses on the call site before stepping into the function body
 - **Value change animation** — `diffSnapshots.ts` compares consecutive snapshots, applies `value-changed` CSS class
 - **Snapshot limit**: 5000 per execution, worker killed after 10 seconds
 - **Security**: shared links show warning interstitial, `eval` blocked, static analysis flags suspicious APIs

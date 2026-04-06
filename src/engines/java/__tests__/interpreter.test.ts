@@ -829,6 +829,26 @@ describe('Java Interpreter', () => {
       expect(stdout).toContain('42');
     });
 
+    it('emits a pre-call snapshot on the call site line before entering the method', () => {
+      const result = run(`public class Main {
+        public static int add(int a, int b) {
+          return a + b;
+        }
+        public static void main(String[] args) {
+          int x = 1;
+          int y = add(2, 3);
+        }
+      }`);
+      expect(result.error).toBeUndefined();
+      // Find snapshots on the call line (line 7: int y = add(2, 3))
+      const callLineSnaps = result.snapshots.filter(s => s.line === 7);
+      expect(callLineSnaps.length).toBeGreaterThanOrEqual(1);
+      // The first snapshot on line 7 should be the pre-call (only main frame, no add frame)
+      const preCall = callLineSnaps[0];
+      expect(preCall.callStack.length).toBe(1); // only main frame
+      expect(preCall.callStack[0].name).toBe('main');
+    });
+
     it('tracks correct call stack depth during recursion', () => {
       const result = run(`public class Main {
         public static int countdown(int n) {

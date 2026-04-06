@@ -141,27 +141,29 @@ html, body, #root {
   line-height: 1;
 }
 
+/* About to execute — green arrow */
 .cm-step-arrow-current {
-  color: rgba(180, 140, 0, 0.9);
+  color: rgba(34, 139, 34, 0.9);
 }
 
+/* Just executed — muted gray checkmark */
 .cm-step-arrow-prev {
-  color: rgba(180, 140, 0, 0.35);
+  color: rgba(120, 120, 120, 0.6);
 }
 
-/* Previous line highlight (lighter) */
+/* Just executed line highlight (subtle gray) */
 .cm-previous-step-line {
-  background-color: rgba(255, 255, 100, 0.1) !important;
+  background-color: rgba(180, 180, 180, 0.12) !important;
 }
 
-/* Current line highlight in editor */
+/* About to execute line highlight (light green) */
 .cm-current-step-line {
-  background-color: rgba(255, 255, 100, 0.25) !important;
+  background-color: rgba(34, 139, 34, 0.12) !important;
 }
 
 /* Sub-line highlight for specific expressions (e.g. for-loop parts) */
 .cm-current-step-highlight {
-  background-color: rgba(255, 220, 50, 0.4);
+  background-color: rgba(34, 139, 34, 0.22);
   border-radius: 2px;
 }
 

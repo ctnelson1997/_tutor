@@ -22,6 +22,7 @@ At each step the visualizer shows:
 - **Condition badges** — `true`/`false` pills annotated directly in the editor for `if`/`else if` and loop conditions
 - **Value change detection** — variables that changed between steps flash yellow so you can spot what just updated
 - **Sub-line highlighting** — for-loop init, condition, and update clauses are individually highlighted as they execute
+- **Function call preview** — the line indicator pauses on the call site before stepping into the function body, so you can see the flow from caller to callee
 - **Share & embed** — compress your code into a URL to share, or generate an embeddable `<iframe>` snippet (view options like "hide functions" are preserved in the link)
 
 Everything runs in your browser. No server, no account, no data collection.

@@ -190,6 +190,41 @@ if (x > 10) {
     expect(condSnaps[0].condition?.result).toBe(false);
   });
 
+  // ── Pre-call capture ──
+
+  it('emits a snapshot on the call line before entering the function', () => {
+    const snaps = runPipeline(`function foo() { return 1; }
+let x = foo();`);
+
+    // Find the first snapshot on line 2 (the call line)
+    const preCall = snaps.find(s => s.line === 2);
+    expect(preCall).toBeDefined();
+
+    // The pre-call snapshot should have only the Global frame (not yet inside foo)
+    expect(preCall!.callStack.length).toBe(1);
+    expect(preCall!.callStack[0].name).toBe('Global');
+
+    // There should also be snapshots inside foo (line 1, with foo frame)
+    const insideFoo = snaps.find(s =>
+      s.callStack.length > 1 && s.callStack.some(f => f.name === 'foo')
+    );
+    expect(insideFoo).toBeDefined();
+
+    // The pre-call snapshot should come before the inside-foo snapshot
+    expect(preCall!.step).toBeLessThan(insideFoo!.step);
+  });
+
+  it('emits pre-call snapshot for bare function call statements', () => {
+    const snaps = runPipeline(`function foo() { return 1; }
+foo();`);
+
+    // First snapshot on line 2 should be before entering foo
+    const line2Snaps = snaps.filter(s => s.line === 2);
+    expect(line2Snaps.length).toBeGreaterThanOrEqual(1);
+    // The first one should have only Global frame
+    expect(line2Snaps[0].callStack.length).toBe(1);
+  });
+
   // ── Recursion ──
 
   it('captures recursive call stack growth', () => {

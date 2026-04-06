@@ -347,14 +347,17 @@ function instrumentBlock(
     }
   }
 
-  // If top-level, add an initial capture with only the inherited scope vars
+  // If top-level, add an initial capture with only the inherited scope vars.
+  // Use the first non-FunctionDeclaration line so the indicator starts at real execution.
   if (isTopLevel && body.length > 0) {
-    const firstLine = body[0]?.loc?.start?.line ?? 1;
+    const firstExec = body.find(s => s.type !== 'FunctionDeclaration');
+    const firstLine = (firstExec ?? body[0])?.loc?.start?.line ?? 1;
     body.unshift(buildCaptureExpression(declaredSoFar, firstLine));
   }
 
   // We iterate and insert new statements. Use index tracking.
   let i = isTopLevel ? 1 : 0; // skip the initial capture we just inserted
+  let isFirstStmt = isTopLevel; // skip redundant pre-call capture for first stmt (initial capture covers it)
   while (i < body.length) {
     const stmt = body[i];
     const line = stmt.loc?.start?.line ?? 0;
@@ -406,6 +409,27 @@ function instrumentBlock(
       }
     }
 
+    // Pre-call capture: if the statement contains a function call,
+    // emit a snapshot on this line BEFORE the call executes so the
+    // user sees the current line move to the call site before entering
+    // the function body. Skip return/throw (they already get pre-captures)
+    // and skip the first statement in a top-level block (the initial capture
+    // already covers it).
+    const wasFirstStmt = isFirstStmt;
+    if (!isFirstStmt
+        && stmt.type !== 'ReturnStatement' && stmt.type !== 'ThrowStatement'
+        && !stmt._isBlockScopeInit
+        && containsCallExpression(stmt)) {
+      body.splice(i, 0, buildCaptureExpression(declaredSoFar, line));
+      i += 1;
+    }
+    // Don't consume isFirstStmt for top-level FunctionDeclarations — they
+    // produce no snapshots, so the initial capture still covers the first
+    // executable statement and its pre-call capture would be redundant.
+    if (!(isTopLevel && stmt.type === 'FunctionDeclaration')) {
+      isFirstStmt = false;
+    }
+
     // Before recursing, collect names this statement declares so that
     // the capture AFTER this statement can include them.
     // Skip block-scope-init declarations (extracted for-loop let/const vars) —
@@ -448,12 +472,15 @@ function instrumentBlock(
       }
     }
 
-    // For return/throw, insert capture BEFORE (capture after is dead code)
-    if (stmt.type === 'ReturnStatement' || stmt.type === 'ThrowStatement') {
+    // For return/throw, insert capture BEFORE (capture after is dead code).
+    // Skip if this is the first statement in a top-level block — the initial
+    // capture already covers it (same logic as pre-call capture above).
+    if ((stmt.type === 'ReturnStatement' || stmt.type === 'ThrowStatement') && !wasFirstStmt) {
       const capture = buildCaptureExpression(declaredSoFar, line);
       body.splice(i, 0, capture);
       i += 2; // skip past inserted capture + the statement
-    } else if (shouldCaptureAfter(stmt) && (!stmt._isBlockScopeInit || stmt._forColumnRange)) {
+    } else if (shouldCaptureAfter(stmt) && (!stmt._isBlockScopeInit || stmt._forColumnRange)
+      && !(isTopLevel && stmt.type === 'FunctionDeclaration')) {
       const colRange = stmt._forColumnRange ?? undefined;
       const capture = buildCaptureExpression(declaredSoFar, line, colRange);
       body.splice(i + 1, 0, capture);
@@ -461,6 +488,59 @@ function instrumentBlock(
     } else {
       i += 1;
     }
+  }
+}
+
+/**
+ * Check if a statement or expression contains a function call.
+ * Used to insert a pre-call capture so the user sees the current line
+ * on the call site before stepping into the function body.
+ * Does NOT recurse into nested function definitions (they define calls,
+ * not execute them).
+ */
+function containsCallExpression(node: AnyNode): boolean {
+  if (!node) return false;
+  switch (node.type) {
+    case 'CallExpression':
+    case 'NewExpression':
+    case 'TaggedTemplateExpression':
+      return true;
+    case 'VariableDeclaration':
+      return node.declarations.some((d: AnyNode) => d.init && containsCallExpression(d.init));
+    case 'ExpressionStatement':
+      return containsCallExpression(node.expression);
+    case 'AssignmentExpression':
+      return containsCallExpression(node.right);
+    case 'BinaryExpression':
+    case 'LogicalExpression':
+      return containsCallExpression(node.left) || containsCallExpression(node.right);
+    case 'UnaryExpression':
+    case 'UpdateExpression':
+    case 'SpreadElement':
+      return containsCallExpression(node.argument);
+    case 'ConditionalExpression':
+      return containsCallExpression(node.test) ||
+             containsCallExpression(node.consequent) ||
+             containsCallExpression(node.alternate);
+    case 'MemberExpression':
+      return containsCallExpression(node.object) ||
+             (node.computed && containsCallExpression(node.property));
+    case 'SequenceExpression':
+      return node.expressions.some((e: AnyNode) => containsCallExpression(e));
+    case 'TemplateLiteral':
+      return node.expressions.some((e: AnyNode) => containsCallExpression(e));
+    case 'ArrayExpression':
+      return node.elements.some((e: AnyNode) => e && containsCallExpression(e));
+    case 'ObjectExpression':
+      return node.properties.some((p: AnyNode) =>
+        p.type === 'SpreadElement' ? containsCallExpression(p.argument) : containsCallExpression(p.value));
+    // Don't recurse into function bodies — they define, not execute
+    case 'FunctionExpression':
+    case 'ArrowFunctionExpression':
+    case 'FunctionDeclaration':
+      return false;
+    default:
+      return false;
   }
 }
 
