@@ -319,7 +319,7 @@ export class JavaInterpreter {
   }
 
   private initStaticFields(): void {
-    for (const [_name, entry] of this.staticFields.variables) {
+    for (const entry of this.staticFields.variables.values()) {
       const asAny = entry as unknown as { initializer?: CstNode };
       if (asAny.initializer) {
         const val = this.evalVariableInitializer(asAny.initializer, entry.type, this.staticFields);
@@ -943,6 +943,7 @@ export class JavaInterpreter {
     const line = token(doWhileStmt, 'Do')?.startLine || getLine(doWhileStmt);
     const doScope = createScope(scope, 'do-while');
     let iterations = 0;
+    let shouldContinue = true;
 
     do {
       if (iterations++ > MAX_LOOP_ITERATIONS) {
@@ -955,8 +956,7 @@ export class JavaInterpreter {
           this.executeStatement(bodyStmt, doScope);
         } catch (e) {
           if (e instanceof BreakSignal) break;
-          if (e instanceof ContinueSignal) { /* fall through to condition check */ }
-          else throw e;
+          if (!(e instanceof ContinueSignal)) throw e;
         }
       }
 
@@ -964,8 +964,8 @@ export class JavaInterpreter {
       const condExpr = child(doWhileStmt, 'expression')!;
       const condValue = this.evalExpression(condExpr, scope);
       this.emitSnapshot(line);
-      if (!javaValueToBoolean(condValue)) break;
-    } while (true);
+      shouldContinue = javaValueToBoolean(condValue);
+    } while (shouldContinue);
     setCurrentScope(this.callStack, scope);
   }
 
@@ -1081,7 +1081,7 @@ export class JavaInterpreter {
   private evalBinaryExpression(binExpr: CstNode, scope: Scope): JavaValue {
     // binaryExpression contains interleaved unaryExpression and operator tokens
     const allChildren: (CstNode | CstToken)[] = [];
-    for (const [_key, items] of Object.entries(binExpr.children)) {
+    for (const items of Object.values(binExpr.children)) {
       for (const item of items) allChildren.push(item);
     }
 
@@ -1386,7 +1386,9 @@ export class JavaInterpreter {
       const fqn = child(prefix, 'fqnOrRefType');
       if (fqn) {
         const name = this.extractFqnName(fqn);
-        updateVariable(scope, name, newVal) || updateVariable(this.staticFields, name, newVal);
+        if (!updateVariable(scope, name, newVal)) {
+          updateVariable(this.staticFields, name, newVal);
+        }
       }
     }
   }
@@ -1402,7 +1404,7 @@ export class JavaInterpreter {
 
     // Apply suffixes (method calls, array access, field access)
     for (let i = 0; i < suffixes.length; i++) {
-      val = this.evalPrimarySuffix(val, suffixes[i], scope, primary, i);
+      val = this.evalPrimarySuffix(val, suffixes[i], scope, primary);
     }
 
     return val;
@@ -1643,7 +1645,6 @@ export class JavaInterpreter {
     suffix: CstNode,
     scope: Scope,
     primary: CstNode,
-    _suffixIndex: number,
   ): JavaValue {
     // Method invocation
     const methodSuffix = child(suffix, 'methodInvocationSuffix');
