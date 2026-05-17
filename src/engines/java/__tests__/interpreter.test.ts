@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseJava } from '../parser';
 import { JavaInterpreter } from '../interpreter';
+import type { ExecutionSnapshot, HeapObject, RuntimeValue } from '../../../types/snapshot';
 
 function run(source: string) {
   try {
@@ -31,6 +32,22 @@ function getVars(source: string): Record<string, unknown> {
     vars[v.name] = v.value.type === 'ref' ? `ref:${v.value.heapId}` : v.value.value;
   }
   return vars;
+}
+
+function getLastSnapshot(source: string): ExecutionSnapshot {
+  const result = run(source);
+  expect(result.error).toBeUndefined();
+  const last = result.snapshots[result.snapshots.length - 1];
+  expect(last).toBeDefined();
+  return last!;
+}
+
+function findHeapObject(snapshot: ExecutionSnapshot, label: string): HeapObject | undefined {
+  return snapshot.heap.find(obj => obj.label === label);
+}
+
+function getPropertyValue(obj: HeapObject, key: string): RuntimeValue | undefined {
+  return obj.properties.find(prop => prop.key === key)?.value;
 }
 
 describe('Java Interpreter', () => {
@@ -1085,6 +1102,62 @@ describe('Java Interpreter', () => {
         }
       }`);
       expect(stdout).toContain('3');
+    });
+  });
+
+  describe('Java OOP instance objects', () => {
+    it('initializes instance fields with Java default values', () => {
+      const snapshot = getLastSnapshot(`public class Main {
+        int age;
+
+        public static void main(String[] args) {
+          Main m = new Main();
+          System.out.println(m.age);
+        }
+      }`);
+      const mainObject = findHeapObject(snapshot, 'Main');
+      expect(mainObject).toBeDefined();
+      expect(getPropertyValue(mainObject!, 'age')).toEqual({ type: 'number', value: 0 });
+      expect(snapshot.stdout).toContain('0');
+    });
+
+    it('runs constructors to initialize instance fields', () => {
+      const snapshot = getLastSnapshot(`public class Main {
+        int age;
+
+        public Main(int a) {
+          this.age = a;
+        }
+
+        public static void main(String[] args) {
+          Main m = new Main(5);
+          System.out.println(m.age);
+        }
+      }`);
+      const mainObject = findHeapObject(snapshot, 'Main');
+      expect(mainObject).toBeDefined();
+      expect(snapshot.stdout).toContain('5');
+      expect(getPropertyValue(mainObject!, 'age')).toEqual({ type: 'number', value: 5 });
+    });
+
+    it('dispatches instance methods with a bound this value', () => {
+      const snapshot = getLastSnapshot(`public class Main {
+        int age;
+
+        public Main(int a) {
+          this.age = a;
+        }
+
+        public void printAge() {
+          System.out.println(this.age);
+        }
+
+        public static void main(String[] args) {
+          Main m = new Main(5);
+          m.printAge();
+        }
+      }`);
+      expect(snapshot.stdout).toContain('5');
     });
   });
 
