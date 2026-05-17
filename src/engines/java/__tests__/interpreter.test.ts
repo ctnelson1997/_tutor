@@ -955,6 +955,32 @@ describe('Java Interpreter', () => {
       expect(stdout).toEqual(['10', '20', '30']);
     });
 
+    it('keeps local array initializers working with string concatenation', () => {
+      const stdout = getStdout(`public class Main {
+        public static void main(String[] args) {
+          int[] nums = {10, 20, 30, 40, 50};
+          int sum = 0;
+          for (int i = 0; i < nums.length; i++) {
+            sum += nums[i];
+          }
+          System.out.println("Sum: " + sum);
+        }
+      }`);
+      expect(stdout).toEqual(['Sum: 150']);
+    });
+
+    it('handles new array initializers and primitive casts', () => {
+      const stdout = getStdout(`public class Main {
+        public static void main(String[] args) {
+          long[] q = new long[]{40, 5};
+          int h = (int) q[0];
+          int idx = (int) q[1];
+          System.out.println(h + idx);
+        }
+      }`);
+      expect(stdout).toEqual(['45']);
+    });
+
     it('passes arrays to methods', () => {
       const stdout = getStdout(`public class Main {
         public static int sum(int[] arr) {
@@ -1223,6 +1249,56 @@ describe('Java Interpreter', () => {
       }`);
       expect(stdout).toContain('7');
     });
+
+    it('resolves unqualified instance fields inside constructors and methods', () => {
+      const stdout = getStdout(`public class Main {
+        private static class Box {
+          private int n;
+          private int[] data;
+
+          public Box(int[] arr) {
+            this.n = arr.length;
+            this.data = new int[n * 2];
+            init(arr);
+          }
+
+          private void init(int[] arr) {
+            data[0] = arr[0];
+          }
+
+          public int score() {
+            return data[0] + n;
+          }
+        }
+
+        public static void main(String[] args) {
+          int[] arr = new int[]{3, 4};
+          Box box = new Box(arr);
+          System.out.println(box.score());
+        }
+      }`);
+      expect(stdout).toContain('5');
+    });
+
+    it('resolves overloaded instance methods by argument count', () => {
+      const stdout = getStdout(`public class Main {
+        private static class Picker {
+          public int pick(int value) {
+            return pick(value, 2);
+          }
+
+          private int pick(int value, int factor) {
+            return value * factor;
+          }
+        }
+
+        public static void main(String[] args) {
+          Picker picker = new Picker();
+          System.out.println(picker.pick(21));
+        }
+      }`);
+      expect(stdout).toEqual(['42']);
+    });
   });
 
   describe('Math Methods', () => {
@@ -1232,7 +1308,7 @@ describe('Java Interpreter', () => {
           System.out.println(Math.abs(-5));
         }
       }`);
-      expect(stdout[0]).toBe('5.0');
+      expect(stdout[0]).toBe('5');
     });
 
     it('handles Math.max and Math.min', () => {
@@ -1242,8 +1318,18 @@ describe('Java Interpreter', () => {
           System.out.println(Math.min(3, 7));
         }
       }`);
-      expect(stdout[0]).toBe('7.0');
-      expect(stdout[1]).toBe('3.0');
+      expect(stdout[0]).toBe('7');
+      expect(stdout[1]).toBe('3');
+    });
+
+    it('handles numeric wrapper constants', () => {
+      const stdout = getStdout(`public class Main {
+        public static void main(String[] args) {
+          System.out.println(Integer.MAX_VALUE > 40);
+          System.out.println(Long.MIN_VALUE < -1);
+        }
+      }`);
+      expect(stdout).toEqual(['true', 'true']);
     });
 
     it('handles Math.pow and Math.sqrt', () => {
