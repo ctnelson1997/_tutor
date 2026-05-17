@@ -123,14 +123,21 @@ export const examples: CodeExample[] = [
     category: 'OOP',
     language: 'java',
     code: `public class Main {
-  static int age;
-  static String name;
+  int age;
+  String name;
+
+  public Main(String name, int age) {
+    this.name = name;
+    this.age = age;
+  }
+
+  public void printInfo() {
+    System.out.println(this.name + " is " + this.age);
+  }
 
   public static void main(String[] args) {
-    name = "Rex";
-    age = 5;
-    String msg = name + " is " + age;
-    System.out.println(msg);
+    Main m = new Main("Rex", 5);
+    m.printInfo();
   }
 }`,
   },

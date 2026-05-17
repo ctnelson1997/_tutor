@@ -183,6 +183,8 @@ vite.config.ts                  # Build config — mode-based outDir + language 
 
 **Java engine: CST interpreter** — Java source is parsed into a Concrete Syntax Tree using java-parser (Chevrotain-based), then interpreted directly. Supports Java primitives, strings, arrays, custom object allocation with constructors, readable/writable instance fields, instance methods, static methods, recursion, and standard control flow. Runs in disposable Web Workers like the JS engine.
 
+The Java engine is a teaching-oriented subset, not a full JVM. It does not currently support inheritance, interfaces, access control, overloaded constructor/method resolution beyond simple arity matching, generics, exceptions, packages, or multi-class programs.
+
 **TDZ-aware instrumentation** — `let`/`const` declarations are tracked incrementally so the visualizer never reads variables before they are initialized.
 
 **Block scopes rendered inline** — `for`, `while`, and `do...while` loop bodies with `let`/`const` appear as nested sections inside their parent frame card rather than as separate call-stack entries.
