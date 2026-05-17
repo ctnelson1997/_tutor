@@ -1178,6 +1178,35 @@ describe('Java Interpreter', () => {
       }`);
       expect(snapshot.stdout).toContain('5');
     });
+
+    it('supports a simple custom object with constructor and instance method', () => {
+      const snapshot = getLastSnapshot(`public class MSG {
+        int age;
+        String name;
+
+        public MSG(String name, int age) {
+          this.name = name;
+          this.age = age;
+        }
+
+        public void printInfo() {
+          System.out.println(this.name + " is " + this.age);
+        }
+
+        public static void main(String[] args) {
+          String n = "Rex";
+          int a = 5;
+          MSG m = new MSG(n, a);
+          m.printInfo();
+          System.out.println(m.age);
+        }
+      }`);
+      const msgObject = findHeapObject(snapshot, 'MSG');
+      expect(msgObject).toBeDefined();
+      expect(snapshot.stdout).toEqual(['Rex is 5', '5']);
+      expect(getPropertyValue(msgObject!, 'name')).toEqual({ type: 'string', value: 'Rex' });
+      expect(getPropertyValue(msgObject!, 'age')).toEqual({ type: 'number', value: 5 });
+    });
   });
 
   describe('Math Methods', () => {

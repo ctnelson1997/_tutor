@@ -154,7 +154,7 @@ export class JavaInterpreter {
       const normalClass = child(classDecl, 'normalClassDeclaration');
       if (!normalClass) throw new InterpreterError('Only class declarations are supported', 0);
 
-      this.className = token(normalClass, 'Identifier')?.image || 'Main';
+      this.className = this.extractClassName(normalClass);
 
       const classBody = child(normalClass, 'classBody');
       if (!classBody) throw new InterpreterError('Empty class body', 0);
@@ -234,6 +234,11 @@ export class JavaInterpreter {
     const isStatic = modifiers.some(m => has(m, 'Static'));
 
     this.methods.set(methodName, { name: methodName, returnType, params, body, isStatic });
+  }
+
+  private extractClassName(normalClass: CstNode): string {
+    const typeIdentifier = child(normalClass, 'typeIdentifier');
+    return token(typeIdentifier || normalClass, 'Identifier')?.image || 'Main';
   }
 
   private registerConstructor(className: string, ctorDecl: CstNode): void {
@@ -1392,15 +1397,37 @@ export class JavaInterpreter {
 
   private evalPrimary(primary: CstNode, scope: Scope): JavaValue {
     const prefix = child(primary, 'primaryPrefix')!;
-    let val = this.evalPrimaryPrefix(prefix, scope);
+    const suffixes = children(primary, 'primarySuffix');
+    let val = this.evalPrimaryMethodReceiver(prefix, suffixes, scope) || this.evalPrimaryPrefix(prefix, scope);
 
     // Apply suffixes (method calls, array access, field access)
-    const suffixes = children(primary, 'primarySuffix');
     for (let i = 0; i < suffixes.length; i++) {
       val = this.evalPrimarySuffix(val, suffixes[i], scope, primary, i);
     }
 
     return val;
+  }
+
+  private evalPrimaryMethodReceiver(
+    prefix: CstNode,
+    suffixes: CstNode[],
+    scope: Scope,
+  ): JavaValue | undefined {
+    if (!suffixes.some(suffix => child(suffix, 'methodInvocationSuffix'))) {
+      return undefined;
+    }
+
+    const fqn = child(prefix, 'fqnOrRefType');
+    if (!fqn) return undefined;
+    const parts = this.extractFqnParts(fqn);
+    if (parts.length !== 2) return undefined;
+
+    try {
+      const receiver = this.resolveVariable(parts[0], scope);
+      return receiver.kind === 'objectRef' ? receiver : undefined;
+    } catch {
+      return undefined;
+    }
   }
 
   private evalPrimaryPrefix(prefix: CstNode, scope: Scope): JavaValue {
@@ -1673,26 +1700,7 @@ export class JavaInterpreter {
     // Get the method name from the fqnOrRefType chain
     const prefix = child(primary, 'primaryPrefix')!;
     const fqn = child(prefix, 'fqnOrRefType');
-    const parts: string[] = [];
-
-    if (fqn) {
-      const first = child(fqn, 'fqnOrRefTypePartFirst');
-      if (first) {
-        const common = child(first, 'fqnOrRefTypePartCommon');
-        if (common) {
-          const id = token(common, 'Identifier');
-          if (id) parts.push(id.image);
-        }
-      }
-      const rests = children(fqn, 'fqnOrRefTypePartRest');
-      for (const rest of rests) {
-        const common = child(rest, 'fqnOrRefTypePartCommon');
-        if (common) {
-          const id = token(common, 'Identifier');
-          if (id) parts.push(id.image);
-        }
-      }
-    }
+    const parts = fqn ? this.extractFqnParts(fqn) : [];
 
     // Evaluate arguments
     const args: JavaValue[] = [];
@@ -1749,12 +1757,23 @@ export class JavaInterpreter {
       }
     }
 
+    if (parts.length === 2 && target.kind === 'objectRef') {
+      const method = this.methods.get(methodName);
+      if (method && !method.isStatic) {
+        const callLine = getLine(primary);
+        return this.callMethod(method, args, callLine, target);
+      }
+    }
+
     // Single name - must be a user-defined static method
     if (parts.length === 1) {
       const method = this.methods.get(methodName);
-      if (method) {
+      if (method && method.isStatic) {
         const callLine = getLine(primary);
         return this.callMethod(method, args, callLine);
+      }
+      if (method && !method.isStatic) {
+        throw new InterpreterError(`Cannot call instance method '${methodName}' without an object`, getLine(primary));
       }
     }
 
@@ -1769,8 +1788,16 @@ export class JavaInterpreter {
     throw new InterpreterError(`Unknown method: ${parts.join('.')}()`, 0);
   }
 
-  private callMethod(method: MethodDef, args: JavaValue[], callSiteLine?: number): JavaValue {
+  private callMethod(
+    method: MethodDef,
+    args: JavaValue[],
+    callSiteLine?: number,
+    thisValue?: JavaValue,
+  ): JavaValue {
     const methodScope = createScope(this.staticFields);
+    if (thisValue) {
+      setVariable(methodScope, 'this', thisValue, thisValue.kind === 'objectRef' ? thisValue.className : 'Object');
+    }
 
     // Bind parameters
     for (let i = 0; i < method.params.length; i++) {
