@@ -259,11 +259,17 @@ export const examples: CodeExample[] = [
 
   static class LinkedList {
     private Node head;
+    private Node tail;
 
-    public void addFirst(int value) {
+    public void append(int value) {
       Node node = new Node(value);
-      node.next = head;
-      head = node;
+      if (head == null) {
+        head = node;
+        tail = node;
+      } else {
+        tail.next = node;
+        tail = node;
+      }
     }
 
     public int sum() {
@@ -279,9 +285,9 @@ export const examples: CodeExample[] = [
 
   public static void main(String[] args) {
     LinkedList list = new LinkedList();
-    list.addFirst(30);
-    list.addFirst(20);
-    list.addFirst(10);
+    list.append(10);
+    list.append(20);
+    list.append(30);
     System.out.println(list.sum());
   }
 }`,
@@ -308,7 +314,9 @@ export const examples: CodeExample[] = [
 
     public int pop() {
       top--;
-      return data[top];
+      int value = data[top];
+      data[top] = 0;
+      return value;
     }
   }
 
@@ -349,6 +357,7 @@ export const examples: CodeExample[] = [
 
     public int dequeue() {
       int value = data[head];
+      data[head] = 0;
       head = (head + 1) % data.length;
       size--;
       return value;
@@ -390,6 +399,7 @@ export const examples: CodeExample[] = [
       int answer = heap[0];
       size--;
       heap[0] = heap[size];
+      heap[size] = 0;
       siftDown(0);
       return answer;
     }

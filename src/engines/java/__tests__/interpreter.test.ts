@@ -1605,6 +1605,17 @@ describe('Java Interpreter', () => {
         expect(getStdout(example!.code), slug).toEqual(expected);
       }
     });
+
+    it('Java data structure examples use visualization-friendly mutations', async () => {
+      const { examples } = await import('../examples');
+      const bySlug = Object.fromEntries(examples.map(example => [example.slug, example.code]));
+
+      expect(bySlug['linked-list']).toContain('public void append(int value)');
+      expect(bySlug['linked-list']).not.toContain('addFirst');
+      expect(bySlug['stack']).toContain('data[top] = 0;');
+      expect(bySlug['queue']).toContain('data[head] = 0;');
+      expect(bySlug['priority-queue']).toContain('heap[size] = 0;');
+    });
   });
 
   describe('Engine Contract', () => {

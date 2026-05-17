@@ -95,7 +95,7 @@ src/engines/
     types.ts               # Java runtime type system (primitives, strings, arrays, objects, refs)
     executor.ts            # Ephemeral Web Worker executor (same pattern as JS engine)
     worker.ts              # Web Worker: parses + interprets Java source, returns snapshots
-    examples.ts            # 18 Java examples with language:'java' field
+    examples.ts            # 18 Java examples with language:'java' field, including visualization-friendly data structures
     security.ts            # analyzeCode() — suspicious pattern detection for Java
 ```
 
