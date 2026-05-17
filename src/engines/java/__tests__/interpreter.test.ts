@@ -1123,6 +1123,22 @@ describe('Java Interpreter', () => {
       expect(snapshot.stdout).toContain('0');
     });
 
+    it('reads and writes instance fields through object references', () => {
+      const snapshot = getLastSnapshot(`public class Main {
+        int age;
+
+        public static void main(String[] args) {
+          Main m = new Main();
+          m.age = 5;
+          System.out.println(m.age);
+        }
+      }`);
+      const mainObject = findHeapObject(snapshot, 'Main');
+      expect(mainObject).toBeDefined();
+      expect(snapshot.stdout).toContain('5');
+      expect(getPropertyValue(mainObject!, 'age')).toEqual({ type: 'number', value: 5 });
+    });
+
     it('runs constructors to initialize instance fields', () => {
       const snapshot = getLastSnapshot(`public class Main {
         int age;

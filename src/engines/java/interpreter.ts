@@ -1120,17 +1120,29 @@ export class JavaInterpreter {
     unaryExpr: CstNode,
     scope: Scope,
   ): { get: () => JavaValue; set: (v: JavaValue) => void } {
-    const primary = child(child(unaryExpr, 'primary')!, 'primaryPrefix');
+    const primaryNode = child(unaryExpr, 'primary')!;
+    const primary = child(primaryNode, 'primaryPrefix');
     if (!primary) throw new InterpreterError('Invalid assignment target', getLine(unaryExpr));
 
     const fqn = child(primary, 'fqnOrRefType');
+    const suffixes = children(primaryNode, 'primarySuffix');
+
+    if (has(primary, 'This')) {
+      const fieldName = this.extractFieldSuffixName(suffixes);
+      if (!fieldName) throw new InterpreterError('Invalid assignment target', getLine(unaryExpr));
+      const thisValue = this.resolveThis(scope, getLine(unaryExpr));
+      return {
+        get: () => this.getFieldValue(thisValue, fieldName, getLine(unaryExpr)),
+        set: (v) => this.setFieldValue(thisValue, fieldName, v, getLine(unaryExpr)),
+      };
+    }
+
     if (!fqn) throw new InterpreterError('Invalid assignment target', getLine(unaryExpr));
 
-    const name = this.extractFqnName(fqn);
+    const parts = this.extractFqnParts(fqn);
+    const name = parts[0] || '';
 
     // Check for array access suffix
-    const primaryNode = child(unaryExpr, 'primary')!;
-    const suffixes = children(primaryNode, 'primarySuffix');
     if (suffixes.length > 0) {
       const arrayAccess = child(suffixes[suffixes.length - 1], 'arrayAccessSuffix');
       if (arrayAccess) {
@@ -1166,6 +1178,15 @@ export class JavaInterpreter {
       }
     }
 
+    if (parts.length === 2) {
+      const obj = this.resolveVariable(parts[0], scope);
+      const fieldName = parts[1];
+      return {
+        get: () => this.getFieldValue(obj, fieldName, getLine(unaryExpr)),
+        set: (v) => this.setFieldValue(obj, fieldName, v, getLine(unaryExpr)),
+      };
+    }
+
     // Simple variable assignment
     return {
       get: () => this.resolveVariable(name, scope),
@@ -1187,6 +1208,42 @@ export class JavaInterpreter {
     const staticEntry = lookupVariable(this.staticFields, name);
     if (staticEntry) return staticEntry.value;
     throw new InterpreterError(`Variable '${name}' is not defined`, 0);
+  }
+
+  private resolveThis(scope: Scope, line: number): JavaValue {
+    const entry = lookupVariable(scope, 'this');
+    if (!entry) {
+      throw new InterpreterError("'this' cannot be used in a static context", line);
+    }
+    return entry.value;
+  }
+
+  private getFieldValue(obj: JavaValue, fieldName: string, line: number): JavaValue {
+    if (obj.kind !== 'objectRef') {
+      throw new InterpreterError(`Cannot read field '${fieldName}' from non-object value`, line);
+    }
+    const objData = this.heap.get(obj.heapId);
+    if (!objData || !isJavaObject(objData)) {
+      throw new InterpreterError(`Cannot read field '${fieldName}' from non-object value`, line);
+    }
+    if (!objData.fields.has(fieldName)) {
+      throw new InterpreterError(`Field '${fieldName}' does not exist on ${obj.className}`, line);
+    }
+    return objData.fields.get(fieldName)!;
+  }
+
+  private setFieldValue(obj: JavaValue, fieldName: string, value: JavaValue, line: number): void {
+    if (obj.kind !== 'objectRef') {
+      throw new InterpreterError(`Cannot write field '${fieldName}' on non-object value`, line);
+    }
+    const objData = this.heap.get(obj.heapId);
+    if (!objData || !isJavaObject(objData)) {
+      throw new InterpreterError(`Cannot write field '${fieldName}' on non-object value`, line);
+    }
+    if (!objData.fields.has(fieldName)) {
+      throw new InterpreterError(`Field '${fieldName}' does not exist on ${obj.className}`, line);
+    }
+    objData.fields.set(fieldName, value);
   }
 
   private evalOperatorChain(operands: JavaValue[], operators: string[]): JavaValue {
@@ -1336,7 +1393,7 @@ export class JavaInterpreter {
     }
 
     // this/super
-    if (has(prefix, 'This')) return javaNull(); // simplified
+    if (has(prefix, 'This')) return this.resolveThis(scope, getLine(prefix));
     if (has(prefix, 'Super')) return javaNull(); // simplified
 
     return javaNull();
@@ -1400,25 +1457,7 @@ export class JavaInterpreter {
 
   private evalFqnOrRefType(fqn: CstNode, scope: Scope): JavaValue {
     // Build the full qualified name chain: ["System", "out", "println"] etc.
-    const parts: string[] = [];
-
-    const first = child(fqn, 'fqnOrRefTypePartFirst');
-    if (first) {
-      const common = child(first, 'fqnOrRefTypePartCommon');
-      if (common) {
-        const id = token(common, 'Identifier');
-        if (id) parts.push(id.image);
-      }
-    }
-
-    const rests = children(fqn, 'fqnOrRefTypePartRest');
-    for (const rest of rests) {
-      const common = child(rest, 'fqnOrRefTypePartCommon');
-      if (common) {
-        const id = token(common, 'Identifier');
-        if (id) parts.push(id.image);
-      }
-    }
+    const parts = this.extractFqnParts(fqn);
 
     if (parts.length === 0) return javaNull();
 
@@ -1454,21 +1493,18 @@ export class JavaInterpreter {
 
     // Could be field access: obj.field
     if (parts.length === 2) {
+      let obj: JavaValue | undefined;
       try {
-        const obj = this.resolveVariable(parts[0], scope);
-        if (obj.kind === 'arrayRef' && parts[1] === 'length') {
-          const arr = this.heap.get(obj.heapId);
-          if (arr && isJavaArray(arr)) return javaInt(arr.elements.length);
-        }
-        if (obj.kind === 'objectRef') {
-          const objData = this.heap.get(obj.heapId);
-          if (objData && isJavaObject(objData)) {
-            const field = objData.fields.get(parts[1]);
-            if (field) return field;
-          }
-        }
+        obj = this.resolveVariable(parts[0], scope);
       } catch {
         // Not a variable, could be a class reference
+      }
+      if (obj?.kind === 'arrayRef' && parts[1] === 'length') {
+        const arr = this.heap.get(obj.heapId);
+        if (arr && isJavaArray(arr)) return javaInt(arr.elements.length);
+      }
+      if (obj?.kind === 'objectRef') {
+        return this.getFieldValue(obj, parts[1], getLine(fqn));
       }
     }
 
@@ -1487,8 +1523,10 @@ export class JavaInterpreter {
           if (current.kind === 'objectRef') {
             const objData = this.heap.get(current.heapId);
             if (objData && isJavaObject(objData)) {
-              const field = objData.fields.get(parts[i]);
-              if (field) { current = field; continue; }
+              if (objData.fields.has(parts[i])) {
+                current = objData.fields.get(parts[i])!;
+                continue;
+              }
             }
           }
           break;
@@ -1503,15 +1541,39 @@ export class JavaInterpreter {
   }
 
   private extractFqnName(fqn: CstNode): string {
+    return this.extractFqnParts(fqn)[0] || '';
+  }
+
+  private extractFqnParts(fqn: CstNode): string[] {
+    const parts: string[] = [];
     const first = child(fqn, 'fqnOrRefTypePartFirst');
     if (first) {
       const common = child(first, 'fqnOrRefTypePartCommon');
       if (common) {
         const id = token(common, 'Identifier');
-        if (id) return id.image;
+        if (id) parts.push(id.image);
       }
     }
-    return '';
+
+    const rests = children(fqn, 'fqnOrRefTypePartRest');
+    for (const rest of rests) {
+      const common = child(rest, 'fqnOrRefTypePartCommon');
+      if (common) {
+        const id = token(common, 'Identifier');
+        if (id) parts.push(id.image);
+      }
+    }
+
+    return parts;
+  }
+
+  private extractFieldSuffixName(suffixes: CstNode[]): string | undefined {
+    if (suffixes.length !== 1) return undefined;
+    const suffix = suffixes[0];
+    if (child(suffix, 'methodInvocationSuffix') || child(suffix, 'arrayAccessSuffix')) {
+      return undefined;
+    }
+    return token(suffix, 'Identifier')?.image;
   }
 
   // ── Primary suffixes ──
@@ -1553,6 +1615,15 @@ export class JavaInterpreter {
         return javaChar(target.value.charCodeAt(index));
       }
       throw new InterpreterError('Cannot index non-array value', getLine(suffix));
+    }
+
+    const fieldName = token(suffix, 'Identifier')?.image;
+    if (fieldName) {
+      if (target.kind === 'arrayRef' && fieldName === 'length') {
+        const arr = this.heap.get(target.heapId);
+        if (arr && isJavaArray(arr)) return javaInt(arr.elements.length);
+      }
+      return this.getFieldValue(target, fieldName, getLine(suffix));
     }
 
     return target;

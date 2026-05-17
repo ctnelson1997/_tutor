@@ -41,7 +41,7 @@ The app is built around a **pluggable engine system**. Each language implements 
 
 Build targets use Vite's `--mode` flag, which loads per-language env files (`.env.js`, `.env.py`, `.env.java`) containing branding variables (app name, color, domain, tagline). Each build bundles only its target engine — tree-shaking removes everything else.
 
-The **JavaScript engine** uses Acorn AST transformation to inject tracing hooks, then runs the instrumented code in disposable blob-URL Web Workers. The **Python engine** uses [Pyodide](https://pyodide.org) (CPython compiled to WebAssembly) with `sys.settrace()` to intercept execution events, running in a persistent module Web Worker. Pyodide (~12 MB) is loaded eagerly from CDN at page load so it's ready by the time the user clicks "Visualize". The **Java engine** uses [java-parser](https://github.com/nicolo-ribaudo/java-parser) (Chevrotain-based) to parse Java source into a CST, then interprets it directly in a disposable Web Worker — supporting primitives, strings, arrays, custom object allocation with default-initialized instance fields, static methods, recursion, and standard control flow.
+The **JavaScript engine** uses Acorn AST transformation to inject tracing hooks, then runs the instrumented code in disposable blob-URL Web Workers. The **Python engine** uses [Pyodide](https://pyodide.org) (CPython compiled to WebAssembly) with `sys.settrace()` to intercept execution events, running in a persistent module Web Worker. Pyodide (~12 MB) is loaded eagerly from CDN at page load so it's ready by the time the user clicks "Visualize". The **Java engine** uses [java-parser](https://github.com/nicolo-ribaudo/java-parser) (Chevrotain-based) to parse Java source into a CST, then interprets it directly in a disposable Web Worker — supporting primitives, strings, arrays, custom object allocation with default-initialized readable/writable instance fields, static methods, recursion, and standard control flow.
 
 ---
 
@@ -181,7 +181,7 @@ vite.config.ts                  # Build config — mode-based outDir + language 
 
 **Python engine: Pyodide + sys.settrace** — CPython compiled to WebAssembly runs in a persistent module Web Worker. Python's built-in `sys.settrace()` intercepts call/line/return events to build snapshots without needing an AST transformer. Pyodide is loaded eagerly from CDN at page load to minimize wait time on first run.
 
-**Java engine: CST interpreter** — Java source is parsed into a Concrete Syntax Tree using java-parser (Chevrotain-based), then interpreted directly. Supports Java primitives, strings, arrays, custom object allocation with default-initialized instance fields, static methods, recursion, and standard control flow. Constructors, `this` field assignment, and instance method dispatch are still being added in stages. Runs in disposable Web Workers like the JS engine.
+**Java engine: CST interpreter** — Java source is parsed into a Concrete Syntax Tree using java-parser (Chevrotain-based), then interpreted directly. Supports Java primitives, strings, arrays, custom object allocation with default-initialized readable/writable instance fields, static methods, recursion, and standard control flow. Constructors and instance method dispatch are still being added in stages. Runs in disposable Web Workers like the JS engine.
 
 **TDZ-aware instrumentation** — `let`/`const` declarations are tracked incrementally so the visualizer never reads variables before they are initialized.
 
