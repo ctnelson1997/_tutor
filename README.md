@@ -41,7 +41,7 @@ The app is built around a **pluggable engine system**. Each language implements 
 
 Build targets use Vite's `--mode` flag, which loads per-language env files (`.env.js`, `.env.py`, `.env.java`) containing branding variables (app name, color, domain, tagline). Each build bundles only its target engine — tree-shaking removes everything else.
 
-The **JavaScript engine** uses Acorn AST transformation to inject tracing hooks, then runs the instrumented code in disposable blob-URL Web Workers. The **Python engine** uses [Pyodide](https://pyodide.org) (CPython compiled to WebAssembly) with `sys.settrace()` to intercept execution events, running in a persistent module Web Worker. Pyodide (~12 MB) is loaded eagerly from CDN at page load so it's ready by the time the user clicks "Visualize". The **Java engine** uses [java-parser](https://github.com/nicolo-ribaudo/java-parser) (Chevrotain-based) to parse Java source into a CST, then interprets it directly in a disposable Web Worker — supporting primitives, strings, arrays, objects, static methods, recursion, and standard control flow.
+The **JavaScript engine** uses Acorn AST transformation to inject tracing hooks, then runs the instrumented code in disposable blob-URL Web Workers. The **Python engine** uses [Pyodide](https://pyodide.org) (CPython compiled to WebAssembly) with `sys.settrace()` to intercept execution events, running in a persistent module Web Worker. Pyodide (~12 MB) is loaded eagerly from CDN at page load so it's ready by the time the user clicks "Visualize". The **Java engine** uses [java-parser](https://github.com/nicolo-ribaudo/java-parser) (Chevrotain-based) to parse Java source into a CST, then interprets it directly in a disposable Web Worker — supporting primitives, strings, arrays including `T[] a = {...}` and `new T[]{...}` initializers, custom object allocation with constructors, readable/writable instance fields, instance methods, simple arity-based overloads, nested static class methods, static methods, primitive casts, common numeric wrapper constants, recursion, and standard control flow.
 
 ---
 
@@ -130,7 +130,7 @@ src/
 │       ├── types.ts            # Java runtime type system (primitives, strings, arrays, objects)
 │       ├── executor.ts         # Ephemeral Web Worker executor
 │       ├── worker.ts           # Web Worker: parse + interpret Java source
-│       ├── examples.ts         # Java example snippets
+│       ├── examples.ts         # Java example snippets, including visualization-friendly OOP data structures
 │       └── security.ts         # Suspicious code pattern detection
 ├── engine/
 │   └── executor.ts             # Thin dispatcher: store → engine → store
@@ -181,7 +181,9 @@ vite.config.ts                  # Build config — mode-based outDir + language 
 
 **Python engine: Pyodide + sys.settrace** — CPython compiled to WebAssembly runs in a persistent module Web Worker. Python's built-in `sys.settrace()` intercepts call/line/return events to build snapshots without needing an AST transformer. Pyodide is loaded eagerly from CDN at page load to minimize wait time on first run.
 
-**Java engine: CST interpreter** — Java source is parsed into a Concrete Syntax Tree using java-parser (Chevrotain-based), then interpreted directly. Supports Java primitives, strings, arrays, objects, static methods, recursion, and standard control flow. Runs in disposable Web Workers like the JS engine.
+**Java engine: CST interpreter** — Java source is parsed into a Concrete Syntax Tree using java-parser (Chevrotain-based), then interpreted directly. Supports Java primitives, strings, arrays including `T[] a = {...}` and `new T[]{...}` initializers, custom object allocation with constructors, readable/writable instance fields, unqualified instance field/method access inside instance contexts, instance methods, simple arity-based overloads, nested static class methods, static methods, primitive casts, common numeric wrapper constants, recursion, and standard control flow. Assignment expressions evaluate their RHS once so heap allocations stay tied to the variable or field that receives them. Runs in disposable Web Workers like the JS engine.
+
+The Java engine is a teaching-oriented subset, not a full JVM. It does not currently support inheritance, interfaces, access control, overloaded constructor/method resolution beyond simple arity matching, generics, exceptions, packages, Java standard-library I/O, or multi-class programs.
 
 **TDZ-aware instrumentation** — `let`/`const` declarations are tracked incrementally so the visualizer never reads variables before they are initialized.
 

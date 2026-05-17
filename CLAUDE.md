@@ -95,7 +95,7 @@ src/engines/
     types.ts               # Java runtime type system (primitives, strings, arrays, objects, refs)
     executor.ts            # Ephemeral Web Worker executor (same pattern as JS engine)
     worker.ts              # Web Worker: parses + interprets Java source, returns snapshots
-    examples.ts            # 11 Java examples with language:'java' field
+    examples.ts            # 18 Java examples with language:'java' field, including visualization-friendly data structures
     security.ts            # analyzeCode() — suspicious pattern detection for Java
 ```
 
@@ -170,7 +170,9 @@ Note: In test mode, `VITE_LANGUAGE` is unset so branding defaults to JS. The Pyt
 - **Single-language builds** — each build bundles only its target engine; tree-shaking removes unused engines
 - **JS engine**: Native JS in disposable blob-URL Web Workers — fresh global scope each run
 - **Python engine**: Pyodide (CPython compiled to WASM) in a persistent module Web Worker — `sys.settrace()` intercepts execution events to build snapshots; Pyodide is loaded eagerly from CDN at page load
-- **Java engine**: AST-walking interpreter using `java-parser` (Chevrotain-based) — parses Java source into a CST, then interprets it directly in a disposable Web Worker; supports primitives, strings, arrays, objects, static methods, recursion, and standard control flow
+- **Java engine**: AST-walking interpreter using `java-parser` (Chevrotain-based) — parses Java source into a CST, then interprets it directly in a disposable Web Worker; supports primitives, strings, arrays including `T[] a = {...}` and `new T[]{...}` initializers, custom object allocation with constructors, readable/writable instance fields, unqualified instance field/method access inside instance contexts, instance methods, simple arity-based overloads, nested static class methods, static methods, primitive casts, common numeric wrapper constants, recursion, and standard control flow.
+- **Java assignment evaluation** — assignment expressions evaluate their RHS once; this keeps heap allocations connected to the variable or field that receives them and avoids unreferenced duplicate arrays/objects in snapshots.
+- **Java subset limits** — this is not a full JVM. It does not currently support inheritance, interfaces, access control, overloaded constructor/method resolution beyond simple arity matching, generics, exceptions, packages, Java standard-library I/O, or multi-class programs.
 - **TDZ-aware instrumentation** — `let`/`const` tracked incrementally; `var`/`function` hoisted
 - **Block scopes** — Loops with `let`/`const` use `isBlockScope` flag, rendered nested inside parent frame
 - **Condition tracking** — `__condition__()` wraps if/else-if tests, emits snapshots with `condition` field

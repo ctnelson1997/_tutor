@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseJava } from '../parser';
 import { JavaInterpreter } from '../interpreter';
+import type { ExecutionSnapshot, HeapObject, RuntimeValue } from '../../../types/snapshot';
 
 function run(source: string) {
   try {
@@ -31,6 +32,22 @@ function getVars(source: string): Record<string, unknown> {
     vars[v.name] = v.value.type === 'ref' ? `ref:${v.value.heapId}` : v.value.value;
   }
   return vars;
+}
+
+function getLastSnapshot(source: string): ExecutionSnapshot {
+  const result = run(source);
+  expect(result.error).toBeUndefined();
+  const last = result.snapshots[result.snapshots.length - 1];
+  expect(last).toBeDefined();
+  return last!;
+}
+
+function findHeapObject(snapshot: ExecutionSnapshot, label: string): HeapObject | undefined {
+  return snapshot.heap.find(obj => obj.label === label);
+}
+
+function getPropertyValue(obj: HeapObject, key: string): RuntimeValue | undefined {
+  return obj.properties.find(prop => prop.key === key)?.value;
 }
 
 describe('Java Interpreter', () => {
@@ -938,6 +955,32 @@ describe('Java Interpreter', () => {
       expect(stdout).toEqual(['10', '20', '30']);
     });
 
+    it('keeps local array initializers working with string concatenation', () => {
+      const stdout = getStdout(`public class Main {
+        public static void main(String[] args) {
+          int[] nums = {10, 20, 30, 40, 50};
+          int sum = 0;
+          for (int i = 0; i < nums.length; i++) {
+            sum += nums[i];
+          }
+          System.out.println("Sum: " + sum);
+        }
+      }`);
+      expect(stdout).toEqual(['Sum: 150']);
+    });
+
+    it('handles new array initializers and primitive casts', () => {
+      const stdout = getStdout(`public class Main {
+        public static void main(String[] args) {
+          long[] q = new long[]{40, 5};
+          int h = (int) q[0];
+          int idx = (int) q[1];
+          System.out.println(h + idx);
+        }
+      }`);
+      expect(stdout).toEqual(['45']);
+    });
+
     it('passes arrays to methods', () => {
       const stdout = getStdout(`public class Main {
         public static int sum(int[] arr) {
@@ -1088,6 +1131,200 @@ describe('Java Interpreter', () => {
     });
   });
 
+  describe('Java OOP instance objects', () => {
+    it('initializes instance fields with Java default values', () => {
+      const snapshot = getLastSnapshot(`public class Main {
+        int age;
+        String name;
+
+        public static void main(String[] args) {
+          Main m = new Main();
+          System.out.println(m.age);
+        }
+      }`);
+      const mainObject = findHeapObject(snapshot, 'Main');
+      expect(mainObject).toBeDefined();
+      expect(getPropertyValue(mainObject!, 'age')).toEqual({ type: 'number', value: 0 });
+      expect(getPropertyValue(mainObject!, 'name')).toEqual({ type: 'null', value: null });
+      expect(snapshot.stdout).toContain('0');
+    });
+
+    it('reads and writes instance fields through object references', () => {
+      const snapshot = getLastSnapshot(`public class Main {
+        int age;
+
+        public static void main(String[] args) {
+          Main m = new Main();
+          m.age = 5;
+          System.out.println(m.age);
+        }
+      }`);
+      const mainObject = findHeapObject(snapshot, 'Main');
+      expect(mainObject).toBeDefined();
+      expect(snapshot.stdout).toContain('5');
+      expect(getPropertyValue(mainObject!, 'age')).toEqual({ type: 'number', value: 5 });
+    });
+
+    it('runs constructors to initialize instance fields', () => {
+      const snapshot = getLastSnapshot(`public class Main {
+        int age;
+
+        public Main(int a) {
+          this.age = a;
+          return;
+        }
+
+        public static void main(String[] args) {
+          Main m = new Main(5);
+          System.out.println(m.age);
+        }
+      }`);
+      const mainObject = findHeapObject(snapshot, 'Main');
+      expect(mainObject).toBeDefined();
+      expect(snapshot.stdout).toContain('5');
+      expect(getPropertyValue(mainObject!, 'age')).toEqual({ type: 'number', value: 5 });
+    });
+
+    it('dispatches instance methods with a bound this value', () => {
+      const snapshot = getLastSnapshot(`public class Main {
+        int age;
+
+        public Main(int a) {
+          this.age = a;
+        }
+
+        public void printAge() {
+          System.out.println(this.age);
+        }
+
+        public static void main(String[] args) {
+          Main m = new Main(5);
+          m.printAge();
+        }
+      }`);
+      expect(snapshot.stdout).toContain('5');
+    });
+
+    it('supports a simple custom object with constructor and instance method', () => {
+      const snapshot = getLastSnapshot(`public class MSG {
+        int age;
+        String name;
+
+        public MSG(String name, int age) {
+          this.name = name;
+          this.age = age;
+        }
+
+        public void printInfo() {
+          System.out.println(this.name + " is " + this.age);
+        }
+
+        public static void main(String[] args) {
+          String n = "Rex";
+          int a = 5;
+          MSG m = new MSG(n, a);
+          m.printInfo();
+          System.out.println(m.age);
+        }
+      }`);
+      const msgObject = findHeapObject(snapshot, 'MSG');
+      expect(msgObject).toBeDefined();
+      expect(snapshot.stdout).toEqual(['Rex is 5', '5']);
+      expect(getPropertyValue(msgObject!, 'name')).toEqual({ type: 'string', value: 'Rex' });
+      expect(getPropertyValue(msgObject!, 'age')).toEqual({ type: 'number', value: 5 });
+    });
+
+    it('dispatches methods declared on a nested static class', () => {
+      const stdout = getStdout(`public class Main {
+        private static class FastReader {
+          public int nextInt() {
+            return 7;
+          }
+        }
+
+        public static void main(String[] args) {
+          FastReader sc = new FastReader();
+          System.out.println(sc.nextInt());
+        }
+      }`);
+      expect(stdout).toContain('7');
+    });
+
+    it('resolves unqualified instance fields inside constructors and methods', () => {
+      const stdout = getStdout(`public class Main {
+        private static class Box {
+          private int n;
+          private int[] data;
+
+          public Box(int[] arr) {
+            this.n = arr.length;
+            this.data = new int[n * 2];
+            init(arr);
+          }
+
+          private void init(int[] arr) {
+            data[0] = arr[0];
+          }
+
+          public int score() {
+            return data[0] + n;
+          }
+        }
+
+        public static void main(String[] args) {
+          int[] arr = new int[]{3, 4};
+          Box box = new Box(arr);
+          System.out.println(box.score());
+        }
+      }`);
+      expect(stdout).toContain('5');
+    });
+
+    it('resolves overloaded instance methods by argument count', () => {
+      const stdout = getStdout(`public class Main {
+        private static class Picker {
+          public int pick(int value) {
+            return pick(value, 2);
+          }
+
+          private int pick(int value, int factor) {
+            return value * factor;
+          }
+        }
+
+        public static void main(String[] args) {
+          Picker picker = new Picker();
+          System.out.println(picker.pick(21));
+        }
+      }`);
+      expect(stdout).toEqual(['42']);
+    });
+
+    it('does not leak unreferenced arrays from field assignment expressions', () => {
+      const snapshot = getLastSnapshot(`public class Main {
+        private static class Holder {
+          private int[] data;
+
+          public Holder() {
+            data = new int[3];
+          }
+        }
+
+        public static void main(String[] args) {
+          Holder holder = new Holder();
+        }
+      }`);
+      const holder = findHeapObject(snapshot, 'Holder');
+      expect(holder).toBeDefined();
+      const dataRef = getPropertyValue(holder!, 'data');
+      expect(dataRef?.type).toBe('ref');
+
+      const arrays = snapshot.heap.filter(obj => obj.objectType === 'array' && obj.label === 'int[]');
+      expect(arrays).toHaveLength(1);
+      expect(arrays[0].id).toBe(dataRef?.type === 'ref' ? dataRef.heapId : undefined);
+    });
+  });
+
   describe('Math Methods', () => {
     it('handles Math.abs', () => {
       const stdout = getStdout(`public class Main {
@@ -1095,7 +1332,7 @@ describe('Java Interpreter', () => {
           System.out.println(Math.abs(-5));
         }
       }`);
-      expect(stdout[0]).toBe('5.0');
+      expect(stdout[0]).toBe('5');
     });
 
     it('handles Math.max and Math.min', () => {
@@ -1105,8 +1342,18 @@ describe('Java Interpreter', () => {
           System.out.println(Math.min(3, 7));
         }
       }`);
-      expect(stdout[0]).toBe('7.0');
-      expect(stdout[1]).toBe('3.0');
+      expect(stdout[0]).toBe('7');
+      expect(stdout[1]).toBe('3');
+    });
+
+    it('handles numeric wrapper constants', () => {
+      const stdout = getStdout(`public class Main {
+        public static void main(String[] args) {
+          System.out.println(Integer.MAX_VALUE > 40);
+          System.out.println(Long.MIN_VALUE < -1);
+        }
+      }`);
+      expect(stdout).toEqual(['true', 'true']);
     });
 
     it('handles Math.pow and Math.sqrt', () => {
@@ -1314,6 +1561,60 @@ describe('Java Interpreter', () => {
         expect(example.category).toBeTruthy();
         expect(example.code).toBeTruthy();
       }
+    });
+
+    it('groups Java examples in the expected menu order', async () => {
+      const { examples } = await import('../examples');
+      const categories = [...new Set(examples.map(example => example.category))];
+      expect(categories).toEqual(['Basics', 'Built-in Types', 'Methods', 'OOP', 'Data Structures']);
+
+      const builtInTypes = examples
+        .filter(example => example.category === 'Built-in Types')
+        .map(example => example.title);
+      expect(builtInTypes).toEqual(['Arrays', 'String Methods', '2D Array']);
+
+      const dataStructures = examples
+        .filter(example => example.category === 'Data Structures')
+        .map(example => example.title);
+      expect(dataStructures).toEqual([
+        'List',
+        'Linked List',
+        'Stack',
+        'Queue',
+        'Priority Queue',
+        'Binary Search Tree',
+        'Segment Tree',
+      ]);
+    });
+
+    it('Java data structure examples produce the expected output', async () => {
+      const { examples } = await import('../examples');
+      const expectedOutput: Record<string, string[]> = {
+        'list': ['20', '3'],
+        'linked-list': ['60'],
+        'stack': ['30', '20'],
+        'queue': ['10', '20'],
+        'priority-queue': ['40', '25'],
+        'binary-search-tree': ['true', 'false'],
+        'segment-tree': ['40', '35', '17'],
+      };
+
+      for (const [slug, expected] of Object.entries(expectedOutput)) {
+        const example = examples.find(item => item.slug === slug);
+        expect(example, slug).toBeDefined();
+        expect(getStdout(example!.code), slug).toEqual(expected);
+      }
+    });
+
+    it('Java data structure examples use visualization-friendly mutations', async () => {
+      const { examples } = await import('../examples');
+      const bySlug = Object.fromEntries(examples.map(example => [example.slug, example.code]));
+
+      expect(bySlug['linked-list']).toContain('public void append(int value)');
+      expect(bySlug['linked-list']).not.toContain('addFirst');
+      expect(bySlug['stack']).toContain('data[top] = 0;');
+      expect(bySlug['queue']).toContain('data[head] = 0;');
+      expect(bySlug['priority-queue']).toContain('heap[size] = 0;');
     });
   });
 
