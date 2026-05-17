@@ -1123,17 +1123,10 @@ export class JavaInterpreter {
       return aLine !== bLine ? aLine - bLine : aCol - bCol;
     });
 
-    // Separate operands and operators
-    const operands: JavaValue[] = [];
     const operators: string[] = [];
 
     for (const item of allChildren) {
-      if (isCstNode(item) && item.name === 'unaryExpression') {
-        operands.push(this.evalUnaryExpression(item, scope));
-      } else if (isCstNode(item) && item.name === 'expression') {
-        // Right side of assignment
-        operands.push(this.evalExpression(item, scope));
-      } else if (isCstToken(item)) {
+      if (isCstToken(item)) {
         const op = item.image;
         // Skip parentheses and other non-operator tokens
         if (['(', ')', '{', '}', '[', ']', ';', ','].includes(op)) continue;
@@ -1141,13 +1134,24 @@ export class JavaInterpreter {
       }
     }
 
-    if (operands.length === 0) return javaNull();
-    if (operators.length === 0) return operands[0];
-
     // Handle assignment operators
     if (operators.length === 1 && isAssignmentOp(operators[0])) {
       return this.evalAssignment(binExpr, operators[0], scope);
     }
+
+    // Separate operands after assignment detection so assignment RHS values
+    // with side effects, such as new arrays/objects, are not evaluated twice.
+    const operands: JavaValue[] = [];
+    for (const item of allChildren) {
+      if (isCstNode(item) && item.name === 'unaryExpression') {
+        operands.push(this.evalUnaryExpression(item, scope));
+      } else if (isCstNode(item) && item.name === 'expression') {
+        operands.push(this.evalExpression(item, scope));
+      }
+    }
+
+    if (operands.length === 0) return javaNull();
+    if (operators.length === 0) return operands[0];
 
     // Evaluate left to right with precedence
     return this.evalOperatorChain(operands, operators);

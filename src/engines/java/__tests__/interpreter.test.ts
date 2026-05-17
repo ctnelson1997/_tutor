@@ -1299,6 +1299,30 @@ describe('Java Interpreter', () => {
       }`);
       expect(stdout).toEqual(['42']);
     });
+
+    it('does not leak unreferenced arrays from field assignment expressions', () => {
+      const snapshot = getLastSnapshot(`public class Main {
+        private static class Holder {
+          private int[] data;
+
+          public Holder() {
+            data = new int[3];
+          }
+        }
+
+        public static void main(String[] args) {
+          Holder holder = new Holder();
+        }
+      }`);
+      const holder = findHeapObject(snapshot, 'Holder');
+      expect(holder).toBeDefined();
+      const dataRef = getPropertyValue(holder!, 'data');
+      expect(dataRef?.type).toBe('ref');
+
+      const arrays = snapshot.heap.filter(obj => obj.objectType === 'array' && obj.label === 'int[]');
+      expect(arrays).toHaveLength(1);
+      expect(arrays[0].id).toBe(dataRef?.type === 'ref' ? dataRef.heapId : undefined);
+    });
   });
 
   describe('Math Methods', () => {
