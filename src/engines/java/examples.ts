@@ -68,9 +68,34 @@ export const examples: CodeExample[] = [
 }`,
   },
   {
+    title: 'Do-While & Switch',
+    slug: 'do-while-switch',
+    category: 'Basics',
+    language: 'java',
+    code: `public class Main {
+  public static void main(String[] args) {
+    int day = 3;
+    String name;
+    switch (day) {
+      case 1: name = "Monday"; break;
+      case 2: name = "Tuesday"; break;
+      case 3: name = "Wednesday"; break;
+      default: name = "Other"; break;
+    }
+    System.out.println(name);
+
+    int count = 0;
+    do {
+      count++;
+    } while (count < 3);
+    System.out.println("Count: " + count);
+  }
+}`,
+  },
+  {
     title: 'Arrays',
     slug: 'arrays',
-    category: 'Data Structures',
+    category: 'Built-in Types',
     language: 'java',
     code: `public class Main {
   public static void main(String[] args) {
@@ -80,6 +105,43 @@ export const examples: CodeExample[] = [
       sum += nums[i];
     }
     System.out.println("Sum: " + sum);
+  }
+}`,
+  },
+  {
+    title: 'String Methods',
+    slug: 'string-methods',
+    category: 'Built-in Types',
+    language: 'java',
+    code: `public class Main {
+  public static void main(String[] args) {
+    String text = "Hello, World!";
+    int len = text.length();
+    char first = text.charAt(0);
+    String upper = text.toUpperCase();
+    String sub = text.substring(0, 5);
+    System.out.println(len);
+    System.out.println(first);
+    System.out.println(upper);
+    System.out.println(sub);
+  }
+}`,
+  },
+  {
+    title: '2D Array',
+    slug: '2d-array',
+    category: 'Built-in Types',
+    language: 'java',
+    code: `public class Main {
+  public static void main(String[] args) {
+    int[][] grid = {{1, 2, 3}, {4, 5, 6}};
+    int total = 0;
+    for (int r = 0; r < grid.length; r++) {
+      for (int c = 0; c < grid[r].length; c++) {
+        total += grid[r][c];
+      }
+    }
+    System.out.println("Total: " + total);
   }
 }`,
   },
@@ -142,64 +204,363 @@ export const examples: CodeExample[] = [
 }`,
   },
   {
-    title: 'String Methods',
-    slug: 'string-methods',
+    title: 'List',
+    slug: 'list',
     category: 'Data Structures',
     language: 'java',
     code: `public class Main {
+  static class IntList {
+    private int[] data;
+    private int size;
+
+    public IntList(int capacity) {
+      data = new int[capacity];
+      size = 0;
+    }
+
+    public void add(int value) {
+      data[size] = value;
+      size++;
+    }
+
+    public int get(int index) {
+      return data[index];
+    }
+
+    public int size() {
+      return size;
+    }
+  }
+
   public static void main(String[] args) {
-    String text = "Hello, World!";
-    int len = text.length();
-    char first = text.charAt(0);
-    String upper = text.toUpperCase();
-    String sub = text.substring(0, 5);
-    System.out.println(len);
-    System.out.println(first);
-    System.out.println(upper);
-    System.out.println(sub);
+    IntList list = new IntList(5);
+    list.add(10);
+    list.add(20);
+    list.add(30);
+    System.out.println(list.get(1));
+    System.out.println(list.size());
   }
 }`,
   },
   {
-    title: '2D Array',
-    slug: '2d-array',
+    title: 'Linked List',
+    slug: 'linked-list',
     category: 'Data Structures',
     language: 'java',
     code: `public class Main {
+  static class Node {
+    int value;
+    Node next;
+
+    public Node(int value) {
+      this.value = value;
+    }
+  }
+
+  static class LinkedList {
+    private Node head;
+
+    public void addFirst(int value) {
+      Node node = new Node(value);
+      node.next = head;
+      head = node;
+    }
+
+    public int sum() {
+      int total = 0;
+      Node current = head;
+      while (current != null) {
+        total += current.value;
+        current = current.next;
+      }
+      return total;
+    }
+  }
+
   public static void main(String[] args) {
-    int[][] grid = {{1, 2, 3}, {4, 5, 6}};
-    int total = 0;
-    for (int r = 0; r < grid.length; r++) {
-      for (int c = 0; c < grid[r].length; c++) {
-        total += grid[r][c];
+    LinkedList list = new LinkedList();
+    list.addFirst(30);
+    list.addFirst(20);
+    list.addFirst(10);
+    System.out.println(list.sum());
+  }
+}`,
+  },
+  {
+    title: 'Stack',
+    slug: 'stack',
+    category: 'Data Structures',
+    language: 'java',
+    code: `public class Main {
+  static class IntStack {
+    private int[] data;
+    private int top;
+
+    public IntStack(int capacity) {
+      data = new int[capacity];
+      top = 0;
+    }
+
+    public void push(int value) {
+      data[top] = value;
+      top++;
+    }
+
+    public int pop() {
+      top--;
+      return data[top];
+    }
+  }
+
+  public static void main(String[] args) {
+    IntStack stack = new IntStack(5);
+    stack.push(10);
+    stack.push(20);
+    stack.push(30);
+    System.out.println(stack.pop());
+    System.out.println(stack.pop());
+  }
+}`,
+  },
+  {
+    title: 'Queue',
+    slug: 'queue',
+    category: 'Data Structures',
+    language: 'java',
+    code: `public class Main {
+  static class IntQueue {
+    private int[] data;
+    private int head;
+    private int tail;
+    private int size;
+
+    public IntQueue(int capacity) {
+      data = new int[capacity];
+      head = 0;
+      tail = 0;
+      size = 0;
+    }
+
+    public void enqueue(int value) {
+      data[tail] = value;
+      tail = (tail + 1) % data.length;
+      size++;
+    }
+
+    public int dequeue() {
+      int value = data[head];
+      head = (head + 1) % data.length;
+      size--;
+      return value;
+    }
+  }
+
+  public static void main(String[] args) {
+    IntQueue queue = new IntQueue(5);
+    queue.enqueue(10);
+    queue.enqueue(20);
+    queue.enqueue(30);
+    System.out.println(queue.dequeue());
+    System.out.println(queue.dequeue());
+  }
+}`,
+  },
+  {
+    title: 'Priority Queue',
+    slug: 'priority-queue',
+    category: 'Data Structures',
+    language: 'java',
+    code: `public class Main {
+  static class IntPriorityQueue {
+    private int[] heap;
+    private int size;
+
+    public IntPriorityQueue(int capacity) {
+      heap = new int[capacity];
+      size = 0;
+    }
+
+    public void offer(int value) {
+      heap[size] = value;
+      siftUp(size);
+      size++;
+    }
+
+    public int poll() {
+      int answer = heap[0];
+      size--;
+      heap[0] = heap[size];
+      siftDown(0);
+      return answer;
+    }
+
+    private void siftUp(int index) {
+      while (index > 0) {
+        int parent = (index - 1) / 2;
+        if (heap[parent] >= heap[index]) return;
+        swap(parent, index);
+        index = parent;
       }
     }
-    System.out.println("Total: " + total);
+
+    private void siftDown(int index) {
+      while (index * 2 + 1 < size) {
+        int left = index * 2 + 1;
+        int right = left + 1;
+        int best = left;
+        if (right < size && heap[right] > heap[left]) {
+          best = right;
+        }
+        if (heap[index] >= heap[best]) return;
+        swap(index, best);
+        index = best;
+      }
+    }
+
+    private void swap(int i, int j) {
+      int temp = heap[i];
+      heap[i] = heap[j];
+      heap[j] = temp;
+    }
+  }
+
+  public static void main(String[] args) {
+    IntPriorityQueue queue = new IntPriorityQueue(6);
+    queue.offer(25);
+    queue.offer(10);
+    queue.offer(40);
+    queue.offer(15);
+    System.out.println(queue.poll());
+    System.out.println(queue.poll());
   }
 }`,
   },
   {
-    title: 'Do-While & Switch',
-    slug: 'do-while-switch',
-    category: 'Basics',
+    title: 'Binary Search Tree',
+    slug: 'binary-search-tree',
+    category: 'Data Structures',
     language: 'java',
     code: `public class Main {
-  public static void main(String[] args) {
-    int day = 3;
-    String name;
-    switch (day) {
-      case 1: name = "Monday"; break;
-      case 2: name = "Tuesday"; break;
-      case 3: name = "Wednesday"; break;
-      default: name = "Other"; break;
-    }
-    System.out.println(name);
+  static class Node {
+    int value;
+    Node left;
+    Node right;
 
-    int count = 0;
-    do {
-      count++;
-    } while (count < 3);
-    System.out.println("Count: " + count);
+    public Node(int value) {
+      this.value = value;
+    }
+  }
+
+  static class BinarySearchTree {
+    private Node root;
+
+    public void insert(int value) {
+      root = insert(root, value);
+    }
+
+    private Node insert(Node node, int value) {
+      if (node == null) {
+        return new Node(value);
+      }
+      if (value < node.value) {
+        node.left = insert(node.left, value);
+      } else {
+        node.right = insert(node.right, value);
+      }
+      return node;
+    }
+
+    public boolean contains(int value) {
+      return contains(root, value);
+    }
+
+    private boolean contains(Node node, int value) {
+      if (node == null) return false;
+      if (value == node.value) return true;
+      if (value < node.value) return contains(node.left, value);
+      return contains(node.right, value);
+    }
+  }
+
+  public static void main(String[] args) {
+    BinarySearchTree tree = new BinarySearchTree();
+    tree.insert(30);
+    tree.insert(20);
+    tree.insert(40);
+    tree.insert(35);
+    System.out.println(tree.contains(35));
+    System.out.println(tree.contains(25));
+  }
+}`,
+  },
+  {
+    title: 'Segment Tree',
+    slug: 'segment-tree',
+    category: 'Data Structures',
+    language: 'java',
+    code: `public class Main {
+  static class SegmentTree {
+    private int[] tree;
+    private int n;
+
+    public SegmentTree(int[] arr) {
+      n = arr.length;
+      tree = new int[4 * n];
+      build(arr, 1, 0, n - 1);
+    }
+
+    private void build(int[] arr, int node, int left, int right) {
+      if (left == right) {
+        tree[node] = arr[left];
+        return;
+      }
+
+      int mid = left + (right - left) / 2;
+
+      build(arr, node * 2, left, mid);
+      build(arr, node * 2 + 1, mid + 1, right);
+
+      tree[node] = Math.max(tree[node * 2], tree[node * 2 + 1]);
+    }
+
+    public int queryMax(int queryLeft, int queryRight) {
+      return queryMax(1, 0, n - 1, queryLeft, queryRight);
+    }
+
+    private int queryMax(int node, int left, int right, int queryLeft, int queryRight) {
+      if (queryLeft <= left && right <= queryRight) {
+        return tree[node];
+      }
+
+      int mid = left + (right - left) / 2;
+      int answer = Integer.MIN_VALUE;
+
+      if (queryLeft <= mid) {
+        answer = Math.max(
+          answer,
+          queryMax(node * 2, left, mid, queryLeft, queryRight)
+        );
+      }
+
+      if (queryRight > mid) {
+        answer = Math.max(
+          answer,
+          queryMax(node * 2 + 1, mid + 1, right, queryLeft, queryRight)
+        );
+      }
+
+      return answer;
+    }
+  }
+
+  public static void main(String[] args) {
+    int[] arr = {20, 15, 17, 35, 25, 40};
+
+    SegmentTree segmentTree = new SegmentTree(arr);
+
+    System.out.println(segmentTree.queryMax(0, 5));
+    System.out.println(segmentTree.queryMax(2, 4));
+    System.out.println(segmentTree.queryMax(1, 2));
   }
 }`,
   },

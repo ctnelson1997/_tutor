@@ -130,7 +130,7 @@ src/
 │       ├── types.ts            # Java runtime type system (primitives, strings, arrays, objects)
 │       ├── executor.ts         # Ephemeral Web Worker executor
 │       ├── worker.ts           # Web Worker: parse + interpret Java source
-│       ├── examples.ts         # Java example snippets
+│       ├── examples.ts         # Java example snippets, including OOP data structures
 │       └── security.ts         # Suspicious code pattern detection
 ├── engine/
 │   └── executor.ts             # Thin dispatcher: store → engine → store

@@ -1562,6 +1562,49 @@ describe('Java Interpreter', () => {
         expect(example.code).toBeTruthy();
       }
     });
+
+    it('groups Java examples in the expected menu order', async () => {
+      const { examples } = await import('../examples');
+      const categories = [...new Set(examples.map(example => example.category))];
+      expect(categories).toEqual(['Basics', 'Built-in Types', 'Methods', 'OOP', 'Data Structures']);
+
+      const builtInTypes = examples
+        .filter(example => example.category === 'Built-in Types')
+        .map(example => example.title);
+      expect(builtInTypes).toEqual(['Arrays', 'String Methods', '2D Array']);
+
+      const dataStructures = examples
+        .filter(example => example.category === 'Data Structures')
+        .map(example => example.title);
+      expect(dataStructures).toEqual([
+        'List',
+        'Linked List',
+        'Stack',
+        'Queue',
+        'Priority Queue',
+        'Binary Search Tree',
+        'Segment Tree',
+      ]);
+    });
+
+    it('Java data structure examples produce the expected output', async () => {
+      const { examples } = await import('../examples');
+      const expectedOutput: Record<string, string[]> = {
+        'list': ['20', '3'],
+        'linked-list': ['60'],
+        'stack': ['30', '20'],
+        'queue': ['10', '20'],
+        'priority-queue': ['40', '25'],
+        'binary-search-tree': ['true', 'false'],
+        'segment-tree': ['40', '35', '17'],
+      };
+
+      for (const [slug, expected] of Object.entries(expectedOutput)) {
+        const example = examples.find(item => item.slug === slug);
+        expect(example, slug).toBeDefined();
+        expect(getStdout(example!.code), slug).toEqual(expected);
+      }
+    });
   });
 
   describe('Engine Contract', () => {
