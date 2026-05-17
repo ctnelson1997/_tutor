@@ -1207,6 +1207,22 @@ describe('Java Interpreter', () => {
       expect(getPropertyValue(msgObject!, 'name')).toEqual({ type: 'string', value: 'Rex' });
       expect(getPropertyValue(msgObject!, 'age')).toEqual({ type: 'number', value: 5 });
     });
+
+    it('dispatches methods declared on a nested static class', () => {
+      const stdout = getStdout(`public class Main {
+        private static class FastReader {
+          public int nextInt() {
+            return 7;
+          }
+        }
+
+        public static void main(String[] args) {
+          FastReader sc = new FastReader();
+          System.out.println(sc.nextInt());
+        }
+      }`);
+      expect(stdout).toContain('7');
+    });
   });
 
   describe('Math Methods', () => {

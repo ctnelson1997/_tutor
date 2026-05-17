@@ -170,8 +170,8 @@ Note: In test mode, `VITE_LANGUAGE` is unset so branding defaults to JS. The Pyt
 - **Single-language builds** — each build bundles only its target engine; tree-shaking removes unused engines
 - **JS engine**: Native JS in disposable blob-URL Web Workers — fresh global scope each run
 - **Python engine**: Pyodide (CPython compiled to WASM) in a persistent module Web Worker — `sys.settrace()` intercepts execution events to build snapshots; Pyodide is loaded eagerly from CDN at page load
-- **Java engine**: AST-walking interpreter using `java-parser` (Chevrotain-based) — parses Java source into a CST, then interprets it directly in a disposable Web Worker; supports primitives, strings, arrays, custom object allocation with constructors, readable/writable instance fields, instance methods, static methods, recursion, and standard control flow.
-- **Java subset limits** — this is not a full JVM. It does not currently support inheritance, interfaces, access control, overloaded constructor/method resolution beyond simple arity matching, generics, exceptions, packages, or multi-class programs.
+- **Java engine**: AST-walking interpreter using `java-parser` (Chevrotain-based) — parses Java source into a CST, then interprets it directly in a disposable Web Worker; supports primitives, strings, arrays, custom object allocation with constructors, readable/writable instance fields, instance methods, nested static class methods, static methods, recursion, and standard control flow.
+- **Java subset limits** — this is not a full JVM. It does not currently support inheritance, interfaces, access control, overloaded constructor/method resolution beyond simple arity matching, generics, exceptions, packages, Java standard-library I/O, or multi-class programs.
 - **TDZ-aware instrumentation** — `let`/`const` tracked incrementally; `var`/`function` hoisted
 - **Block scopes** — Loops with `let`/`const` use `isBlockScope` flag, rendered nested inside parent frame
 - **Condition tracking** — `__condition__()` wraps if/else-if tests, emits snapshots with `condition` field

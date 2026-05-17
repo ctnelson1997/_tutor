@@ -134,8 +134,8 @@ export class JavaInterpreter {
   private nextHeapId = 1;
   private callStack: { name: string; scope: Scope; currentScope: Scope }[] = [];
   private methods: Map<string, MethodDef> = new Map();
+  private methodsByClass: Map<string, Map<string, MethodDef>> = new Map();
   private staticFields: Scope = createScope(null);
-  private className = 'Main';
   private instanceFields: Map<string, FieldDef[]> = new Map();
   private constructors: Map<string, ConstructorDef[]> = new Map();
   private step = 0;
@@ -154,38 +154,7 @@ export class JavaInterpreter {
       const normalClass = child(classDecl, 'normalClassDeclaration');
       if (!normalClass) throw new InterpreterError('Only class declarations are supported', 0);
 
-      this.className = this.extractClassName(normalClass);
-
-      const classBody = child(normalClass, 'classBody');
-      if (!classBody) throw new InterpreterError('Empty class body', 0);
-
-      // Collect methods, static fields, and instance fields.
-      const bodyDecls = children(classBody, 'classBodyDeclaration');
-      for (const bodyDecl of bodyDecls) {
-        const constructorDecl = child(bodyDecl, 'constructorDeclaration');
-        if (constructorDecl) {
-          this.registerConstructor(this.className, constructorDecl);
-          continue;
-        }
-
-        const memberDecl = child(bodyDecl, 'classMemberDeclaration');
-        if (!memberDecl) continue;
-
-        const methodDecl = child(memberDecl, 'methodDeclaration');
-        if (methodDecl) {
-          this.registerMethod(methodDecl);
-          continue;
-        }
-
-        const fieldDecl = child(memberDecl, 'fieldDeclaration');
-        if (fieldDecl) {
-          if (this.isStaticField(fieldDecl)) {
-            this.registerStaticField(fieldDecl);
-          } else {
-            this.registerInstanceField(this.className, fieldDecl);
-          }
-        }
-      }
+      this.registerClass(normalClass, true);
 
       // Initialize static fields
       this.initStaticFields();
@@ -217,7 +186,47 @@ export class JavaInterpreter {
 
   // ── Method registration ──
 
-  private registerMethod(methodDecl: CstNode): void {
+  private registerClass(normalClass: CstNode, isTopLevel: boolean): void {
+    const className = this.extractClassName(normalClass);
+    const classBody = child(normalClass, 'classBody');
+    if (!classBody) throw new InterpreterError('Empty class body', getLine(normalClass));
+
+    const bodyDecls = children(classBody, 'classBodyDeclaration');
+    for (const bodyDecl of bodyDecls) {
+      const constructorDecl = child(bodyDecl, 'constructorDeclaration');
+      if (constructorDecl) {
+        this.registerConstructor(className, constructorDecl);
+        continue;
+      }
+
+      const memberDecl = child(bodyDecl, 'classMemberDeclaration');
+      if (!memberDecl) continue;
+
+      const nestedClassDecl = child(memberDecl, 'classDeclaration');
+      const nestedNormalClass = nestedClassDecl ? child(nestedClassDecl, 'normalClassDeclaration') : undefined;
+      if (nestedNormalClass) {
+        this.registerClass(nestedNormalClass, false);
+        continue;
+      }
+
+      const methodDecl = child(memberDecl, 'methodDeclaration');
+      if (methodDecl) {
+        this.registerMethod(className, methodDecl, isTopLevel);
+        continue;
+      }
+
+      const fieldDecl = child(memberDecl, 'fieldDeclaration');
+      if (fieldDecl) {
+        if (this.isStaticField(fieldDecl)) {
+          this.registerStaticField(fieldDecl);
+        } else {
+          this.registerInstanceField(className, fieldDecl);
+        }
+      }
+    }
+  }
+
+  private registerMethod(className: string, methodDecl: CstNode, exposeUnqualified: boolean): void {
     const header = child(methodDecl, 'methodHeader')!;
     const declarator = child(header, 'methodDeclarator')!;
     const nameToken = token(declarator, 'Identifier')!;
@@ -233,7 +242,14 @@ export class JavaInterpreter {
     const modifiers = children(methodDecl, 'methodModifier');
     const isStatic = modifiers.some(m => has(m, 'Static'));
 
-    this.methods.set(methodName, { name: methodName, returnType, params, body, isStatic });
+    const method = { name: methodName, returnType, params, body, isStatic };
+    const classMethods = this.methodsByClass.get(className) || new Map<string, MethodDef>();
+    classMethods.set(methodName, method);
+    this.methodsByClass.set(className, classMethods);
+
+    if (exposeUnqualified) {
+      this.methods.set(methodName, method);
+    }
   }
 
   private extractClassName(normalClass: CstNode): string {
@@ -1759,7 +1775,7 @@ export class JavaInterpreter {
     }
 
     if (parts.length === 2 && target.kind === 'objectRef') {
-      const method = this.methods.get(methodName);
+      const method = this.methodsByClass.get(target.className)?.get(methodName) || this.methods.get(methodName);
       if (method && !method.isStatic) {
         const callLine = getLine(primary);
         return this.callMethod(method, args, callLine, target);
@@ -1775,6 +1791,15 @@ export class JavaInterpreter {
       }
       if (method && !method.isStatic) {
         throw new InterpreterError(`Cannot call instance method '${methodName}' without an object`, getLine(primary));
+      }
+
+      const thisEntry = lookupVariable(scope, 'this');
+      if (thisEntry?.value.kind === 'objectRef') {
+        const instanceMethod = this.methodsByClass.get(thisEntry.value.className)?.get(methodName);
+        if (instanceMethod && !instanceMethod.isStatic) {
+          const callLine = getLine(primary);
+          return this.callMethod(instanceMethod, args, callLine, thisEntry.value);
+        }
       }
     }
 
