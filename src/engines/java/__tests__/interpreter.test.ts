@@ -1109,6 +1109,7 @@ describe('Java Interpreter', () => {
     it('initializes instance fields with Java default values', () => {
       const snapshot = getLastSnapshot(`public class Main {
         int age;
+        String name;
 
         public static void main(String[] args) {
           Main m = new Main();
@@ -1118,6 +1119,7 @@ describe('Java Interpreter', () => {
       const mainObject = findHeapObject(snapshot, 'Main');
       expect(mainObject).toBeDefined();
       expect(getPropertyValue(mainObject!, 'age')).toEqual({ type: 'number', value: 0 });
+      expect(getPropertyValue(mainObject!, 'name')).toEqual({ type: 'null', value: null });
       expect(snapshot.stdout).toContain('0');
     });
 

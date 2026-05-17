@@ -113,6 +113,12 @@ interface MethodDef {
   isStatic: boolean;
 }
 
+interface FieldDef {
+  name: string;
+  type: JavaType;
+  initializer?: CstNode;
+}
+
 // ── Interpreter ──
 
 export class JavaInterpreter {
@@ -123,6 +129,8 @@ export class JavaInterpreter {
   private callStack: { name: string; scope: Scope; currentScope: Scope }[] = [];
   private methods: Map<string, MethodDef> = new Map();
   private staticFields: Scope = createScope(null);
+  private className = 'Main';
+  private instanceFields: Map<string, FieldDef[]> = new Map();
   private step = 0;
 
   execute(cst: CstNode): { snapshots: ExecutionSnapshot[]; error?: string } {
@@ -139,10 +147,12 @@ export class JavaInterpreter {
       const normalClass = child(classDecl, 'normalClassDeclaration');
       if (!normalClass) throw new InterpreterError('Only class declarations are supported', 0);
 
+      this.className = token(normalClass, 'Identifier')?.image || 'Main';
+
       const classBody = child(normalClass, 'classBody');
       if (!classBody) throw new InterpreterError('Empty class body', 0);
 
-      // Collect all methods and static fields
+      // Collect methods, static fields, and instance fields.
       const bodyDecls = children(classBody, 'classBodyDeclaration');
       for (const bodyDecl of bodyDecls) {
         const memberDecl = child(bodyDecl, 'classMemberDeclaration');
@@ -156,7 +166,11 @@ export class JavaInterpreter {
 
         const fieldDecl = child(memberDecl, 'fieldDeclaration');
         if (fieldDecl) {
-          this.registerStaticField(fieldDecl);
+          if (this.isStaticField(fieldDecl)) {
+            this.registerStaticField(fieldDecl);
+          } else {
+            this.registerInstanceField(this.className, fieldDecl);
+          }
         }
       }
 
@@ -243,6 +257,29 @@ export class JavaInterpreter {
     }
   }
 
+  private isStaticField(fieldDecl: CstNode): boolean {
+    return children(fieldDecl, 'fieldModifier').some(modifier => has(modifier, 'Static'));
+  }
+
+  private registerInstanceField(className: string, fieldDecl: CstNode): void {
+    const type = this.extractUnannType(child(fieldDecl, 'unannType'));
+    const declList = child(fieldDecl, 'variableDeclaratorList');
+    if (!declList) return;
+    const hasDims = has(fieldDecl, 'dims');
+    const fields = this.instanceFields.get(className) || [];
+
+    for (const decl of children(declList, 'variableDeclarator')) {
+      const idNode = child(decl, 'variableDeclaratorId');
+      const name = idNode ? token(idNode, 'Identifier')?.image || 'unknown' : 'unknown';
+      const declHasDims = idNode && has(idNode, 'dims');
+      const finalType = (hasDims || declHasDims) ? type + '[]' : type;
+      const initializer = child(decl, 'variableInitializer');
+      fields.push({ name, type: finalType, initializer });
+    }
+
+    this.instanceFields.set(className, fields);
+  }
+
   private initStaticFields(): void {
     for (const [_name, entry] of this.staticFields.variables) {
       const asAny = entry as unknown as { initializer?: CstNode };
@@ -252,6 +289,17 @@ export class JavaInterpreter {
         delete asAny.initializer;
       }
     }
+  }
+
+  private createInstanceFields(className: string, scope: Scope): Map<string, JavaValue> {
+    const fields = new Map<string, JavaValue>();
+    for (const field of this.instanceFields.get(className) || []) {
+      const value = field.initializer
+        ? this.evalVariableInitializer(field.initializer, field.type, scope)
+        : defaultValue(field.type);
+      fields.set(field.name, value);
+    }
+    return fields;
   }
 
   // ── Type extraction ──
@@ -1784,8 +1832,8 @@ export class JavaInterpreter {
       return { kind: 'objectRef', heapId, className };
     }
 
-    // Generic object — create with empty fields
-    const heapId = this.allocObject(className, new Map());
+    // Generic object — create with declared instance fields.
+    const heapId = this.allocObject(className, this.createInstanceFields(className, scope));
     return { kind: 'objectRef', heapId, className };
   }
 
