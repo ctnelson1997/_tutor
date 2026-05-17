@@ -170,7 +170,7 @@ Note: In test mode, `VITE_LANGUAGE` is unset so branding defaults to JS. The Pyt
 - **Single-language builds** — each build bundles only its target engine; tree-shaking removes unused engines
 - **JS engine**: Native JS in disposable blob-URL Web Workers — fresh global scope each run
 - **Python engine**: Pyodide (CPython compiled to WASM) in a persistent module Web Worker — `sys.settrace()` intercepts execution events to build snapshots; Pyodide is loaded eagerly from CDN at page load
-- **Java engine**: AST-walking interpreter using `java-parser` (Chevrotain-based) — parses Java source into a CST, then interprets it directly in a disposable Web Worker; supports primitives, strings, arrays, custom object allocation with default-initialized readable/writable instance fields, static methods, recursion, and standard control flow. Constructors and instance method dispatch are still being added in stages.
+- **Java engine**: AST-walking interpreter using `java-parser` (Chevrotain-based) — parses Java source into a CST, then interprets it directly in a disposable Web Worker; supports primitives, strings, arrays, custom object allocation with constructors and readable/writable instance fields, static methods, recursion, and standard control flow. Instance method dispatch is still being added in stages.
 - **TDZ-aware instrumentation** — `let`/`const` tracked incrementally; `var`/`function` hoisted
 - **Block scopes** — Loops with `let`/`const` use `isBlockScope` flag, rendered nested inside parent frame
 - **Condition tracking** — `__condition__()` wraps if/else-if tests, emits snapshots with `condition` field

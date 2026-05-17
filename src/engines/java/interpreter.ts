@@ -119,6 +119,12 @@ interface FieldDef {
   initializer?: CstNode;
 }
 
+interface ConstructorDef {
+  className: string;
+  params: { name: string; type: JavaType }[];
+  body: CstNode;
+}
+
 // ── Interpreter ──
 
 export class JavaInterpreter {
@@ -131,6 +137,7 @@ export class JavaInterpreter {
   private staticFields: Scope = createScope(null);
   private className = 'Main';
   private instanceFields: Map<string, FieldDef[]> = new Map();
+  private constructors: Map<string, ConstructorDef[]> = new Map();
   private step = 0;
 
   execute(cst: CstNode): { snapshots: ExecutionSnapshot[]; error?: string } {
@@ -155,6 +162,12 @@ export class JavaInterpreter {
       // Collect methods, static fields, and instance fields.
       const bodyDecls = children(classBody, 'classBodyDeclaration');
       for (const bodyDecl of bodyDecls) {
+        const constructorDecl = child(bodyDecl, 'constructorDeclaration');
+        if (constructorDecl) {
+          this.registerConstructor(this.className, constructorDecl);
+          continue;
+        }
+
         const memberDecl = child(bodyDecl, 'classMemberDeclaration');
         if (!memberDecl) continue;
 
@@ -213,28 +226,48 @@ export class JavaInterpreter {
     const result = child(header, 'result');
     const returnType = result ? this.extractResultType(result) : 'void';
 
-    const params: { name: string; type: JavaType }[] = [];
     const paramList = child(declarator, 'formalParameterList');
-    if (paramList) {
-      const formalParams = children(paramList, 'formalParameter');
-      for (const fp of formalParams) {
-        const regularParam = child(fp, 'variableParaRegularParameter');
-        if (regularParam) {
-          const paramType = this.extractUnannType(child(regularParam, 'unannType'));
-          const paramId = child(regularParam, 'variableDeclaratorId');
-          const paramName = paramId ? token(paramId, 'Identifier')?.image || 'unknown' : 'unknown';
-          // Check for array dims on the parameter
-          const hasDims = paramId && has(paramId, 'dims');
-          params.push({ name: paramName, type: hasDims ? paramType + '[]' : paramType });
-        }
-      }
-    }
+    const params = this.extractFormalParameters(paramList);
 
     const body = child(child(methodDecl, 'methodBody')!, 'block')!;
     const modifiers = children(methodDecl, 'methodModifier');
     const isStatic = modifiers.some(m => has(m, 'Static'));
 
     this.methods.set(methodName, { name: methodName, returnType, params, body, isStatic });
+  }
+
+  private registerConstructor(className: string, ctorDecl: CstNode): void {
+    const declarator = child(ctorDecl, 'constructorDeclarator')!;
+    const simpleTypeName = child(declarator, 'simpleTypeName');
+    const typeIdentifier = simpleTypeName ? child(simpleTypeName, 'typeIdentifier') : undefined;
+    const nameToken = typeIdentifier ? token(typeIdentifier, 'Identifier') : undefined;
+    const ctorName = nameToken?.image || className;
+    const paramList = child(declarator, 'formalParameterList');
+    const params = this.extractFormalParameters(paramList);
+    const body = child(ctorDecl, 'constructorBody')!;
+    const constructors = this.constructors.get(className) || [];
+    constructors.push({ className: ctorName, params, body });
+    this.constructors.set(className, constructors);
+  }
+
+  private extractFormalParameters(paramList: CstNode | undefined): { name: string; type: JavaType }[] {
+    const params: { name: string; type: JavaType }[] = [];
+    if (!paramList) return params;
+
+    const formalParams = children(paramList, 'formalParameter');
+    for (const fp of formalParams) {
+      const regularParam = child(fp, 'variableParaRegularParameter');
+      if (regularParam) {
+        const paramType = this.extractUnannType(child(regularParam, 'unannType'));
+        const paramId = child(regularParam, 'variableDeclaratorId');
+        const paramName = paramId ? token(paramId, 'Identifier')?.image || 'unknown' : 'unknown';
+        // Check for array dims on the parameter
+        const hasDims = paramId && has(paramId, 'dims');
+        params.push({ name: paramName, type: hasDims ? paramType + '[]' : paramType });
+      }
+    }
+
+    return params;
   }
 
   private registerStaticField(fieldDecl: CstNode): void {
@@ -1765,6 +1798,38 @@ export class JavaInterpreter {
     return javaNull();
   }
 
+  private findConstructor(className: string, args: JavaValue[]): ConstructorDef | undefined {
+    return (this.constructors.get(className) || []).find(ctor => ctor.params.length === args.length);
+  }
+
+  private callConstructor(
+    ctor: ConstructorDef,
+    thisValue: JavaValue,
+    args: JavaValue[],
+    callSiteLine: number,
+  ): void {
+    const ctorScope = createScope(this.staticFields);
+    setVariable(ctorScope, 'this', thisValue, ctor.className);
+
+    for (let i = 0; i < ctor.params.length; i++) {
+      const param = ctor.params[i];
+      const arg = i < args.length ? args[i] : defaultValue(param.type);
+      setVariable(ctorScope, param.name, arg, param.type);
+    }
+
+    this.emitSnapshot(callSiteLine);
+    this.callStack.push({ name: ctor.className, scope: ctorScope, currentScope: ctorScope });
+    try {
+      this.executeBlock(ctor.body, ctorScope);
+    } catch (e) {
+      if (!(e instanceof ReturnSignal)) {
+        throw e;
+      }
+    } finally {
+      this.callStack.pop();
+    }
+  }
+
   // ── new expression ──
 
   private evalNewExpression(newExpr: CstNode, scope: Scope): JavaValue {
@@ -1774,7 +1839,7 @@ export class JavaInterpreter {
       return this.evalArrayCreation(arrayCreation, scope);
     }
 
-    // Object creation: new ClassName(args) — not yet fully supported
+    // Object creation: new ClassName(args)
     const unqualified = child(newExpr, 'unqualifiedClassInstanceCreationExpression');
     if (unqualified) {
       return this.evalObjectCreation(unqualified, scope);
@@ -1903,9 +1968,14 @@ export class JavaInterpreter {
       return { kind: 'objectRef', heapId, className };
     }
 
-    // Generic object — create with declared instance fields.
+    // Generic object — create with declared instance fields, then run a matching constructor.
     const heapId = this.allocObject(className, this.createInstanceFields(className, scope));
-    return { kind: 'objectRef', heapId, className };
+    const objectRef: JavaValue = { kind: 'objectRef', heapId, className };
+    const ctor = this.findConstructor(className, args);
+    if (ctor) {
+      this.callConstructor(ctor, objectRef, args, getLine(creation));
+    }
+    return objectRef;
   }
 
   // ── Built-in methods ──

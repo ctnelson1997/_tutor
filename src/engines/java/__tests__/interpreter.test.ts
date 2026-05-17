@@ -1145,6 +1145,7 @@ describe('Java Interpreter', () => {
 
         public Main(int a) {
           this.age = a;
+          return;
         }
 
         public static void main(String[] args) {
