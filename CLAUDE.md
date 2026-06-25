@@ -159,6 +159,8 @@ Legacy share/embed routes (without `:lang`) default to `branding.languageId` —
 | Python Tracer | `src/engines/py/__tests__/tracer.test.ts` | Tracer script structure: settrace events, serialization, limits, security sandbox, baseline filtering |
 | Python Security | `src/engines/py/__tests__/security.test.ts` | All suspicious patterns, false positive avoidance, edge cases |
 | Java Interpreter | `src/engines/java/__tests__/interpreter.test.ts` | Variables, arithmetic, control flow, methods, arrays, strings, snapshots, block scopes |
+| Java behavior comparison | `src/engines/java/__tests__/behavior-comparison.test.ts` | End-to-end snippets with expected stdout (computed against real Java semantics). Includes regression coverage for short-circuit && / ||, inline `new int[]{...}` literals, return-inside-for stack cleanup, StringBuilder / ArrayList / HashMap method dispatch. Add new cases here when fixing engine bugs found via real-world Java code. |
+| Python behavior comparison | `src/engines/py/__tests__/behavior-comparison.test.ts` | Runs each snippet as plain Python via subprocess AND through the tracer script, asserts identical stdout (and, for selected cases, heap-object fidelity). Skipped when no `python` is on PATH. Add new cases here when fixing tracer bugs found via real-world Python code. |
 
 **Note**: The project uses `@vitejs/plugin-react-swc` (SWC) instead of `@vitejs/plugin-react` (Babel). The Babel plugin had a global init race condition on Windows that caused intermittent "Cannot read properties of undefined (reading 'config')" test failures. SWC is a drop-in replacement that eliminates this issue.
 
@@ -171,7 +173,7 @@ Note: In test mode, `VITE_LANGUAGE` is unset so branding defaults to JS. The Pyt
 - **Single-language builds** — each build bundles only its target engine; tree-shaking removes unused engines
 - **JS engine**: Native JS in disposable blob-URL Web Workers — fresh global scope each run
 - **Python engine**: Pyodide (CPython compiled to WASM) in a persistent module Web Worker — `sys.settrace()` intercepts execution events to build snapshots; Pyodide is loaded eagerly from CDN at page load
-- **Java engine**: AST-walking interpreter using `java-parser` (Chevrotain-based) — parses Java source into a CST, then interprets it directly in a disposable Web Worker; supports primitives, strings, arrays, objects, static methods, recursion, and standard control flow
+- **Java engine**: AST-walking interpreter using `java-parser` (Chevrotain-based) — parses Java source into a CST, then interprets it directly in a disposable Web Worker; supports primitives, strings, arrays, objects, static methods, recursion, and standard control flow. **Short-circuit `&&` / `||`** are implemented via operand thunks in `evalBinaryExpression` — operands are stored as lazy `() => JavaValue` and only forced when the operator needs them, so `false && side()` correctly skips `side()`. **Known limitations:** user-defined nested (`static class`) types with instance methods aren't supported — students should use static methods on the outer class, or built-in classes (`StringBuilder`, `ArrayList`, `HashMap`) for educational examples requiring objects.
 - **TDZ-aware instrumentation** — `let`/`const` tracked incrementally; `var`/`function` hoisted. Names declared by a statement are only added to the in-scope list AFTER the statement is instrumented, so nested functions inside an initializer's RHS don't capture the still-uninitialized variable as a closure
 - **Block scopes** — Loops with `let`/`const` use `isBlockScope` flag, rendered nested inside parent frame
 - **Per-iteration bindings preserved** — `for (let i...)` keeps its init and update in the for-statement slots (not extracted into the parent block) so closures created inside the body capture distinct per-iteration values, matching ECMA-262 semantics
@@ -185,7 +187,7 @@ Note: In test mode, `VITE_LANGUAGE` is unset so branding defaults to JS. The Pyt
 - **Security**: shared links show warning interstitial, `eval` blocked, static analysis flags suspicious APIs
 - **`HeapObjectType`** is an open string union — engines can emit custom types (e.g. Python's `dict`, `tuple`)
 - **Target engine eagerly loaded** at startup in `main.tsx` via `getEngine(branding.languageId)`
-- **Python engine** uses `sys.settrace()` in Pyodide; baseline namespace keys are snapshotted before execution to filter builtins from variable display
+- **Python engine** uses `sys.settrace()` in Pyodide; baseline namespace keys are snapshotted before execution to filter builtins from variable display. **Object serialization is user-code-safe** — `_serialize_heap_object` iterates `obj.__dict__` directly (never via attribute access) so `@property` descriptors and `__getattr__` hooks aren't triggered during snapshot building. **`__slots__` classes are also rendered correctly** — slots are read via `getattr` (slot descriptors don't invoke user code) and wrapped in try/except so a slot raising on read doesn't corrupt the whole snapshot
 - **Python reference mode** — `showReferences` store flag + `promoteToHeap()` utility converts inline primitives to heap objects, modeling Python's "everything is an object" semantics with value deduplication (reflects interning)
 - `acorn-walk` is an unused legacy dependency — can be removed
 

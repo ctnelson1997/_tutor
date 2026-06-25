@@ -1008,34 +1008,37 @@ export class JavaInterpreter {
       return aLine !== bLine ? aLine - bLine : aCol - bCol;
     });
 
-    // Separate operands and operators
-    const operands: JavaValue[] = [];
+    // Build operand THUNKS rather than evaluating eagerly — the operator chain
+    // needs to be able to short-circuit && and || without forcing the RHS.
+    // Without thunks, `false && expensive()` would still call expensive(),
+    // violating Java semantics and producing observable side effects.
+    const operandThunks: Array<() => JavaValue> = [];
     const operators: string[] = [];
 
     for (const item of allChildren) {
       if (isCstNode(item) && item.name === 'unaryExpression') {
-        operands.push(this.evalUnaryExpression(item, scope));
+        const node = item;
+        operandThunks.push(() => this.evalUnaryExpression(node, scope));
       } else if (isCstNode(item) && item.name === 'expression') {
-        // Right side of assignment
-        operands.push(this.evalExpression(item, scope));
+        const node = item;
+        operandThunks.push(() => this.evalExpression(node, scope));
       } else if (isCstToken(item)) {
         const op = item.image;
-        // Skip parentheses and other non-operator tokens
         if (['(', ')', '{', '}', '[', ']', ';', ','].includes(op)) continue;
         operators.push(op);
       }
     }
 
-    if (operands.length === 0) return javaNull();
-    if (operators.length === 0) return operands[0];
+    if (operandThunks.length === 0) return javaNull();
+    if (operators.length === 0) return operandThunks[0]();
 
     // Handle assignment operators
     if (operators.length === 1 && isAssignmentOp(operators[0])) {
       return this.evalAssignment(binExpr, operators[0], scope);
     }
 
-    // Evaluate left to right with precedence
-    return this.evalOperatorChain(operands, operators);
+    // Evaluate left to right with precedence (short-circuits && / ||)
+    return this.evalOperatorChain(operandThunks, operators);
   }
 
   private evalAssignment(binExpr: CstNode, op: string, scope: Scope): JavaValue {
@@ -1141,7 +1144,7 @@ export class JavaInterpreter {
     throw new InterpreterError(`Variable '${name}' is not defined`, 0);
   }
 
-  private evalOperatorChain(operands: JavaValue[], operators: string[]): JavaValue {
+  private evalOperatorChain(operandThunks: Array<() => JavaValue>, operators: string[]): JavaValue {
     // Handle operator precedence by grouping
     // Order: * / % -> + - -> << >> >>> -> < > <= >= -> == != -> & -> ^ -> | -> && -> ||
     const precGroups = [
@@ -1157,27 +1160,43 @@ export class JavaInterpreter {
       ['||'],
     ];
 
-    let vals = [...operands];
+    let vals: Array<() => JavaValue> = [...operandThunks];
     let ops = [...operators];
+    const heap = this.heap;
 
     for (const group of precGroups) {
-      const newVals: JavaValue[] = [vals[0]];
+      const newVals: Array<() => JavaValue> = [vals[0]];
       const newOps: string[] = [];
       for (let i = 0; i < ops.length; i++) {
-        if (group.includes(ops[i])) {
+        const op = ops[i];
+        if (group.includes(op)) {
           const left = newVals.pop()!;
           const right = vals[i + 1];
-          newVals.push(applyBinaryOp(ops[i], left, right, this.heap));
+          if (op === '&&') {
+            // Short-circuit: if left is false, never invoke right.
+            newVals.push(() => {
+              const l = left();
+              return javaValueToBoolean(l) ? right() : javaBool(false);
+            });
+          } else if (op === '||') {
+            // Short-circuit: if left is true, never invoke right.
+            newVals.push(() => {
+              const l = left();
+              return javaValueToBoolean(l) ? javaBool(true) : right();
+            });
+          } else {
+            newVals.push(() => applyBinaryOp(op, left(), right(), heap));
+          }
         } else {
           newVals.push(vals[i + 1]);
-          newOps.push(ops[i]);
+          newOps.push(op);
         }
       }
       vals = newVals;
       ops = newOps;
     }
 
-    return vals[0];
+    return vals[0]();
   }
 
   private evalUnaryExpression(unary: CstNode, scope: Scope): JavaValue {
@@ -1592,6 +1611,17 @@ export class JavaInterpreter {
             return javaString(javaValueToString(obj, this.heap));
           }
         }
+        if (obj.kind === 'objectRef') {
+          if (obj.className === 'StringBuilder' || obj.className === 'StringBuffer') {
+            return this.evalStringBuilderMethod(obj, methodName, args);
+          }
+          if (obj.className === 'ArrayList') {
+            return this.evalArrayListMethod(obj, methodName, args);
+          }
+          if (obj.className === 'HashMap') {
+            return this.evalHashMapMethod(obj, methodName, args);
+          }
+        }
       } catch {
         // Not a variable
       }
@@ -1697,7 +1727,12 @@ export class JavaInterpreter {
     }
 
     // With initializer: new int[]{1, 2, 3}
-    const withInit = child(arrayCreation, 'arrayCreationExpressionWithInitializerSuffix');
+    // java-parser names this `arrayCreationWithInitializerSuffix` (no "Expression"
+    // infix), unlike the without-initializer form. Check both spellings so we
+    // tolerate parser version drift.
+    const withInit =
+      child(arrayCreation, 'arrayCreationWithInitializerSuffix') ||
+      child(arrayCreation, 'arrayCreationExpressionWithInitializerSuffix');
     if (withInit) {
       const arrayInit = child(withInit, 'arrayInitializer');
       if (arrayInit) {
@@ -1863,6 +1898,127 @@ export class JavaInterpreter {
       default:
         throw new InterpreterError(`Unknown Math method: ${method}()`, 0);
     }
+  }
+
+  private evalStringBuilderMethod(ref: JavaValue, method: string, args: JavaValue[]): JavaValue {
+    if (ref.kind !== 'objectRef') return javaNull();
+    const obj = this.heap.get(ref.heapId);
+    if (!obj || !isJavaObject(obj)) return javaNull();
+    const cur = obj.fields.get('value');
+    const curStr = cur && cur.kind === 'string' ? cur.value : '';
+    switch (method) {
+      case 'append': {
+        const next = curStr + (args.length > 0 ? javaValueToString(args[0], this.heap) : '');
+        obj.fields.set('value', javaString(next));
+        return ref; // append returns the builder for chaining
+      }
+      case 'toString':
+        return javaString(curStr);
+      case 'length':
+        return javaInt(curStr.length);
+      case 'charAt':
+        return javaChar(curStr.charCodeAt(javaValueToNumber(args[0]) | 0));
+      case 'reverse': {
+        obj.fields.set('value', javaString([...curStr].reverse().join('')));
+        return ref;
+      }
+      case 'setLength': {
+        const n = javaValueToNumber(args[0]) | 0;
+        const next = n <= curStr.length ? curStr.slice(0, n) : curStr + '\0'.repeat(n - curStr.length);
+        obj.fields.set('value', javaString(next));
+        return javaNull();
+      }
+      case 'deleteCharAt': {
+        const idx = javaValueToNumber(args[0]) | 0;
+        obj.fields.set('value', javaString(curStr.slice(0, idx) + curStr.slice(idx + 1)));
+        return ref;
+      }
+      case 'insert': {
+        const idx = javaValueToNumber(args[0]) | 0;
+        const ins = javaValueToString(args[1], this.heap);
+        obj.fields.set('value', javaString(curStr.slice(0, idx) + ins + curStr.slice(idx)));
+        return ref;
+      }
+    }
+    throw new InterpreterError(`Unknown StringBuilder method: ${method}()`, 0);
+  }
+
+  private evalArrayListMethod(ref: JavaValue, method: string, args: JavaValue[]): JavaValue {
+    if (ref.kind !== 'objectRef') return javaNull();
+    const obj = this.heap.get(ref.heapId);
+    if (!obj || !isJavaObject(obj)) return javaNull();
+    const dataRef = obj.fields.get('__data__');
+    if (!dataRef || dataRef.kind !== 'arrayRef') return javaNull();
+    const data = this.heap.get(dataRef.heapId);
+    if (!data || !isJavaArray(data)) return javaNull();
+    switch (method) {
+      case 'add': {
+        data.elements.push(args[0] ?? javaNull());
+        obj.fields.set('size', javaInt(data.elements.length));
+        return javaBool(true);
+      }
+      case 'get': {
+        const i = javaValueToNumber(args[0]) | 0;
+        return data.elements[i] ?? javaNull();
+      }
+      case 'set': {
+        const i = javaValueToNumber(args[0]) | 0;
+        const prev = data.elements[i] ?? javaNull();
+        data.elements[i] = args[1];
+        return prev;
+      }
+      case 'remove': {
+        const i = javaValueToNumber(args[0]) | 0;
+        const [removed] = data.elements.splice(i, 1);
+        obj.fields.set('size', javaInt(data.elements.length));
+        return removed ?? javaNull();
+      }
+      case 'size': return javaInt(data.elements.length);
+      case 'isEmpty': return javaBool(data.elements.length === 0);
+      case 'clear':
+        data.elements.length = 0;
+        obj.fields.set('size', javaInt(0));
+        return javaNull();
+      case 'contains': {
+        const target = args[0];
+        for (const e of data.elements) {
+          if (javaValueToString(e, this.heap) === javaValueToString(target, this.heap)) return javaBool(true);
+        }
+        return javaBool(false);
+      }
+    }
+    throw new InterpreterError(`Unknown ArrayList method: ${method}()`, 0);
+  }
+
+  private evalHashMapMethod(ref: JavaValue, method: string, args: JavaValue[]): JavaValue {
+    if (ref.kind !== 'objectRef') return javaNull();
+    const obj = this.heap.get(ref.heapId);
+    if (!obj || !isJavaObject(obj)) return javaNull();
+    switch (method) {
+      case 'put': {
+        const k = javaValueToString(args[0], this.heap);
+        const prev = obj.fields.get(k) ?? javaNull();
+        obj.fields.set(k, args[1]);
+        return prev;
+      }
+      case 'get': {
+        const k = javaValueToString(args[0], this.heap);
+        return obj.fields.get(k) ?? javaNull();
+      }
+      case 'containsKey': {
+        const k = javaValueToString(args[0], this.heap);
+        return javaBool(obj.fields.has(k));
+      }
+      case 'remove': {
+        const k = javaValueToString(args[0], this.heap);
+        const prev = obj.fields.get(k) ?? javaNull();
+        obj.fields.delete(k);
+        return prev;
+      }
+      case 'size': return javaInt(obj.fields.size);
+      case 'isEmpty': return javaBool(obj.fields.size === 0);
+    }
+    throw new InterpreterError(`Unknown HashMap method: ${method}()`, 0);
   }
 
   private evalWrapperMethod(className: string, method: string, args: JavaValue[]): JavaValue {

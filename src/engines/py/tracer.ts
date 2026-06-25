@@ -269,18 +269,49 @@ def _serialize_heap_object(obj, heap_id, heap_objects, visited):
     elif callable(obj):
         object_type = "function"
         label = getattr(obj, '__name__', '') or getattr(obj, '__qualname__', '')
-    elif hasattr(obj, '__dict__'):
-        # Class instance
+    elif hasattr(obj, '__dict__') or hasattr(obj, '__slots__'):
+        # Class instance. We iterate the underlying attribute storage
+        # directly (not via getattr) so that user-defined @property
+        # descriptors and __getattr__ hooks are NOT triggered during
+        # snapshot serialization (which could recurse or raise).
         object_type = "object"
         label = type(obj).__name__
         count = 0
-        for k, v in obj.__dict__.items():
-            if count >= _MAX_DICT_PROPS:
-                break
-            if not k.startswith('_'):
+        # __dict__-backed attributes
+        if hasattr(obj, '__dict__'):
+            for k, v in obj.__dict__.items():
+                if count >= _MAX_DICT_PROPS:
+                    break
+                if not k.startswith('_'):
+                    properties.append({
+                        "key": k,
+                        "value": _serialize_value(v, heap_objects, visited)
+                    })
+                    count += 1
+        # __slots__-backed attributes. We have to use getattr() to read
+        # slot values, but slots are descriptor-backed by the class — they
+        # do not invoke user-level __getattr__ / @property. Wrap in
+        # try/except so a slot raising during read doesn't corrupt the
+        # whole snapshot.
+        slots = getattr(type(obj), '__slots__', None) or getattr(obj, '__slots__', None)
+        if slots:
+            slot_names = [slots] if isinstance(slots, str) else slots
+            for slot_name in slot_names:
+                if count >= _MAX_DICT_PROPS:
+                    break
+                if not isinstance(slot_name, str) or slot_name.startswith('_'):
+                    continue
+                try:
+                    sval = getattr(obj, slot_name)
+                except AttributeError:
+                    continue  # uninitialized slot
+                except Exception:
+                    properties.append({"key": slot_name, "value": {"type": "string", "value": "<error>"}})
+                    count += 1
+                    continue
                 properties.append({
-                    "key": k,
-                    "value": _serialize_value(v, heap_objects, visited)
+                    "key": slot_name,
+                    "value": _serialize_value(sval, heap_objects, visited)
                 })
                 count += 1
 
