@@ -133,14 +133,26 @@ function __serializeHeapObject__(obj, heapId, heapObjects, visited) {
     }
     var keys = Object.keys(obj);
     for (var k = 0; k < keys.length && k < 50; k++) {
+      var ki = keys[k];
+      // Skip accessor properties (get/set). Invoking the getter would run
+      // user code, which would re-enter serialization via __pushFrame__ /
+      // __capture__ and recurse without bound (the getter accesses \`this\`,
+      // which is the object being serialized).
+      var desc;
+      try { desc = Object.getOwnPropertyDescriptor(obj, ki); } catch(e) {}
+      if (desc && (desc.get || desc.set)) {
+        var label = desc.get && desc.set ? "<accessor>" : desc.get ? "<getter>" : "<setter>";
+        properties.push({ key: ki, value: { type: "string", value: label } });
+        continue;
+      }
       try {
         properties.push({
-          key: keys[k],
-          value: __serializeValue__(obj[keys[k]], heapObjects, visited)
+          key: ki,
+          value: __serializeValue__(obj[ki], heapObjects, visited)
         });
       } catch(e) {
         properties.push({
-          key: keys[k],
+          key: ki,
           value: { type: "string", value: "[error reading property]" }
         });
       }
@@ -424,7 +436,28 @@ function __pushFrame__(name, params, isBlockScope, closureVars, thisVal) {
   __callStack__.push(frame);
 }
 
+// Pop a function frame plus any block-scope frames above it WITHOUT
+// emitting a snapshot. Invoked from the synthetic catch wrapper that
+// instrumentFunction wraps around every function body so that throws
+// propagating out of the function still clean up the call stack.
+function __popThrowingFrame__() {
+  while (__callStack__.length > 1 && __callStack__[__callStack__.length - 1].isBlockScope) {
+    __callStack__.pop();
+  }
+  if (__callStack__.length > 1) __callStack__.pop();
+}
+
 function __popFrame__(retVal, line) {
+  // When called from a wrapped \`return\` (line is provided), the user is
+  // exiting the enclosing function. Any block-scope frames pushed by
+  // for/while/do-while loops sitting between the return and the function
+  // frame must also be popped — otherwise they leak across subsequent
+  // visualizations.
+  if (line !== undefined) {
+    while (__callStack__.length > 1 && __callStack__[__callStack__.length - 1].isBlockScope) {
+      __callStack__.pop();
+    }
+  }
   if (__callStack__.length > 1) {
     // Emit a snapshot showing the return value before popping the frame
     if (line !== undefined && __snapshots__.length < __MAX_SNAPSHOTS) {

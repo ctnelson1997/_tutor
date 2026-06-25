@@ -377,25 +377,16 @@ function instrumentBlock(
         stmt.init = null;
         body.splice(i, 0, initDecl);
         continue; // re-process at index i, which now points to initDecl
-      } else if (
-        stmt.init.type === 'VariableDeclaration' &&
-        (stmt.init.kind === 'let' || stmt.init.kind === 'const')
-      ) {
-        // Extract let/const init so the variable is in scope before __pushFrame__
-        // is called in the wrapper block (needed to keep the block-scope frame alive
-        // during condition checks). Stash var names on the node for instrumentLoop.
-        const bsvNames: string[] = [];
-        for (const decl of stmt.init.declarations) {
-          extractPatternNames(decl.id, bsvNames);
-        }
-        stmt._blockScopeVars = bsvNames;
-        const initDecl = stmt.init;
-        initDecl._isBlockScopeInit = true; // marks this decl as loop-local; skip parent captures
-        initDecl._forColumnRange = initDecl.loc;
-        stmt.init = null;
-        body.splice(i, 0, initDecl);
-        continue; // re-process at index i (initDecl), then the for-stmt
       } else if (stmt.init.type !== 'VariableDeclaration') {
+        // NOTE: `let`/`const` for-inits are intentionally NOT extracted out of
+        // the for-statement. `for (let i = 0; ...; ...) { ... }` creates a
+        // fresh per-iteration binding for `i` — closures inside the body
+        // capture each iteration's distinct `i`. Hoisting the declaration
+        // into the parent block collapses those bindings into one shared
+        // variable, breaking the classic
+        //   `for (let i...) funcs.push(() => i)`
+        // pattern (all closures would see the final `i`). instrumentLoop
+        // pushes the block-scope frame inside the loop body instead.
         // Expression init (e.g. i = 0)
         const exprStmt: AnyNode = {
           type: 'ExpressionStatement',
@@ -430,8 +421,25 @@ function instrumentBlock(
       isFirstStmt = false;
     }
 
-    // Before recursing, collect names this statement declares so that
-    // the capture AFTER this statement can include them.
+    // Save block-scoped loop vars before instrumentStatement deletes them.
+    // These were stashed by the for-init extraction path and belong only to
+    // the loop's block frame — not the parent scope.
+    const stmtBlockScopeVars: string[] | null = stmt._blockScopeVars
+      ? [...(stmt._blockScopeVars as string[])]
+      : null;
+
+    // Recurse into nested structures first
+    // Pass the full set of vars visible at this point.
+    // Note: names declared by THIS statement are intentionally NOT yet in
+    // declaredSoFar — a `let x = expr` whose RHS contains a nested function
+    // must not capture `x` as a closure variable, because the runtime would
+    // try to read `x` (still in TDZ) when the function executes during RHS
+    // evaluation. var/function names are already in declaredSoFar via the
+    // hoisted pass at the top of instrumentBlock.
+    instrumentStatement(stmt, declaredSoFar);
+
+    // After instrumenting, register this statement's declared names so that
+    // subsequent statements (and the post-capture below) see them.
     // Skip block-scope-init declarations (extracted for-loop let/const vars) —
     // those belong only to the loop's block frame, not the parent scope.
     if (!stmt._isBlockScopeInit) {
@@ -442,17 +450,6 @@ function instrumentBlock(
         }
       }
     }
-
-    // Save block-scoped loop vars before instrumentStatement deletes them.
-    // These were stashed by the for-init extraction path and belong only to
-    // the loop's block frame — not the parent scope.
-    const stmtBlockScopeVars: string[] | null = stmt._blockScopeVars
-      ? [...(stmt._blockScopeVars as string[])]
-      : null;
-
-    // Recurse into nested structures first
-    // Pass the full set of vars visible at this point
-    instrumentStatement(stmt, declaredSoFar);
 
     // If instrumentLoop flagged a block-scope wrap (for let/const for-loops),
     // replace body[i] with: { __pushFrame__('for',{i},true); for(...){...}; __popFrame__(); }
@@ -793,16 +790,54 @@ function instrumentFunction(fn: AnyNode, _parentVars: string[]): void {
   // giving us a snapshot on function entry)
   instrumentBlock(body, fnScopeVars, true);
 
-  // Insert __pushFrame__ at the beginning of the function body
-  // Arrow functions don't have their own `this`, so only capture it for regular functions
-  const captureThis = fn.type !== 'ArrowFunctionExpression';
-  body.unshift(buildPushFrame(name, paramNames, false, _closureVarNames, captureThis));
-
-  // Wrap return values so the frame pops AFTER the expression evaluates
+  // Wrap return values so the frame pops AFTER the expression evaluates.
+  // Do this BEFORE wrapping the body in try/catch — otherwise the recursion
+  // into the user-level try would also rewrite our synthetic try.
   wrapReturnsWithPopFrame(body);
 
-  // Add __popFrame__ at the very end (for functions that fall through)
-  body.push(buildPopFrame());
+  // Wrap the entire body in `try { ... } catch (e) { __popThrowingFrame__(); throw e; }`
+  // so that throws which propagate out of the function still pop the frame.
+  // Without this, a `throw` skips the trailing __popFrame__ at the bottom of
+  // the body and the frame leaks onto every subsequent visualization.
+  const userBody = body.splice(0, body.length);
+  userBody.push(buildPopFrame()); // fall-through pop sits inside the try
+
+  const tryStmt: AnyNode = {
+    type: 'TryStatement',
+    block: { type: 'BlockStatement', body: userBody },
+    handler: {
+      type: 'CatchClause',
+      param: { type: 'Identifier', name: '__e__' },
+      body: {
+        type: 'BlockStatement',
+        body: [
+          {
+            type: 'ExpressionStatement',
+            expression: {
+              type: 'CallExpression',
+              callee: { type: 'Identifier', name: '__popThrowingFrame__' },
+              arguments: [],
+              optional: false,
+            },
+          },
+          {
+            type: 'ThrowStatement',
+            argument: { type: 'Identifier', name: '__e__' },
+          },
+        ],
+      },
+    },
+    finalizer: null,
+  };
+  body.push(tryStmt);
+
+  // Insert __pushFrame__ at the very beginning of the function body (outside
+  // the try) so that the frame is pushed before any user-visible operation,
+  // including the try entry.
+  // Arrow functions don't have their own `this`, so only capture it for regular functions.
+  // Derived class constructors must not read `this` before super() returns.
+  const captureThis = fn.type !== 'ArrowFunctionExpression' && !fn._skipThisCapture;
+  body.unshift(buildPushFrame(name, paramNames, false, _closureVarNames, captureThis));
 
   // Restore saved state
   _functionDepth = savedFunctionDepth;
@@ -840,19 +875,57 @@ function wrapReturnsWithPopFrame(body: AnyNode[]): void {
 }
 
 /**
- * Recurse into branch-bearing statements (if/else) to find
- * ReturnStatements nested inside blocks.
+ * Recurse into nested control-flow statements to find ReturnStatements
+ * that need __popFrame__ wrapping. Without this, a `return` inside a
+ * try/catch/finally/for/while/switch/labeled block exits the function
+ * with the call-stack frame still pushed, leaving phantom frames on
+ * every subsequent visualization.
+ *
+ * Does NOT recurse into nested function/class bodies — those have their
+ * own __pushFrame__/__popFrame__ pairs.
  */
 function wrapReturnsInBranches(stmt: AnyNode): void {
-  if (stmt.type !== 'IfStatement') return;
-
-  if (stmt.consequent?.type === 'BlockStatement') {
-    wrapReturnsWithPopFrame(stmt.consequent.body);
-  }
-  if (stmt.alternate?.type === 'BlockStatement') {
-    wrapReturnsWithPopFrame(stmt.alternate.body);
-  } else if (stmt.alternate?.type === 'IfStatement') {
-    wrapReturnsInBranches(stmt.alternate);
+  if (!stmt) return;
+  switch (stmt.type) {
+    case 'IfStatement':
+      if (stmt.consequent?.type === 'BlockStatement') {
+        wrapReturnsWithPopFrame(stmt.consequent.body);
+      } else if (stmt.consequent) {
+        wrapReturnsInBranches(stmt.consequent);
+      }
+      if (stmt.alternate?.type === 'BlockStatement') {
+        wrapReturnsWithPopFrame(stmt.alternate.body);
+      } else if (stmt.alternate) {
+        wrapReturnsInBranches(stmt.alternate);
+      }
+      break;
+    case 'BlockStatement':
+      wrapReturnsWithPopFrame(stmt.body);
+      break;
+    case 'TryStatement':
+      if (stmt.block) wrapReturnsWithPopFrame(stmt.block.body);
+      if (stmt.handler?.body) wrapReturnsWithPopFrame(stmt.handler.body.body);
+      if (stmt.finalizer) wrapReturnsWithPopFrame(stmt.finalizer.body);
+      break;
+    case 'SwitchStatement':
+      for (const c of stmt.cases) {
+        if (c.consequent) wrapReturnsWithPopFrame(c.consequent);
+      }
+      break;
+    case 'ForStatement':
+    case 'ForInStatement':
+    case 'ForOfStatement':
+    case 'WhileStatement':
+    case 'DoWhileStatement':
+    case 'LabeledStatement':
+      if (stmt.body?.type === 'BlockStatement') {
+        wrapReturnsWithPopFrame(stmt.body.body);
+      } else if (stmt.body) {
+        wrapReturnsInBranches(stmt.body);
+      }
+      break;
+    // Do NOT recurse into function or class bodies — they manage their
+    // own frame lifecycle.
   }
 }
 
@@ -933,18 +1006,17 @@ function instrumentLoop(stmt: AnyNode, scopeVars: string[]): void {
   // Insert loop guard at the top
   stmt.body.body.unshift(buildLoopGuard());
 
-  // Move for-loop update into body so it gets its own capture step
-  if (stmt.type === 'ForStatement' && stmt.update) {
-    const updateColRange = stmt._updateColRange ?? undefined;
+  // NOTE: We intentionally do NOT move the for-update expression (e.g. `i++`)
+  // into the loop body. For `for (let i = 0; ...; i++)`, the spec requires the
+  // update to run in the freshly-created per-iteration env, leaving the
+  // previous iteration's env frozen — that's what makes
+  //   `for (let i...) funcs.push(() => i)` capture distinct `i` values.
+  // Moving `i++` into the body mutates the same env the closure captured,
+  // collapsing all closures onto the post-increment value. The tradeoff is
+  // that there is no dedicated snapshot at the update line; the user steps
+  // from the body of one iteration directly into the body of the next.
+  if (stmt.type === 'ForStatement') {
     delete stmt._updateColRange;
-    const updateStmt: AnyNode = {
-      type: 'ExpressionStatement',
-      expression: stmt.update,
-      loc: stmt.update.loc,
-      _forColumnRange: updateColRange,
-    };
-    stmt.update = null;
-    stmt.body.body.push(updateStmt);
   }
 
   if (blockScopedVars.length > 0) {
@@ -1007,9 +1079,16 @@ function instrumentLoop(stmt: AnyNode, scopeVars: string[]): void {
  * Instrument a class declaration/expression.
  */
 function instrumentClass(cls: AnyNode, scopeVars: string[]): void {
+  const isDerived = !!cls.superClass;
   if (cls.body?.body) {
     for (const method of cls.body.body) {
       if (method.type === 'MethodDefinition' && method.value) {
+        // In a derived class constructor, `this` is unbound until super()
+        // returns. Reading it (e.g. as the 5th arg to __pushFrame__) throws
+        // a ReferenceError, so flag the constructor to skip the this capture.
+        if (isDerived && method.kind === 'constructor') {
+          method.value._skipThisCapture = true;
+        }
         instrumentFunction(method.value, scopeVars);
       }
     }

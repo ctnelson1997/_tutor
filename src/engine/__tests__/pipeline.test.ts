@@ -16,10 +16,13 @@ function runPipeline(source: string): ExecutionSnapshot[] {
   const instrumented = instrument(source);
   const fullCode = getRuntimeCode() + '\n' + instrumented;
 
-  // Create a sandboxed context with all builtins the runtime preamble needs
+  // Create a sandboxed context with all builtins the runtime preamble needs.
+  // In a real browser Worker, `self === globalThis === this` — we mirror that
+  // by pointing `self` at the sandbox itself, so the runtime's
+  // `thisVal !== self` filter correctly skips the global object. Without this
+  // the runtime would deeply serialize the entire sandbox as `thisArg` on
+  // every top-level function call, causing huge per-snapshot bloat.
   const sandbox: Record<string, unknown> = {
-    // The runtime references `self` for exposing __snapshots__
-    self: {},
     // Builtins used by the runtime preamble
     console: {
       log: () => {},
@@ -51,6 +54,7 @@ function runPipeline(source: string): ExecutionSnapshot[] {
     ReferenceError,
     URIError,
   };
+  sandbox.self = sandbox;
 
   const ctx = createContext(sandbox);
   runInContext(fullCode, ctx);
@@ -278,6 +282,20 @@ f();`);
     expect(cVar).toBeDefined();
   });
 
+  it('does not TDZ a let variable when its initializer invokes a callback', () => {
+    // Regression: a callback executed during RHS evaluation of `let x = ...`
+    // must not capture `x` as a closure variable — at the moment the callback
+    // runs, `x` is still in its temporal dead zone.
+    expect(() => runPipeline(`
+let arr = [{ id: 'a' }, { id: 'b' }];
+function pick(id) {
+  let ticket = arr.find(t => t.id === id);
+  return ticket;
+}
+pick('a');
+`)).not.toThrow();
+  });
+
   // ── Objects & Heap ──
 
   it('captures objects on the heap', () => {
@@ -425,6 +443,106 @@ let f = new Foo(10);`);
     const classObj = last.heap.find(h => h.objectType === 'class');
     expect(classObj).toBeDefined();
     expect(classObj!.label).toBe('Foo');
+  });
+
+  it('handles derived class constructors without reading this before super()', () => {
+    // Regression: __pushFrame__ used to pass `this` as the 5th arg even in a
+    // derived class constructor. JS throws ReferenceError if `this` is read
+    // before super() returns in a derived constructor.
+    expect(() => runPipeline(`
+class Animal {
+  constructor(name) { this.name = name; }
+  speak() { return this.name + ' makes a sound'; }
+}
+class Dog extends Animal {
+  constructor(name, breed) {
+    super(name);
+    this.breed = breed;
+  }
+  speak() { return super.speak() + ' (woof!)'; }
+}
+let d = new Dog('Rex', 'Lab');
+let s = d.speak();
+`)).not.toThrow();
+  });
+
+  it('preserves per-iteration let bindings in for-loop closures', () => {
+    // Regression: the instrumenter used to extract `let i = 0` out of the
+    // for-init into the parent block and move `i++` into the body, both of
+    // which collapsed the per-iteration bindings into a single shared one.
+    // Closures created inside the body all saw the final value of `i`.
+    const snaps = runPipeline(`
+let funcs = [];
+for (let i = 0; i < 3; i++) funcs.push(() => i);
+let results = funcs.map(f => f());
+`);
+    const last = lastSnap(snaps);
+    const results = findVar(last, 'results');
+    expect(results?.value.type).toBe('ref');
+    const arr = last.heap.find(h => h.id === (results!.value as { heapId: string }).heapId);
+    expect(arr?.properties.map(p => (p.value as { value: number }).value)).toEqual([0, 1, 2]);
+  });
+
+  it('pops the call-stack frame when a throw propagates out of a function', () => {
+    // Regression: throws were not handled by the return-wrapping machinery,
+    // so a function frame leaked onto the call stack whenever an exception
+    // crossed a function boundary. The fix wraps each function body in a
+    // synthetic try/catch that runs __popThrowingFrame__ before rethrowing.
+    // Trailing assignment forces a snapshot to be emitted *after* the
+    // synthetic catch has popped the frames; without it the last snapshot
+    // would land mid-throw, before cleanup runs.
+    const cases = [
+      `function inner() { throw new Error('x'); }
+       function outer() { inner(); }
+       try { outer(); } catch (e) {}
+       let __after = 1;`,
+      `function f() {
+         for (let i = 0; i < 5; i++) if (i === 2) throw new Error('x');
+       }
+       try { f(); } catch (e) {}
+       let __after = 1;`,
+    ];
+    for (const src of cases) {
+      const snaps = runPipeline(src);
+      const last = lastSnap(snaps);
+      expect(last.callStack.length).toBe(1);
+    }
+  });
+
+  it('pops the call-stack frame when return exits via try/catch/loop/switch', () => {
+    // Regression: returns nested inside try/catch/finally/for/while/switch
+    // never had __popFrame__ wrapping, so the function frame leaked onto
+    // every subsequent visualization.
+    const cases = [
+      `function f() { try { return 1; } catch (e) {} } f();`,
+      `function f() { try { throw new Error('x'); } catch (e) { return 1; } } f();`,
+      `function f() { try { return 1; } finally { } } f();`,
+      `function f() { for (let i = 0; i < 3; i++) return i; } f();`,
+      `function f() { while (true) return 1; } f();`,
+      `function f() { do { return 1; } while (false); } f();`,
+      `function f(n) { switch (n) { case 1: return 'a'; default: return 'b'; } } f(1);`,
+    ];
+    for (const src of cases) {
+      const snaps = runPipeline(src);
+      const last = lastSnap(snaps);
+      // After the top-level call completes, only the Global frame should remain.
+      expect(last.callStack.length).toBe(1);
+    }
+  });
+
+  it('does not invoke user getters/setters while serializing the heap', () => {
+    // Regression: serialization used to call obj[key] for every own key,
+    // which fires getter functions. A getter that reads `this` re-enters
+    // the runtime and recurses without bound.
+    expect(() => runPipeline(`
+let o = {
+  _x: 0,
+  get x() { return this._x; },
+  set x(v) { this._x = v * 2; }
+};
+o.x = 5;
+let r = o.x;
+`)).not.toThrow();
   });
 
   // ── Functions on heap ──
