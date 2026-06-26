@@ -113,6 +113,20 @@ interface MethodDef {
   isStatic: boolean;
 }
 
+interface FieldDef {
+  name: string;
+  type: JavaType;
+  initializer?: CstNode;
+}
+
+interface ConstructorDef {
+  className: string;
+  params: { name: string; type: JavaType }[];
+  body: CstNode;
+}
+
+type MethodTable = Map<string, MethodDef[]>;
+
 // ── Interpreter ──
 
 export class JavaInterpreter {
@@ -121,8 +135,11 @@ export class JavaInterpreter {
   private heap: Map<string, JavaHeapEntry> = new Map();
   private nextHeapId = 1;
   private callStack: { name: string; scope: Scope; currentScope: Scope }[] = [];
-  private methods: Map<string, MethodDef> = new Map();
+  private methods: MethodTable = new Map();
+  private methodsByClass: Map<string, MethodTable> = new Map();
   private staticFields: Scope = createScope(null);
+  private instanceFields: Map<string, FieldDef[]> = new Map();
+  private constructors: Map<string, ConstructorDef[]> = new Map();
   private step = 0;
 
   execute(cst: CstNode): { snapshots: ExecutionSnapshot[]; error?: string } {
@@ -139,32 +156,13 @@ export class JavaInterpreter {
       const normalClass = child(classDecl, 'normalClassDeclaration');
       if (!normalClass) throw new InterpreterError('Only class declarations are supported', 0);
 
-      const classBody = child(normalClass, 'classBody');
-      if (!classBody) throw new InterpreterError('Empty class body', 0);
-
-      // Collect all methods and static fields
-      const bodyDecls = children(classBody, 'classBodyDeclaration');
-      for (const bodyDecl of bodyDecls) {
-        const memberDecl = child(bodyDecl, 'classMemberDeclaration');
-        if (!memberDecl) continue;
-
-        const methodDecl = child(memberDecl, 'methodDeclaration');
-        if (methodDecl) {
-          this.registerMethod(methodDecl);
-          continue;
-        }
-
-        const fieldDecl = child(memberDecl, 'fieldDeclaration');
-        if (fieldDecl) {
-          this.registerStaticField(fieldDecl);
-        }
-      }
+      this.registerClass(normalClass, true);
 
       // Initialize static fields
       this.initStaticFields();
 
       // Find and run main
-      const mainMethod = this.methods.get('main');
+      const mainMethod = this.resolveMethod(this.methods, 'main', 1) || this.resolveMethod(this.methods, 'main', 0);
       if (!mainMethod) throw new InterpreterError('No main method found', 0);
 
       const mainScope = createScope(this.staticFields);
@@ -190,7 +188,47 @@ export class JavaInterpreter {
 
   // ── Method registration ──
 
-  private registerMethod(methodDecl: CstNode): void {
+  private registerClass(normalClass: CstNode, isTopLevel: boolean): void {
+    const className = this.extractClassName(normalClass);
+    const classBody = child(normalClass, 'classBody');
+    if (!classBody) throw new InterpreterError('Empty class body', getLine(normalClass));
+
+    const bodyDecls = children(classBody, 'classBodyDeclaration');
+    for (const bodyDecl of bodyDecls) {
+      const constructorDecl = child(bodyDecl, 'constructorDeclaration');
+      if (constructorDecl) {
+        this.registerConstructor(className, constructorDecl);
+        continue;
+      }
+
+      const memberDecl = child(bodyDecl, 'classMemberDeclaration');
+      if (!memberDecl) continue;
+
+      const nestedClassDecl = child(memberDecl, 'classDeclaration');
+      const nestedNormalClass = nestedClassDecl ? child(nestedClassDecl, 'normalClassDeclaration') : undefined;
+      if (nestedNormalClass) {
+        this.registerClass(nestedNormalClass, false);
+        continue;
+      }
+
+      const methodDecl = child(memberDecl, 'methodDeclaration');
+      if (methodDecl) {
+        this.registerMethod(className, methodDecl, isTopLevel);
+        continue;
+      }
+
+      const fieldDecl = child(memberDecl, 'fieldDeclaration');
+      if (fieldDecl) {
+        if (this.isStaticField(fieldDecl)) {
+          this.registerStaticField(fieldDecl);
+        } else {
+          this.registerInstanceField(className, fieldDecl);
+        }
+      }
+    }
+  }
+
+  private registerMethod(className: string, methodDecl: CstNode, exposeUnqualified: boolean): void {
     const header = child(methodDecl, 'methodHeader')!;
     const declarator = child(header, 'methodDeclarator')!;
     const nameToken = token(declarator, 'Identifier')!;
@@ -199,28 +237,70 @@ export class JavaInterpreter {
     const result = child(header, 'result');
     const returnType = result ? this.extractResultType(result) : 'void';
 
-    const params: { name: string; type: JavaType }[] = [];
     const paramList = child(declarator, 'formalParameterList');
-    if (paramList) {
-      const formalParams = children(paramList, 'formalParameter');
-      for (const fp of formalParams) {
-        const regularParam = child(fp, 'variableParaRegularParameter');
-        if (regularParam) {
-          const paramType = this.extractUnannType(child(regularParam, 'unannType'));
-          const paramId = child(regularParam, 'variableDeclaratorId');
-          const paramName = paramId ? token(paramId, 'Identifier')?.image || 'unknown' : 'unknown';
-          // Check for array dims on the parameter
-          const hasDims = paramId && has(paramId, 'dims');
-          params.push({ name: paramName, type: hasDims ? paramType + '[]' : paramType });
-        }
-      }
-    }
+    const params = this.extractFormalParameters(paramList);
 
     const body = child(child(methodDecl, 'methodBody')!, 'block')!;
     const modifiers = children(methodDecl, 'methodModifier');
     const isStatic = modifiers.some(m => has(m, 'Static'));
 
-    this.methods.set(methodName, { name: methodName, returnType, params, body, isStatic });
+    const method = { name: methodName, returnType, params, body, isStatic };
+    const classMethods = this.methodsByClass.get(className) || new Map<string, MethodDef[]>();
+    const overloads = classMethods.get(methodName) || [];
+    overloads.push(method);
+    classMethods.set(methodName, overloads);
+    this.methodsByClass.set(className, classMethods);
+
+    if (exposeUnqualified) {
+      const topLevelOverloads = this.methods.get(methodName) || [];
+      topLevelOverloads.push(method);
+      this.methods.set(methodName, topLevelOverloads);
+    }
+  }
+
+  private resolveMethod(table: MethodTable | undefined, methodName: string, argCount: number): MethodDef | undefined {
+    const overloads = table?.get(methodName);
+    if (!overloads || overloads.length === 0) return undefined;
+    return overloads.find(method => method.params.length === argCount) || overloads[0];
+  }
+
+  private extractClassName(normalClass: CstNode): string {
+    const typeIdentifier = child(normalClass, 'typeIdentifier');
+    return token(typeIdentifier || normalClass, 'Identifier')?.image || 'Main';
+  }
+
+  private registerConstructor(className: string, ctorDecl: CstNode): void {
+    const declarator = child(ctorDecl, 'constructorDeclarator')!;
+    const simpleTypeName = child(declarator, 'simpleTypeName');
+    const typeIdentifier = simpleTypeName ? child(simpleTypeName, 'typeIdentifier') : undefined;
+    const nameToken = typeIdentifier ? token(typeIdentifier, 'Identifier') : undefined;
+    const ctorName = nameToken?.image || className;
+    const paramList = child(declarator, 'formalParameterList');
+    const params = this.extractFormalParameters(paramList);
+    const body = child(ctorDecl, 'constructorBody')!;
+    const constructors = this.constructors.get(className) || [];
+    constructors.push({ className: ctorName, params, body });
+    this.constructors.set(className, constructors);
+  }
+
+  private extractFormalParameters(paramList: CstNode | undefined): { name: string; type: JavaType }[] {
+    const params: { name: string; type: JavaType }[] = [];
+    if (!paramList) return params;
+
+    const formalParams = children(paramList, 'formalParameter');
+    for (const fp of formalParams) {
+      const regularParam = child(fp, 'variableParaRegularParameter');
+      if (regularParam) {
+        const paramType = this.extractUnannType(child(regularParam, 'unannType'));
+        const paramId = child(regularParam, 'variableDeclaratorId');
+        const paramName = paramId ? token(paramId, 'Identifier')?.image || 'unknown' : 'unknown';
+        // Check for array dims on the parameter
+        const hasDims = paramId && has(paramId, 'dims');
+        params.push({ name: paramName, type: hasDims ? paramType + '[]' : paramType });
+      }
+    }
+
+    return params;
   }
 
   private registerStaticField(fieldDecl: CstNode): void {
@@ -243,8 +323,31 @@ export class JavaInterpreter {
     }
   }
 
+  private isStaticField(fieldDecl: CstNode): boolean {
+    return children(fieldDecl, 'fieldModifier').some(modifier => has(modifier, 'Static'));
+  }
+
+  private registerInstanceField(className: string, fieldDecl: CstNode): void {
+    const type = this.extractUnannType(child(fieldDecl, 'unannType'));
+    const declList = child(fieldDecl, 'variableDeclaratorList');
+    if (!declList) return;
+    const hasDims = has(fieldDecl, 'dims');
+    const fields = this.instanceFields.get(className) || [];
+
+    for (const decl of children(declList, 'variableDeclarator')) {
+      const idNode = child(decl, 'variableDeclaratorId');
+      const name = idNode ? token(idNode, 'Identifier')?.image || 'unknown' : 'unknown';
+      const declHasDims = idNode && has(idNode, 'dims');
+      const finalType = (hasDims || declHasDims) ? type + '[]' : type;
+      const initializer = child(decl, 'variableInitializer');
+      fields.push({ name, type: finalType, initializer });
+    }
+
+    this.instanceFields.set(className, fields);
+  }
+
   private initStaticFields(): void {
-    for (const [_name, entry] of this.staticFields.variables) {
+    for (const entry of this.staticFields.variables.values()) {
       const asAny = entry as unknown as { initializer?: CstNode };
       if (asAny.initializer) {
         const val = this.evalVariableInitializer(asAny.initializer, entry.type, this.staticFields);
@@ -252,6 +355,17 @@ export class JavaInterpreter {
         delete asAny.initializer;
       }
     }
+  }
+
+  private createInstanceFields(className: string, scope: Scope): Map<string, JavaValue> {
+    const fields = new Map<string, JavaValue>();
+    for (const field of this.instanceFields.get(className) || []) {
+      const value = field.initializer
+        ? this.evalVariableInitializer(field.initializer, field.type, scope)
+        : defaultValue(field.type);
+      fields.set(field.name, value);
+    }
+    return fields;
   }
 
   // ── Type extraction ──
@@ -270,28 +384,7 @@ export class JavaInterpreter {
     if (primWithDims) {
       const prim = child(primWithDims, 'unannPrimitiveType');
       const hasDims = has(primWithDims, 'dims');
-      let baseType = 'int';
-      if (prim) {
-        if (has(prim, 'Boolean')) baseType = 'boolean';
-        else {
-          const numeric = child(prim, 'numericType');
-          if (numeric) {
-            const integral = child(numeric, 'integralType');
-            if (integral) {
-              if (has(integral, 'Int')) baseType = 'int';
-              else if (has(integral, 'Long')) baseType = 'long';
-              else if (has(integral, 'Byte')) baseType = 'byte';
-              else if (has(integral, 'Short')) baseType = 'short';
-              else if (has(integral, 'Char')) baseType = 'char';
-            }
-            const fp = child(numeric, 'floatingPointType');
-            if (fp) {
-              if (has(fp, 'Float')) baseType = 'float';
-              else if (has(fp, 'Double')) baseType = 'double';
-            }
-          }
-        }
-      }
+      const baseType = this.extractPrimitiveType(prim);
       return hasDims ? baseType + '[]' : baseType;
     }
 
@@ -309,6 +402,28 @@ export class JavaInterpreter {
     }
 
     return 'Object';
+  }
+
+  private extractPrimitiveType(primitiveType: CstNode | undefined): JavaType {
+    if (!primitiveType) return 'int';
+    if (has(primitiveType, 'Boolean')) return 'boolean';
+    const numeric = child(primitiveType, 'numericType');
+    if (numeric) {
+      const integral = child(numeric, 'integralType');
+      if (integral) {
+        if (has(integral, 'Int')) return 'int';
+        if (has(integral, 'Long')) return 'long';
+        if (has(integral, 'Byte')) return 'byte';
+        if (has(integral, 'Short')) return 'short';
+        if (has(integral, 'Char')) return 'char';
+      }
+      const fp = child(numeric, 'floatingPointType');
+      if (fp) {
+        if (has(fp, 'Float')) return 'float';
+        if (has(fp, 'Double')) return 'double';
+      }
+    }
+    return 'int';
   }
 
   private extractLocalVarType(localVarType: CstNode): JavaType {
@@ -857,6 +972,7 @@ export class JavaInterpreter {
     const line = token(doWhileStmt, 'Do')?.startLine || getLine(doWhileStmt);
     const doScope = createScope(scope, 'do-while');
     let iterations = 0;
+    let shouldContinue = true;
 
     do {
       if (iterations++ > MAX_LOOP_ITERATIONS) {
@@ -869,8 +985,7 @@ export class JavaInterpreter {
           this.executeStatement(bodyStmt, doScope);
         } catch (e) {
           if (e instanceof BreakSignal) break;
-          if (e instanceof ContinueSignal) { /* fall through to condition check */ }
-          else throw e;
+          if (!(e instanceof ContinueSignal)) throw e;
         }
       }
 
@@ -878,8 +993,8 @@ export class JavaInterpreter {
       const condExpr = child(doWhileStmt, 'expression')!;
       const condValue = this.evalExpression(condExpr, scope);
       this.emitSnapshot(line);
-      if (!javaValueToBoolean(condValue)) break;
-    } while (true);
+      shouldContinue = javaValueToBoolean(condValue);
+    } while (shouldContinue);
     setCurrentScope(this.callStack, scope);
   }
 
@@ -995,7 +1110,7 @@ export class JavaInterpreter {
   private evalBinaryExpression(binExpr: CstNode, scope: Scope): JavaValue {
     // binaryExpression contains interleaved unaryExpression and operator tokens
     const allChildren: (CstNode | CstToken)[] = [];
-    for (const [_key, items] of Object.entries(binExpr.children)) {
+    for (const items of Object.values(binExpr.children)) {
       for (const item of items) allChildren.push(item);
     }
 
@@ -1008,17 +1123,10 @@ export class JavaInterpreter {
       return aLine !== bLine ? aLine - bLine : aCol - bCol;
     });
 
-    // Separate operands and operators
-    const operands: JavaValue[] = [];
     const operators: string[] = [];
 
     for (const item of allChildren) {
-      if (isCstNode(item) && item.name === 'unaryExpression') {
-        operands.push(this.evalUnaryExpression(item, scope));
-      } else if (isCstNode(item) && item.name === 'expression') {
-        // Right side of assignment
-        operands.push(this.evalExpression(item, scope));
-      } else if (isCstToken(item)) {
+      if (isCstToken(item)) {
         const op = item.image;
         // Skip parentheses and other non-operator tokens
         if (['(', ')', '{', '}', '[', ']', ';', ','].includes(op)) continue;
@@ -1026,13 +1134,24 @@ export class JavaInterpreter {
       }
     }
 
-    if (operands.length === 0) return javaNull();
-    if (operators.length === 0) return operands[0];
-
     // Handle assignment operators
     if (operators.length === 1 && isAssignmentOp(operators[0])) {
       return this.evalAssignment(binExpr, operators[0], scope);
     }
+
+    // Separate operands after assignment detection so assignment RHS values
+    // with side effects, such as new arrays/objects, are not evaluated twice.
+    const operands: JavaValue[] = [];
+    for (const item of allChildren) {
+      if (isCstNode(item) && item.name === 'unaryExpression') {
+        operands.push(this.evalUnaryExpression(item, scope));
+      } else if (isCstNode(item) && item.name === 'expression') {
+        operands.push(this.evalExpression(item, scope));
+      }
+    }
+
+    if (operands.length === 0) return javaNull();
+    if (operators.length === 0) return operands[0];
 
     // Evaluate left to right with precedence
     return this.evalOperatorChain(operands, operators);
@@ -1072,17 +1191,29 @@ export class JavaInterpreter {
     unaryExpr: CstNode,
     scope: Scope,
   ): { get: () => JavaValue; set: (v: JavaValue) => void } {
-    const primary = child(child(unaryExpr, 'primary')!, 'primaryPrefix');
+    const primaryNode = child(unaryExpr, 'primary')!;
+    const primary = child(primaryNode, 'primaryPrefix');
     if (!primary) throw new InterpreterError('Invalid assignment target', getLine(unaryExpr));
 
     const fqn = child(primary, 'fqnOrRefType');
+    const suffixes = children(primaryNode, 'primarySuffix');
+
+    if (has(primary, 'This')) {
+      const fieldName = this.extractFieldSuffixName(suffixes);
+      if (!fieldName) throw new InterpreterError('Invalid assignment target', getLine(unaryExpr));
+      const thisValue = this.resolveThis(scope, getLine(unaryExpr));
+      return {
+        get: () => this.getFieldValue(thisValue, fieldName, getLine(unaryExpr)),
+        set: (v) => this.setFieldValue(thisValue, fieldName, v, getLine(unaryExpr)),
+      };
+    }
+
     if (!fqn) throw new InterpreterError('Invalid assignment target', getLine(unaryExpr));
 
-    const name = this.extractFqnName(fqn);
+    const parts = this.extractFqnParts(fqn);
+    const name = parts[0] || '';
 
     // Check for array access suffix
-    const primaryNode = child(unaryExpr, 'primary')!;
-    const suffixes = children(primaryNode, 'primarySuffix');
     if (suffixes.length > 0) {
       const arrayAccess = child(suffixes[suffixes.length - 1], 'arrayAccessSuffix');
       if (arrayAccess) {
@@ -1118,6 +1249,15 @@ export class JavaInterpreter {
       }
     }
 
+    if (parts.length === 2) {
+      const obj = this.resolveVariable(parts[0], scope);
+      const fieldName = parts[1];
+      return {
+        get: () => this.getFieldValue(obj, fieldName, getLine(unaryExpr)),
+        set: (v) => this.setFieldValue(obj, fieldName, v, getLine(unaryExpr)),
+      };
+    }
+
     // Simple variable assignment
     return {
       get: () => this.resolveVariable(name, scope),
@@ -1125,7 +1265,9 @@ export class JavaInterpreter {
         if (!updateVariable(scope, name, v)) {
           // Try static fields
           if (!updateVariable(this.staticFields, name, v)) {
-            setVariable(scope, name, v, this.inferType(v));
+            if (!this.setCurrentInstanceField(scope, name, v, getLine(unaryExpr))) {
+              setVariable(scope, name, v, this.inferType(v));
+            }
           }
         }
       },
@@ -1138,7 +1280,64 @@ export class JavaInterpreter {
     // Check static fields
     const staticEntry = lookupVariable(this.staticFields, name);
     if (staticEntry) return staticEntry.value;
+    const thisValue = this.getCurrentThis(scope);
+    if (thisValue?.kind === 'objectRef' && this.hasField(thisValue, name)) {
+      return this.getFieldValue(thisValue, name, 0);
+    }
     throw new InterpreterError(`Variable '${name}' is not defined`, 0);
+  }
+
+  private getCurrentThis(scope: Scope): JavaValue | undefined {
+    return lookupVariable(scope, 'this')?.value;
+  }
+
+  private resolveThis(scope: Scope, line: number): JavaValue {
+    const thisValue = this.getCurrentThis(scope);
+    if (!thisValue) {
+      throw new InterpreterError("'this' cannot be used in a static context", line);
+    }
+    return thisValue;
+  }
+
+  private hasField(obj: JavaValue, fieldName: string): boolean {
+    if (obj.kind !== 'objectRef') return false;
+    const objData = this.heap.get(obj.heapId);
+    return Boolean(objData && isJavaObject(objData) && objData.fields.has(fieldName));
+  }
+
+  private getFieldValue(obj: JavaValue, fieldName: string, line: number): JavaValue {
+    if (obj.kind !== 'objectRef') {
+      throw new InterpreterError(`Cannot read field '${fieldName}' from non-object value`, line);
+    }
+    const objData = this.heap.get(obj.heapId);
+    if (!objData || !isJavaObject(objData)) {
+      throw new InterpreterError(`Cannot read field '${fieldName}' from non-object value`, line);
+    }
+    if (!objData.fields.has(fieldName)) {
+      throw new InterpreterError(`Field '${fieldName}' does not exist on ${obj.className}`, line);
+    }
+    return objData.fields.get(fieldName)!;
+  }
+
+  private setFieldValue(obj: JavaValue, fieldName: string, value: JavaValue, line: number): void {
+    if (obj.kind !== 'objectRef') {
+      throw new InterpreterError(`Cannot write field '${fieldName}' on non-object value`, line);
+    }
+    const objData = this.heap.get(obj.heapId);
+    if (!objData || !isJavaObject(objData)) {
+      throw new InterpreterError(`Cannot write field '${fieldName}' on non-object value`, line);
+    }
+    if (!objData.fields.has(fieldName)) {
+      throw new InterpreterError(`Field '${fieldName}' does not exist on ${obj.className}`, line);
+    }
+    objData.fields.set(fieldName, value);
+  }
+
+  private setCurrentInstanceField(scope: Scope, fieldName: string, value: JavaValue, line: number): boolean {
+    const thisValue = this.getCurrentThis(scope);
+    if (!thisValue || !this.hasField(thisValue, fieldName)) return false;
+    this.setFieldValue(thisValue, fieldName, value, line);
+    return true;
   }
 
   private evalOperatorChain(operands: JavaValue[], operators: string[]): JavaValue {
@@ -1243,7 +1442,11 @@ export class JavaInterpreter {
       const fqn = child(prefix, 'fqnOrRefType');
       if (fqn) {
         const name = this.extractFqnName(fqn);
-        updateVariable(scope, name, newVal) || updateVariable(this.staticFields, name, newVal);
+        if (!updateVariable(scope, name, newVal)) {
+          if (!updateVariable(this.staticFields, name, newVal)) {
+            this.setCurrentInstanceField(scope, name, newVal, getLine(primary));
+          }
+        }
       }
     }
   }
@@ -1254,15 +1457,37 @@ export class JavaInterpreter {
 
   private evalPrimary(primary: CstNode, scope: Scope): JavaValue {
     const prefix = child(primary, 'primaryPrefix')!;
-    let val = this.evalPrimaryPrefix(prefix, scope);
+    const suffixes = children(primary, 'primarySuffix');
+    let val = this.evalPrimaryMethodReceiver(prefix, suffixes, scope) || this.evalPrimaryPrefix(prefix, scope);
 
     // Apply suffixes (method calls, array access, field access)
-    const suffixes = children(primary, 'primarySuffix');
     for (let i = 0; i < suffixes.length; i++) {
-      val = this.evalPrimarySuffix(val, suffixes[i], scope, primary, i);
+      val = this.evalPrimarySuffix(val, suffixes[i], scope, primary);
     }
 
     return val;
+  }
+
+  private evalPrimaryMethodReceiver(
+    prefix: CstNode,
+    suffixes: CstNode[],
+    scope: Scope,
+  ): JavaValue | undefined {
+    if (!suffixes.some(suffix => child(suffix, 'methodInvocationSuffix'))) {
+      return undefined;
+    }
+
+    const fqn = child(prefix, 'fqnOrRefType');
+    if (!fqn) return undefined;
+    const parts = this.extractFqnParts(fqn);
+    if (parts.length !== 2) return undefined;
+
+    try {
+      const receiver = this.resolveVariable(parts[0], scope);
+      return receiver.kind === 'objectRef' ? receiver : undefined;
+    } catch {
+      return undefined;
+    }
   }
 
   private evalPrimaryPrefix(prefix: CstNode, scope: Scope): JavaValue {
@@ -1277,6 +1502,10 @@ export class JavaInterpreter {
       return expr ? this.evalExpression(expr, scope) : javaNull();
     }
 
+    // Cast expression, e.g. (int) values[0]
+    const castExpr = child(prefix, 'castExpression');
+    if (castExpr) return this.evalCastExpression(castExpr, scope);
+
     // new expression
     const newExpr = child(prefix, 'newExpression');
     if (newExpr) return this.evalNewExpression(newExpr, scope);
@@ -1288,10 +1517,41 @@ export class JavaInterpreter {
     }
 
     // this/super
-    if (has(prefix, 'This')) return javaNull(); // simplified
+    if (has(prefix, 'This')) return this.resolveThis(scope, getLine(prefix));
     if (has(prefix, 'Super')) return javaNull(); // simplified
 
     return javaNull();
+  }
+
+  private evalCastExpression(castExpr: CstNode, scope: Scope): JavaValue {
+    const primitiveCast = child(castExpr, 'primitiveCastExpression');
+    if (primitiveCast) {
+      const primitiveType = this.extractPrimitiveType(child(primitiveCast, 'primitiveType'));
+      const unaryExpr = child(primitiveCast, 'unaryExpression');
+      const value = unaryExpr ? this.evalUnaryExpression(unaryExpr, scope) : javaNull();
+      return this.castPrimitiveValue(value, primitiveType);
+    }
+
+    return javaNull();
+  }
+
+  private castPrimitiveValue(value: JavaValue, targetType: JavaType): JavaValue {
+    if (targetType === 'boolean') return javaBool(javaValueToBoolean(value));
+    const n = javaValueToNumber(value);
+    switch (targetType) {
+      case 'double':
+      case 'float':
+        return { kind: 'primitive', javaType: targetType, value: n };
+      case 'char':
+        return javaChar(n | 0);
+      case 'long':
+      case 'byte':
+      case 'short':
+        return { kind: 'primitive', javaType: targetType, value: n | 0 };
+      case 'int':
+      default:
+        return javaInt(n);
+    }
   }
 
   private evalLiteral(literal: CstNode): JavaValue {
@@ -1352,25 +1612,7 @@ export class JavaInterpreter {
 
   private evalFqnOrRefType(fqn: CstNode, scope: Scope): JavaValue {
     // Build the full qualified name chain: ["System", "out", "println"] etc.
-    const parts: string[] = [];
-
-    const first = child(fqn, 'fqnOrRefTypePartFirst');
-    if (first) {
-      const common = child(first, 'fqnOrRefTypePartCommon');
-      if (common) {
-        const id = token(common, 'Identifier');
-        if (id) parts.push(id.image);
-      }
-    }
-
-    const rests = children(fqn, 'fqnOrRefTypePartRest');
-    for (const rest of rests) {
-      const common = child(rest, 'fqnOrRefTypePartCommon');
-      if (common) {
-        const id = token(common, 'Identifier');
-        if (id) parts.push(id.image);
-      }
-    }
+    const parts = this.extractFqnParts(fqn);
 
     if (parts.length === 0) return javaNull();
 
@@ -1379,9 +1621,20 @@ export class JavaInterpreter {
       const name = parts[0];
       const entry = lookupVariable(scope, name) || lookupVariable(this.staticFields, name);
       if (entry) return entry.value;
+      const thisValue = this.getCurrentThis(scope);
+      if (thisValue?.kind === 'objectRef' && this.hasField(thisValue, name)) {
+        return this.getFieldValue(thisValue, name, getLine(fqn));
+      }
       // Could be a method name (resolved later by methodInvocationSuffix)
       // or a class name. Return null to let the suffix handler deal with it.
       if (this.methods.has(name)) return javaNull();
+      const currentThis = this.getCurrentThis(scope);
+      if (
+        currentThis?.kind === 'objectRef'
+        && this.methodsByClass.get(currentThis.className)?.has(name)
+      ) {
+        return javaNull();
+      }
       throw new InterpreterError(`Variable '${name}' is not defined`, getLine(fqn));
     }
 
@@ -1400,27 +1653,28 @@ export class JavaInterpreter {
     }
 
     // Integer.xxx, Double.xxx etc
+    if (parts.length === 2) {
+      const wrapperConstant = this.evalWrapperConstant(parts[0], parts[1]);
+      if (wrapperConstant) return wrapperConstant;
+    }
     if (['Integer', 'Double', 'Float', 'Long', 'Boolean', 'Character'].includes(parts[0])) {
       return { kind: 'objectRef', heapId: '__' + parts[0].toLowerCase() + '__', className: parts[0] } as JavaValue;
     }
 
     // Could be field access: obj.field
     if (parts.length === 2) {
+      let obj: JavaValue | undefined;
       try {
-        const obj = this.resolveVariable(parts[0], scope);
-        if (obj.kind === 'arrayRef' && parts[1] === 'length') {
-          const arr = this.heap.get(obj.heapId);
-          if (arr && isJavaArray(arr)) return javaInt(arr.elements.length);
-        }
-        if (obj.kind === 'objectRef') {
-          const objData = this.heap.get(obj.heapId);
-          if (objData && isJavaObject(objData)) {
-            const field = objData.fields.get(parts[1]);
-            if (field) return field;
-          }
-        }
+        obj = this.resolveVariable(parts[0], scope);
       } catch {
         // Not a variable, could be a class reference
+      }
+      if (obj?.kind === 'arrayRef' && parts[1] === 'length') {
+        const arr = this.heap.get(obj.heapId);
+        if (arr && isJavaArray(arr)) return javaInt(arr.elements.length);
+      }
+      if (obj?.kind === 'objectRef') {
+        return this.getFieldValue(obj, parts[1], getLine(fqn));
       }
     }
 
@@ -1439,8 +1693,10 @@ export class JavaInterpreter {
           if (current.kind === 'objectRef') {
             const objData = this.heap.get(current.heapId);
             if (objData && isJavaObject(objData)) {
-              const field = objData.fields.get(parts[i]);
-              if (field) { current = field; continue; }
+              if (objData.fields.has(parts[i])) {
+                current = objData.fields.get(parts[i])!;
+                continue;
+              }
             }
           }
           break;
@@ -1455,15 +1711,39 @@ export class JavaInterpreter {
   }
 
   private extractFqnName(fqn: CstNode): string {
+    return this.extractFqnParts(fqn)[0] || '';
+  }
+
+  private extractFqnParts(fqn: CstNode): string[] {
+    const parts: string[] = [];
     const first = child(fqn, 'fqnOrRefTypePartFirst');
     if (first) {
       const common = child(first, 'fqnOrRefTypePartCommon');
       if (common) {
         const id = token(common, 'Identifier');
-        if (id) return id.image;
+        if (id) parts.push(id.image);
       }
     }
-    return '';
+
+    const rests = children(fqn, 'fqnOrRefTypePartRest');
+    for (const rest of rests) {
+      const common = child(rest, 'fqnOrRefTypePartCommon');
+      if (common) {
+        const id = token(common, 'Identifier');
+        if (id) parts.push(id.image);
+      }
+    }
+
+    return parts;
+  }
+
+  private extractFieldSuffixName(suffixes: CstNode[]): string | undefined {
+    if (suffixes.length !== 1) return undefined;
+    const suffix = suffixes[0];
+    if (child(suffix, 'methodInvocationSuffix') || child(suffix, 'arrayAccessSuffix')) {
+      return undefined;
+    }
+    return token(suffix, 'Identifier')?.image;
   }
 
   // ── Primary suffixes ──
@@ -1473,7 +1753,6 @@ export class JavaInterpreter {
     suffix: CstNode,
     scope: Scope,
     primary: CstNode,
-    _suffixIndex: number,
   ): JavaValue {
     // Method invocation
     const methodSuffix = child(suffix, 'methodInvocationSuffix');
@@ -1507,6 +1786,15 @@ export class JavaInterpreter {
       throw new InterpreterError('Cannot index non-array value', getLine(suffix));
     }
 
+    const fieldName = token(suffix, 'Identifier')?.image;
+    if (fieldName) {
+      if (target.kind === 'arrayRef' && fieldName === 'length') {
+        const arr = this.heap.get(target.heapId);
+        if (arr && isJavaArray(arr)) return javaInt(arr.elements.length);
+      }
+      return this.getFieldValue(target, fieldName, getLine(suffix));
+    }
+
     return target;
   }
 
@@ -1521,26 +1809,7 @@ export class JavaInterpreter {
     // Get the method name from the fqnOrRefType chain
     const prefix = child(primary, 'primaryPrefix')!;
     const fqn = child(prefix, 'fqnOrRefType');
-    const parts: string[] = [];
-
-    if (fqn) {
-      const first = child(fqn, 'fqnOrRefTypePartFirst');
-      if (first) {
-        const common = child(first, 'fqnOrRefTypePartCommon');
-        if (common) {
-          const id = token(common, 'Identifier');
-          if (id) parts.push(id.image);
-        }
-      }
-      const rests = children(fqn, 'fqnOrRefTypePartRest');
-      for (const rest of rests) {
-        const common = child(rest, 'fqnOrRefTypePartCommon');
-        if (common) {
-          const id = token(common, 'Identifier');
-          if (id) parts.push(id.image);
-        }
-      }
-    }
+    const parts = fqn ? this.extractFqnParts(fqn) : [];
 
     // Evaluate arguments
     const args: JavaValue[] = [];
@@ -1597,12 +1866,37 @@ export class JavaInterpreter {
       }
     }
 
+    if (parts.length === 2 && target.kind === 'objectRef') {
+      const method = this.resolveMethod(this.methodsByClass.get(target.className), methodName, args.length)
+        || this.resolveMethod(this.methods, methodName, args.length);
+      if (method && !method.isStatic) {
+        const callLine = getLine(primary);
+        return this.callMethod(method, args, callLine, target);
+      }
+    }
+
     // Single name - must be a user-defined static method
     if (parts.length === 1) {
-      const method = this.methods.get(methodName);
-      if (method) {
+      const method = this.resolveMethod(this.methods, methodName, args.length);
+      if (method && method.isStatic) {
         const callLine = getLine(primary);
         return this.callMethod(method, args, callLine);
+      }
+      if (method && !method.isStatic) {
+        throw new InterpreterError(`Cannot call instance method '${methodName}' without an object`, getLine(primary));
+      }
+
+      const thisEntry = lookupVariable(scope, 'this');
+      if (thisEntry?.value.kind === 'objectRef') {
+        const instanceMethod = this.resolveMethod(
+          this.methodsByClass.get(thisEntry.value.className),
+          methodName,
+          args.length,
+        );
+        if (instanceMethod && !instanceMethod.isStatic) {
+          const callLine = getLine(primary);
+          return this.callMethod(instanceMethod, args, callLine, thisEntry.value);
+        }
       }
     }
 
@@ -1617,8 +1911,16 @@ export class JavaInterpreter {
     throw new InterpreterError(`Unknown method: ${parts.join('.')}()`, 0);
   }
 
-  private callMethod(method: MethodDef, args: JavaValue[], callSiteLine?: number): JavaValue {
+  private callMethod(
+    method: MethodDef,
+    args: JavaValue[],
+    callSiteLine?: number,
+    thisValue?: JavaValue,
+  ): JavaValue {
     const methodScope = createScope(this.staticFields);
+    if (thisValue) {
+      setVariable(methodScope, 'this', thisValue, thisValue.kind === 'objectRef' ? thisValue.className : 'Object');
+    }
 
     // Bind parameters
     for (let i = 0; i < method.params.length; i++) {
@@ -1646,6 +1948,38 @@ export class JavaInterpreter {
     return javaNull();
   }
 
+  private findConstructor(className: string, args: JavaValue[]): ConstructorDef | undefined {
+    return (this.constructors.get(className) || []).find(ctor => ctor.params.length === args.length);
+  }
+
+  private callConstructor(
+    ctor: ConstructorDef,
+    thisValue: JavaValue,
+    args: JavaValue[],
+    callSiteLine: number,
+  ): void {
+    const ctorScope = createScope(this.staticFields);
+    setVariable(ctorScope, 'this', thisValue, ctor.className);
+
+    for (let i = 0; i < ctor.params.length; i++) {
+      const param = ctor.params[i];
+      const arg = i < args.length ? args[i] : defaultValue(param.type);
+      setVariable(ctorScope, param.name, arg, param.type);
+    }
+
+    this.emitSnapshot(callSiteLine);
+    this.callStack.push({ name: ctor.className, scope: ctorScope, currentScope: ctorScope });
+    try {
+      this.executeBlock(ctor.body, ctorScope);
+    } catch (e) {
+      if (!(e instanceof ReturnSignal)) {
+        throw e;
+      }
+    } finally {
+      this.callStack.pop();
+    }
+  }
+
   // ── new expression ──
 
   private evalNewExpression(newExpr: CstNode, scope: Scope): JavaValue {
@@ -1655,7 +1989,7 @@ export class JavaInterpreter {
       return this.evalArrayCreation(arrayCreation, scope);
     }
 
-    // Object creation: new ClassName(args) — not yet fully supported
+    // Object creation: new ClassName(args)
     const unqualified = child(newExpr, 'unqualifiedClassInstanceCreationExpression');
     if (unqualified) {
       return this.evalObjectCreation(unqualified, scope);
@@ -1669,23 +2003,7 @@ export class JavaInterpreter {
     let elementType = 'int';
     const primType = child(arrayCreation, 'primitiveType');
     if (primType) {
-      const numeric = child(primType, 'numericType');
-      if (numeric) {
-        const integral = child(numeric, 'integralType');
-        if (integral) {
-          if (has(integral, 'Int')) elementType = 'int';
-          else if (has(integral, 'Long')) elementType = 'long';
-          else if (has(integral, 'Char')) elementType = 'char';
-          else if (has(integral, 'Byte')) elementType = 'byte';
-          else if (has(integral, 'Short')) elementType = 'short';
-        }
-        const fp = child(numeric, 'floatingPointType');
-        if (fp) {
-          if (has(fp, 'Double')) elementType = 'double';
-          else if (has(fp, 'Float')) elementType = 'float';
-        }
-      }
-      if (has(primType, 'Boolean')) elementType = 'boolean';
+      elementType = this.extractPrimitiveType(primType);
     }
     const classType = child(arrayCreation, 'classOrInterfaceType');
     if (classType) {
@@ -1697,7 +2015,7 @@ export class JavaInterpreter {
     }
 
     // With initializer: new int[]{1, 2, 3}
-    const withInit = child(arrayCreation, 'arrayCreationExpressionWithInitializerSuffix');
+    const withInit = child(arrayCreation, 'arrayCreationWithInitializerSuffix');
     if (withInit) {
       const arrayInit = child(withInit, 'arrayInitializer');
       if (arrayInit) {
@@ -1784,9 +2102,14 @@ export class JavaInterpreter {
       return { kind: 'objectRef', heapId, className };
     }
 
-    // Generic object — create with empty fields
-    const heapId = this.allocObject(className, new Map());
-    return { kind: 'objectRef', heapId, className };
+    // Generic object — create with declared instance fields, then run a matching constructor.
+    const heapId = this.allocObject(className, this.createInstanceFields(className, scope));
+    const objectRef: JavaValue = { kind: 'objectRef', heapId, className };
+    const ctor = this.findConstructor(className, args);
+    if (ctor) {
+      this.callConstructor(ctor, objectRef, args, getLine(creation));
+    }
+    return objectRef;
   }
 
   // ── Built-in methods ──
@@ -1846,9 +2169,9 @@ export class JavaInterpreter {
     const b = args.length > 1 ? javaValueToNumber(args[1]) : 0;
 
     switch (method) {
-      case 'abs': return javaDouble(Math.abs(a));
-      case 'max': return javaDouble(Math.max(a, b));
-      case 'min': return javaDouble(Math.min(a, b));
+      case 'abs': return this.mathNumericResult([args[0]], Math.abs(a));
+      case 'max': return this.mathNumericResult(args.slice(0, 2), Math.max(a, b));
+      case 'min': return this.mathNumericResult(args.slice(0, 2), Math.min(a, b));
       case 'pow': return javaDouble(Math.pow(a, b));
       case 'sqrt': return javaDouble(Math.sqrt(a));
       case 'floor': return javaInt(Math.floor(a));
@@ -1863,6 +2186,42 @@ export class JavaInterpreter {
       default:
         throw new InterpreterError(`Unknown Math method: ${method}()`, 0);
     }
+  }
+
+  private mathNumericResult(args: JavaValue[], value: number): JavaValue {
+    if (args.some(arg => arg?.kind === 'primitive' && (arg.javaType === 'double' || arg.javaType === 'float'))) {
+      return javaDouble(value);
+    }
+    if (args.some(arg => arg?.kind === 'primitive' && arg.javaType === 'long')) {
+      return { kind: 'primitive', javaType: 'long', value };
+    }
+    return javaInt(value);
+  }
+
+  private evalWrapperConstant(className: string, fieldName: string): JavaValue | undefined {
+    if (className === 'Integer') {
+      if (fieldName === 'MAX_VALUE') return javaInt(2147483647);
+      if (fieldName === 'MIN_VALUE') return javaInt(-2147483648);
+    }
+    if (className === 'Long') {
+      if (fieldName === 'MAX_VALUE') return { kind: 'primitive', javaType: 'long', value: 9223372036854775807 };
+      if (fieldName === 'MIN_VALUE') return { kind: 'primitive', javaType: 'long', value: -9223372036854775808 };
+    }
+    if (className === 'Double') {
+      if (fieldName === 'MAX_VALUE') return javaDouble(Number.MAX_VALUE);
+      if (fieldName === 'MIN_VALUE') return javaDouble(Number.MIN_VALUE);
+      if (fieldName === 'POSITIVE_INFINITY') return javaDouble(Number.POSITIVE_INFINITY);
+      if (fieldName === 'NEGATIVE_INFINITY') return javaDouble(Number.NEGATIVE_INFINITY);
+      if (fieldName === 'NaN') return javaDouble(Number.NaN);
+    }
+    if (className === 'Float') {
+      if (fieldName === 'MAX_VALUE') return { kind: 'primitive', javaType: 'float', value: 3.4028235e38 };
+      if (fieldName === 'MIN_VALUE') return { kind: 'primitive', javaType: 'float', value: 1.4e-45 };
+      if (fieldName === 'POSITIVE_INFINITY') return { kind: 'primitive', javaType: 'float', value: Number.POSITIVE_INFINITY };
+      if (fieldName === 'NEGATIVE_INFINITY') return { kind: 'primitive', javaType: 'float', value: Number.NEGATIVE_INFINITY };
+      if (fieldName === 'NaN') return { kind: 'primitive', javaType: 'float', value: Number.NaN };
+    }
+    return undefined;
   }
 
   private evalWrapperMethod(className: string, method: string, args: JavaValue[]): JavaValue {
