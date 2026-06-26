@@ -256,7 +256,6 @@ export default function EditorPanel() {
       viewRef.current = null;
     };
     // Re-create only when the language engine changes (once per page load).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [engine]);
 
   // ── Sync external value changes (example load, share link) into CM ──

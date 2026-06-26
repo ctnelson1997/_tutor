@@ -135,7 +135,7 @@ src/
 ├── engine/
 │   └── executor.ts             # Thin dispatcher: store → engine → store
 ├── components/
-│   ├── AppNavbar.tsx           # Navbar (Sandbox / Examples / About) — branding-driven
+│   ├── AppNavbar.tsx           # Navbar (Sandbox / Examples / About) — Examples uses cascading category submenus
 │   ├── ControlBar.tsx          # Visualize / step controls / share / embed
 │   ├── EditorPanel.tsx         # CodeMirror editor with line/sub-line highlight + condition badges
 │   ├── VisualizationPanel.tsx

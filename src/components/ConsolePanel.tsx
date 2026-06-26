@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useCallback, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useCallback, useState } from 'react';
 import { useStore } from '../store/useStore';
 
 export default memo(function ConsolePanel() {
@@ -8,10 +8,12 @@ export default memo(function ConsolePanel() {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
 
-  // Get stdout up to the current step
-  const stdout = snapshots.length > 0 && snapshots[currentStep]
-    ? snapshots[currentStep].stdout
-    : [];
+  // Memoize so the empty-array fallback isn't a new reference each render
+  // (which would re-fire the scroll effect below).
+  const stdout = useMemo(
+    () => (snapshots.length > 0 && snapshots[currentStep] ? snapshots[currentStep].stdout : []),
+    [snapshots, currentStep],
+  );
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });

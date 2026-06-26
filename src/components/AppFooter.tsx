@@ -12,7 +12,9 @@ export default function AppFooter() {
       <span className="app-footer-sep" aria-hidden="true">·</span>
       <span>GPL-3.0 License</span>
       <span className="app-footer-sep" aria-hidden="true">·</span>
-      <span>v0.0.2 | June 26, 2026</span>
+      <span>v0.0.2</span>
+      <span className="app-footer-sep" aria-hidden="true">·</span>
+      <span>June 26, 2026</span>
     </footer>
   );
 }

@@ -119,6 +119,51 @@ html, body, #root {
   transition: opacity 0.5s ease !important;
 }
 
+/* Cascading submenu inside dropdown menus (used by Examples nav) */
+.dropdown-submenu {
+  position: relative;
+}
+
+.dropdown-submenu-toggle {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+}
+
+.dropdown-submenu-caret {
+  margin-left: 0.75rem;
+  color: #6c757d;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.dropdown-submenu-menu {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  margin: 0 0 0 0.125rem;
+  min-width: 12rem;
+}
+
+/* Collapsed navbar (mobile): render submenu inline instead of flyout */
+@media (max-width: 767.98px) {
+  .dropdown-submenu-menu {
+    position: static;
+    margin: 0 0 0 1rem;
+    border: none;
+    box-shadow: none;
+    background: transparent;
+    padding: 0;
+  }
+  .dropdown-submenu-caret {
+    transform: rotate(90deg);
+  }
+}
+
 /* Gutter background fills the visible editor area even when code is short.
    Uses scroller background instead of gutter min-height to avoid
    interfering with CM6's internal gutter height management (which broke

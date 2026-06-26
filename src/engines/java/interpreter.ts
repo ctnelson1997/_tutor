@@ -2290,8 +2290,11 @@ export class JavaInterpreter {
       if (fieldName === 'MIN_VALUE') return javaInt(-2147483648);
     }
     if (className === 'Long') {
-      if (fieldName === 'MAX_VALUE') return { kind: 'primitive', javaType: 'long', value: 9223372036854775807 };
-      if (fieldName === 'MIN_VALUE') return { kind: 'primitive', javaType: 'long', value: -9223372036854775808 };
+      // Java's Long.MAX_VALUE / MIN_VALUE are 64-bit signed integers that cannot be
+      // represented exactly in JS's float64 number type. Use the closest representable
+      // double — the same result you'd get from casting `(double) Long.MAX_VALUE` in Java.
+      if (fieldName === 'MAX_VALUE') return { kind: 'primitive', javaType: 'long', value: 2 ** 63 - 1 };
+      if (fieldName === 'MIN_VALUE') return { kind: 'primitive', javaType: 'long', value: -(2 ** 63) };
     }
     if (className === 'Double') {
       if (fieldName === 'MAX_VALUE') return javaDouble(Number.MAX_VALUE);
