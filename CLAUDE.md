@@ -149,6 +149,7 @@ Legacy share/embed routes (without `:lang`) default to `branding.languageId` —
 |---|---|---|
 | Instrumenter | `src/engine/__tests__/instrumenter.test.ts` | `instrument()` output: capture injection, loop guards, condition wrapping, destructuring, closures, classes, all examples |
 | Pipeline | `src/engine/__tests__/pipeline.test.ts` | Full instrument -> runtime -> eval -> snapshots pipeline using `node:vm` sandboxed contexts |
+| Behavior comparison | `src/engine/__tests__/behavior-comparison.test.ts` | Runs each snippet as plain JS AND through the full instrumented pipeline, then asserts identical `console.log` output (and, for control-flow cases, a clean final call stack). Add new cases here when fixing engine bugs found via real-world code — it catches semantic regressions across instrumenter + runtime in one place. |
 | diffSnapshots | `src/utils/__tests__/diffSnapshots.test.ts` | `getChangedKeys()`: variable changes, heap property changes, closure vars, this context |
 | Share | `src/utils/__tests__/share.test.ts` | `encodeShareCode`/`decodeShareCode` round-trips + `analyzeCode` suspicious pattern detection |
 | Store | `src/store/__tests__/useStore.test.ts` | Zustand actions: step navigation, clamping, reset, error handling |
@@ -175,6 +176,10 @@ Note: In test mode, `VITE_LANGUAGE` is unset so branding defaults to JS. The Pyt
 - **Java subset limits** — this is not a full JVM. It does not currently support inheritance, interfaces, access control, overloaded constructor/method resolution beyond simple arity matching, generics, exceptions, packages, Java standard-library I/O, or multi-class programs.
 - **TDZ-aware instrumentation** — `let`/`const` tracked incrementally; `var`/`function` hoisted
 - **Block scopes** — Loops with `let`/`const` use `isBlockScope` flag, rendered nested inside parent frame
+- **Per-iteration bindings preserved** — `for (let i...)` keeps its init and update in the for-statement slots (not extracted into the parent block) so closures created inside the body capture distinct per-iteration values, matching ECMA-262 semantics
+- **Throw cleanup** — every function body is wrapped in a synthetic `try { ... } catch (e) { __popThrowingFrame__(); throw e; }` so a throw propagating out of the function still pops the call-stack frame (otherwise frames leak across visualizations)
+- **Derived class constructors** — instrumenter detects `extends` and skips reading `this` in the constructor's `__pushFrame__` call, avoiding a ReferenceError before `super()` returns
+- **Getter/setter-safe serialization** — `__serializeHeapObject__` uses `Object.getOwnPropertyDescriptor` to detect accessor properties and renders them as `<getter>` / `<setter>` placeholders rather than invoking them (a getter that reads `this` would re-enter the runtime and recurse without bound)
 - **Condition tracking** — `__condition__()` wraps if/else-if tests, emits snapshots with `condition` field
 - **Pre-call capture** — Statements containing function calls get a snapshot *before* the call executes, so the line indicator pauses on the call site before stepping into the function body
 - **Value change animation** — `diffSnapshots.ts` compares consecutive snapshots, applies `value-changed` CSS class
