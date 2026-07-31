@@ -29,6 +29,7 @@ import {
 import {
   type JavaValue,
   type JavaType,
+  type JavaPrimitiveType,
   type JavaHeapEntry,
   type JavaObject,
   isJavaArray,
@@ -45,6 +46,25 @@ import {
   javaString,
   javaNull,
 } from './types';
+import {
+  type StdlibContext,
+  HaltSignal,
+  StdlibError,
+  callStaticMethod,
+  getStaticField,
+  javaFormat,
+  newBuiltin,
+  callInstanceMethod,
+  getIterableElements,
+  LIST_LIKE,
+  SET_LIKE,
+  MAP_LIKE,
+  isExceptionClass,
+  newException,
+  exceptionMethod,
+  exceptionAssignable,
+  formatException,
+} from './stdlib';
 
 // ── Limits ──
 
@@ -62,6 +82,14 @@ class ReturnSignal {
 
 class BreakSignal {}
 class ContinueSignal {}
+
+/** A thrown Java exception propagating up the stack until a matching catch. */
+class JavaThrow {
+  value: JavaValue;
+  constructor(value: JavaValue) {
+    this.value = value;
+  }
+}
 
 // ── Scope / Environment ──
 
@@ -82,14 +110,51 @@ function lookupVariable(scope: Scope, name: string): { value: JavaValue; type: J
   return undefined;
 }
 
+/**
+ * Java assignment / method-invocation conversion: widen a numeric primitive to
+ * the declared type of the variable, parameter, or field it is being bound to.
+ *
+ * Without this, `double x = 1;` would store the int *literal's* javaType ('int'),
+ * so a later `target / x` runs integer division instead of floating-point. See the
+ * √2013 Newton's-method regression in behavior-comparison.test.ts. This mirrors JLS
+ * widening primitive conversion (int/char/short/byte/long/float -> double, etc.); we
+ * intentionally do NOT auto-narrow (e.g. double -> int) since that requires an explicit
+ * cast in real Java, and leaving such values untouched preserves existing behavior.
+ */
+function coerceToType(value: JavaValue, type: JavaType): JavaValue {
+  if (value.kind !== 'primitive' || typeof value.value !== 'number') return value;
+  if (type === 'double' || type === 'float') {
+    if (value.javaType !== type) {
+      return { kind: 'primitive', javaType: type as JavaPrimitiveType, value: value.value };
+    }
+  } else if (type === 'long') {
+    if (value.javaType === 'int' || value.javaType === 'char' || value.javaType === 'short' || value.javaType === 'byte') {
+      return { kind: 'primitive', javaType: 'long', value: value.value };
+    }
+  }
+  return value;
+}
+
+/**
+ * Increment / decrement (`++` / `--`) preserving the operand's numeric type, so
+ * `double d = 1.5; d++;` yields 2.5 (not a truncated int). Falls back to int.
+ */
+function stepValue(val: JavaValue, delta: number): JavaValue {
+  const n = javaValueToNumber(val) + delta;
+  if (val.kind === 'primitive' && (val.javaType === 'double' || val.javaType === 'float' || val.javaType === 'long')) {
+    return { kind: 'primitive', javaType: val.javaType, value: n };
+  }
+  return javaInt(n);
+}
+
 function setVariable(scope: Scope, name: string, value: JavaValue, type: JavaType): void {
-  scope.variables.set(name, { value, type });
+  scope.variables.set(name, { value: coerceToType(value, type), type });
 }
 
 function updateVariable(scope: Scope, name: string, value: JavaValue): boolean {
   if (scope.variables.has(name)) {
     const entry = scope.variables.get(name)!;
-    entry.value = value;
+    entry.value = coerceToType(value, entry.type);
     return true;
   }
   if (scope.parent) return updateVariable(scope.parent, name, value);
@@ -131,7 +196,7 @@ type MethodTable = Map<string, MethodDef[]>;
 
 export class JavaInterpreter {
   private snapshots: ExecutionSnapshot[] = [];
-  private stdout: string[] = [];
+  private stdoutBuffer = '';
   private heap: Map<string, JavaHeapEntry> = new Map();
   private nextHeapId = 1;
   private callStack: { name: string; scope: Scope; currentScope: Scope }[] = [];
@@ -140,7 +205,93 @@ export class JavaInterpreter {
   private staticFields: Scope = createScope(null);
   private instanceFields: Map<string, FieldDef[]> = new Map();
   private constructors: Map<string, ConstructorDef[]> = new Map();
+  private classNames: Set<string> = new Set();
   private step = 0;
+  private stdin: string;
+  private ctx: StdlibContext;
+  /** When > 0, emitSnapshot is a no-op (during atomic toString/equals/compareTo callbacks). */
+  private suppressSnapshots = 0;
+
+  constructor(stdin: string = '') {
+    this.stdin = stdin;
+    this.ctx = {
+      heap: this.heap,
+      allocArray: (elementType, elements) => this.allocArray(elementType, elements),
+      allocObject: (className, fields) => this.allocObject(className, fields),
+      random: () => Math.random(),
+      stdin: this.stdin,
+      writeStdout: (text) => this.appendStdout(text),
+      invokeUserMethod: (ref, name, args) => this.invokeUser(ref, name, args),
+    };
+  }
+
+  /**
+   * Invoke a user-defined instance method (toString/equals/compareTo/…) and
+   * return its result, or undefined if the object's class doesn't define one.
+   * Snapshot emission is suppressed so the call is atomic in the visualization.
+   */
+  private invokeUser(ref: JavaValue, name: string, args: JavaValue[]): JavaValue | undefined {
+    if (ref.kind !== 'objectRef' || !this.classNames.has(ref.className)) return undefined;
+    const method = this.resolveMethod(this.methodsByClass.get(ref.className), name, args.length);
+    if (!method || method.isStatic) return undefined;
+    this.suppressSnapshots++;
+    try {
+      return this.callMethod(method, args, undefined, ref);
+    } finally {
+      this.suppressSnapshots--;
+    }
+  }
+
+  /**
+   * Convert a value to its display string, honoring a user-defined `toString()`
+   * and formatting built-in exceptions as `ClassName: message`. Falls back to
+   * `javaValueToString` (which handles collections, StringBuilder, etc.).
+   */
+  private stringify(value: JavaValue): string {
+    if (value.kind === 'objectRef') {
+      const user = this.invokeUser(value, 'toString', []);
+      if (user !== undefined && user.kind === 'string') return user.value;
+      const obj = this.heap.get(value.heapId);
+      if (obj && isJavaObject(obj)) {
+        // Exceptions render as ClassName: message.
+        if (isExceptionClass(value.className) || /(?:Exception|Error)$/.test(value.className)) {
+          const exc = formatException(value, this.heap);
+          if (exc !== undefined) return exc;
+        }
+        // Maps: {k=v, ...} — recurse via stringify so element toString() is honored.
+        const keysRef = obj.fields.get('__keys__'), valuesRef = obj.fields.get('__values__');
+        if (keysRef?.kind === 'arrayRef' && valuesRef?.kind === 'arrayRef') {
+          const ks = this.heap.get(keysRef.heapId), vs = this.heap.get(valuesRef.heapId);
+          if (ks && isJavaArray(ks) && vs && isJavaArray(vs)) {
+            return '{' + ks.elements.map((k, i) => this.stringify(k) + '=' + this.stringify(vs.elements[i])).join(', ') + '}';
+          }
+        }
+        // Lists / sets / queues: [a, b, c]
+        const dataRef = obj.fields.get('__data__');
+        if (dataRef?.kind === 'arrayRef') {
+          const d = this.heap.get(dataRef.heapId);
+          if (d && isJavaArray(d)) return '[' + d.elements.map(e => this.stringify(e)).join(', ') + ']';
+        }
+      }
+    }
+    return javaValueToString(value, this.heap);
+  }
+
+  /** Append raw text to the stdout buffer (used by print / printf). */
+  private appendStdout(text: string): void {
+    this.stdoutBuffer += text;
+  }
+
+  /**
+   * Split the accumulated stdout buffer into display lines. One trailing
+   * newline is dropped (matching the established convention where a final
+   * println doesn't render an extra blank line).
+   */
+  private snapshotStdout(): string[] {
+    if (this.stdoutBuffer === '') return [];
+    const s = this.stdoutBuffer.endsWith('\n') ? this.stdoutBuffer.slice(0, -1) : this.stdoutBuffer;
+    return s.split('\n');
+  }
 
   execute(cst: CstNode): { snapshots: ExecutionSnapshot[]; error?: string } {
     try {
@@ -181,6 +332,14 @@ export class JavaInterpreter {
       if (e instanceof ReturnSignal) {
         return { snapshots: this.snapshots };
       }
+      if (e instanceof HaltSignal) {
+        // System.exit(...) — clean stop, return snapshots gathered so far.
+        return { snapshots: this.snapshots };
+      }
+      if (e instanceof JavaThrow) {
+        const s = formatException(e.value, this.heap) ?? this.stringify(e.value);
+        return { snapshots: this.snapshots, error: `Exception in thread "main" ${s}` };
+      }
       const msg = e instanceof Error ? e.message : String(e);
       return { snapshots: this.snapshots, error: msg };
     }
@@ -190,6 +349,7 @@ export class JavaInterpreter {
 
   private registerClass(normalClass: CstNode, isTopLevel: boolean): void {
     const className = this.extractClassName(normalClass);
+    this.classNames.add(className);
     const classBody = child(normalClass, 'classBody');
     if (!classBody) throw new InterpreterError('Empty class body', getLine(normalClass));
 
@@ -436,6 +596,8 @@ export class JavaInterpreter {
   // ── Snapshot emission ──
 
   private emitSnapshot(line: number): void {
+    // Suppressed during atomic user-method callbacks (toString/equals/compareTo).
+    if (this.suppressSnapshots > 0) return;
     if (this.snapshots.length >= MAX_SNAPSHOTS) {
       throw new InterpreterError(
         `Execution exceeded ${MAX_SNAPSHOTS} steps. Your code may contain an infinite loop.`,
@@ -485,9 +647,23 @@ export class JavaInterpreter {
       }
     }
 
+    // Collections store their contents in backing arrays (__data__ / __keys__ /
+    // __values__). Collect those array ids so we can render their contents
+    // inline on the collection object and omit the raw backing arrays.
+    const internalArrayIds = new Set<string>();
+    for (const [, entry] of this.heap) {
+      if (isJavaObject(entry)) {
+        for (const key of ['__data__', '__keys__', '__values__']) {
+          const r = entry.fields.get(key);
+          if (r && r.kind === 'arrayRef') internalArrayIds.add(r.heapId);
+        }
+      }
+    }
+
     const heapObjects: HeapObject[] = [];
     for (const [id, entry] of this.heap) {
       if (isJavaArray(entry)) {
+        if (internalArrayIds.has(id)) continue; // shown via its owning collection
         heapObjects.push({
           id,
           objectType: 'array',
@@ -498,15 +674,7 @@ export class JavaInterpreter {
           })),
         });
       } else if (isJavaObject(entry)) {
-        heapObjects.push({
-          id,
-          objectType: 'object',
-          label: entry.className,
-          properties: Array.from(entry.fields.entries()).map(([k, v]) => ({
-            key: k,
-            value: this.javaToRuntime(v),
-          })),
-        });
+        heapObjects.push(this.serializeObject(id, entry));
       }
     }
 
@@ -515,7 +683,7 @@ export class JavaInterpreter {
       line,
       callStack,
       heap: heapObjects,
-      stdout: [...this.stdout],
+      stdout: this.snapshotStdout(),
     });
   }
 
@@ -537,6 +705,54 @@ export class JavaInterpreter {
       case 'objectRef':
         return { type: 'ref', heapId: val.heapId };
     }
+  }
+
+  /**
+   * Render a heap object for a snapshot. Built-in collections show their
+   * contents inline (with list/set/map objectTypes); StringBuilder shows its
+   * text; generic objects hide internal `__`-prefixed fields.
+   */
+  private serializeObject(id: string, entry: JavaObject): HeapObject {
+    const cls = entry.className;
+    if (MAP_LIKE.has(cls)) {
+      const keys = this.getBackingElements(entry, '__keys__');
+      const values = this.getBackingElements(entry, '__values__');
+      return {
+        id, objectType: 'map', label: cls,
+        properties: keys.map((k, i) => ({
+          key: javaValueToString(k, this.heap),
+          value: this.javaToRuntime(values[i] ?? javaNull()),
+        })),
+      };
+    }
+    if (LIST_LIKE.has(cls) || SET_LIKE.has(cls)) {
+      const elems = this.getBackingElements(entry, '__data__');
+      return {
+        id, objectType: SET_LIKE.has(cls) ? 'set' : 'list', label: cls,
+        properties: elems.map((e, i) => ({ key: String(i), value: this.javaToRuntime(e) })),
+      };
+    }
+    if (cls === 'StringBuilder' || cls === 'StringBuffer') {
+      return {
+        id, objectType: 'object', label: cls,
+        properties: [{ key: 'value', value: this.javaToRuntime(entry.fields.get('value') ?? javaNull()) }],
+      };
+    }
+    return {
+      id, objectType: 'object', label: cls,
+      properties: Array.from(entry.fields.entries())
+        .filter(([k]) => !k.startsWith('__'))
+        .map(([k, v]) => ({ key: k, value: this.javaToRuntime(v) })),
+    };
+  }
+
+  private getBackingElements(entry: JavaObject, field: string): JavaValue[] {
+    const ref = entry.fields.get(field);
+    if (ref && ref.kind === 'arrayRef') {
+      const arr = this.heap.get(ref.heapId);
+      if (arr && isJavaArray(arr)) return arr.elements;
+    }
+    return [];
   }
 
   // ── Heap management ──
@@ -756,6 +972,116 @@ export class JavaInterpreter {
       this.executeDoWhile(doStmt, scope);
       return;
     }
+
+    // throw statement
+    const throwStmt = child(swts, 'throwStatement');
+    if (throwStmt) {
+      const line = token(throwStmt, 'Throw')?.startLine || getLine(throwStmt);
+      const expr = child(throwStmt, 'expression')!;
+      const value = this.evalExpression(expr, scope);
+      this.emitSnapshot(line);
+      throw new JavaThrow(value);
+    }
+
+    // try / catch / finally
+    const tryStmt = child(swts, 'tryStatement');
+    if (tryStmt) {
+      this.executeTry(tryStmt, scope);
+      return;
+    }
+  }
+
+  // ── Exceptions ──
+
+  private executeTry(tryStmt: CstNode, scope: Scope): void {
+    const tryBlock = child(tryStmt, 'block');
+    const catches = child(tryStmt, 'catches');
+    const finallyNode = child(tryStmt, 'finally');
+    const finallyBlock = finallyNode ? child(finallyNode, 'block') : undefined;
+
+    const runBlock = (block: CstNode) => {
+      const inner = createScope(scope, scope.label);
+      setCurrentScope(this.callStack, inner);
+      this.executeBlock(block, inner);
+      setCurrentScope(this.callStack, scope);
+    };
+    const runFinally = () => { if (finallyBlock) runBlock(finallyBlock); };
+
+    try {
+      if (tryBlock) runBlock(tryBlock);
+    } catch (e) {
+      // Control-flow signals (return/break/continue/exit) still run finally, then propagate.
+      if (e instanceof ReturnSignal || e instanceof BreakSignal || e instanceof ContinueSignal || e instanceof HaltSignal) {
+        runFinally();
+        throw e;
+      }
+      // Otherwise treat as a (Java) exception and look for a matching catch.
+      const exc = this.toExceptionValue(e);
+      const clause = exc && catches ? this.matchCatch(catches, exc) : undefined;
+      if (exc && clause) {
+        try {
+          const catchScope = createScope(scope, scope.label);
+          setVariable(catchScope, clause.name, exc, exc.kind === 'objectRef' ? exc.className : 'Exception');
+          setCurrentScope(this.callStack, catchScope);
+          this.executeBlock(clause.block, catchScope);
+          setCurrentScope(this.callStack, scope);
+        } finally {
+          runFinally();
+        }
+        return;
+      }
+      runFinally();
+      throw e; // unmatched (or non-Java) error: preserve original propagation
+    }
+    runFinally();
+  }
+
+  /**
+   * Convert a thrown JS value into the Java exception object a catch clause can
+   * bind — either an explicit `throw`n value, or a synthesized object for a
+   * built-in runtime error (ArithmeticException, ArrayIndexOutOfBounds, …).
+   * Returns null for interpreter-internal errors that aren't real Java
+   * exceptions (so they keep propagating as engine errors).
+   */
+  private toExceptionValue(e: unknown): JavaValue | null {
+    if (e instanceof JavaThrow) return e.value;
+    if (e instanceof InterpreterError || e instanceof StdlibError) {
+      // InterpreterError prefixes "Line N: "; strip it before matching the type.
+      const msg = e.message.replace(/^Line \d+:\s*/, '');
+      const m = msg.match(/^([A-Za-z_][A-Za-z0-9_]*)(?::\s*(.*))?$/s);
+      if (m && isExceptionClass(m[1])) {
+        const detail = m[2] ?? '';
+        return newException(m[1], detail ? [javaString(detail)] : [], this.ctx);
+      }
+    }
+    return null;
+  }
+
+  private matchCatch(catches: CstNode, exc: JavaValue): { name: string; block: CstNode } | undefined {
+    const actual = exc.kind === 'objectRef' ? exc.className : 'Exception';
+    for (const clause of children(catches, 'catchClause')) {
+      const param = child(clause, 'catchFormalParameter');
+      if (!param) continue;
+      const catchType = child(param, 'catchType');
+      const types = catchType ? this.extractCatchTypes(catchType) : [];
+      const name = token(child(param, 'variableDeclaratorId')!, 'Identifier')?.image || 'e';
+      const block = child(clause, 'block');
+      if (block && types.some(t => exceptionAssignable(actual, t))) {
+        return { name, block };
+      }
+    }
+    return undefined;
+  }
+
+  private extractCatchTypes(catchType: CstNode): string[] {
+    const types: string[] = [];
+    const unann = child(catchType, 'unannClassType');
+    if (unann) { const id = token(unann, 'Identifier'); if (id) types.push(id.image); }
+    for (const ct of children(catchType, 'classType')) {
+      const id = token(ct, 'Identifier');
+      if (id) types.push(id.image);
+    }
+    return types;
   }
 
   // ── Control flow ──
@@ -903,19 +1229,26 @@ export class JavaInterpreter {
     const iterExpr = child(enhanced, 'expression')!;
     const iterValue = this.evalExpression(iterExpr, scope);
 
-    if (iterValue.kind !== 'arrayRef') {
-      throw new InterpreterError('Enhanced for loop requires an array', line);
-    }
-
-    const arr = this.heap.get(iterValue.heapId);
-    if (!arr || !isJavaArray(arr)) {
-      throw new InterpreterError('Enhanced for loop target is not an array', line);
+    let iterElements: JavaValue[];
+    if (iterValue.kind === 'arrayRef') {
+      const arr = this.heap.get(iterValue.heapId);
+      if (!arr || !isJavaArray(arr)) {
+        throw new InterpreterError('Enhanced for loop target is not an array', line);
+      }
+      iterElements = arr.elements;
+    } else {
+      // Collections (ArrayList, HashSet, keySet()/values()/entrySet() results, …)
+      const collected = iterValue.kind === 'objectRef' ? getIterableElements(iterValue, this.ctx) : undefined;
+      if (!collected) {
+        throw new InterpreterError('Enhanced for loop requires an array or collection', line);
+      }
+      iterElements = collected;
     }
 
     setVariable(forScope, varName, defaultValue(type), type);
     let iterations = 0;
 
-    for (const element of arr.elements) {
+    for (const element of iterElements) {
       if (iterations++ > MAX_LOOP_ITERATIONS) {
         throw new InterpreterError('Loop exceeded maximum iterations.', line);
       }
@@ -1143,7 +1476,12 @@ export class JavaInterpreter {
     // chain needs to short-circuit && / || without forcing the RHS.
     // Without thunks, `false && side()` would still call side(), violating
     // Java semantics and producing observable side effects.
+    //
+    // `x instanceof Type` is folded here: the trailing `referenceType` operand
+    // is combined with the preceding value into a single boolean operand, and
+    // the `instanceof` token is dropped from the operator chain.
     const operandThunks: Array<() => JavaValue> = [];
+    const chainOps: string[] = [];
     for (const item of allChildren) {
       if (isCstNode(item) && item.name === 'unaryExpression') {
         const node = item;
@@ -1151,14 +1489,23 @@ export class JavaInterpreter {
       } else if (isCstNode(item) && item.name === 'expression') {
         const node = item;
         operandThunks.push(() => this.evalExpression(node, scope));
+      } else if (isCstNode(item) && item.name === 'referenceType') {
+        const typeName = this.firstIdentifier(item);
+        const operand = operandThunks.pop() ?? (() => javaNull());
+        operandThunks.push(() => javaBool(this.isInstanceOf(operand(), typeName)));
+      } else if (isCstToken(item)) {
+        const op = item.image;
+        if (['(', ')', '{', '}', '[', ']', ';', ','].includes(op)) continue;
+        if (op === 'instanceof') continue; // folded into the referenceType operand
+        chainOps.push(op);
       }
     }
 
     if (operandThunks.length === 0) return javaNull();
-    if (operators.length === 0) return operandThunks[0]();
+    if (chainOps.length === 0) return operandThunks[0]();
 
     // Evaluate left to right with precedence (short-circuits && / ||)
-    return this.evalOperatorChain(operandThunks, operators);
+    return this.evalOperatorChain(operandThunks, chainOps);
   }
 
   private evalAssignment(binExpr: CstNode, op: string, scope: Scope): JavaValue {
@@ -1184,7 +1531,7 @@ export class JavaInterpreter {
     if (op !== '=') {
       const currentValue = target.get();
       const baseOp = op.slice(0, -1); // '+=' -> '+'
-      rhsValue = applyBinaryOp(baseOp, currentValue, rhsValue, this.heap);
+      rhsValue = applyBinaryOp(baseOp, currentValue, rhsValue, this.heap, (v) => this.stringify(v));
     }
 
     target.set(rhsValue);
@@ -1363,6 +1710,7 @@ export class JavaInterpreter {
     let vals: Array<() => JavaValue> = [...operandThunks];
     let ops = [...operators];
     const heap = this.heap;
+    const stringify = (v: JavaValue) => this.stringify(v);
 
     for (const group of precGroups) {
       const newVals: Array<() => JavaValue> = [vals[0]];
@@ -1383,7 +1731,7 @@ export class JavaInterpreter {
               return javaValueToBoolean(l) ? javaBool(true) : right();
             });
           } else {
-            newVals.push(() => applyBinaryOp(op, left(), right(), heap));
+            newVals.push(() => applyBinaryOp(op, left(), right(), heap, stringify));
           }
         } else {
           newVals.push(vals[i + 1]);
@@ -1418,12 +1766,12 @@ export class JavaInterpreter {
         case '+': return val;
         case '~': return javaInt(~(javaValueToNumber(val) | 0));
         case '++': {
-          const newVal = javaInt(javaValueToNumber(val) + 1);
+          const newVal = stepValue(val, 1);
           this.updatePrimaryVariable(primary, scope, newVal);
           return newVal;
         }
         case '--': {
-          const newVal = javaInt(javaValueToNumber(val) - 1);
+          const newVal = stepValue(val, -1);
           this.updatePrimaryVariable(primary, scope, newVal);
           return newVal;
         }
@@ -1442,7 +1790,7 @@ export class JavaInterpreter {
         const op = suffixOpToken.image;
         const origVal = val;
         const delta = op === '++' ? 1 : -1;
-        const newVal = javaInt(javaValueToNumber(val) + delta);
+        const newVal = stepValue(val, delta);
         this.updatePrimaryVariable(primary, scope, newVal);
         return origVal; // postfix returns original value
       }
@@ -1528,17 +1876,17 @@ export class JavaInterpreter {
       if (target.className === 'StringBuilder' || target.className === 'StringBuffer') {
         return this.evalStringBuilderMethod(target, methodName, args);
       }
-      if (target.className === 'ArrayList') {
-        return this.evalArrayListMethod(target, methodName, args);
-      }
-      if (target.className === 'HashMap') {
-        return this.evalHashMapMethod(target, methodName, args);
+      if (!this.classNames.has(target.className)) {
+        const builtin = callInstanceMethod(target, methodName, args, this.ctx);
+        if (builtin !== undefined) return builtin;
       }
       const method = this.resolveMethod(this.methodsByClass.get(target.className), methodName, args.length)
         || this.resolveMethod(this.methods, methodName, args.length);
       if (method && !method.isStatic) {
         return this.callMethod(method, args, getLine(primary), target);
       }
+      const excResult = this.exceptionFallback(target, methodName);
+      if (excResult !== undefined) return excResult;
     }
     throw new InterpreterError(`Unknown method: ${methodName}()`, getLine(methodSuffix));
   }
@@ -1607,6 +1955,55 @@ export class JavaInterpreter {
       return this.castPrimitiveValue(value, primitiveType);
     }
 
+    // Reference cast, e.g. (P) o — types aren't enforced, so return the operand.
+    const refCast = child(castExpr, 'referenceTypeCastExpression');
+    if (refCast) {
+      const operand = child(refCast, 'unaryExpressionNotPlusMinus');
+      return operand ? this.evalUnaryExpressionNotPlusMinus(operand, scope) : javaNull();
+    }
+
+    return javaNull();
+  }
+
+  /** First Identifier token anywhere under a node (e.g. the class name of a referenceType). */
+  private firstIdentifier(node: CstNode): string {
+    const direct = token(node, 'Identifier');
+    if (direct) return direct.image;
+    for (const key of Object.keys(node.children)) {
+      for (const c of node.children[key]) {
+        if (isCstNode(c)) { const r = this.firstIdentifier(c); if (r) return r; }
+      }
+    }
+    return '';
+  }
+
+  /** `value instanceof typeName` — exact class match, exception hierarchy, or Object/String. */
+  private isInstanceOf(value: JavaValue, typeName: string): boolean {
+    if (value.kind === 'null') return false;
+    if (typeName === 'Object') return true;
+    if (value.kind === 'objectRef') {
+      if (value.className === typeName) return true;
+      if (isExceptionClass(value.className) || isExceptionClass(typeName)) {
+        return exceptionAssignable(value.className, typeName);
+      }
+      return false; // user inheritance isn't tracked
+    }
+    if (value.kind === 'string') return typeName === 'String' || typeName === 'CharSequence';
+    return false; // primitives / arrays
+  }
+
+  private evalUnaryExpressionNotPlusMinus(node: CstNode, scope: Scope): JavaValue {
+    const primary = child(node, 'primary');
+    if (primary) return this.evalPrimary(primary, scope);
+    const cast = child(node, 'castExpression');
+    if (cast) return this.evalCastExpression(cast, scope);
+    const unary = child(node, 'unaryExpression');
+    if (unary) {
+      const val = this.evalUnaryExpression(unary, scope);
+      if (has(node, 'Bang')) return javaBool(!javaValueToBoolean(val));
+      if (has(node, 'Tilde')) return javaInt(~(javaValueToNumber(val) | 0));
+      return val;
+    }
     return javaNull();
   }
 
@@ -1714,6 +2111,12 @@ export class JavaInterpreter {
     }
 
     // Multi-part: handle known patterns
+    // Static constants: Math.PI, Math.E, Integer.MAX_VALUE, Double.NaN, Boolean.TRUE, …
+    if (parts.length === 2) {
+      const constant = getStaticField(parts[0], parts[1]);
+      if (constant) return constant;
+    }
+
     // System.out.println / System.out.print
     if (parts[0] === 'System' && parts[1] === 'out') {
       // This will be handled by the suffix (methodInvocationSuffix)
@@ -1727,12 +2130,8 @@ export class JavaInterpreter {
       return { kind: 'objectRef', heapId: '__math__', className: 'Math' } as JavaValue;
     }
 
-    // Integer.xxx, Double.xxx etc
-    if (parts.length === 2) {
-      const wrapperConstant = this.evalWrapperConstant(parts[0], parts[1]);
-      if (wrapperConstant) return wrapperConstant;
-    }
-    if (['Integer', 'Double', 'Float', 'Long', 'Boolean', 'Character'].includes(parts[0])) {
+    // Integer.xxx, Double.xxx etc — sentinel receiver for static method calls
+    if (['Integer', 'Double', 'Float', 'Long', 'Short', 'Byte', 'Boolean', 'Character'].includes(parts[0])) {
       return { kind: 'objectRef', heapId: '__' + parts[0].toLowerCase() + '__', className: parts[0] } as JavaValue;
     }
 
@@ -1897,29 +2296,23 @@ export class JavaInterpreter {
 
     const methodName = parts[parts.length - 1] || '';
 
-    // System.out.println / System.out.print
-    if (parts.length >= 3 && parts[0] === 'System' && parts[1] === 'out') {
+    // System.out.* / System.err.* — both stream to the single console buffer.
+    if (parts.length >= 3 && parts[0] === 'System' && (parts[1] === 'out' || parts[1] === 'err')) {
       if (methodName === 'println') {
-        const str = args.length > 0 ? javaValueToString(args[0], this.heap) : '';
-        this.stdout.push(str);
+        const str = args.length > 0 ? this.stringify(args[0]) : '';
+        this.appendStdout(str + '\n');
         return javaNull();
       }
       if (methodName === 'print') {
-        const str = args.length > 0 ? javaValueToString(args[0], this.heap) : '';
-        if (this.stdout.length === 0) this.stdout.push('');
-        this.stdout[this.stdout.length - 1] += str;
+        const str = args.length > 0 ? this.stringify(args[0]) : '';
+        this.appendStdout(str);
         return javaNull();
       }
-    }
-
-    // Math methods
-    if (parts.length >= 2 && parts[0] === 'Math') {
-      return this.evalMathMethod(methodName, args);
-    }
-
-    // Integer.parseInt, Double.parseDouble, etc.
-    if (parts.length >= 2 && ['Integer', 'Double', 'Float', 'Long', 'Boolean'].includes(parts[0])) {
-      return this.evalWrapperMethod(parts[0], methodName, args);
+      if (methodName === 'printf' || methodName === 'format') {
+        const fmt = args.length > 0 ? javaValueToString(args[0], this.heap) : '';
+        this.appendStdout(javaFormat(fmt, args.slice(1), this.heap));
+        return javaNull();
+      }
     }
 
     // String methods on a variable
@@ -1946,11 +2339,9 @@ export class JavaInterpreter {
       if (target.className === 'StringBuilder' || target.className === 'StringBuffer') {
         return this.evalStringBuilderMethod(target, methodName, args);
       }
-      if (target.className === 'ArrayList') {
-        return this.evalArrayListMethod(target, methodName, args);
-      }
-      if (target.className === 'HashMap') {
-        return this.evalHashMapMethod(target, methodName, args);
+      if (!this.classNames.has(target.className)) {
+        const builtin = callInstanceMethod(target, methodName, args, this.ctx);
+        if (builtin !== undefined) return builtin;
       }
 
       const method = this.resolveMethod(this.methodsByClass.get(target.className), methodName, args.length)
@@ -1994,7 +2385,34 @@ export class JavaInterpreter {
       }
     }
 
+    // Throwable methods on a user-defined exception that doesn't override them
+    // (getMessage/toString/printStackTrace reading the detail message).
+    if (target.kind === 'objectRef') {
+      const excResult = this.exceptionFallback(target, methodName);
+      if (excResult !== undefined) return excResult;
+    }
+
+    // Static utility classes: Math, wrappers, Arrays, Objects, System, String, Collections, List/Set/Map.of
+    const staticClass = parts.length >= 2 ? parts[parts.length - 2] : parts[0] || '';
+    const staticResult = callStaticMethod(staticClass, methodName, args, this.ctx);
+    if (staticResult !== undefined) return staticResult;
+
     throw new InterpreterError(`Unknown method: ${parts.join('.')}()`, 0);
+  }
+
+  /**
+   * Fallback for Throwable methods (getMessage/getLocalizedMessage/toString/
+   * printStackTrace) on a user-defined exception object that doesn't define
+   * them itself. Returns undefined for unrelated methods.
+   */
+  private exceptionFallback(target: JavaValue, methodName: string): JavaValue | undefined {
+    if (methodName === 'getMessage' || methodName === 'getLocalizedMessage'
+      || methodName === 'printStackTrace'
+      || (methodName === 'toString' && target.kind === 'objectRef'
+          && /(?:Exception|Error)$/.test(target.className))) {
+      return exceptionMethod(target, methodName, this.ctx);
+    }
+    return undefined;
   }
 
   private callMethod(
@@ -2023,15 +2441,13 @@ export class JavaInterpreter {
     this.callStack.push({ name: method.name, scope: methodScope, currentScope: methodScope });
     try {
       this.executeBlock(method.body, methodScope);
+      return javaNull();
     } catch (e) {
-      if (e instanceof ReturnSignal) {
-        this.callStack.pop();
-        return e.value;
-      }
-      throw e;
+      if (e instanceof ReturnSignal) return e.value;
+      throw e; // propagate JavaThrow / signals; frame popped in finally
+    } finally {
+      this.callStack.pop();
     }
-    this.callStack.pop();
-    return javaNull();
   }
 
   private findConstructor(className: string, args: JavaValue[]): ConstructorDef | undefined {
@@ -2051,6 +2467,22 @@ export class JavaInterpreter {
       const param = ctor.params[i];
       const arg = i < args.length ? args[i] : defaultValue(param.type);
       setVariable(ctorScope, param.name, arg, param.type);
+    }
+
+    // super("message") / this("message"): capture a detail message on the object
+    // so user-defined exceptions calling super(msg) still answer getMessage().
+    const eci = child(ctor.body, 'explicitConstructorInvocation');
+    const unqualified = eci ? child(eci, 'unqualifiedExplicitConstructorInvocation') : undefined;
+    if (unqualified && thisValue.kind === 'objectRef') {
+      const argList = child(unqualified, 'argumentList');
+      const first = argList ? children(argList, 'expression')[0] : undefined;
+      if (first) {
+        const val = this.evalExpression(first, ctorScope);
+        if (val.kind === 'string') {
+          const obj = this.heap.get(thisValue.heapId);
+          if (obj && isJavaObject(obj) && !obj.fields.has('message')) obj.fields.set('message', val);
+        }
+      }
     }
 
     this.emitSnapshot(callSiteLine);
@@ -2164,28 +2596,19 @@ export class JavaInterpreter {
     }
 
     // Built-in types
-    if (className === 'ArrayList') {
-      const heapId = this.allocObject('ArrayList', new Map([
-        ['size', javaInt(0)],
-      ]));
-      // Store internal array
-      this.heap.set(heapId + '_data', { elementType: 'Object', elements: [] });
-      const obj = this.heap.get(heapId) as JavaObject;
-      obj.fields.set('__data__', { kind: 'arrayRef', heapId: heapId + '_data' });
-      return { kind: 'objectRef', heapId, className: 'ArrayList' };
-    }
-
-    if (className === 'HashMap') {
-      const heapId = this.allocObject('HashMap', new Map());
-      return { kind: 'objectRef', heapId, className: 'HashMap' };
-    }
-
     if (className === 'StringBuilder' || className === 'StringBuffer') {
       const initial = args.length > 0 ? javaValueToString(args[0], this.heap) : '';
       const heapId = this.allocObject(className, new Map([
         ['value', javaString(initial)],
       ]));
       return { kind: 'objectRef', heapId, className };
+    }
+
+    // Collections, Scanner, Random — handled by the stdlib, unless the user
+    // defined their own class with the same name (which takes precedence).
+    if (!this.classNames.has(className)) {
+      const builtin = newBuiltin(className, args, this.ctx);
+      if (builtin) return builtin;
     }
 
     // Generic object — create with declared instance fields, then run a matching constructor.
@@ -2245,72 +2668,25 @@ export class JavaInterpreter {
         return { kind: 'arrayRef', heapId };
       }
       case 'compareTo': return javaInt(str < javaValueToString(args[0], this.heap) ? -1 : str > javaValueToString(args[0], this.heap) ? 1 : 0);
+      case 'compareToIgnoreCase': {
+        const o = javaValueToString(args[0], this.heap).toLowerCase();
+        const s = str.toLowerCase();
+        return javaInt(s < o ? -1 : s > o ? 1 : 0);
+      }
+      case 'concat': return javaString(str + javaValueToString(args[0], this.heap));
+      case 'repeat': return javaString(str.repeat(Math.max(0, javaValueToNumber(args[0]) | 0)));
+      case 'isBlank': return javaBool(str.trim().length === 0);
+      case 'strip': return javaString(str.replace(/^\s+|\s+$/g, ''));
+      case 'stripLeading': return javaString(str.replace(/^\s+/, ''));
+      case 'stripTrailing': return javaString(str.replace(/\s+$/, ''));
+      case 'matches': return javaBool(new RegExp('^(?:' + javaValueToString(args[0], this.heap) + ')$').test(str));
+      case 'replaceAll':
+        return javaString(str.replace(new RegExp(javaValueToString(args[0], this.heap), 'g'), javaValueToString(args[1], this.heap)));
+      case 'replaceFirst':
+        return javaString(str.replace(new RegExp(javaValueToString(args[0], this.heap)), javaValueToString(args[1], this.heap)));
       default:
         throw new InterpreterError(`Unknown String method: ${method}()`, 0);
     }
-  }
-
-  private evalMathMethod(method: string, args: JavaValue[]): JavaValue {
-    const a = args.length > 0 ? javaValueToNumber(args[0]) : 0;
-    const b = args.length > 1 ? javaValueToNumber(args[1]) : 0;
-
-    switch (method) {
-      case 'abs': return this.mathNumericResult([args[0]], Math.abs(a));
-      case 'max': return this.mathNumericResult(args.slice(0, 2), Math.max(a, b));
-      case 'min': return this.mathNumericResult(args.slice(0, 2), Math.min(a, b));
-      case 'pow': return javaDouble(Math.pow(a, b));
-      case 'sqrt': return javaDouble(Math.sqrt(a));
-      case 'floor': return javaInt(Math.floor(a));
-      case 'ceil': return javaInt(Math.ceil(a));
-      case 'round': return javaInt(Math.round(a));
-      case 'random': return javaDouble(Math.random());
-      case 'log': return javaDouble(Math.log(a));
-      case 'sin': return javaDouble(Math.sin(a));
-      case 'cos': return javaDouble(Math.cos(a));
-      case 'tan': return javaDouble(Math.tan(a));
-      case 'PI': return javaDouble(Math.PI);
-      default:
-        throw new InterpreterError(`Unknown Math method: ${method}()`, 0);
-    }
-  }
-
-  private mathNumericResult(args: JavaValue[], value: number): JavaValue {
-    if (args.some(arg => arg?.kind === 'primitive' && (arg.javaType === 'double' || arg.javaType === 'float'))) {
-      return javaDouble(value);
-    }
-    if (args.some(arg => arg?.kind === 'primitive' && arg.javaType === 'long')) {
-      return { kind: 'primitive', javaType: 'long', value };
-    }
-    return javaInt(value);
-  }
-
-  private evalWrapperConstant(className: string, fieldName: string): JavaValue | undefined {
-    if (className === 'Integer') {
-      if (fieldName === 'MAX_VALUE') return javaInt(2147483647);
-      if (fieldName === 'MIN_VALUE') return javaInt(-2147483648);
-    }
-    if (className === 'Long') {
-      // Java's Long.MAX_VALUE / MIN_VALUE are 64-bit signed integers that cannot be
-      // represented exactly in JS's float64 number type. Use the closest representable
-      // double — the same result you'd get from casting `(double) Long.MAX_VALUE` in Java.
-      if (fieldName === 'MAX_VALUE') return { kind: 'primitive', javaType: 'long', value: 2 ** 63 - 1 };
-      if (fieldName === 'MIN_VALUE') return { kind: 'primitive', javaType: 'long', value: -(2 ** 63) };
-    }
-    if (className === 'Double') {
-      if (fieldName === 'MAX_VALUE') return javaDouble(Number.MAX_VALUE);
-      if (fieldName === 'MIN_VALUE') return javaDouble(Number.MIN_VALUE);
-      if (fieldName === 'POSITIVE_INFINITY') return javaDouble(Number.POSITIVE_INFINITY);
-      if (fieldName === 'NEGATIVE_INFINITY') return javaDouble(Number.NEGATIVE_INFINITY);
-      if (fieldName === 'NaN') return javaDouble(Number.NaN);
-    }
-    if (className === 'Float') {
-      if (fieldName === 'MAX_VALUE') return { kind: 'primitive', javaType: 'float', value: 3.4028235e38 };
-      if (fieldName === 'MIN_VALUE') return { kind: 'primitive', javaType: 'float', value: 1.4e-45 };
-      if (fieldName === 'POSITIVE_INFINITY') return { kind: 'primitive', javaType: 'float', value: Number.POSITIVE_INFINITY };
-      if (fieldName === 'NEGATIVE_INFINITY') return { kind: 'primitive', javaType: 'float', value: Number.NEGATIVE_INFINITY };
-      if (fieldName === 'NaN') return { kind: 'primitive', javaType: 'float', value: Number.NaN };
-    }
-    return undefined;
   }
 
   private evalStringBuilderMethod(ref: JavaValue, method: string, args: JavaValue[]): JavaValue {
@@ -2352,98 +2728,6 @@ export class JavaInterpreter {
     }
     throw new InterpreterError(`Unknown StringBuilder method: ${method}()`, 0);
   }
-
-  private evalArrayListMethod(ref: JavaValue, method: string, args: JavaValue[]): JavaValue {
-    if (ref.kind !== 'objectRef') return javaNull();
-    const obj = this.heap.get(ref.heapId);
-    if (!obj || !isJavaObject(obj)) return javaNull();
-    const dataRef = obj.fields.get('__data__');
-    if (!dataRef || dataRef.kind !== 'arrayRef') return javaNull();
-    const data = this.heap.get(dataRef.heapId);
-    if (!data || !isJavaArray(data)) return javaNull();
-    switch (method) {
-      case 'add': {
-        data.elements.push(args[0] ?? javaNull());
-        obj.fields.set('size', javaInt(data.elements.length));
-        return javaBool(true);
-      }
-      case 'get': return data.elements[javaValueToNumber(args[0]) | 0] ?? javaNull();
-      case 'set': {
-        const i = javaValueToNumber(args[0]) | 0;
-        const prev = data.elements[i] ?? javaNull();
-        data.elements[i] = args[1];
-        return prev;
-      }
-      case 'remove': {
-        const i = javaValueToNumber(args[0]) | 0;
-        const [removed] = data.elements.splice(i, 1);
-        obj.fields.set('size', javaInt(data.elements.length));
-        return removed ?? javaNull();
-      }
-      case 'size': return javaInt(data.elements.length);
-      case 'isEmpty': return javaBool(data.elements.length === 0);
-      case 'clear':
-        data.elements.length = 0;
-        obj.fields.set('size', javaInt(0));
-        return javaNull();
-      case 'contains': {
-        const target = args[0];
-        const targetStr = javaValueToString(target, this.heap);
-        for (const e of data.elements) {
-          if (javaValueToString(e, this.heap) === targetStr) return javaBool(true);
-        }
-        return javaBool(false);
-      }
-    }
-    throw new InterpreterError(`Unknown ArrayList method: ${method}()`, 0);
-  }
-
-  private evalHashMapMethod(ref: JavaValue, method: string, args: JavaValue[]): JavaValue {
-    if (ref.kind !== 'objectRef') return javaNull();
-    const obj = this.heap.get(ref.heapId);
-    if (!obj || !isJavaObject(obj)) return javaNull();
-    switch (method) {
-      case 'put': {
-        const k = javaValueToString(args[0], this.heap);
-        const prev = obj.fields.get(k) ?? javaNull();
-        obj.fields.set(k, args[1]);
-        return prev;
-      }
-      case 'get': return obj.fields.get(javaValueToString(args[0], this.heap)) ?? javaNull();
-      case 'containsKey': return javaBool(obj.fields.has(javaValueToString(args[0], this.heap)));
-      case 'remove': {
-        const k = javaValueToString(args[0], this.heap);
-        const prev = obj.fields.get(k) ?? javaNull();
-        obj.fields.delete(k);
-        return prev;
-      }
-      case 'size': return javaInt(obj.fields.size);
-      case 'isEmpty': return javaBool(obj.fields.size === 0);
-    }
-    throw new InterpreterError(`Unknown HashMap method: ${method}()`, 0);
-  }
-
-  private evalWrapperMethod(className: string, method: string, args: JavaValue[]): JavaValue {
-    const arg = args.length > 0 ? args[0] : javaNull();
-    const str = javaValueToString(arg, this.heap);
-
-    switch (className) {
-      case 'Integer':
-        if (method === 'parseInt' || method === 'valueOf') return javaInt(parseInt(str, 10) || 0);
-        if (method === 'toString') return javaString(String(javaValueToNumber(arg)));
-        if (method === 'MAX_VALUE') return javaInt(2147483647);
-        if (method === 'MIN_VALUE') return javaInt(-2147483648);
-        break;
-      case 'Double':
-        if (method === 'parseDouble' || method === 'valueOf') return javaDouble(parseFloat(str) || 0);
-        if (method === 'toString') return javaString(String(javaValueToNumber(arg)));
-        break;
-      case 'Boolean':
-        if (method === 'parseBoolean' || method === 'valueOf') return javaBool(str === 'true');
-        break;
-    }
-    throw new InterpreterError(`Unknown method: ${className}.${method}()`, 0);
-  }
 }
 
 // ── Helpers ──
@@ -2452,20 +2736,18 @@ function isAssignmentOp(op: string): boolean {
   return ['=', '+=', '-=', '*=', '/=', '%=', '&=', '|=', '^=', '<<=', '>>=', '>>>='].includes(op);
 }
 
-function applyBinaryOp(op: string, left: JavaValue, right: JavaValue, heap: Map<string, JavaHeapEntry>): JavaValue {
-  // String concatenation: if either side is a string and op is +
+function applyBinaryOp(
+  op: string,
+  left: JavaValue,
+  right: JavaValue,
+  heap: Map<string, JavaHeapEntry>,
+  stringify?: (v: JavaValue) => string,
+): JavaValue {
+  // String concatenation: if either side is a string, Java converts the other
+  // to its string form (honoring a user toString() via the stringify callback).
   if (op === '+' && (left.kind === 'string' || right.kind === 'string')) {
-    return javaString(javaValueToString(left, heap) + javaValueToString(right, heap));
-  }
-
-  // Also handle string + non-string (Java auto-converts to string)
-  if (op === '+') {
-    // Check if left is a string concatenation chain
-    const lStr = left.kind === 'string';
-    const rStr = right.kind === 'string';
-    if (lStr || rStr) {
-      return javaString(javaValueToString(left, heap) + javaValueToString(right, heap));
-    }
+    const str = stringify ?? ((v: JavaValue) => javaValueToString(v, heap));
+    return javaString(str(left) + str(right));
   }
 
   const l = javaValueToNumber(left);

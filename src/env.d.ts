@@ -14,3 +14,6 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+// Injected by vite.config.ts at build time from package.json version.
+declare const __TUTOR_ENGINE_VERSION__: string;

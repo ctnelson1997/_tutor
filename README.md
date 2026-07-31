@@ -24,6 +24,7 @@ At each step the visualizer shows:
 - **Sub-line highlighting** — for-loop init, condition, and update clauses are individually highlighted as they execute
 - **Function call preview** — the line indicator pauses on the call site before stepping into the function body, so you can see the flow from caller to callee
 - **Share & embed** — compress your code into a URL to share, or generate an embeddable `<iframe>` snippet (view options like "hide functions" are preserved in the link)
+- **Export to standalone HTML** — bake the current code + pre-computed snapshots into a single self-contained HTML file you can drop onto your own website. Recipients can step through, edit, and re-run the visualization without any backend
 
 Everything runs in your browser. No server, no account, no data collection.
 
@@ -41,7 +42,11 @@ The app is built around a **pluggable engine system**. Each language implements 
 
 Build targets use Vite's `--mode` flag, which loads per-language env files (`.env.js`, `.env.py`, `.env.java`) containing branding variables (app name, color, domain, tagline). Each build bundles only its target engine — tree-shaking removes everything else.
 
-The **JavaScript engine** uses Acorn AST transformation to inject tracing hooks, then runs the instrumented code in disposable blob-URL Web Workers. The **Python engine** uses [Pyodide](https://pyodide.org) (CPython compiled to WebAssembly) with `sys.settrace()` to intercept execution events, running in a persistent module Web Worker. Pyodide (~12 MB) is loaded eagerly from CDN at page load so it's ready by the time the user clicks "Visualize". The **Java engine** uses [java-parser](https://github.com/nicolo-ribaudo/java-parser) (Chevrotain-based) to parse Java source into a CST, then interprets it directly in a disposable Web Worker — supporting primitives, strings, arrays including `T[] a = {...}` and `new T[]{...}` initializers, custom object allocation with constructors, readable/writable instance fields, instance methods, simple arity-based overloads, nested static class methods, static methods, primitive casts, common numeric wrapper constants, recursion, and standard control flow.
+Each `build:<lang>` command also emits a **standalone viewer template** at `docs/viewer-<lang>.html` (mode `viewer-<lang>`, single-file via [vite-plugin-singlefile](https://github.com/richardtallent/vite-plugin-singlefile)). This is the prebuilt artifact that the in-app Export feature splices examples into.
+
+The **JavaScript engine** uses Acorn AST transformation to inject tracing hooks, then runs the instrumented code in disposable blob-URL Web Workers. The **Python engine** uses [Pyodide](https://pyodide.org) (CPython compiled to WebAssembly) with `sys.settrace()` to intercept execution events, running in a persistent module Web Worker. Pyodide (~12 MB) is loaded eagerly from CDN at page load so it's ready by the time the user clicks "Visualize". The **Java engine** uses [java-parser](https://github.com/nicolo-ribaudo/java-parser) (Chevrotain-based) to parse Java source into a CST, then interprets it directly in a disposable Web Worker — supporting primitives, strings, arrays including `T[] a = {...}` and `new T[]{...}` initializers, custom object allocation with constructors, readable/writable instance fields, instance methods, simple arity-based overloads, nested static class methods, static methods, primitive casts, recursion, and standard control flow.
+
+The Java engine also ships an **emulated standard-library subset** (`src/engines/java/stdlib/`) covering what intro/intermediate courses use: an extended `Math`; the primitive wrappers and `Character`; `Arrays`, `Objects`, `System` (incl. `currentTimeMillis`/`arraycopy`); `String.format`/`printf`; the collections `ArrayList`, `LinkedList`, `Stack`, `ArrayDeque`, `HashSet`/`LinkedHashSet`/`TreeSet`, `HashMap`/`LinkedHashMap`/`TreeMap`, plus `Collections` and `List/Set/Map.of` — all usable with `for-each`; and `java.util.Random` (Java's exact seeded sequence). **`Scanner`** works too: since a browser has no console, the editor shows an **Input (stdin)** box whose contents feed `new Scanner(System.in)` with real Java tokenization (`nextInt`/`next`/`nextLine`/`hasNext…`). User-defined classes always take precedence over same-named built-ins.
 
 ---
 
@@ -94,8 +99,13 @@ npm run dev:py       # Python dev server
 | `npm run build:js` | Same as `build` |
 | `npm run build:py` | Python build to `docs/` |
 | `npm run build:java` | Java build to `docs/` |
+| `npm run build:viewer:js` | Build only the JS standalone viewer template (`docs/viewer-js.html`) |
+| `npm run build:viewer:py` | Build only the Python viewer template |
+| `npm run build:viewer:java` | Build only the Java viewer template |
+| `npm run build:viewer:all` | Build all three viewer templates |
 | `npm run build:all` | Build all language targets |
 | `npm run test` | Run tests (Vitest) |
+| `npm run test:integration` | Build viewer-js then run integration tests against the real built `docs/viewer-js.html` |
 | `npm run lint` | Run ESLint |
 | `npm run preview` | Preview the production build locally |
 
@@ -125,24 +135,28 @@ src/
 │   │   └── security.ts         # Suspicious code pattern detection
 │   └── java/                   # Java engine (AST-walking interpreter)
 │       ├── index.ts            # LanguageEngine implementation
-│       ├── interpreter.ts      # CST-walking interpreter (~1960 lines, the core engine)
+│       ├── interpreter.ts      # CST-walking interpreter (~2000 lines, the core engine)
 │       ├── parser.ts           # java-parser wrapper: parseJava(), CST navigation helpers
 │       ├── types.ts            # Java runtime type system (primitives, strings, arrays, objects)
-│       ├── executor.ts         # Ephemeral Web Worker executor
+│       ├── executor.ts         # Ephemeral Web Worker executor (passes stdin through)
 │       ├── worker.ts           # Web Worker: parse + interpret Java source
 │       ├── examples.ts         # Java example snippets, including visualization-friendly OOP data structures
-│       └── security.ts         # Suspicious code pattern detection
+│       ├── security.ts         # Suspicious code pattern detection
+│       └── stdlib/             # Emulated standard library (Math, wrappers, Arrays, collections, Scanner, Random, …)
 ├── engine/
 │   └── executor.ts             # Thin dispatcher: store → engine → store
 ├── components/
 │   ├── AppNavbar.tsx           # Navbar (Sandbox / Examples / About) — Examples uses cascading category submenus
-│   ├── ControlBar.tsx          # Visualize / step controls / share / embed
+│   ├── ControlBar.tsx          # Visualize / step controls / share / embed / export
 │   ├── EditorPanel.tsx         # CodeMirror editor with line/sub-line highlight + condition badges
 │   ├── VisualizationPanel.tsx
 │   ├── FramesView.tsx          # Recursive call stack + block scopes, closures, this context
 │   ├── HeapView.tsx            # Heap object cards with frame filter + hide functions toggle
 │   ├── PointerArrows.tsx       # SVG overlay drawing reference arrows
-│   └── ConsolePanel.tsx        # Captured console output
+│   ├── ConsolePanel.tsx        # Captured console output
+│   ├── ExportModal.tsx         # "Export as standalone HTML" modal triggered from ControlBar
+│   ├── ViewerApp.tsx           # Wrapper used by viewer.html — minimal navbar + <App embed viewer />
+│   └── ExamplePicker.tsx       # Dropdown shown in the viewer when __EXAMPLES__ has 2+ entries
 ├── pages/
 │   ├── AboutPage.tsx           # About / usage guide (branding-driven)
 │   ├── ExamplePage.tsx         # Loads a built-in example by slug
@@ -152,13 +166,16 @@ src/
 │   └── useStore.ts             # Zustand store (language, code, snapshots, step, view options)
 ├── types/
 │   ├── snapshot.ts             # ExecutionSnapshot, StackFrame, HeapObject, etc.
-│   └── engine.ts               # LanguageEngine interface, LanguageId, CodeExample
+│   ├── engine.ts               # LanguageEngine interface, LanguageId, CodeExample
+│   └── viewer.ts               # ViewerExample shape + window.__EXAMPLES__ declaration
 ├── utils/
 │   ├── share.ts                # LZ-string URL compression
 │   ├── diffSnapshots.ts        # Detects changed values between steps (yellow flash)
-│   └── promoteToHeap.ts        # Promotes inline primitives to heap objects (Python reference mode)
+│   ├── promoteToHeap.ts        # Promotes inline primitives to heap objects (Python reference mode)
+│   └── exportHtml.ts           # Splices examples into the viewer template + downloads (Export feature)
 ├── App.tsx                     # Main layout (resizable split, keyboard shortcuts)
 ├── main.tsx                    # React entry point + HashRouter routes
+├── viewer-main.tsx             # Entry point for viewer-<lang>.html builds (reads window.__EXAMPLES__)
 ├── env.d.ts                    # TypeScript declarations for VITE_* env vars
 └── index.css                   # Custom styles (layout, animations, condition badges, scope sections)
 
@@ -166,7 +183,8 @@ src/
 .env.js                         # JS build branding (VITE_APP_NAME=JSTutor, etc.)
 .env.py                         # Python build branding (VITE_APP_NAME=PyTutor, etc.)
 .env.java                       # Java build branding (VITE_APP_NAME=JavaTutor, etc.)
-vite.config.ts                  # Build config — mode-based outDir + language targeting
+viewer.html                     # HTML entry for the viewer-<lang> build (contains the __EXAMPLES__ placeholder)
+vite.config.ts                  # Build config — mode-based outDir + language targeting + singlefile viewer mode
 ```
 
 ---
@@ -183,7 +201,7 @@ vite.config.ts                  # Build config — mode-based outDir + language 
 
 **Java engine: CST interpreter** — Java source is parsed into a Concrete Syntax Tree using java-parser (Chevrotain-based), then interpreted directly. Supports Java primitives, strings, arrays including `T[] a = {...}` and `new T[]{...}` initializers, custom object allocation with constructors, readable/writable instance fields, unqualified instance field/method access inside instance contexts, instance methods, simple arity-based overloads, nested static class methods, static methods, primitive casts, common numeric wrapper constants, recursion, and standard control flow. Assignment expressions evaluate their RHS once so heap allocations stay tied to the variable or field that receives them. Runs in disposable Web Workers like the JS engine.
 
-The Java engine is a teaching-oriented subset, not a full JVM. It does not currently support inheritance, interfaces, access control, overloaded constructor/method resolution beyond simple arity matching, generics, exceptions, packages, Java standard-library I/O, or multi-class programs.
+The Java engine is a teaching-oriented subset, not a full JVM. Generic type parameters parse but are not enforced. It does not currently support inheritance, interfaces, access control, overloaded constructor/method resolution beyond simple arity matching, exceptions, packages, file/network I/O, threads, reflection, lambdas/streams, custom comparators, or multiple top-level classes. Its standard library is an emulated subset (the classes listed above), not the real JDK — unsupported methods raise an `Unknown method` error.
 
 **TDZ-aware instrumentation** — `let`/`const` declarations are tracked incrementally so the visualizer never reads variables before they are initialized.
 
@@ -194,6 +212,25 @@ The Java engine is a teaching-oriented subset, not a full JVM. It does not curre
 **Sub-line for-loop highlighting** — for-loop init, condition, and update expressions carry column ranges through the snapshot pipeline, enabling precise sub-expression highlighting in the editor instead of whole-line highlighting.
 
 **URL-based sharing** — the Share button LZ-string-compresses the code into the URL. Shared links open a security interstitial with a read-only code preview and a static analysis scan before execution. View options (like "hide functions") are encoded as query parameters.
+
+**Standalone HTML export** — the Export button (next to Share/Embed) downloads a self-contained `.html` file. The flow:
+
+1. The viewer build (`vite build --mode viewer-<lang>` with [vite-plugin-singlefile](https://github.com/richardtallent/vite-plugin-singlefile)) bundles the React app + the target engine into a single HTML file at `docs/viewer-<lang>.html`, with an empty `window.__EXAMPLES__ = []` between explicit `EXPORT_PLACEHOLDER_START` / `EXPORT_PLACEHOLDER_END` markers.
+2. When the user clicks Export, the live app calls `runCode` (if needed) to capture snapshots, fetches `./viewer-<lang>.html` from the same origin, then splices a JSON-stringified example object into the placeholder via `src/utils/exportHtml.ts`.
+3. The resulting HTML downloads as a single file. Recipients can open it offline (network only required for Python's Pyodide CDN load) and edit/re-run code with the full engine onboard.
+4. To combine multiple visualizations, paste additional example objects into the `__EXAMPLES__` array between the placeholder markers — the viewer shows a picker in the navbar whenever the array has 2+ entries.
+
+The Python and Java engines use Vite's `?worker&inline` syntax for their Web Workers so the workers serialize as base64 blob URLs inside the singlefile bundle.
+
+**Versioned, upgradeable engine** — the viewer build tags the inlined engine `<script>` with `data-tutor-engine="X.Y.Z"` (taken from `package.json` at build time), exposes the same string at runtime as `window.__TUTOR_ENGINE_VERSION__`, and shows it as `engine vX.Y.Z` in the viewer's navbar. A block comment above the engine script in every exported file documents the upgrade procedure:
+
+1. Download a fresh `viewer-<lang>.html` from the live site (or rebuild it locally).
+2. In a text editor, replace **only** the `<script ... data-tutor-engine="...">` block in the old export with the new one.
+3. Save — the `window.__EXAMPLES__` array above the engine block is preserved.
+
+The splice utility uses `lastIndexOf` to find the `tutor-examples` script tag so any false positives inside the bundled engine source (e.g. the marker text appearing in string literals) can't shadow the real placeholder block at the bottom of the file.
+
+**Data schema versioning** — independent of the engine version, every example carries a `schemaVersion: 1` field (declared by `CURRENT_EXAMPLE_SCHEMA_VERSION` in `src/types/viewer.ts`). The viewer compares this against its own supported version on load. If an example was produced by a newer engine than the one running, the viewer renders a dismissible warning banner above the navbar but still attempts to display the visualization. Bumping the schema is a deliberate, documented act — increment the constant whenever a snapshot/example field changes in a way the previous engine wouldn't tolerate.
 
 ---
 

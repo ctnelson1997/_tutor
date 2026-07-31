@@ -7,7 +7,7 @@ import VisualizationPanel from './components/VisualizationPanel';
 import { useStore } from './store/useStore';
 import { runCode } from './engine/executor';
 
-export default function App({ embed = false }: { embed?: boolean }) {
+export default function App({ embed = false, viewer = false }: { embed?: boolean; viewer?: boolean }) {
   const stepForward = useStore((s) => s.stepForward);
   const stepBackward = useStore((s) => s.stepBackward);
   const code = useStore((s) => s.code);
@@ -101,7 +101,7 @@ export default function App({ embed = false }: { embed?: boolean }) {
   return (
     <>
       {!embed && <AppNavbar />}
-      <ControlBar embed={embed} />
+      <ControlBar embed={embed} viewer={viewer} />
 
       <div
         className="main-layout"

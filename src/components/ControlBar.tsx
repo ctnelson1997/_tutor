@@ -5,6 +5,7 @@ import { useStore } from '../store/useStore';
 import { runCode } from '../engine/executor';
 import { encodeShareCode } from '../utils/share';
 import { branding } from '../config/branding';
+import ExportModal from './ExportModal';
 
 const iconStyle = { width: 14, height: 14, fill: 'currentColor', verticalAlign: '-2px' } as const;
 
@@ -40,11 +41,14 @@ function IconSkipEnd(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-export default function ControlBar({ embed = false }: { embed?: boolean }) {
+export default function ControlBar({ embed = false, viewer = false }: { embed?: boolean; viewer?: boolean }) {
   const location = useLocation();
-  const openInTutorUrl = embed
+  const openInTutorUrl = viewer
+    ? `https://${branding.domain}`
+    : embed
     ? `${window.location.origin}${window.location.pathname}#${location.pathname.replace('/embed/', '/share/')}`
     : '';
+  const hideShareEmbedExport = embed || viewer;
   const code = useStore((s) => s.code);
   const snapshots = useStore((s) => s.snapshots);
   const currentStep = useStore((s) => s.currentStep);
@@ -63,6 +67,8 @@ export default function ControlBar({ embed = false }: { embed?: boolean }) {
   const [embedSnippet, setEmbedSnippet] = useState('');
   const [showEmbedModal, setShowEmbedModal] = useState(false);
   const [embedCopied, setEmbedCopied] = useState(false);
+
+  const [showExportModal, setShowExportModal] = useState(false);
 
   const total = snapshots.length;
   const hasSteps = total > 0;
@@ -201,14 +207,14 @@ export default function ControlBar({ embed = false }: { embed?: boolean }) {
           </>
         )}
         <div className="vr" />
-        {embed ? (
+        {hideShareEmbedExport ? (
           <a
             href={openInTutorUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="btn btn-sm btn-outline-primary"
           >
-            Edit in {branding.appName} ↗
+            {viewer ? `Open in ${branding.appName}` : `Edit in ${branding.appName}`} ↗
           </a>
         ) : (
           <>
@@ -217,6 +223,9 @@ export default function ControlBar({ embed = false }: { embed?: boolean }) {
             </Button>
             <Button variant="outline-secondary" size="sm" onClick={handleEmbed} title="Embed this snippet">
               Embed
+            </Button>
+            <Button variant="outline-secondary" size="sm" onClick={() => setShowExportModal(true)} title="Export as standalone HTML">
+              Export
             </Button>
           </>
         )}
@@ -292,6 +301,8 @@ export default function ControlBar({ embed = false }: { embed?: boolean }) {
           </div>
         </Modal.Body>
       </Modal>
+
+      <ExportModal show={showExportModal} onHide={() => setShowExportModal(false)} />
     </div>
   );
 }

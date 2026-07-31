@@ -28,8 +28,26 @@ function execJava(source: string): { snapshots: ExecutionSnapshot[]; error?: str
   }
 }
 
+function execJavaWithInput(source: string, stdin: string): { snapshots: ExecutionSnapshot[]; error?: string } {
+  try {
+    const cst = parseJava(source);
+    const interp = new JavaInterpreter(stdin);
+    return interp.execute(cst);
+  } catch (e) {
+    return { snapshots: [], error: (e as Error).message };
+  }
+}
+
 function expectStdout(source: string, expected: string) {
   const r = execJava(source);
+  if (r.error) throw new Error('interpreter error: ' + r.error);
+  const last = r.snapshots[r.snapshots.length - 1];
+  const actual = (last?.stdout || []).join('\n');
+  expect(actual).toBe(expected);
+}
+
+function expectStdoutWithInput(source: string, stdin: string, expected: string) {
+  const r = execJavaWithInput(source, stdin);
   if (r.error) throw new Error('interpreter error: ' + r.error);
   const last = r.snapshots[r.snapshots.length - 1];
   const actual = (last?.stdout || []).join('\n');
@@ -265,6 +283,140 @@ describe('Java behavior comparison', () => {
     System.out.println(m.containsKey("c"));
   `), '1\n2\nfalse'));
 
+  // ── stdlib: static utilities ──
+  it('Arrays.toString + Arrays.sort', () => expectStdout(wrap(`
+    int[] a = {3, 1, 2};
+    Arrays.sort(a);
+    System.out.println(Arrays.toString(a));
+  `), '[1, 2, 3]'));
+
+  it('java.util.Arrays fully qualified also resolves', () => expectStdout(wrap(`
+    int[] a = {5, 4};
+    System.out.println(java.util.Arrays.toString(a));
+  `), '[5, 4]'));
+
+  it('String.format and System.out.printf', () => expectStdout(wrap(`
+    System.out.println(String.format("%s=%d", "x", 7));
+    System.out.printf("%d + %.2f = %.2f%n", 1, 2.5, 3.5);
+    System.out.print("done");
+  `), 'x=7\n1 + 2.50 = 3.50\ndone'));
+
+  it('Math extended methods', () => expectStdout(wrap(`
+    System.out.println(Math.log10(1000));
+    System.out.println((int) Math.hypot(3, 4));
+    System.out.println(Math.floorMod(-3, 5));
+  `), '3.0\n5\n2'));
+
+  it('Integer / Character helpers', () => expectStdout(wrap(`
+    System.out.println(Integer.toBinaryString(5));
+    System.out.println(Integer.parseInt("ff", 16));
+    System.out.println(Character.isDigit('5'));
+    System.out.println(Character.toUpperCase('a'));
+  `), '101\n255\ntrue\nA'));
+
+  it('System.arraycopy', () => expectStdout(wrap(`
+    int[] src = {1, 2, 3, 4};
+    int[] dst = new int[4];
+    System.arraycopy(src, 1, dst, 0, 3);
+    System.out.println(Arrays.toString(dst));
+  `), '[2, 3, 4, 0]'));
+
+  it('Math.PI / Integer.MAX_VALUE constants', () => expectStdout(wrap(`
+    System.out.println(Integer.MAX_VALUE);
+    System.out.printf("%.4f%n", Math.PI);
+  `), '2147483647\n3.1416'));
+
+  // ── stdlib: collections + for-each ──
+  it('ArrayList for-each + Collections.sort', () => expectStdout(wrap(`
+    ArrayList<Integer> list = new ArrayList<>();
+    list.add(5); list.add(1); list.add(3);
+    Collections.sort(list);
+    int sum = 0;
+    for (int x : list) sum += x;
+    System.out.println(list);
+    System.out.println(sum);
+  `), '[1, 3, 5]\n9'));
+
+  it('HashSet de-duplicates', () => expectStdout(wrap(`
+    HashSet<Integer> s = new HashSet<>();
+    s.add(1); s.add(1); s.add(2);
+    System.out.println(s.size());
+    System.out.println(s.contains(2));
+    System.out.println(s.contains(9));
+  `), '2\ntrue\nfalse'));
+
+  it('TreeSet iterates in sorted order', () => expectStdout(wrap(`
+    TreeSet<Integer> s = new TreeSet<>();
+    s.add(3); s.add(1); s.add(2);
+    StringBuilder sb = new StringBuilder();
+    for (int x : s) sb.append(x);
+    System.out.println(sb.toString());
+  `), '123'));
+
+  it('HashMap keySet + getOrDefault', () => expectStdout(wrap(`
+    HashMap<String, Integer> counts = new HashMap<>();
+    String[] words = {"a", "b", "a", "a", "b"};
+    for (String w : words) counts.put(w, counts.getOrDefault(w, 0) + 1);
+    System.out.println(counts.get("a"));
+    System.out.println(counts.get("b"));
+    System.out.println(counts.getOrDefault("z", -1));
+  `), '3\n2\n-1'));
+
+  it('LinkedHashMap preserves insertion order in toString', () => expectStdout(wrap(`
+    LinkedHashMap<String, Integer> m = new LinkedHashMap<>();
+    m.put("b", 2); m.put("a", 1);
+    System.out.println(m);
+  `), '{b=2, a=1}'));
+
+  it('TreeMap sorts keys', () => expectStdout(wrap(`
+    TreeMap<String, Integer> m = new TreeMap<>();
+    m.put("b", 2); m.put("a", 1); m.put("c", 3);
+    System.out.println(m);
+    System.out.println(m.firstKey());
+  `), '{a=1, b=2, c=3}\na'));
+
+  it('Stack is LIFO', () => expectStdout(wrap(`
+    Stack<Integer> st = new Stack<>();
+    st.push(1); st.push(2); st.push(3);
+    System.out.println(st.pop());
+    System.out.println(st.peek());
+    System.out.println(st.size());
+  `), '3\n2\n2'));
+
+  it('ArrayDeque as FIFO queue', () => expectStdout(wrap(`
+    ArrayDeque<Integer> q = new ArrayDeque<>();
+    q.offer(1); q.offer(2); q.offer(3);
+    System.out.println(q.poll());
+    System.out.println(q.poll());
+    System.out.println(q.peek());
+  `), '1\n2\n3'));
+
+  it('entrySet iteration (LinkedHashMap, defined order)', () => expectStdout(wrap(`
+    LinkedHashMap<String, Integer> m = new LinkedHashMap<>();
+    m.put("x", 10); m.put("y", 20);
+    for (Map.Entry<String, Integer> e : m.entrySet()) {
+      System.out.println(e.getKey() + "->" + e.getValue());
+    }
+  `), 'x->10\ny->20'));
+
+  // ── stdlib: Scanner (reads from preset stdin) ──
+  it('Scanner reads ints from stdin', () => expectStdoutWithInput(wrap(`
+    Scanner sc = new Scanner(System.in);
+    int n = sc.nextInt();
+    int sum = 0;
+    for (int i = 0; i < n; i++) sum += sc.nextInt();
+    System.out.println(sum);
+  `), '3\n10 20 30', '60'));
+
+  it('Scanner nextInt then nextLine gotcha (Java semantics)', () => expectStdoutWithInput(wrap(`
+    Scanner sc = new Scanner(System.in);
+    int n = sc.nextInt();
+    sc.nextLine();
+    String line = sc.nextLine();
+    System.out.println(n);
+    System.out.println("[" + line + "]");
+  `), '42\nhello world', '42\n[hello world]'));
+
   // ── User-defined inner classes (recently added support) ──
   it('static inner class with instance method', () => expectStdout(
     `public class Main {
@@ -326,4 +478,40 @@ describe('Java behavior comparison', () => {
     }
     System.out.println(pal);
   `), 'true'));
+
+  // ── Numeric assignment conversion (REGRESSION) ──
+  // Values bound to a variable/parameter of declared floating-point type were
+  // stored with the *initializer literal's* javaType, so `double x = 1;` kept
+  // javaType 'int' and a later `target / x` ran integer division. coerceToType()
+  // in setVariable/updateVariable now widens int -> double on binding.
+
+  it('Newton sqrt(2013) — double, not integer, division', () => expectStdout(wrap(`
+    double target = 2013;
+    double x = 1;
+    double oldx;
+    do {
+      oldx = x;
+      x = (x + target / x) / 2;
+    }
+    while (oldx != x);
+    System.out.println(x);
+    System.out.println(x*x);
+  `), '44.86646854834911\n2013.0'));
+
+  it('int literal assigned to double divides as double', () =>
+    expectStdout(wrap(`double x = 5; System.out.println(x / 2);`), '2.5'));
+
+  it('reassigning a double keeps it a double', () =>
+    expectStdout(wrap(`double d = 7; d = d / 2; System.out.println(d);`), '3.5'));
+
+  it('int argument widens to double parameter', () => expectStdout(wrap(`
+    System.out.println(half(7));
+  `, `static double half(double d) { return d / 2; }`), '3.5'));
+
+  it('increment preserves double type (fractional part kept)', () =>
+    expectStdout(wrap(`double d = 1.5; d++; System.out.println(d);`), '2.5'));
+
+  // Guard against over-eager coercion: int math must still truncate.
+  it('int division still truncates after coercion fix', () =>
+    expectStdout(wrap(`int a = 7; System.out.println(a / 2);`), '3'));
 });

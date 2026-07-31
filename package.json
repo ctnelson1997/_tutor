@@ -1,7 +1,7 @@
 {
   "name": "tutor",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.3",
   "type": "module",
   "license": "GPL-3.0-only",
   "scripts": {
@@ -9,15 +9,23 @@
     "dev:js": "vite --mode js",
     "dev:py": "vite --mode py",
     "dev:java": "vite --mode java",
-    "build": "tsc -b && vite build --mode js",
-    "build:js": "tsc -b && vite build --mode js",
-    "build:py": "tsc -b && vite build --mode py",
-    "build:java": "tsc -b && vite build --mode java",
+    "dev:viewer:js": "vite --mode viewer-js",
+    "dev:viewer:py": "vite --mode viewer-py",
+    "dev:viewer:java": "vite --mode viewer-java",
+    "build": "tsc -b && vite build --mode js && vite build --mode viewer-js",
+    "build:js": "tsc -b && vite build --mode js && vite build --mode viewer-js",
+    "build:py": "tsc -b && vite build --mode py && vite build --mode viewer-py",
+    "build:java": "tsc -b && vite build --mode java && vite build --mode viewer-java",
+    "build:viewer:js": "vite build --mode viewer-js",
+    "build:viewer:py": "vite build --mode viewer-py",
+    "build:viewer:java": "vite build --mode viewer-java",
+    "build:viewer:all": "npm run build:viewer:js && npm run build:viewer:py && npm run build:viewer:java",
     "build:all": "npm run build:js && npm run build:py && npm run build:java",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:integration": "npm run build:viewer:js && vitest run integration"
   },
   "dependencies": {
     "@codemirror/lang-java": "^6.0.2",
@@ -51,6 +59,7 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.48.0",
     "vite": "^7.3.1",
+    "vite-plugin-singlefile": "^2.3.3",
     "vitest": "^4.1.0"
   }
 }

@@ -12,6 +12,10 @@ export interface TutorState {
   code: string;
   setCode: (code: string) => void;
 
+  // ── Standard input (consumed by Java's Scanner) ──
+  stdin: string;
+  setStdin: (stdin: string) => void;
+
   // ── Execution state ──
   snapshots: ExecutionSnapshot[];
   currentStep: number;
@@ -59,6 +63,10 @@ export const useStore = create<TutorState>((set, get) => ({
   // ── Editor ──
   code: DEFAULT_CODE,
   setCode: (code) => set({ code }),
+
+  // ── Standard input ──
+  stdin: '',
+  setStdin: (stdin) => set({ stdin }),
 
   // ── Execution state ──
   snapshots: [],

@@ -106,8 +106,41 @@ export function javaValueToString(val: JavaValue, heap: Map<string, JavaHeapEntr
       const elems = arr.elements.map(e => javaValueToString(e, heap));
       return '[' + elems.join(', ') + ']';
     }
-    case 'objectRef':
+    case 'objectRef': {
+      const obj = heap.get(val.heapId);
+      if (obj && isJavaObject(obj)) {
+        // StringBuilder / StringBuffer -> their accumulated text
+        if (val.className === 'StringBuilder' || val.className === 'StringBuffer') {
+          const v = obj.fields.get('value');
+          if (v && v.kind === 'string') return v.value;
+        }
+        // Map.Entry -> key=value
+        if (val.className === 'MapEntry') {
+          const k = obj.fields.get('key'), v = obj.fields.get('value');
+          if (k && v) return javaValueToString(k, heap) + '=' + javaValueToString(v, heap);
+        }
+        // Maps -> {k=v, ...}
+        const keysRef = obj.fields.get('__keys__');
+        const valuesRef = obj.fields.get('__values__');
+        if (keysRef?.kind === 'arrayRef' && valuesRef?.kind === 'arrayRef') {
+          const ks = heap.get(keysRef.heapId), vs = heap.get(valuesRef.heapId);
+          if (ks && isJavaArray(ks) && vs && isJavaArray(vs)) {
+            return '{' + ks.elements
+              .map((k, i) => javaValueToString(k, heap) + '=' + javaValueToString(vs.elements[i], heap))
+              .join(', ') + '}';
+          }
+        }
+        // Lists / sets / queues / stacks -> [a, b, c]
+        const dataRef = obj.fields.get('__data__');
+        if (dataRef?.kind === 'arrayRef') {
+          const d = heap.get(dataRef.heapId);
+          if (d && isJavaArray(d)) {
+            return '[' + d.elements.map(e => javaValueToString(e, heap)).join(', ') + ']';
+          }
+        }
+      }
       return val.className + '@' + val.heapId;
+    }
   }
 }
 

@@ -5,6 +5,7 @@ import { indentWithTab } from '@codemirror/commands';
 import { basicSetup } from '@uiw/codemirror-extensions-basic-setup';
 import { useStore } from '../store/useStore';
 import { useEngine } from '../engines/useEngine';
+import StdinPanel from './StdinPanel';
 import type { ColumnRange, ConditionResult } from '../types/snapshot';
 
 // ── Line highlight via CodeMirror state effect ──
@@ -319,6 +320,9 @@ export default function EditorPanel() {
         className="flex-grow-1"
         style={{ minHeight: 0 }}
       />
+
+      {/* Standard input for Scanner (Java only) */}
+      {language === 'java' && <StdinPanel />}
     </div>
   );
 }

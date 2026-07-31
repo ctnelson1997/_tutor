@@ -21,11 +21,16 @@ export interface HeapTypeDisplay {
   variant: string;
 }
 
+/** Options passed to an engine's execute(). `stdin` feeds Java's Scanner. */
+export interface EngineExecuteOptions {
+  stdin?: string;
+}
+
 export interface LanguageEngine {
   id: LanguageId;
   displayName: string;
   editorExtension: () => Extension;
-  execute: (source: string) => Promise<WorkerMessage>;
+  execute: (source: string, options?: EngineExecuteOptions) => Promise<WorkerMessage>;
   examples: CodeExample[];
   sandboxCode: string;
   analyzeCode?: (code: string) => CodeFlag[];

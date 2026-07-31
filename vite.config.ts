@@ -1,58 +1,162 @@
 /// <reference types="vitest/config" />
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
+import type { PluginOption } from 'vite'
 import react from '@vitejs/plugin-react-swc'
+import { viteSingleFile } from 'vite-plugin-singlefile'
+import { existsSync, readFileSync, renameSync, unlinkSync } from 'node:fs'
+import { resolve } from 'node:path'
+
+const LANGS = ['js', 'py', 'java'] as const;
+const ENGINE_VERSION = (
+  JSON.parse(readFileSync(resolve(process.cwd(), 'package.json'), 'utf-8')) as { version: string }
+).version;
+
+function detectMode(mode: string): { lang: string; isViewer: boolean } {
+  if (mode.startsWith('viewer-')) {
+    const lang = mode.slice('viewer-'.length);
+    return { lang: LANGS.includes(lang as typeof LANGS[number]) ? lang : 'js', isViewer: true };
+  }
+  if (LANGS.includes(mode as typeof LANGS[number])) {
+    return { lang: mode, isViewer: false };
+  }
+  return { lang: 'js', isViewer: false };
+}
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
-  // Custom modes ('js', 'py', etc.) map to language targets.
-  // Standard modes ('development', 'production', 'test') default to 'js'.
-  const lang = mode && !['development', 'production', 'test'].includes(mode) ? mode : 'js';
+  const { lang, isViewer } = detectMode(mode);
+
+  // Load the language-specific .env file regardless of viewer suffix, so
+  // both `--mode js` and `--mode viewer-js` use the same branding values.
+  const env = loadEnv(lang, process.cwd(), '');
+  const defineEnv: Record<string, string> = Object.fromEntries(
+    Object.entries(env)
+      .filter(([k]) => k.startsWith('VITE_'))
+      .map(([k, v]) => [`import.meta.env.${k}`, JSON.stringify(v)]),
+  );
+
+  const plugins: PluginOption[] = [react()];
+
+  if (!isViewer) {
+    plugins.push({
+      name: 'generate-deploy-files',
+      generateBundle() {
+        const domainMap: Record<string, string> = { js: 'jstutor.org', py: 'pytutor.org', java: 'javatutor.org' };
+        const nameMap: Record<string, string> = { js: 'JSTutor', py: 'PyTutor', java: 'JavaTutor' };
+        const displayMap: Record<string, string> = { js: 'JavaScript', py: 'Python', java: 'Java' };
+        const domain = domainMap[lang];
+        const appName = nameMap[lang];
+        const langDisplay = displayMap[lang];
+        this.emitFile({
+          type: 'asset',
+          fileName: 'CNAME',
+          source: domain + '\n',
+        });
+        this.emitFile({
+          type: 'asset',
+          fileName: 'robots.txt',
+          source: `User-agent: *\nAllow: /\n\nSitemap: https://${domain}/sitemap.xml\n`,
+        });
+        this.emitFile({
+          type: 'asset',
+          fileName: 'README.md',
+          source: `# ${appName}\n\nBuild output for [${domain}](https://${domain}) — a free, browser-based ${langDisplay} execution visualizer.\n\nSource code: [github.com/ctnelson1997/_tutor](https://github.com/ctnelson1997/_tutor)\n`,
+        });
+        this.emitFile({
+          type: 'asset',
+          fileName: 'sitemap.xml',
+          source: `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url>\n    <loc>https://${domain}/</loc>\n    <changefreq>weekly</changefreq>\n    <priority>1.0</priority>\n  </url>\n</urlset>\n`,
+        });
+      },
+    });
+  }
+
+  if (isViewer) {
+    plugins.push(viteSingleFile());
+    plugins.push({
+      // Tag the inlined engine <script> with a data-tutor-engine version and
+      // prepend a block-comment explaining how to swap in a newer engine
+      // without losing the EXAMPLES array. Runs after singlefile so it sees
+      // the final inlined script in the HTML asset.
+      name: 'tutor-engine-version-marker',
+      enforce: 'post',
+      generateBundle(_options, bundle) {
+        const html = bundle['viewer.html'];
+        if (!html || html.type !== 'asset') return;
+        const src = String(html.source);
+        const domain = env.VITE_DOMAIN || 'jstutor.org';
+        const appName = env.VITE_APP_NAME || 'Tutor';
+        const comment = [
+          '<!-- ============================================================================',
+          `     TUTOR ENGINE BUNDLE — version ${ENGINE_VERSION}`,
+          '',
+          '     This single <script> block contains the React UI + the language engine.',
+          '     It is the only part of this file that needs to change when a newer engine',
+          '     version becomes available.',
+          '',
+          `     TO UPGRADE the engine in this exported file:`,
+          `       1. Download the latest viewer-${lang}.html from https://${domain}`,
+          '          (or build one with `npm run build:viewer:' + lang + '`).',
+          '       2. Open both files in a text editor.',
+          '       3. Replace ONLY the <script ... data-tutor-engine="..."> block below',
+          '          with the matching block from the new file.',
+          '       4. Save. Your window.__EXAMPLES__ array (above) is preserved.',
+          '',
+          `     Engine version is also exposed at runtime as window.__TUTOR_ENGINE_VERSION__.`,
+          `     Generated by ${appName} — https://${domain}`,
+          '     ============================================================================ -->',
+        ].join('\n');
+
+        // The engine <script> is the module-type script Vite inlines for the
+        // entry chunk; the EXAMPLES script has no `type` attribute, so we can
+        // target the first occurrence of `<script type="module"` safely.
+        let tagged = false;
+        const transformed = src.replace(
+          /<script\s+type="module"([^>]*)>/,
+          (_match, attrs: string) => {
+            tagged = true;
+            return `${comment}\n<script type="module"${attrs} data-tutor-engine="${ENGINE_VERSION}">window.__TUTOR_ENGINE_VERSION__=${JSON.stringify(ENGINE_VERSION)};`;
+          },
+        );
+        if (tagged) {
+          html.source = transformed;
+        }
+      },
+    });
+    plugins.push({
+      // Rename the emitted viewer.html → viewer-<lang>.html so the live site
+      // can host one viewer per language alongside the main index.html.
+      // Runs in closeBundle (after files have been written) and uses fs to
+      // rename on disk, since Vite's HTML emitter writes based on the entry
+      // path rather than the bundle key.
+      name: 'rename-viewer-output',
+      apply: 'build',
+      closeBundle() {
+        const src = resolve(process.cwd(), 'docs', 'viewer.html');
+        const dest = resolve(process.cwd(), 'docs', `viewer-${lang}.html`);
+        if (existsSync(src)) {
+          if (existsSync(dest)) unlinkSync(dest);
+          renameSync(src, dest);
+        }
+      },
+    });
+  }
 
   return {
-    plugins: [
-      react(),
-      {
-        name: 'generate-deploy-files',
-        generateBundle() {
-          const domainMap: Record<string, string> = { js: 'jstutor.org', py: 'pytutor.org', java: 'javatutor.org' };
-          const nameMap: Record<string, string> = { js: 'JSTutor', py: 'PyTutor', java: 'JavaTutor' };
-          const displayMap: Record<string, string> = { js: 'JavaScript', py: 'Python', java: 'Java' };
-          const domain = domainMap[lang];
-          const appName = nameMap[lang];
-          const langDisplay = displayMap[lang];
-          this.emitFile({
-            type: 'asset',
-            fileName: 'CNAME',
-            source: domain + '\n',
-          });
-          this.emitFile({
-            type: 'asset',
-            fileName: 'robots.txt',
-            source: `User-agent: *\nAllow: /\n\nSitemap: https://${domain}/sitemap.xml\n`,
-          });
-          this.emitFile({
-            type: 'asset',
-            fileName: 'README.md',
-            source: `# ${appName}\n\nBuild output for [${domain}](https://${domain}) — a free, browser-based ${langDisplay} execution visualizer.\n\nSource code: [github.com/ctnelson1997/_tutor](https://github.com/ctnelson1997/_tutor)\n`,
-          });
-          this.emitFile({
-            type: 'asset',
-            fileName: 'sitemap.xml',
-            source: `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url>\n    <loc>https://${domain}/</loc>\n    <changefreq>weekly</changefreq>\n    <priority>1.0</priority>\n  </url>\n</urlset>\n`,
-          });
-        },
-      },
-    ],
-    base: '/',
+    plugins,
+    base: '',
+    define: {
+      ...defineEnv,
+      __TUTOR_ENGINE_VERSION__: JSON.stringify(ENGINE_VERSION),
+    },
     build: {
-      outDir: 'docs'
+      outDir: 'docs',
+      emptyOutDir: !isViewer, // don't blow away the main build when emitting just the viewer
+      rollupOptions: isViewer
+        ? { input: 'viewer.html' }
+        : undefined,
     },
     test: {
-      // SWC's native binary has a race condition on Windows when multiple
-      // worker processes initialize it simultaneously, causing intermittent
-      // "Cannot read properties of undefined (reading 'config')" errors.
-      // Disabling file parallelism ensures only one file is processed at a
-      // time, eliminating the race entirely.
       pool: 'forks',
       fileParallelism: false,
     },

@@ -7,15 +7,14 @@
  */
 
 import type { WorkerMessage } from '../../types/snapshot';
+import type { EngineExecuteOptions } from '../../types/engine';
+import JavaWorker from './worker.ts?worker&inline';
 
 const WORKER_TIMEOUT = 10_000;
 
-export async function execute(source: string): Promise<WorkerMessage> {
+export async function execute(source: string, options?: EngineExecuteOptions): Promise<WorkerMessage> {
   return new Promise((resolve) => {
-    const worker = new Worker(
-      new URL('./worker.ts', import.meta.url),
-      { type: 'module' },
-    );
+    const worker = new JavaWorker();
 
     const timeout = setTimeout(() => {
       worker.terminate();
@@ -40,6 +39,6 @@ export async function execute(source: string): Promise<WorkerMessage> {
       });
     };
 
-    worker.postMessage({ type: 'run', source });
+    worker.postMessage({ type: 'run', source, stdin: options?.stdin ?? '' });
   });
 }

@@ -13,14 +13,14 @@ import { getEngine } from '../engines/registry';
  */
 export async function runCode(source: string): Promise<void> {
   const store = useStore.getState();
-  const { language } = store;
+  const { language, stdin } = store;
 
   store.reset();
   store.setIsRunning(true);
 
   try {
     const engine = await getEngine(language);
-    const result = await engine.execute(source);
+    const result = await engine.execute(source, { stdin });
 
     if (result.type === 'result') {
       if (result.snapshots.length === 0) {

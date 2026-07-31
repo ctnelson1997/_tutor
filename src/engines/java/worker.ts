@@ -9,14 +9,14 @@ import { parseJava } from './parser';
 import { JavaInterpreter } from './interpreter';
 import type { WorkerMessage } from '../../types/snapshot';
 
-self.onmessage = (e: MessageEvent<{ type: string; source: string }>) => {
+self.onmessage = (e: MessageEvent<{ type: string; source: string; stdin?: string }>) => {
   if (e.data.type !== 'run') return;
 
-  const { source } = e.data;
+  const { source, stdin } = e.data;
 
   try {
     const cst = parseJava(source);
-    const interpreter = new JavaInterpreter();
+    const interpreter = new JavaInterpreter(stdin ?? '');
     const result = interpreter.execute(cst);
 
     if (result.error) {

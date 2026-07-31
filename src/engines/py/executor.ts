@@ -10,6 +10,7 @@
 
 import { getTracerCode } from './tracer';
 import type { WorkerMessage } from '../../types/snapshot';
+import PyWorker from './worker.ts?worker&inline';
 
 const WORKER_TIMEOUT = 10_000;
 const INIT_TIMEOUT = 30_000; // Pyodide download can take a while
@@ -20,10 +21,7 @@ const tracerCode = getTracerCode();
 
 function createWorker(): Promise<void> {
   return new Promise((resolve, reject) => {
-    const w = new Worker(
-      new URL('./worker.ts', import.meta.url),
-      { type: 'module' },
-    );
+    const w = new PyWorker();
     worker = w;
 
     // Timeout for Pyodide initialization (download + compile WASM)

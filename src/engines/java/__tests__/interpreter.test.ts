@@ -433,7 +433,8 @@ describe('Java Interpreter', () => {
           System.out.println(s);
         }
       }`);
-      expect(stdout[0]).toBe('line1\nline2');
+      // stdout is split into display lines, so the embedded newline yields two.
+      expect(stdout.join('\n')).toBe('line1\nline2');
     });
 
     it('handles multiple variable declarations', () => {
