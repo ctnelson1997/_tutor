@@ -16,6 +16,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseJava } from '../parser';
 import { JavaInterpreter } from '../interpreter';
+import { examples } from '../examples';
 import type { ExecutionSnapshot } from '../../../types/snapshot';
 
 function execJava(source: string): { snapshots: ExecutionSnapshot[]; error?: string } {
@@ -444,6 +445,84 @@ describe('Java behavior comparison', () => {
         System.out.println(c.get());
       }
     }`, '3'));
+
+  // ── Multiple top-level classes (tester + logic split) ──
+  // A source file may declare more than one top-level class; `ClassName.method()`
+  // dispatches statics against that class's own table. javac forbids two *public*
+  // top-level classes per file, but this educational engine is lenient.
+  it('qualified static call on a second top-level class', () => expectStdout(
+    `public class Main {
+      public static void main(String[] args) {
+        System.out.println(Helper.val());
+      }
+    }
+    public class Helper {
+      public static int val() { return 42; }
+    }`, '42'));
+
+  it('entry class need not be declared first', () => expectStdout(
+    `public class Logic {
+      public static int twice(int n) { return n * 2; }
+    }
+    public class Runner {
+      public static void main(String[] args) {
+        System.out.println(Logic.twice(21));
+      }
+    }`, '42'));
+
+  it('non-entry class calls its own sibling static helper unqualified', () => expectStdout(
+    `public class Main {
+      public static void main(String[] args) {
+        System.out.println(Helper.compute());
+      }
+    }
+    public class Helper {
+      public static int compute() { return base() + 1; }
+      public static int base() { return 10; }
+    }`, '11'));
+
+  it('instance method calls a sibling instance method unqualified', () => expectStdout(
+    `public class Main {
+      int getX() { return 5; }
+      int doubleX() { return getX() * 2; }
+      public static void main(String[] args) {
+        Main m = new Main();
+        System.out.println(m.doubleX());
+      }
+    }`, '10'));
+
+  it('CoffeeShop tester + logic split (from examples)', () => expectStdout(
+    `public class CoffeeShopTester {
+      public static void main(String[] args) {
+        System.out.println("=== COFFEE SHOP TESTER ===");
+        if (testPriceOf()) {
+          System.out.println("testPriceOf: PASS");
+        } else {
+          System.out.println("testPriceOf: FAIL");
+        }
+      }
+      public static boolean testPriceOf() {
+        String[] menu = {"latte", "drip"};
+        int[] prices = {5, 3};
+        if (CoffeeShop.priceOf(menu, prices, "drip") != 3) return false;
+        if (CoffeeShop.priceOf(menu, prices, "tea") != -1) return false;
+        return true;
+      }
+    }
+    public class CoffeeShop {
+      public static int priceOf(String[] menu, int[] prices, String item) {
+        for (int i = 0; i < menu.length; i++) {
+          if (menu[i].equals(item)) return prices[i];
+        }
+        return -1;
+      }
+    }`, '=== COFFEE SHOP TESTER ===\ntestPriceOf: PASS'));
+
+  it('the shipped "multiple-classes" example runs and passes', () => {
+    const example = examples.find(e => e.slug === 'multiple-classes');
+    expect(example).toBeDefined();
+    expectStdout(example!.code, '=== COFFEE SHOP TESTER ===\ntestPriceOf: PASS');
+  });
 
   // ── Classic textbook algorithms ──
   it('FizzBuzz 1-15', () => expectStdout(wrap(`

@@ -180,6 +180,55 @@ export const examples: CodeExample[] = [
 }`,
   },
   {
+    title: 'Multiple Classes',
+    slug: 'multiple-classes',
+    category: 'Methods',
+    language: 'java',
+    code: `// A tester class can live alongside the logic class it exercises.
+// Call another class's static method with ClassName.method(...).
+public class CoffeeShopTester {
+
+  public static void main(String[] args) {
+    System.out.println("=== COFFEE SHOP TESTER ===");
+
+    if (testPriceOf()) {
+      System.out.println("testPriceOf: PASS");
+    } else {
+      System.out.println("testPriceOf: FAIL");
+    }
+  }
+
+  // Returns true ONLY if priceOf behaves as expected on every case.
+  public static boolean testPriceOf() {
+    String[] menu   = {"latte", "drip"};
+    int[]    prices = {   5,       3   };
+
+    // normal case: an item that is present -> its price
+    if (CoffeeShop.priceOf(menu, prices, "drip") != 3) {
+      return false;
+    }
+    // edge case: an item that is absent -> the -1 sentinel
+    if (CoffeeShop.priceOf(menu, prices, "tea") != -1) {
+      return false;
+    }
+
+    return true;
+  }
+}
+
+// The logic under test.
+public class CoffeeShop {
+  public static int priceOf(String[] menu, int[] prices, String item) {
+    for (int i = 0; i < menu.length; i++) {
+      if (menu[i].equals(item)) {
+        return prices[i];
+      }
+    }
+    return -1;
+  }
+}`,
+  },
+  {
     title: 'Classes & Objects',
     slug: 'classes-objects',
     category: 'OOP',

@@ -162,7 +162,7 @@ function updateVariable(scope: Scope, name: string, value: JavaValue): boolean {
 }
 
 /** Update the innermost call-stack frame's currentScope pointer. */
-function setCurrentScope(callStack: { name: string; scope: Scope; currentScope: Scope }[], scope: Scope): void {
+function setCurrentScope(callStack: { name: string; scope: Scope; currentScope: Scope; className?: string }[], scope: Scope): void {
   if (callStack.length > 0) {
     callStack[callStack.length - 1].currentScope = scope;
   }
@@ -176,6 +176,7 @@ interface MethodDef {
   params: { name: string; type: JavaType }[];
   body: CstNode; // the block node
   isStatic: boolean;
+  className: string; // the class that declares this method
 }
 
 interface FieldDef {
@@ -199,7 +200,7 @@ export class JavaInterpreter {
   private stdoutBuffer = '';
   private heap: Map<string, JavaHeapEntry> = new Map();
   private nextHeapId = 1;
-  private callStack: { name: string; scope: Scope; currentScope: Scope }[] = [];
+  private callStack: { name: string; scope: Scope; currentScope: Scope; className?: string }[] = [];
   private methods: MethodTable = new Map();
   private methodsByClass: Map<string, MethodTable> = new Map();
   private staticFields: Scope = createScope(null);
@@ -298,16 +299,34 @@ export class JavaInterpreter {
       const compUnit = child(cst, 'ordinaryCompilationUnit');
       if (!compUnit) throw new InterpreterError('No compilation unit found', 0);
 
-      const typeDecl = child(compUnit, 'typeDeclaration');
-      if (!typeDecl) throw new InterpreterError('No type declaration found', 0);
+      // A source file may declare more than one top-level class (e.g. a tester
+      // class alongside the logic class it exercises). Register every one; each
+      // class's methods live in `methodsByClass`, and `ClassName.method()` calls
+      // dispatch against that table. `javac` forbids two *public* top-level
+      // classes per file, but this educational engine is lenient about it.
+      const typeDecls = children(compUnit, 'typeDeclaration');
+      const classNamesInOrder: string[] = [];
+      for (const typeDecl of typeDecls) {
+        const classDecl = child(typeDecl, 'classDeclaration');
+        if (!classDecl) continue; // skip interfaces / enums / stray semicolons
+        const normalClass = child(classDecl, 'normalClassDeclaration');
+        if (normalClass) classNamesInOrder.push(this.registerClass(normalClass));
+      }
+      if (classNamesInOrder.length === 0) {
+        throw new InterpreterError('No class declaration found', 0);
+      }
 
-      const classDecl = child(typeDecl, 'classDeclaration');
-      if (!classDecl) throw new InterpreterError('No class declaration found', 0);
-
-      const normalClass = child(classDecl, 'normalClassDeclaration');
-      if (!normalClass) throw new InterpreterError('Only class declarations are supported', 0);
-
-      this.registerClass(normalClass, true);
+      // The entry class is the first top-level class that declares a static
+      // `main`. Its methods become callable unqualified (so single-class
+      // programs behave exactly as before).
+      let entryClass: string | undefined;
+      for (const name of classNamesInOrder) {
+        const main = this.resolveMethod(this.methodsByClass.get(name), 'main', 1)
+          || this.resolveMethod(this.methodsByClass.get(name), 'main', 0);
+        if (main && main.isStatic) { entryClass = name; break; }
+      }
+      if (!entryClass) throw new InterpreterError('No main method found', 0);
+      this.methods = this.methodsByClass.get(entryClass) ?? new Map();
 
       // Initialize static fields
       this.initStaticFields();
@@ -317,7 +336,7 @@ export class JavaInterpreter {
       if (!mainMethod) throw new InterpreterError('No main method found', 0);
 
       const mainScope = createScope(this.staticFields);
-      this.callStack.push({ name: 'main', scope: mainScope, currentScope: mainScope });
+      this.callStack.push({ name: 'main', scope: mainScope, currentScope: mainScope, className: entryClass });
       this.executeBlock(mainMethod.body, mainScope);
       this.callStack.pop();
 
@@ -347,7 +366,7 @@ export class JavaInterpreter {
 
   // ── Method registration ──
 
-  private registerClass(normalClass: CstNode, isTopLevel: boolean): void {
+  private registerClass(normalClass: CstNode): string {
     const className = this.extractClassName(normalClass);
     this.classNames.add(className);
     const classBody = child(normalClass, 'classBody');
@@ -367,13 +386,13 @@ export class JavaInterpreter {
       const nestedClassDecl = child(memberDecl, 'classDeclaration');
       const nestedNormalClass = nestedClassDecl ? child(nestedClassDecl, 'normalClassDeclaration') : undefined;
       if (nestedNormalClass) {
-        this.registerClass(nestedNormalClass, false);
+        this.registerClass(nestedNormalClass);
         continue;
       }
 
       const methodDecl = child(memberDecl, 'methodDeclaration');
       if (methodDecl) {
-        this.registerMethod(className, methodDecl, isTopLevel);
+        this.registerMethod(className, methodDecl);
         continue;
       }
 
@@ -386,9 +405,10 @@ export class JavaInterpreter {
         }
       }
     }
+    return className;
   }
 
-  private registerMethod(className: string, methodDecl: CstNode, exposeUnqualified: boolean): void {
+  private registerMethod(className: string, methodDecl: CstNode): void {
     const header = child(methodDecl, 'methodHeader')!;
     const declarator = child(header, 'methodDeclarator')!;
     const nameToken = token(declarator, 'Identifier')!;
@@ -404,18 +424,12 @@ export class JavaInterpreter {
     const modifiers = children(methodDecl, 'methodModifier');
     const isStatic = modifiers.some(m => has(m, 'Static'));
 
-    const method = { name: methodName, returnType, params, body, isStatic };
+    const method: MethodDef = { name: methodName, returnType, params, body, isStatic, className };
     const classMethods = this.methodsByClass.get(className) || new Map<string, MethodDef[]>();
     const overloads = classMethods.get(methodName) || [];
     overloads.push(method);
     classMethods.set(methodName, overloads);
     this.methodsByClass.set(className, classMethods);
-
-    if (exposeUnqualified) {
-      const topLevelOverloads = this.methods.get(methodName) || [];
-      topLevelOverloads.push(method);
-      this.methods.set(methodName, topLevelOverloads);
-    }
   }
 
   private resolveMethod(table: MethodTable | undefined, methodName: string, argCount: number): MethodDef | undefined {
@@ -1642,6 +1656,18 @@ export class JavaInterpreter {
     return lookupVariable(scope, 'this')?.value;
   }
 
+  /**
+   * The class whose method is currently executing (innermost call-stack frame).
+   * Used to resolve unqualified static calls against the enclosing class — e.g.
+   * a helper method called from a sibling static method in a non-entry class.
+   */
+  private currentClassName(): string | undefined {
+    for (let i = this.callStack.length - 1; i >= 0; i--) {
+      if (this.callStack[i].className) return this.callStack[i].className;
+    }
+    return undefined;
+  }
+
   private resolveThis(scope: Scope, line: number): JavaValue {
     const thisValue = this.getCurrentThis(scope);
     if (!thisValue) {
@@ -2100,6 +2126,8 @@ export class JavaInterpreter {
       // Could be a method name (resolved later by methodInvocationSuffix)
       // or a class name. Return null to let the suffix handler deal with it.
       if (this.methods.has(name)) return javaNull();
+      const currentClass = this.currentClassName();
+      if (currentClass && this.methodsByClass.get(currentClass)?.has(name)) return javaNull();
       const currentThis = this.getCurrentThis(scope);
       if (
         currentThis?.kind === 'objectRef'
@@ -2352,17 +2380,21 @@ export class JavaInterpreter {
       }
     }
 
-    // Single name - must be a user-defined static method
+    // Single name - a user-defined method called unqualified. Resolve against
+    // the enclosing class first (so a helper in a non-entry class finds its own
+    // siblings), then the entry class's unqualified table.
     if (parts.length === 1) {
-      const method = this.resolveMethod(this.methods, methodName, args.length);
+      const currentClass = this.currentClassName();
+      const method =
+        (currentClass ? this.resolveMethod(this.methodsByClass.get(currentClass), methodName, args.length) : undefined)
+        || this.resolveMethod(this.methods, methodName, args.length);
       if (method && method.isStatic) {
         const callLine = getLine(primary);
         return this.callMethod(method, args, callLine);
       }
-      if (method && !method.isStatic) {
-        throw new InterpreterError(`Cannot call instance method '${methodName}' without an object`, getLine(primary));
-      }
 
+      // Instance method called unqualified from inside an instance context —
+      // e.g. one instance method invoking a sibling. Dispatch on `this`.
       const thisEntry = lookupVariable(scope, 'this');
       if (thisEntry?.value.kind === 'objectRef') {
         const instanceMethod = this.resolveMethod(
@@ -2374,6 +2406,12 @@ export class JavaInterpreter {
           const callLine = getLine(primary);
           return this.callMethod(instanceMethod, args, callLine, thisEntry.value);
         }
+      }
+
+      // Found the method but it's an instance method and there's no `this`
+      // (a genuine static context) — surface the classic Java error.
+      if (method && !method.isStatic) {
+        throw new InterpreterError(`Cannot call instance method '${methodName}' without an object`, getLine(primary));
       }
     }
 
@@ -2392,8 +2430,17 @@ export class JavaInterpreter {
       if (excResult !== undefined) return excResult;
     }
 
-    // Static utility classes: Math, wrappers, Arrays, Objects, System, String, Collections, List/Set/Map.of
+    // Qualified static call on another user-defined class: ClassName.method(args).
+    // Checked before the stdlib so a user `class Math {}` shadows the built-in.
     const staticClass = parts.length >= 2 ? parts[parts.length - 2] : parts[0] || '';
+    if (this.classNames.has(staticClass)) {
+      const userStatic = this.resolveMethod(this.methodsByClass.get(staticClass), methodName, args.length);
+      if (userStatic && userStatic.isStatic) {
+        return this.callMethod(userStatic, args, getLine(primary));
+      }
+    }
+
+    // Static utility classes: Math, wrappers, Arrays, Objects, System, String, Collections, List/Set/Map.of
     const staticResult = callStaticMethod(staticClass, methodName, args, this.ctx);
     if (staticResult !== undefined) return staticResult;
 
@@ -2438,7 +2485,7 @@ export class JavaInterpreter {
       this.emitSnapshot(callSiteLine);
     }
 
-    this.callStack.push({ name: method.name, scope: methodScope, currentScope: methodScope });
+    this.callStack.push({ name: method.name, scope: methodScope, currentScope: methodScope, className: method.className });
     try {
       this.executeBlock(method.body, methodScope);
       return javaNull();
@@ -2486,7 +2533,7 @@ export class JavaInterpreter {
     }
 
     this.emitSnapshot(callSiteLine);
-    this.callStack.push({ name: ctor.className, scope: ctorScope, currentScope: ctorScope });
+    this.callStack.push({ name: ctor.className, scope: ctorScope, currentScope: ctorScope, className: ctor.className });
     try {
       this.executeBlock(ctor.body, ctorScope);
     } catch (e) {
