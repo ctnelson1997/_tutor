@@ -21,15 +21,24 @@ import {
   child,
   children,
   token,
+  tokens,
   has,
   getLine,
   isCstNode,
   isCstToken,
 } from './parser';
+import { InterpreterError, nullPointer } from './errors';
+import {
+  type Reference,
+  assignmentConversion,
+  slotReference,
+  fieldReference,
+  arrayElementReference,
+  arrayLength,
+} from './references';
 import {
   type JavaValue,
   type JavaType,
-  type JavaPrimitiveType,
   type JavaHeapEntry,
   type JavaObject,
   isJavaArray,
@@ -111,31 +120,6 @@ function lookupVariable(scope: Scope, name: string): { value: JavaValue; type: J
 }
 
 /**
- * Java assignment / method-invocation conversion: widen a numeric primitive to
- * the declared type of the variable, parameter, or field it is being bound to.
- *
- * Without this, `double x = 1;` would store the int *literal's* javaType ('int'),
- * so a later `target / x` runs integer division instead of floating-point. See the
- * √2013 Newton's-method regression in behavior-comparison.test.ts. This mirrors JLS
- * widening primitive conversion (int/char/short/byte/long/float -> double, etc.); we
- * intentionally do NOT auto-narrow (e.g. double -> int) since that requires an explicit
- * cast in real Java, and leaving such values untouched preserves existing behavior.
- */
-function coerceToType(value: JavaValue, type: JavaType): JavaValue {
-  if (value.kind !== 'primitive' || typeof value.value !== 'number') return value;
-  if (type === 'double' || type === 'float') {
-    if (value.javaType !== type) {
-      return { kind: 'primitive', javaType: type as JavaPrimitiveType, value: value.value };
-    }
-  } else if (type === 'long') {
-    if (value.javaType === 'int' || value.javaType === 'char' || value.javaType === 'short' || value.javaType === 'byte') {
-      return { kind: 'primitive', javaType: 'long', value: value.value };
-    }
-  }
-  return value;
-}
-
-/**
  * Increment / decrement (`++` / `--`) preserving the operand's numeric type, so
  * `double d = 1.5; d++;` yields 2.5 (not a truncated int). Falls back to int.
  */
@@ -148,13 +132,13 @@ function stepValue(val: JavaValue, delta: number): JavaValue {
 }
 
 function setVariable(scope: Scope, name: string, value: JavaValue, type: JavaType): void {
-  scope.variables.set(name, { value: coerceToType(value, type), type });
+  scope.variables.set(name, { value: assignmentConversion(value, type), type });
 }
 
 function updateVariable(scope: Scope, name: string, value: JavaValue): boolean {
   if (scope.variables.has(name)) {
     const entry = scope.variables.get(name)!;
-    entry.value = coerceToType(value, entry.type);
+    entry.value = assignmentConversion(value, entry.type);
     return true;
   }
   if (scope.parent) return updateVariable(scope.parent, name, value);
@@ -212,6 +196,8 @@ export class JavaInterpreter {
   private ctx: StdlibContext;
   /** When > 0, emitSnapshot is a no-op (during atomic toString/equals/compareTo callbacks). */
   private suppressSnapshots = 0;
+  /** Parsed primary-expression chains, per CST node. */
+  private chainCache = new WeakMap<CstNode, PrimaryChain>();
 
   constructor(stdin: string = '') {
     this.stdin = stdin;
@@ -1523,133 +1509,104 @@ export class JavaInterpreter {
   }
 
   private evalAssignment(binExpr: CstNode, op: string, scope: Scope): JavaValue {
-    // Get the LHS unary expression for the target
     const unaryExprs = children(binExpr, 'unaryExpression');
-    if (unaryExprs.length === 0) return javaNull();
+    const target = unaryExprs.length > 0 ? bareOperand(unaryExprs[0]) : undefined;
+    if (!target) throw new InterpreterError('Invalid assignment target', getLine(binExpr));
+    const ref = this.resolveReference(target, scope);
 
-    const lhsUnary = unaryExprs[0];
-    const target = this.resolveAssignmentTarget(lhsUnary, scope);
-
-    // Get the RHS - could be an expression child or the second unary expr
-    const rhsExprs = children(binExpr, 'expression');
-    let rhsValue: JavaValue;
-    if (rhsExprs.length > 0) {
-      rhsValue = this.evalExpression(rhsExprs[0], scope);
-    } else if (unaryExprs.length > 1) {
-      rhsValue = this.evalUnaryExpression(unaryExprs[1], scope);
-    } else {
-      return javaNull();
-    }
-
-    // Handle compound assignment
-    if (op !== '=') {
-      const currentValue = target.get();
-      const baseOp = op.slice(0, -1); // '+=' -> '+'
-      rhsValue = applyBinaryOp(baseOp, currentValue, rhsValue, this.heap, (v) => this.stringify(v));
-    }
-
-    target.set(rhsValue);
-    return rhsValue;
-  }
-
-  private resolveAssignmentTarget(
-    unaryExpr: CstNode,
-    scope: Scope,
-  ): { get: () => JavaValue; set: (v: JavaValue) => void } {
-    const primaryNode = child(unaryExpr, 'primary')!;
-    const primary = child(primaryNode, 'primaryPrefix');
-    if (!primary) throw new InterpreterError('Invalid assignment target', getLine(unaryExpr));
-
-    const fqn = child(primary, 'fqnOrRefType');
-    const suffixes = children(primaryNode, 'primarySuffix');
-
-    if (has(primary, 'This')) {
-      const fieldName = this.extractFieldSuffixName(suffixes);
-      if (!fieldName) throw new InterpreterError('Invalid assignment target', getLine(unaryExpr));
-      const thisValue = this.resolveThis(scope, getLine(unaryExpr));
-      return {
-        get: () => this.getFieldValue(thisValue, fieldName, getLine(unaryExpr)),
-        set: (v) => this.setFieldValue(thisValue, fieldName, v, getLine(unaryExpr)),
-      };
-    }
-
-    if (!fqn) throw new InterpreterError('Invalid assignment target', getLine(unaryExpr));
-
-    const parts = this.extractFqnParts(fqn);
-    const name = parts[0] || '';
-
-    // Check for array access suffix
-    if (suffixes.length > 0) {
-      const arrayAccess = child(suffixes[suffixes.length - 1], 'arrayAccessSuffix');
-      if (arrayAccess) {
-        const indexExpr = child(arrayAccess, 'expression')!;
-        const indexVal = this.evalExpression(indexExpr, scope);
-        const index = javaValueToNumber(indexVal);
-
-        // For multi-dimensional: resolve up to the last suffix
-        let arrValue = this.resolveVariable(name, scope);
-        for (let i = 0; i < suffixes.length - 1; i++) {
-          const suf = suffixes[i];
-          const arrAccess = child(suf, 'arrayAccessSuffix');
-          if (arrAccess) {
-            const iExpr = child(arrAccess, 'expression')!;
-            const iVal = javaValueToNumber(this.evalExpression(iExpr, scope));
-            if (arrValue.kind !== 'arrayRef') throw new InterpreterError('Not an array', getLine(unaryExpr));
-            const arr = this.heap.get(arrValue.heapId);
-            if (!arr || !isJavaArray(arr)) throw new InterpreterError('Not an array', getLine(unaryExpr));
-            arrValue = arr.elements[iVal];
-          }
-        }
-
-        if (arrValue.kind !== 'arrayRef') throw new InterpreterError('Not an array', getLine(unaryExpr));
-        const arr = this.heap.get(arrValue.heapId);
-        if (!arr || !isJavaArray(arr)) throw new InterpreterError('Not an array', getLine(unaryExpr));
-        const capturedArr = arr;
-        const capturedIndex = index;
-
-        return {
-          get: () => capturedArr.elements[capturedIndex],
-          set: (v) => { capturedArr.elements[capturedIndex] = v; },
-        };
-      }
-    }
-
-    if (parts.length === 2) {
-      const obj = this.resolveVariable(parts[0], scope);
-      const fieldName = parts[1];
-      return {
-        get: () => this.getFieldValue(obj, fieldName, getLine(unaryExpr)),
-        set: (v) => this.setFieldValue(obj, fieldName, v, getLine(unaryExpr)),
-      };
-    }
-
-    // Simple variable assignment
-    return {
-      get: () => this.resolveVariable(name, scope),
-      set: (v) => {
-        if (!updateVariable(scope, name, v)) {
-          // Try static fields
-          if (!updateVariable(this.staticFields, name, v)) {
-            if (!this.setCurrentInstanceField(scope, name, v, getLine(unaryExpr))) {
-              setVariable(scope, name, v, this.inferType(v));
-            }
-          }
-        }
-      },
+    const evalRhs = (): JavaValue => {
+      const rhsExprs = children(binExpr, 'expression');
+      if (rhsExprs.length > 0) return this.evalExpression(rhsExprs[0], scope);
+      if (unaryExprs.length > 1) return this.evalUnaryExpression(unaryExprs[1], scope);
+      throw new InterpreterError('Assignment has no right-hand side', getLine(binExpr));
     };
+
+    if (op === '=') return ref.set(evalRhs());
+
+    // Compound assignment `v op= e` means `v = (T) (v op e)`, where T is v's type.
+    // The variable is read before the right-hand side runs (JLS §15.26.2), so
+    // `x += (x = 5)` adds the old x.
+    const current = ref.get();
+    const combined = applyBinaryOp(op.slice(0, -1), current, evalRhs(), this.heap, (v) => this.stringify(v));
+    return ref.set(this.narrowToDeclaredType(combined, ref.declaredType));
   }
 
-  private resolveVariable(name: string, scope: Scope): JavaValue {
-    const entry = lookupVariable(scope, name);
-    if (entry) return entry.value;
-    // Check static fields
-    const staticEntry = lookupVariable(this.staticFields, name);
-    if (staticEntry) return staticEntry.value;
-    const thisValue = this.getCurrentThis(scope);
-    if (thisValue?.kind === 'objectRef' && this.hasField(thisValue, name)) {
-      return this.getFieldValue(thisValue, name, 0);
+  /**
+   * The variable a primary expression names, for `=`, compound assignment and
+   * `++`/`--`. Everything up to the last selector is evaluated with the normal
+   * read path; the last selector (or a bare name) becomes the Reference. So
+   * `a.b.c = v`, `this.x.y = v`, `arr[i].f = v` and `Main.X = v` all write to
+   * exactly the variable written in the source.
+   */
+  private resolveReference(primary: CstNode, scope: Scope): Reference {
+    const chain = this.primaryChain(primary);
+    const count = chain.selectors.length;
+    if (count === 0) {
+      const base = chain.base.step;
+      if (base.kind === 'name') return this.nameReference(base.name, scope, chain.base.line);
+      const inner = base.kind === 'expression' ? parenthesizedOperand(base.prefix) : undefined;
+      if (inner) return this.resolveReference(inner, scope); // (x) = 5
+      throw new InterpreterError(`'${chain.base.text}' is not a variable, so it can't be assigned to`, chain.base.line);
     }
-    throw new InterpreterError(`Variable '${name}' is not defined`, 0);
+
+    const last = chain.selectors[count - 1];
+    const targetText = count === 1 ? chain.base.text : chain.selectors[count - 2].text;
+    const target = this.evalChain(chain, count - 1, scope, primary);
+    switch (last.step.kind) {
+      case 'field':
+        return this.memberReference(target, last.step.name, targetText, last.line);
+      case 'index': {
+        const array = this.chainValue(target, last.line);
+        const index = javaValueToNumber(this.evalExpression(last.step.index, scope));
+        return arrayElementReference(this.heap, array, index, targetText, last.line);
+      }
+      case 'unsupported':
+        throw new InterpreterError(`${last.step.construct} ${UNSUPPORTED}`, last.line);
+      case 'call':
+        throw new InterpreterError(`'${last.text}' is not a variable, so it can't be assigned to`, last.line);
+    }
+  }
+
+  /** A simple name as a variable: a local or parameter, a field of `this`, or a static field. */
+  private nameReference(name: string, scope: Scope, line: number): Reference {
+    const local = this.lookupLocal(scope, name);
+    if (local) return slotReference(local);
+    const self = this.getCurrentThis(scope);
+    if (self && this.objectHasField(self, name)) {
+      return fieldReference(this.heap, self, name, this.fieldDeclaredType(self, name), 'this', line);
+    }
+    const staticSlot = this.staticFields.variables.get(name);
+    if (staticSlot) return slotReference(staticSlot);
+    throw new InterpreterError(`Variable '${name}' is not defined`, line);
+  }
+
+  /** `target.name` as a variable: an instance field, or a static field reached through its class. */
+  private memberReference(target: ChainValue, name: string, targetText: string, line: number): Reference {
+    if (target.kind === 'value') {
+      if (target.value.kind === 'arrayRef' && name === 'length') {
+        throw new InterpreterError("The length of an array can't be assigned to", line);
+      }
+      return fieldReference(this.heap, target.value, name, this.fieldDeclaredType(target.value, name), targetText, line);
+    }
+    if (target.kind === 'type') {
+      if (this.classNames.has(target.name)) {
+        // Static fields share one namespace across classes until per-class statics (#15).
+        const slot = this.staticFields.variables.get(name);
+        if (slot) return slotReference(slot);
+        throw new InterpreterError(`Field '${name}' does not exist on ${target.name}`, line);
+      }
+      throw new InterpreterError(`${target.name}.${name} can't be assigned to`, line);
+    }
+    throw new InterpreterError(`Variable '${target.path[0]}' is not defined`, line);
+  }
+
+  /** A local variable or parameter, searching block scopes out to the method's scope (statics excluded). */
+  private lookupLocal(scope: Scope, name: string): { value: JavaValue; type: JavaType } | undefined {
+    for (let s: Scope | null = scope; s && s !== this.staticFields; s = s.parent) {
+      const entry = s.variables.get(name);
+      if (entry) return entry;
+    }
+    return undefined;
   }
 
   private getCurrentThis(scope: Scope): JavaValue | undefined {
@@ -1676,45 +1633,33 @@ export class JavaInterpreter {
     return thisValue;
   }
 
-  private hasField(obj: JavaValue, fieldName: string): boolean {
+  private objectHasField(obj: JavaValue, fieldName: string): boolean {
     if (obj.kind !== 'objectRef') return false;
     const objData = this.heap.get(obj.heapId);
     return Boolean(objData && isJavaObject(objData) && objData.fields.has(fieldName));
   }
 
-  private getFieldValue(obj: JavaValue, fieldName: string, line: number): JavaValue {
-    if (obj.kind !== 'objectRef') {
-      throw new InterpreterError(`Cannot read field '${fieldName}' from non-object value`, line);
-    }
-    const objData = this.heap.get(obj.heapId);
-    if (!objData || !isJavaObject(objData)) {
-      throw new InterpreterError(`Cannot read field '${fieldName}' from non-object value`, line);
-    }
-    if (!objData.fields.has(fieldName)) {
-      throw new InterpreterError(`Field '${fieldName}' does not exist on ${obj.className}`, line);
-    }
-    return objData.fields.get(fieldName)!;
+  /** A user class's declared type for a field ('Object' when unknown, which skips conversion). */
+  private fieldDeclaredType(obj: JavaValue, fieldName: string): JavaType {
+    if (obj.kind !== 'objectRef') return 'Object';
+    return this.instanceFields.get(obj.className)?.find(f => f.name === fieldName)?.type ?? 'Object';
   }
 
-  private setFieldValue(obj: JavaValue, fieldName: string, value: JavaValue, line: number): void {
-    if (obj.kind !== 'objectRef') {
-      throw new InterpreterError(`Cannot write field '${fieldName}' on non-object value`, line);
+  /**
+   * The implicit cast in compound assignment (`v op= e` is `v = (T) (v op e)`,
+   * JLS §15.26.2) and in `++`/`--` (JLS §15.14.2): the result goes back to the
+   * variable's own type, so `salary *= 1.5` stays an int and `c += 2` stays a char.
+   */
+  private narrowToDeclaredType(value: JavaValue, type: JavaType): JavaValue {
+    if (value.kind !== 'primitive') return value;
+    switch (type) {
+      case 'int': case 'short': case 'byte': case 'char': case 'boolean': case 'float': case 'double':
+        return this.castPrimitiveValue(value, type);
+      case 'long':
+        // castPrimitiveValue cuts long to 32 bits (#10); keep the magnitude instead.
+        return { kind: 'primitive', javaType: 'long', value: Math.trunc(javaValueToNumber(value)) || 0 };
     }
-    const objData = this.heap.get(obj.heapId);
-    if (!objData || !isJavaObject(objData)) {
-      throw new InterpreterError(`Cannot write field '${fieldName}' on non-object value`, line);
-    }
-    if (!objData.fields.has(fieldName)) {
-      throw new InterpreterError(`Field '${fieldName}' does not exist on ${obj.className}`, line);
-    }
-    objData.fields.set(fieldName, value);
-  }
-
-  private setCurrentInstanceField(scope: Scope, fieldName: string, value: JavaValue, line: number): boolean {
-    const thisValue = this.getCurrentThis(scope);
-    if (!thisValue || !this.hasField(thisValue, fieldName)) return false;
-    this.setFieldValue(thisValue, fieldName, value, line);
-    return true;
+    return value; // String (+=), boxed and reference types
   }
 
   private evalOperatorChain(operandThunks: Array<() => JavaValue>, operators: string[]): JavaValue {
@@ -1772,173 +1717,65 @@ export class JavaInterpreter {
   }
 
   private evalUnaryExpression(unary: CstNode, scope: Scope): JavaValue {
-    // Check for prefix operator: UnaryPrefixOperator token (++, --, !, -, ~, +)
-    const prefixOpToken = token(unary, 'UnaryPrefixOperator');
-    if (prefixOpToken) {
-      const op = prefixOpToken.image;
-      const primary = child(unary, 'primary');
-      if (!primary) return javaNull();
-      const val = this.evalPrimary(primary, scope);
-
-      switch (op) {
-        case '!': return javaBool(!javaValueToBoolean(val));
-        case '-': {
-          const n = javaValueToNumber(val);
-          if (val.kind === 'primitive' && (val.javaType === 'double' || val.javaType === 'float')) {
-            return javaDouble(-n);
-          }
-          return javaInt(-n);
-        }
-        case '+': return val;
-        case '~': return javaInt(~(javaValueToNumber(val) | 0));
-        case '++': {
-          const newVal = stepValue(val, 1);
-          this.updatePrimaryVariable(primary, scope, newVal);
-          return newVal;
-        }
-        case '--': {
-          const newVal = stepValue(val, -1);
-          this.updatePrimaryVariable(primary, scope, newVal);
-          return newVal;
-        }
-      }
-      return val;
-    }
-
-    // Primary expression
     const primary = child(unary, 'primary');
-    if (primary) {
-      const val = this.evalPrimary(primary, scope);
+    if (!primary) return javaNull();
 
-      // Check for postfix operator: UnarySuffixOperator token (++, --)
-      const suffixOpToken = token(unary, 'UnarySuffixOperator');
-      if (suffixOpToken) {
-        const op = suffixOpToken.image;
-        const origVal = val;
-        const delta = op === '++' ? 1 : -1;
-        const newVal = stepValue(val, delta);
-        this.updatePrimaryVariable(primary, scope, newVal);
-        return origVal; // postfix returns original value
-      }
-
-      return val;
+    // Prefix operators are listed in source order: `- ++x` is ['-', '++'].
+    const prefixOps = tokens(unary, 'UnaryPrefixOperator').map(t => t.image);
+    const postfixOp = token(unary, 'UnarySuffixOperator')?.image;
+    let value: JavaValue;
+    if (postfixOp === '++' || postfixOp === '--') {
+      // Postfix binds tighter than any prefix operator, and yields the old value.
+      value = this.incrementVariable(primary, scope, postfixOp === '++' ? 1 : -1, false);
+    } else if (prefixOps.length > 0 && (prefixOps[prefixOps.length - 1] === '++' || prefixOps[prefixOps.length - 1] === '--')) {
+      value = this.incrementVariable(primary, scope, prefixOps.pop() === '++' ? 1 : -1, true);
+    } else {
+      value = this.evalPrimary(primary, scope);
     }
-
-    return javaNull();
+    for (let i = prefixOps.length - 1; i >= 0; i--) {
+      value = this.applyPrefixOperator(prefixOps[i], value, getLine(unary));
+    }
+    return value;
   }
 
-  /** Helper to update the variable referenced by a primary expression */
-  private updatePrimaryVariable(primary: CstNode, scope: Scope, newVal: JavaValue): void {
-    const prefix = child(primary, 'primaryPrefix');
-    if (prefix) {
-      const fqn = child(prefix, 'fqnOrRefType');
-      if (fqn) {
-        const name = this.extractFqnName(fqn);
-        if (!updateVariable(scope, name, newVal)) {
-          if (!updateVariable(this.staticFields, name, newVal)) {
-            this.setCurrentInstanceField(scope, name, newVal, getLine(primary));
-          }
+  private applyPrefixOperator(op: string, val: JavaValue, line: number): JavaValue {
+    switch (op) {
+      case '!': return javaBool(!javaValueToBoolean(val));
+      case '-': {
+        const n = javaValueToNumber(val);
+        if (val.kind === 'primitive' && (val.javaType === 'double' || val.javaType === 'float')) {
+          return javaDouble(-n);
         }
+        return javaInt(-n);
       }
+      case '+': return val;
+      case '~': return javaInt(~(javaValueToNumber(val) | 0));
+      case '++': case '--':
+        throw new InterpreterError(`${op} needs a variable to change`, line);
     }
+    return val;
   }
 
-
+  /**
+   * `++`/`--` on the variable a primary names (a local, field, static or array
+   * element). The result is narrowed back to the variable's type, so `c++` on a
+   * char stays a char. Prefix returns the new value, postfix the old one.
+   */
+  private incrementVariable(primary: CstNode, scope: Scope, delta: number, returnNew: boolean): JavaValue {
+    const ref = this.resolveReference(primary, scope);
+    const old = ref.get();
+    const stored = ref.set(this.narrowToDeclaredType(stepValue(old, delta), ref.declaredType));
+    return returnNew ? stored : old;
+  }
 
   // ── Primary expression evaluation ──
 
   private evalPrimary(primary: CstNode, scope: Scope): JavaValue {
-    const prefix = child(primary, 'primaryPrefix')!;
-    const suffixes = children(primary, 'primarySuffix');
-    let val = this.evalPrimaryMethodReceiver(prefix, suffixes, scope) || this.evalPrimaryPrefix(prefix, scope);
-
-    // Apply suffixes (method calls, array access, field access).
-    // For chained method calls like `sb.append("a").append("b")`, the parser
-    // emits suffixes as: [methodInvocationSuffix("a"), .append (identifier),
-    // methodInvocationSuffix("b")]. We detect identifier+methodInvocationSuffix
-    // pairs and treat them as a single method call, otherwise the identifier
-    // would be looked up as a field on the receiver (and throw).
-    for (let i = 0; i < suffixes.length; i++) {
-      const cur = suffixes[i];
-      const next = suffixes[i + 1];
-      const curIsIdentOnly =
-        !child(cur, 'methodInvocationSuffix') &&
-        !child(cur, 'arrayAccessSuffix') &&
-        !!token(cur, 'Identifier');
-      const nextIsMethodCall = next && !!child(next, 'methodInvocationSuffix');
-      if (curIsIdentOnly && nextIsMethodCall) {
-        const methodName = token(cur, 'Identifier')!.image;
-        const methodSuffix = child(next, 'methodInvocationSuffix')!;
-        val = this.evalChainedMethodInvocation(val, methodName, methodSuffix, scope, primary);
-        i += 1; // skip the methodInvocationSuffix we just consumed
-        continue;
-      }
-      val = this.evalPrimarySuffix(val, suffixes[i], scope, primary);
-    }
-
-    return val;
+    const chain = this.primaryChain(primary);
+    return this.chainValue(this.evalChain(chain, chain.selectors.length, scope, primary), getLine(primary));
   }
 
-  private evalChainedMethodInvocation(
-    target: JavaValue,
-    methodName: string,
-    methodSuffix: CstNode,
-    scope: Scope,
-    primary: CstNode,
-  ): JavaValue {
-    // Evaluate arguments
-    const args: JavaValue[] = [];
-    const argList = child(methodSuffix, 'argumentList');
-    if (argList) {
-      for (const argExpr of children(argList, 'expression')) {
-        args.push(this.evalExpression(argExpr, scope));
-      }
-    }
-
-    if (target.kind === 'string') {
-      return this.evalStringMethod(target.value, methodName, args);
-    }
-    if (target.kind === 'objectRef') {
-      if (target.className === 'StringBuilder' || target.className === 'StringBuffer') {
-        return this.evalStringBuilderMethod(target, methodName, args);
-      }
-      if (!this.classNames.has(target.className)) {
-        const builtin = callInstanceMethod(target, methodName, args, this.ctx);
-        if (builtin !== undefined) return builtin;
-      }
-      const method = this.resolveMethod(this.methodsByClass.get(target.className), methodName, args.length)
-        || this.resolveMethod(this.methods, methodName, args.length);
-      if (method && !method.isStatic) {
-        return this.callMethod(method, args, getLine(primary), target);
-      }
-      const excResult = this.exceptionFallback(target, methodName);
-      if (excResult !== undefined) return excResult;
-    }
-    throw new InterpreterError(`Unknown method: ${methodName}()`, getLine(methodSuffix));
-  }
-
-  private evalPrimaryMethodReceiver(
-    prefix: CstNode,
-    suffixes: CstNode[],
-    scope: Scope,
-  ): JavaValue | undefined {
-    if (!suffixes.some(suffix => child(suffix, 'methodInvocationSuffix'))) {
-      return undefined;
-    }
-
-    const fqn = child(prefix, 'fqnOrRefType');
-    if (!fqn) return undefined;
-    const parts = this.extractFqnParts(fqn);
-    if (parts.length !== 2) return undefined;
-
-    try {
-      const receiver = this.resolveVariable(parts[0], scope);
-      return receiver.kind === 'objectRef' ? receiver : undefined;
-    } catch {
-      return undefined;
-    }
-  }
-
+  /** A primary that starts with a literal, a parenthesized expression, a cast or `new`. */
   private evalPrimaryPrefix(prefix: CstNode, scope: Scope): JavaValue {
     // Literal
     const literal = child(prefix, 'literal');
@@ -1958,16 +1795,6 @@ export class JavaInterpreter {
     // new expression
     const newExpr = child(prefix, 'newExpression');
     if (newExpr) return this.evalNewExpression(newExpr, scope);
-
-    // fqnOrRefType (variable reference, method call chain like System.out.println)
-    const fqn = child(prefix, 'fqnOrRefType');
-    if (fqn) {
-      return this.evalFqnOrRefType(fqn, scope);
-    }
-
-    // this/super
-    if (has(prefix, 'This')) return this.resolveThis(scope, getLine(prefix));
-    if (has(prefix, 'Super')) return javaNull(); // simplified
 
     return javaNull();
   }
@@ -2108,343 +1935,264 @@ export class JavaInterpreter {
     return javaNull();
   }
 
-  private evalFqnOrRefType(fqn: CstNode, scope: Scope): JavaValue {
-    // Build the full qualified name chain: ["System", "out", "println"] etc.
-    const parts = this.extractFqnParts(fqn);
+  // ── Names, selectors and method calls ──
+  //
+  // A primary expression is a base followed by selectors, evaluated left to
+  // right: `people[1].age`, `head.next.getVal()`, `this.data[this.size]`,
+  // `Main.total`, `java.util.Arrays.toString(a)`. Reads, method calls and
+  // writes (resolveReference) all walk the same chain, so every shape resolves
+  // the same way.
 
-    if (parts.length === 0) return javaNull();
-
-    // Single identifier - variable reference or method name
-    if (parts.length === 1) {
-      const name = parts[0];
-      const entry = lookupVariable(scope, name) || lookupVariable(this.staticFields, name);
-      if (entry) return entry.value;
-      const thisValue = this.getCurrentThis(scope);
-      if (thisValue?.kind === 'objectRef' && this.hasField(thisValue, name)) {
-        return this.getFieldValue(thisValue, name, getLine(fqn));
-      }
-      // Could be a method name (resolved later by methodInvocationSuffix)
-      // or a class name. Return null to let the suffix handler deal with it.
-      if (this.methods.has(name)) return javaNull();
-      const currentClass = this.currentClassName();
-      if (currentClass && this.methodsByClass.get(currentClass)?.has(name)) return javaNull();
-      const currentThis = this.getCurrentThis(scope);
-      if (
-        currentThis?.kind === 'objectRef'
-        && this.methodsByClass.get(currentThis.className)?.has(name)
-      ) {
-        return javaNull();
-      }
-      throw new InterpreterError(`Variable '${name}' is not defined`, getLine(fqn));
+  /** The base and selectors of a primary, cached per CST node (the tree never changes). */
+  private primaryChain(primary: CstNode): PrimaryChain {
+    let chain = this.chainCache.get(primary);
+    if (!chain) {
+      chain = buildPrimaryChain(primary);
+      this.chainCache.set(primary, chain);
     }
-
-    // Multi-part: handle known patterns
-    // Static constants: Math.PI, Math.E, Integer.MAX_VALUE, Double.NaN, Boolean.TRUE, …
-    if (parts.length === 2) {
-      const constant = getStaticField(parts[0], parts[1]);
-      if (constant) return constant;
-    }
-
-    // System.out.println / System.out.print
-    if (parts[0] === 'System' && parts[1] === 'out') {
-      // This will be handled by the suffix (methodInvocationSuffix)
-      // Return a sentinel
-      return { kind: 'objectRef', heapId: '__system_out__', className: 'PrintStream' } as JavaValue;
-    }
-
-    // Math.xxx
-    if (parts[0] === 'Math') {
-      // Will be handled by suffix
-      return { kind: 'objectRef', heapId: '__math__', className: 'Math' } as JavaValue;
-    }
-
-    // Integer.xxx, Double.xxx etc — sentinel receiver for static method calls
-    if (['Integer', 'Double', 'Float', 'Long', 'Short', 'Byte', 'Boolean', 'Character'].includes(parts[0])) {
-      return { kind: 'objectRef', heapId: '__' + parts[0].toLowerCase() + '__', className: parts[0] } as JavaValue;
-    }
-
-    // Could be field access: obj.field
-    if (parts.length === 2) {
-      let obj: JavaValue | undefined;
-      try {
-        obj = this.resolveVariable(parts[0], scope);
-      } catch {
-        // Not a variable, could be a class reference
-      }
-      if (obj?.kind === 'arrayRef' && parts[1] === 'length') {
-        const arr = this.heap.get(obj.heapId);
-        if (arr && isJavaArray(arr)) return javaInt(arr.elements.length);
-      }
-      if (obj?.kind === 'objectRef') {
-        return this.getFieldValue(obj, parts[1], getLine(fqn));
-      }
-    }
-
-    // String/array length special case for longer chains
-    if (parts.length >= 2) {
-      try {
-        let current = this.resolveVariable(parts[0], scope);
-        for (let i = 1; i < parts.length; i++) {
-          if (current.kind === 'arrayRef' && parts[i] === 'length') {
-            const arr = this.heap.get(current.heapId);
-            if (arr && isJavaArray(arr)) {
-              current = javaInt(arr.elements.length);
-              continue;
-            }
-          }
-          if (current.kind === 'objectRef') {
-            const objData = this.heap.get(current.heapId);
-            if (objData && isJavaObject(objData)) {
-              if (objData.fields.has(parts[i])) {
-                current = objData.fields.get(parts[i])!;
-                continue;
-              }
-            }
-          }
-          break;
-        }
-        return current;
-      } catch {
-        // fall through
-      }
-    }
-
-    return javaNull();
+    return chain;
   }
 
-  private extractFqnName(fqn: CstNode): string {
-    return this.extractFqnParts(fqn)[0] || '';
+  /** Evaluate a chain's base and its first `count` selectors. */
+  private evalChain(chain: PrimaryChain, count: number, scope: Scope, primary: CstNode): ChainValue {
+    let current = this.evalChainBase(chain.base, scope, primary);
+    for (let i = 0; i < count; i++) {
+      const receiverText = i === 0 ? chain.base.text : chain.selectors[i - 1].text;
+      current = this.applySelector(current, chain.selectors[i], receiverText, scope, primary);
+    }
+    return current;
   }
 
-  private extractFqnParts(fqn: CstNode): string[] {
-    const parts: string[] = [];
-    const first = child(fqn, 'fqnOrRefTypePartFirst');
-    if (first) {
-      const common = child(first, 'fqnOrRefTypePartCommon');
-      if (common) {
-        const id = token(common, 'Identifier');
-        if (id) parts.push(id.image);
+  private evalChainBase(base: ChainStep<ChainBase>, scope: Scope, primary: CstNode): ChainValue {
+    const step = base.step;
+    switch (step.kind) {
+      case 'name':
+        return this.resolveSimpleName(step.name, scope);
+      case 'this':
+        return { kind: 'value', value: this.resolveThis(scope, base.line) };
+      case 'super':
+        throw new InterpreterError(`'super.' member access ${UNSUPPORTED}`, base.line);
+      case 'call': {
+        const args = this.evalArguments(step.args, scope);
+        return { kind: 'value', value: this.invokeUnqualified(step.name, args, scope, primary, base.line) };
       }
+      case 'expression':
+        return { kind: 'value', value: this.evalPrimaryPrefix(step.prefix, scope) };
     }
-
-    const rests = children(fqn, 'fqnOrRefTypePartRest');
-    for (const rest of rests) {
-      const common = child(rest, 'fqnOrRefTypePartCommon');
-      if (common) {
-        const id = token(common, 'Identifier');
-        if (id) parts.push(id.image);
-      }
-    }
-
-    return parts;
   }
 
-  private extractFieldSuffixName(suffixes: CstNode[]): string | undefined {
-    if (suffixes.length !== 1) return undefined;
-    const suffix = suffixes[0];
-    if (child(suffix, 'methodInvocationSuffix') || child(suffix, 'arrayAccessSuffix')) {
-      return undefined;
+  /**
+   * What a simple name refers to, in Java's order: a local variable or
+   * parameter, a field of `this`, a static field, then a class. Anything else
+   * stays unresolved (a package prefix like `java.util`, or an undefined name)
+   * and is reported only if it is used as a value.
+   */
+  private resolveSimpleName(name: string, scope: Scope): ChainValue {
+    const local = this.lookupLocal(scope, name);
+    if (local) return { kind: 'value', value: local.value };
+    const self = this.getCurrentThis(scope);
+    if (self && this.objectHasField(self, name)) {
+      return { kind: 'value', value: fieldReference(this.heap, self, name, 'Object', 'this', 0).get() };
     }
-    return token(suffix, 'Identifier')?.image;
+    const staticSlot = this.staticFields.variables.get(name);
+    if (staticSlot) return { kind: 'value', value: staticSlot.value };
+    if (this.isKnownClass(name)) return { kind: 'type', name };
+    return { kind: 'unresolved', path: [name] };
   }
 
-  // ── Primary suffixes ──
+  private isKnownClass(name: string): boolean {
+    return this.classNames.has(name) || LIBRARY_CLASSES.has(name);
+  }
 
-  private evalPrimarySuffix(
-    target: JavaValue,
-    suffix: CstNode,
+  private applySelector(
+    current: ChainValue,
+    selector: ChainStep<Selector>,
+    receiverText: string,
     scope: Scope,
     primary: CstNode,
-  ): JavaValue {
-    // Method invocation
-    const methodSuffix = child(suffix, 'methodInvocationSuffix');
-    if (methodSuffix) {
-      return this.evalMethodInvocation(target, methodSuffix, scope, primary);
-    }
-
-    // Array access
-    const arrayAccess = child(suffix, 'arrayAccessSuffix');
-    if (arrayAccess) {
-      const indexExpr = child(arrayAccess, 'expression')!;
-      const indexVal = this.evalExpression(indexExpr, scope);
-      const index = javaValueToNumber(indexVal);
-
-      if (target.kind === 'arrayRef') {
-        const arr = this.heap.get(target.heapId);
-        if (arr && isJavaArray(arr)) {
-          if (index < 0 || index >= arr.elements.length) {
-            throw new InterpreterError(
-              `ArrayIndexOutOfBoundsException: Index ${index} out of bounds for length ${arr.elements.length}`,
-              getLine(suffix),
-            );
-          }
-          return arr.elements[index];
-        }
+  ): ChainValue {
+    const { step, line } = selector;
+    switch (step.kind) {
+      case 'field':
+        return this.selectField(current, step.name, receiverText, line);
+      case 'call': {
+        // The receiver is evaluated first, then the arguments (JLS §15.12.4).
+        const args = this.evalArguments(step.args, scope);
+        return { kind: 'value', value: this.invokeOn(current, step.name, args, receiverText, primary, line) };
       }
-      if (target.kind === 'string') {
-        // String charAt via bracket access (not standard Java but handle gracefully)
-        return javaChar(target.value.charCodeAt(index));
+      case 'index': {
+        const array = this.chainValue(current, line);
+        const index = javaValueToNumber(this.evalExpression(step.index, scope));
+        return { kind: 'value', value: arrayElementReference(this.heap, array, index, receiverText, line).get() };
       }
-      throw new InterpreterError('Cannot index non-array value', getLine(suffix));
+      case 'unsupported':
+        throw new InterpreterError(`${step.construct} ${UNSUPPORTED}`, line);
     }
-
-    const fieldName = token(suffix, 'Identifier')?.image;
-    if (fieldName) {
-      if (target.kind === 'arrayRef' && fieldName === 'length') {
-        const arr = this.heap.get(target.heapId);
-        if (arr && isJavaArray(arr)) return javaInt(arr.elements.length);
-      }
-      return this.getFieldValue(target, fieldName, getLine(suffix));
-    }
-
-    return target;
   }
 
-  // ── Method invocation ──
+  /** `current.name`: a field, an array's length, a class's static member, or the next part of a package name. */
+  private selectField(current: ChainValue, name: string, receiverText: string, line: number): ChainValue {
+    if (current.kind === 'value') {
+      const target = current.value;
+      if (target.kind === 'arrayRef' || (target.kind === 'null' && name === 'length')) {
+        if (name !== 'length') throw new InterpreterError(`Arrays have no field '${name}', only length`, line);
+        return { kind: 'value', value: javaInt(arrayLength(this.heap, target, receiverText, line)) };
+      }
+      return { kind: 'value', value: fieldReference(this.heap, target, name, 'Object', receiverText, line).get() };
+    }
+    if (current.kind === 'type') return this.staticMember(current.name, name, line);
+    // An unresolved name followed by a class name was a package: java.util.Arrays
+    if (this.isKnownClass(name)) return { kind: 'type', name };
+    return { kind: 'unresolved', path: [...current.path, name] };
+  }
 
-  private evalMethodInvocation(
-    target: JavaValue,
-    methodSuffix: CstNode,
-    scope: Scope,
+  /** `ClassName.name`: a static field, a nested class, or a library constant such as Math.PI or System.out. */
+  private staticMember(className: string, name: string, line: number): ChainValue {
+    if (this.classNames.has(className)) {
+      // Static fields share one namespace across classes until per-class statics (#15).
+      const slot = this.staticFields.variables.get(name);
+      if (slot) return { kind: 'value', value: slot.value };
+      if (this.classNames.has(name)) return { kind: 'type', name };
+      if (this.instanceFields.get(className)?.some(f => f.name === name)) {
+        throw new InterpreterError(`'${name}' is an instance field of ${className}, so it needs an object`, line);
+      }
+      throw new InterpreterError(`Field '${name}' does not exist on ${className}`, line);
+    }
+    if (className === 'System') {
+      if (name === 'out') return { kind: 'value', value: SYSTEM_OUT };
+      if (name === 'err') return { kind: 'value', value: SYSTEM_ERR };
+      if (name === 'in') return { kind: 'value', value: SYSTEM_IN };
+    }
+    const constant = getStaticField(className, name);
+    if (constant) return { kind: 'value', value: constant };
+    if (this.isKnownClass(name)) return { kind: 'type', name };
+    throw new InterpreterError(`Unknown field: ${className}.${name}`, line);
+  }
+
+  /** The value a chain evaluated to. A class, or a name that resolved to nothing, isn't a value. */
+  private chainValue(current: ChainValue, line: number): JavaValue {
+    if (current.kind === 'value') return current.value;
+    const name = current.kind === 'type' ? current.name : current.path[0];
+    throw new InterpreterError(`Variable '${name}' is not defined`, line);
+  }
+
+  private invokeOn(
+    current: ChainValue,
+    name: string,
+    args: JavaValue[],
+    receiverText: string,
     primary: CstNode,
+    line: number,
   ): JavaValue {
-    // Get the method name from the fqnOrRefType chain
-    const prefix = child(primary, 'primaryPrefix')!;
-    const fqn = child(prefix, 'fqnOrRefType');
-    const parts = fqn ? this.extractFqnParts(fqn) : [];
+    if (current.kind === 'value') return this.invokeMethod(current.value, name, args, receiverText, primary, line);
+    const className = current.kind === 'type' ? current.name : current.path[current.path.length - 1];
+    return this.invokeStatic(className, name, args, receiverText, primary, line);
+  }
 
-    // Evaluate arguments
-    const args: JavaValue[] = [];
-    const argList = child(methodSuffix, 'argumentList');
-    if (argList) {
-      for (const argExpr of children(argList, 'expression')) {
-        args.push(this.evalExpression(argExpr, scope));
+  /** An instance method call on a value: String, StringBuilder, library objects, or a user class. */
+  private invokeMethod(
+    target: JavaValue,
+    name: string,
+    args: JavaValue[],
+    receiverText: string,
+    primary: CstNode,
+    line: number,
+  ): JavaValue {
+    if (target.kind === 'null') {
+      throw nullPointer(`Cannot invoke "${name}()" because "${receiverText}" is null`, line);
+    }
+    if (target.kind === 'string') return this.evalStringMethod(target.value, name, args);
+    if (target.kind === 'arrayRef' && name === 'toString') return javaString(javaValueToString(target, this.heap));
+    if (target.kind === 'objectRef') {
+      if (target.heapId === SYSTEM_OUT_ID || target.heapId === SYSTEM_ERR_ID) {
+        return this.printStreamMethod(name, args, receiverText, line);
+      }
+      if (target.className === 'StringBuilder' || target.className === 'StringBuffer') {
+        return this.evalStringBuilderMethod(target, name, args);
+      }
+      if (!this.classNames.has(target.className) && target.heapId !== SYSTEM_IN_ID) {
+        const builtin = callInstanceMethod(target, name, args, this.ctx);
+        if (builtin !== undefined) return builtin;
+      }
+      const method = this.resolveMethod(this.methodsByClass.get(target.className), name, args.length);
+      if (method) return this.callMethod(method, args, getLine(primary), method.isStatic ? undefined : target);
+      const excResult = this.exceptionFallback(target, name);
+      if (excResult !== undefined) return excResult;
+    }
+    throw new InterpreterError(`Unknown method: ${receiverText}.${name}()`, line);
+  }
+
+  /** `ClassName.name(args)` on a user class or a library class (Math, Arrays, Integer, …). */
+  private invokeStatic(
+    className: string,
+    name: string,
+    args: JavaValue[],
+    receiverText: string,
+    primary: CstNode,
+    line: number,
+  ): JavaValue {
+    // A user class takes precedence over a library class with the same name.
+    if (this.classNames.has(className)) {
+      const method = this.resolveMethod(this.methodsByClass.get(className), name, args.length);
+      if (method?.isStatic) return this.callMethod(method, args, getLine(primary));
+      if (method) throw new InterpreterError(`Cannot call instance method '${name}' without an object`, line);
+    }
+    const result = callStaticMethod(className, name, args, this.ctx);
+    if (result !== undefined) return result;
+    throw new InterpreterError(`Unknown method: ${receiverText}.${name}()`, line);
+  }
+
+  /**
+   * An unqualified call `name(args)`: a static method of the enclosing class
+   * (so a helper in a non-entry class finds its own siblings), then of the
+   * entry class, then an instance method on `this`.
+   */
+  private invokeUnqualified(name: string, args: JavaValue[], scope: Scope, primary: CstNode, line: number): JavaValue {
+    const currentClass = this.currentClassName();
+    const method =
+      (currentClass ? this.resolveMethod(this.methodsByClass.get(currentClass), name, args.length) : undefined)
+      || this.resolveMethod(this.methods, name, args.length);
+    if (method && method.isStatic) return this.callMethod(method, args, getLine(primary));
+
+    // An instance method called unqualified from an instance context, e.g. one
+    // instance method invoking a sibling. Dispatch on `this`.
+    const self = this.getCurrentThis(scope);
+    if (self?.kind === 'objectRef') {
+      const instanceMethod = this.resolveMethod(this.methodsByClass.get(self.className), name, args.length);
+      if (instanceMethod && !instanceMethod.isStatic) {
+        return this.callMethod(instanceMethod, args, getLine(primary), self);
       }
     }
 
-    const methodName = parts[parts.length - 1] || '';
+    // Found the method, but it's an instance method and there's no `this`
+    // (a genuine static context): surface the classic Java error.
+    if (method) throw new InterpreterError(`Cannot call instance method '${name}' without an object`, getLine(primary));
+    throw new InterpreterError(`Unknown method: ${name}()`, line);
+  }
 
-    // System.out.* / System.err.* — both stream to the single console buffer.
-    if (parts.length >= 3 && parts[0] === 'System' && (parts[1] === 'out' || parts[1] === 'err')) {
-      if (methodName === 'println') {
-        const str = args.length > 0 ? this.stringify(args[0]) : '';
-        this.appendStdout(str + '\n');
+  /** System.out and System.err. Both write to the one console for now (stderr is #22). */
+  private printStreamMethod(name: string, args: JavaValue[], receiverText: string, line: number): JavaValue {
+    switch (name) {
+      case 'println':
+        this.appendStdout((args.length > 0 ? this.stringify(args[0]) : '') + '\n');
         return javaNull();
-      }
-      if (methodName === 'print') {
-        const str = args.length > 0 ? this.stringify(args[0]) : '';
-        this.appendStdout(str);
+      case 'print':
+        this.appendStdout(args.length > 0 ? this.stringify(args[0]) : '');
         return javaNull();
-      }
-      if (methodName === 'printf' || methodName === 'format') {
+      case 'printf':
+      case 'format': {
         const fmt = args.length > 0 ? javaValueToString(args[0], this.heap) : '';
         this.appendStdout(javaFormat(fmt, args.slice(1), this.heap));
         return javaNull();
       }
+      case 'flush':
+        return javaNull();
     }
+    throw new InterpreterError(`Unknown method: ${receiverText}.${name}()`, line);
+  }
 
-    // String methods on a variable
-    if (parts.length === 2) {
-      const varName = parts[0];
-      try {
-        const obj = this.resolveVariable(varName, scope);
-        if (obj.kind === 'string') {
-          return this.evalStringMethod(obj.value, methodName, args);
-        }
-        if (obj.kind === 'arrayRef') {
-          // Array doesn't have many methods in Java, but handle toString
-          if (methodName === 'toString') {
-            return javaString(javaValueToString(obj, this.heap));
-          }
-        }
-      } catch {
-        // Not a variable
-      }
-    }
-
-    if (parts.length === 2 && target.kind === 'objectRef') {
-      // Built-in classes — dispatch to native helpers
-      if (target.className === 'StringBuilder' || target.className === 'StringBuffer') {
-        return this.evalStringBuilderMethod(target, methodName, args);
-      }
-      if (!this.classNames.has(target.className)) {
-        const builtin = callInstanceMethod(target, methodName, args, this.ctx);
-        if (builtin !== undefined) return builtin;
-      }
-
-      const method = this.resolveMethod(this.methodsByClass.get(target.className), methodName, args.length)
-        || this.resolveMethod(this.methods, methodName, args.length);
-      if (method && !method.isStatic) {
-        const callLine = getLine(primary);
-        return this.callMethod(method, args, callLine, target);
-      }
-    }
-
-    // Single name - a user-defined method called unqualified. Resolve against
-    // the enclosing class first (so a helper in a non-entry class finds its own
-    // siblings), then the entry class's unqualified table.
-    if (parts.length === 1) {
-      const currentClass = this.currentClassName();
-      const method =
-        (currentClass ? this.resolveMethod(this.methodsByClass.get(currentClass), methodName, args.length) : undefined)
-        || this.resolveMethod(this.methods, methodName, args.length);
-      if (method && method.isStatic) {
-        const callLine = getLine(primary);
-        return this.callMethod(method, args, callLine);
-      }
-
-      // Instance method called unqualified from inside an instance context —
-      // e.g. one instance method invoking a sibling. Dispatch on `this`.
-      const thisEntry = lookupVariable(scope, 'this');
-      if (thisEntry?.value.kind === 'objectRef') {
-        const instanceMethod = this.resolveMethod(
-          this.methodsByClass.get(thisEntry.value.className),
-          methodName,
-          args.length,
-        );
-        if (instanceMethod && !instanceMethod.isStatic) {
-          const callLine = getLine(primary);
-          return this.callMethod(instanceMethod, args, callLine, thisEntry.value);
-        }
-      }
-
-      // Found the method but it's an instance method and there's no `this`
-      // (a genuine static context) — surface the classic Java error.
-      if (method && !method.isStatic) {
-        throw new InterpreterError(`Cannot call instance method '${methodName}' without an object`, getLine(primary));
-      }
-    }
-
-    // Method on last part (might be chained)
-    if (parts.length >= 2) {
-      // Try to resolve as method on the target value
-      if (target.kind === 'string') {
-        return this.evalStringMethod(target.value, methodName, args);
-      }
-    }
-
-    // Throwable methods on a user-defined exception that doesn't override them
-    // (getMessage/toString/printStackTrace reading the detail message).
-    if (target.kind === 'objectRef') {
-      const excResult = this.exceptionFallback(target, methodName);
-      if (excResult !== undefined) return excResult;
-    }
-
-    // Qualified static call on another user-defined class: ClassName.method(args).
-    // Checked before the stdlib so a user `class Math {}` shadows the built-in.
-    const staticClass = parts.length >= 2 ? parts[parts.length - 2] : parts[0] || '';
-    if (this.classNames.has(staticClass)) {
-      const userStatic = this.resolveMethod(this.methodsByClass.get(staticClass), methodName, args.length);
-      if (userStatic && userStatic.isStatic) {
-        return this.callMethod(userStatic, args, getLine(primary));
-      }
-    }
-
-    // Static utility classes: Math, wrappers, Arrays, Objects, System, String, Collections, List/Set/Map.of
-    const staticResult = callStaticMethod(staticClass, methodName, args, this.ctx);
-    if (staticResult !== undefined) return staticResult;
-
-    throw new InterpreterError(`Unknown method: ${parts.join('.')}()`, 0);
+  private evalArguments(args: CstNode[], scope: Scope): JavaValue[] {
+    return args.map(arg => this.evalExpression(arg, scope));
   }
 
   /**
@@ -2783,6 +2531,212 @@ function isAssignmentOp(op: string): boolean {
   return ['=', '+=', '-=', '*=', '/=', '%=', '&=', '|=', '^=', '<<=', '>>=', '>>>='].includes(op);
 }
 
+// ── Primary chains ──
+//
+// A primary expression such as `people[1].age`, `head.next.getVal()` or
+// `Main.total` is a base followed by selectors. buildPrimaryChain derives that
+// structure from the parser's tree once per node, and the interpreter walks it
+// for reads, method calls and writes alike.
+
+/** The start of a primary expression. */
+type ChainBase =
+  | { kind: 'name'; name: string }                  // a simple name: variable, field, class or package
+  | { kind: 'this' }
+  | { kind: 'super' }
+  | { kind: 'call'; name: string; args: CstNode[] }  // an unqualified method call: foo(1)
+  | { kind: 'expression'; prefix: CstNode };         // a literal, (parenthesized), cast or new
+
+/** One step after the base. */
+type Selector =
+  | { kind: 'field'; name: string }                  // .name
+  | { kind: 'call'; name: string; args: CstNode[] }  // .name(args)
+  | { kind: 'index'; index: CstNode }                // [index]
+  | { kind: 'unsupported'; construct: string };      // .this, .class, ::, outer.new Inner()
+
+interface ChainStep<T> {
+  step: T;
+  /** Source text of the chain through this step: names the null value in NullPointerExceptions. */
+  text: string;
+  line: number;
+}
+
+interface PrimaryChain {
+  base: ChainStep<ChainBase>;
+  selectors: ChainStep<Selector>[];
+}
+
+/** Where a chain stands while it is evaluated. */
+type ChainValue =
+  | { kind: 'value'; value: JavaValue }
+  | { kind: 'type'; name: string }          // a user or library class: Main, Math, System
+  | { kind: 'unresolved'; path: string[] }; // no variable, field or class: a package prefix, or undefined
+
+const UNSUPPORTED = "isn't supported in JavaTutor yet";
+
+/** Library classes that can start a qualified name (for their static members), besides user classes. */
+const LIBRARY_CLASSES = new Set([
+  'Math', 'System', 'String', 'Objects', 'Arrays', 'Collections', 'List', 'Set', 'Map',
+  'Integer', 'Long', 'Short', 'Byte', 'Double', 'Float', 'Boolean', 'Character',
+]);
+
+/** System.out, System.err and System.in, which aren't heap objects. */
+const SYSTEM_OUT_ID = '__system_out__';
+const SYSTEM_ERR_ID = '__system_err__';
+const SYSTEM_IN_ID = '__system_in__';
+const SYSTEM_OUT: JavaValue = { kind: 'objectRef', heapId: SYSTEM_OUT_ID, className: 'PrintStream' };
+const SYSTEM_ERR: JavaValue = { kind: 'objectRef', heapId: SYSTEM_ERR_ID, className: 'PrintStream' };
+const SYSTEM_IN: JavaValue = { kind: 'objectRef', heapId: SYSTEM_IN_ID, className: 'InputStream' };
+
+function buildPrimaryChain(primary: CstNode): PrimaryChain {
+  const prefix = child(primary, 'primaryPrefix')!;
+  const suffixes = children(primary, 'primarySuffix');
+  const selectors: ChainStep<Selector>[] = [];
+  let base: ChainStep<ChainBase>;
+  let nextSuffix = 0;
+
+  const fqn = child(prefix, 'fqnOrRefType');
+  if (fqn) {
+    // `a.b.c(x)` arrives as the dotted name a.b.c followed by a call suffix, so
+    // the name's last part is the method name.
+    const parts = fqnParts(fqn);
+    const callArgs = suffixes.length > 0 ? callArguments(suffixes[0]) : undefined;
+    const methodPart = callArgs ? parts.length - 1 : -1;
+    if (callArgs) nextSuffix = 1;
+    const first = parts[0];
+    base = methodPart === 0
+      ? { step: { kind: 'call', name: first.name, args: callArgs! }, text: `${first.name}(${argumentsText(callArgs!)})`, line: first.line }
+      : { step: first.isSuper ? { kind: 'super' } : { kind: 'name', name: first.name }, text: first.name, line: first.line };
+    let text = base.text;
+    for (let i = 1; i < parts.length; i++) {
+      const part = parts[i];
+      if (i === methodPart) {
+        text = `${text}.${part.name}(${argumentsText(callArgs!)})`;
+        selectors.push({ step: { kind: 'call', name: part.name, args: callArgs! }, text, line: part.line });
+      } else {
+        text = `${text}.${part.name}`;
+        selectors.push({ step: { kind: 'field', name: part.name }, text, line: part.line });
+      }
+    }
+  } else if (has(prefix, 'This')) {
+    base = { step: { kind: 'this' }, text: 'this', line: getLine(prefix) };
+  } else if (has(prefix, 'Super')) {
+    base = { step: { kind: 'super' }, text: 'super', line: getLine(prefix) };
+  } else {
+    base = { step: { kind: 'expression', prefix }, text: sourceText(prefix), line: getLine(prefix) };
+  }
+
+  let text = selectors.length > 0 ? selectors[selectors.length - 1].text : base.text;
+  for (let i = nextSuffix; i < suffixes.length; i++) {
+    const suffix = suffixes[i];
+    const line = getLine(suffix);
+    const arrayAccess = child(suffix, 'arrayAccessSuffix');
+    if (arrayAccess) {
+      const index = child(arrayAccess, 'expression')!;
+      text = `${text}[${sourceText(index)}]`;
+      selectors.push({ step: { kind: 'index', index }, text, line });
+      continue;
+    }
+    const name = memberName(suffix);
+    if (name) {
+      const callArgs = i + 1 < suffixes.length ? callArguments(suffixes[i + 1]) : undefined;
+      if (callArgs) {
+        text = `${text}.${name}(${argumentsText(callArgs)})`;
+        selectors.push({ step: { kind: 'call', name, args: callArgs }, text, line });
+        i++;
+      } else {
+        text = `${text}.${name}`;
+        selectors.push({ step: { kind: 'field', name }, text, line });
+      }
+      continue;
+    }
+    selectors.push({ step: { kind: 'unsupported', construct: describeSuffix(suffix) }, text, line });
+  }
+  return { base, selectors };
+}
+
+/** The parts of a dotted name. Type arguments (`Collections.<T>emptyList`) are erased. */
+function fqnParts(fqn: CstNode): { name: string; isSuper: boolean; line: number }[] {
+  const nodes = [child(fqn, 'fqnOrRefTypePartFirst'), ...children(fqn, 'fqnOrRefTypePartRest')];
+  const parts: { name: string; isSuper: boolean; line: number }[] = [];
+  for (const node of nodes) {
+    if (!node) continue;
+    const common = child(node, 'fqnOrRefTypePartCommon');
+    const id = common ? token(common, 'Identifier') : undefined;
+    const sup = common ? token(common, 'Super') : undefined;
+    const tok = id ?? sup;
+    parts.push({ name: tok?.image ?? '', isSuper: !id && !!sup, line: tok?.startLine ?? getLine(node) });
+  }
+  return parts;
+}
+
+/** The argument expressions of a call suffix, or undefined if the suffix isn't a call. */
+function callArguments(suffix: CstNode): CstNode[] | undefined {
+  const call = child(suffix, 'methodInvocationSuffix');
+  if (!call) return undefined;
+  const list = child(call, 'argumentList');
+  return list ? children(list, 'expression') : [];
+}
+
+/** The member name of a `.name` (or `.<T>name`) suffix. */
+function memberName(suffix: CstNode): string | undefined {
+  const id = token(suffix, 'Identifier');
+  if (!id) return undefined;
+  const plain = Object.keys(suffix.children).every(k => k === 'Dot' || k === 'Identifier' || k === 'typeArguments');
+  return plain ? id.image : undefined;
+}
+
+function describeSuffix(suffix: CstNode): string {
+  if (has(suffix, 'This')) return 'Qualified this (Outer.this)';
+  if (child(suffix, 'classLiteralSuffix')) return 'Class literals (.class)';
+  if (child(suffix, 'methodReferenceSuffix')) return 'Method references (::)';
+  if (child(suffix, 'unqualifiedClassInstanceCreationExpression')) return 'Creating an inner class through an object (outer.new Inner())';
+  return 'This kind of expression';
+}
+
+function argumentsText(args: CstNode[]): string {
+  return args.map(sourceText).join(', ');
+}
+
+/** The source text of a node, rebuilt from its tokens (spacing approximated from columns). */
+function sourceText(node: CstNode): string {
+  const toks: CstToken[] = [];
+  const collect = (n: CstNode) => {
+    for (const items of Object.values(n.children)) {
+      for (const item of items) {
+        if (isCstToken(item)) toks.push(item);
+        else collect(item);
+      }
+    }
+  };
+  collect(node);
+  toks.sort((a, b) => a.startLine - b.startLine || a.startColumn - b.startColumn);
+  let text = '';
+  toks.forEach((t, i) => {
+    const prev = toks[i - 1];
+    if (prev && (t.startLine !== prev.endLine || t.startColumn > prev.endColumn + 1)) text += ' ';
+    text += t.image;
+  });
+  return text;
+}
+
+/** The primary of a unary expression with no operators, e.g. the left side of an assignment. */
+function bareOperand(unary: CstNode): CstNode | undefined {
+  if (has(unary, 'UnaryPrefixOperator') || has(unary, 'UnarySuffixOperator')) return undefined;
+  return child(unary, 'primary');
+}
+
+/** For a parenthesized variable like `(x)`, the primary inside it; undefined for anything else. */
+function parenthesizedOperand(prefix: CstNode): CstNode | undefined {
+  const paren = child(prefix, 'parenthesisExpression');
+  const expr = paren ? child(paren, 'expression') : undefined;
+  const cond = expr ? child(expr, 'conditionalExpression') : undefined;
+  if (!cond || has(cond, 'QuestionMark')) return undefined;
+  const bin = child(cond, 'binaryExpression');
+  const operands = bin ? children(bin, 'unaryExpression') : [];
+  if (!bin || operands.length !== 1 || Object.keys(bin.children).length !== 1) return undefined;
+  return bareOperand(operands[0]);
+}
+
 function applyBinaryOp(
   op: string,
   left: JavaValue,
@@ -2841,12 +2795,4 @@ function getFirstToken(node: CstNode | CstToken): CstToken | null {
     }
   }
   return null;
-}
-
-class InterpreterError extends Error {
-  line: number;
-  constructor(message: string, line: number) {
-    super(line > 0 ? `Line ${line}: ${message}` : message);
-    this.line = line;
-  }
 }

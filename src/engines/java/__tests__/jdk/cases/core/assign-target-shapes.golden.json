@@ -1,0 +1,8 @@
+{
+  "stdout": "x 8\ns 9\nCounter.n 6 s 9\no.v 8\nthis.v 8\nv 17\nthis.next.v 12 v 17\na 1 8 1\nm 1 8 1\no.arr 1 8\nnodes 1 8\nchain 1 1 8\nshared 9 calls 3\no.arr[0] 12 a[1] 107 calls 7\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "d6aee6d6db19d23ef060deda4e6fa1207dd365fab18b0511950fe3bd86e66ff1"
+}

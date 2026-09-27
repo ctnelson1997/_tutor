@@ -1,0 +1,8 @@
+{
+  "stdout": "a i e | 7\na i e | 14\nrhs AIOOBE\nAIOOBE\nrhs NPE\nNPE\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "6022d7c75d49b7a5e28e254da480b8a109a05a11f0fd83ea84f71db5c732fa91"
+}

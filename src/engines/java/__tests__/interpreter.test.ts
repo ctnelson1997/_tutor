@@ -1511,7 +1511,7 @@ describe('Java Interpreter', () => {
         }
       }`);
       expect(result.error).toBeDefined();
-      expect(result.error).toContain('not defined');
+      expect(result.error).toContain('Unknown method: unknownMethod()');
     });
 
     it('enforces snapshot limit', () => {
