@@ -1,0 +1,8 @@
+{
+  "stdout": "Main field\nMain static block\nmain starts\n10 cfg\nafter constants\nConfig field\nConfig static block, loaded=12\n6\n12\nCounter static block\ncounter 102\na -> 1\nblock -> 2\nb -> 3\n1 3 0\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "7a317aed2efe63b00855e03cd4b6140b5a01b44a2e3251b84ec8f4390aae6c92"
+}

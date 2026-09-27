@@ -13,9 +13,11 @@ import {
   isJavaObject,
   javaValueToNumber,
   javaValueToBoolean,
+  javaValueToString,
   javaInt,
+  javaString,
 } from '../types';
-import type { StdlibContext } from './context';
+import { type StdlibContext, StdlibError } from './context';
 
 /** Class names that store their contents in a `__data__` backing array. */
 export const LIST_LIKE = new Set([
@@ -107,21 +109,74 @@ export function valuesEqual(a: JavaValue, b: JavaValue, ctx: StdlibContext): boo
 }
 
 /**
- * Ordering honoring a user-defined `compareTo()` for objects (so student
- * `Comparable` classes sort correctly), falling back to `compareJava`.
+ * Natural ordering: a user-defined `compareTo()` for objects (so student
+ * `Comparable` classes sort correctly), else `compareJava` for strings and
+ * numbers. Other objects have no natural order, and Java throws
+ * ClassCastException when asked to sort them.
  */
 export function compareValues(a: JavaValue, b: JavaValue, ctx: StdlibContext): number {
   if (a.kind === 'objectRef') {
     const r = ctx.invokeUserMethod(a, 'compareTo', [b]);
     if (r !== undefined) return javaValueToNumber(r);
+    throw new StdlibError(`ClassCastException: class ${a.className} cannot be cast to class Comparable`);
   }
   return compareJava(a, b);
 }
 
-/** Insert into a sorted array (used by TreeSet/PriorityQueue), honoring compareTo. */
-export function sortedInsert(elements: JavaValue[], value: JavaValue, ctx: StdlibContext): void {
+/**
+ * A library comparator: Collections.reverseOrder(), Comparator.naturalOrder(),
+ * String.CASE_INSENSITIVE_ORDER, or another comparator's reversed(). It is a
+ * `Comparator` object whose hidden fields say how it orders.
+ */
+export function libraryComparator(order: 'natural' | 'reverse' | 'caseInsensitive', base: JavaValue | undefined, ctx: StdlibContext): JavaValue {
+  const fields = new Map<string, JavaValue>([['__order__', javaString(order)]]);
+  if (base) fields.set('__base__', base);
+  return { kind: 'objectRef', heapId: ctx.allocObject('Comparator', fields), className: 'Comparator' };
+}
+
+/** Could this argument be a Comparator? A library comparator, or an object of a class that isn't a library collection. */
+export function isComparator(value: JavaValue | undefined): boolean {
+  if (value?.kind !== 'objectRef') return false;
+  return value.className === 'Comparator' || !(LIST_LIKE.has(value.className) || SET_LIKE.has(value.className) || MAP_LIKE.has(value.className));
+}
+
+/**
+ * Order two values by a comparator: a user object's `compare()`, or a library
+ * comparator. With no comparator (undefined or null), natural ordering.
+ */
+export function compareWith(cmp: JavaValue | undefined, a: JavaValue, b: JavaValue, ctx: StdlibContext): number {
+  if (!cmp || cmp.kind === 'null') return compareValues(a, b, ctx);
+  if (cmp.kind === 'objectRef' && cmp.className === 'Comparator') {
+    const obj = ctx.heap.get(cmp.heapId);
+    const fields = obj && isJavaObject(obj) ? obj.fields : new Map<string, JavaValue>();
+    const order = fields.get('__order__');
+    const base = fields.get('__base__');
+    if (order?.kind === 'string' && order.value === 'reverse') return compareWith(base, b, a, ctx);
+    if (order?.kind === 'string' && order.value === 'caseInsensitive') {
+      const x = javaValueToString(a, ctx.heap).toLowerCase(), y = javaValueToString(b, ctx.heap).toLowerCase();
+      return x < y ? -1 : x > y ? 1 : 0;
+    }
+    return compareValues(a, b, ctx);
+  }
+  const r = ctx.invokeUserMethod(cmp, 'compare', [a, b]);
+  if (r === undefined) {
+    const name = cmp.kind === 'objectRef' ? cmp.className : cmp.kind;
+    throw new StdlibError(`${name} can't be used as a Comparator, since it has no compare(a, b) method`);
+  }
+  return javaValueToNumber(r);
+}
+
+/** The comparator a PriorityQueue, TreeSet or TreeMap was created with, if any. */
+export function comparatorOf(ref: JavaValue, ctx: StdlibContext): JavaValue | undefined {
+  if (ref.kind !== 'objectRef') return undefined;
+  const obj = ctx.heap.get(ref.heapId);
+  return obj && isJavaObject(obj) ? obj.fields.get('__cmp__') : undefined;
+}
+
+/** Insert into a sorted array (used by TreeSet/PriorityQueue), after the elements that order before or equal to it. */
+export function sortedInsert(elements: JavaValue[], value: JavaValue, ctx: StdlibContext, cmp?: JavaValue): void {
   let i = 0;
-  while (i < elements.length && compareValues(elements[i], value, ctx) <= 0) i++;
+  while (i < elements.length && compareWith(cmp, elements[i], value, ctx) <= 0) i++;
   elements.splice(i, 0, value);
 }
 

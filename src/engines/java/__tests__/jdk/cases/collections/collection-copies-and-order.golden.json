@@ -1,0 +1,8 @@
+{
+  "stdout": "{amy=3, bob=1} {amy=3, bob=1, cat=2}\n{amy=3, bob=1, cat=2}\n[1, 2, 3]\n1\nCCE: Point is not Comparable\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "673463724d8a321e97c174883302b7ed6bc09acd25af1e70f9cd46cbc0b87f57"
+}

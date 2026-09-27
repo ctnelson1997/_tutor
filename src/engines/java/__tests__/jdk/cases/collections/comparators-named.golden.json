@@ -1,0 +1,8 @@
+{
+  "stdout": "[fig, pear, kiwi, banana]\n[pear, kiwi, fig, banana]\n[banana, fig, kiwi, pear]\n[a, bb, ccc]\n[ccc, bb, a]\ntest(1) ship(2) write(3)\n9 4\n[b, aa] true\n{A=2, b=3}\n[z, y, x]\nbanana fig\n2\nempty max\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "0cb11dc4aad0313e4c80a60bdf1e8cdfb7f967a4f17337ff4fa0c09a67f6e4a1"
+}

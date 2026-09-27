@@ -1,0 +1,11 @@
+{
+  "stdout": "NPE\n",
+  "stderr": "Exception in thread \"main\" java.lang.NullPointerException: Cannot invoke \"String.hashCode()\" because \"<local3>\" is null\n\tat Main.main(Main.java:13)\n",
+  "exitCode": 1,
+  "exception": {
+    "class": "java.lang.NullPointerException",
+    "message": "Cannot invoke \"String.hashCode()\" because \"<local3>\" is null"
+  },
+  "compileError": null,
+  "sourceSha256": "1c20002c7f5803c3b8522eed060036480357ca711e4c27e227adc4d0997853c0"
+}

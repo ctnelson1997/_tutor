@@ -27,20 +27,24 @@ import {
   isCstNode,
   isCstToken,
 } from './parser';
-import { InterpreterError, nullPointer } from './errors';
+import { InterpreterError, JavaRuntimeError, UnsupportedFeatureError, nullPointer } from './errors';
 import {
   type Reference,
+  type VariableSlot,
   assignmentConversion,
   slotReference,
   fieldReference,
   arrayElementReference,
   arrayLength,
 } from './references';
+import { stringLiteralValue, charLiteralValue, textBlockValue } from './literals';
 import {
   type JavaValue,
   type JavaType,
   type JavaHeapEntry,
   type JavaObject,
+  type JavaObjectRef,
+  type JavaPrimitiveType,
   isJavaArray,
   isJavaObject,
   defaultValue,
@@ -71,8 +75,12 @@ import {
   isExceptionClass,
   newException,
   exceptionMethod,
-  exceptionAssignable,
   formatException,
+  qualifiedExceptionName,
+  isLibrarySubtype,
+  isStringType,
+  isBoxedInstanceOf,
+  isKnownLibraryType,
 } from './stdlib';
 
 // ── Limits ──
@@ -89,8 +97,34 @@ class ReturnSignal {
   }
 }
 
-class BreakSignal {}
-class ContinueSignal {}
+/** `break` or `break label;`. An unlabeled break ends the innermost loop or switch. */
+class BreakSignal {
+  label?: string;
+  constructor(label?: string) {
+    this.label = label;
+  }
+}
+
+/** `continue` or `continue label;`. An unlabeled continue goes to the innermost loop's next iteration. */
+class ContinueSignal {
+  label?: string;
+  constructor(label?: string) {
+    this.label = label;
+  }
+}
+
+/** `yield value;`, which gives the innermost switch expression its value. */
+class YieldSignal {
+  value: JavaValue;
+  constructor(value: JavaValue) {
+    this.value = value;
+  }
+}
+
+/** Does a break or continue target the loop carrying these labels? */
+function targets(signal: BreakSignal | ContinueSignal, labels: readonly string[]): boolean {
+  return signal.label === undefined || labels.includes(signal.label);
+}
 
 /** A thrown Java exception propagating up the stack until a matching catch. */
 class JavaThrow {
@@ -98,6 +132,11 @@ class JavaThrow {
   constructor(value: JavaValue) {
     this.value = value;
   }
+}
+
+/** Signals that leave a statement early but aren't exceptions: finally blocks still run for them. */
+function isControlSignal(e: unknown): boolean {
+  return e instanceof ReturnSignal || e instanceof BreakSignal || e instanceof ContinueSignal || e instanceof YieldSignal;
 }
 
 // ── Scope / Environment ──
@@ -154,11 +193,18 @@ function setCurrentScope(callStack: { name: string; scope: Scope; currentScope: 
 
 // ── Method definitions ──
 
+interface Param {
+  name: string;
+  type: JavaType;
+}
+
 interface MethodDef {
   name: string;
   returnType: JavaType;
-  params: { name: string; type: JavaType }[];
-  body: CstNode; // the block node
+  params: Param[];
+  /** The last parameter is variadic (`int... nums`): the trailing arguments arrive as one array. */
+  varargs: boolean;
+  body: CstNode | undefined; // the block node; undefined for an abstract method
   isStatic: boolean;
   className: string; // the class that declares this method
 }
@@ -166,16 +212,59 @@ interface MethodDef {
 interface FieldDef {
   name: string;
   type: JavaType;
-  initializer?: CstNode;
 }
 
 interface ConstructorDef {
   className: string;
-  params: { name: string; type: JavaType }[];
+  params: Param[];
+  varargs: boolean;
   body: CstNode;
 }
 
 type MethodTable = Map<string, MethodDef[]>;
+
+/** A field initializer or an initializer block. Classes and objects run theirs in textual order. */
+type Initializer =
+  | { kind: 'field'; name: string; type: JavaType; init: CstNode }
+  | { kind: 'block'; block: CstNode };
+
+/** What the interpreter knows about a user class or interface. */
+interface ClassInfo {
+  name: string;
+  kind: 'class' | 'interface';
+  /** The class this one is declared in, if it is nested. Its static members are in scope here. */
+  outer?: string;
+  /** A nested class without `static`, whose instances belong to an object of the enclosing class (#16). */
+  isInner: boolean;
+  isAbstract: boolean;
+  /** The library exception class this one extends, if any. Extending a user class is #15. */
+  superclass?: string;
+  /** Implemented interfaces, or an interface's superinterfaces: user or library type names. */
+  interfaces: string[];
+  /** Static field initializers and static blocks. */
+  staticInit: Initializer[];
+  /** Instance field initializers and instance initializer blocks. */
+  instanceInit: Initializer[];
+  /** A class is initialized once, at its first active use (JLS §12.4). */
+  initState: 'pending' | 'running' | 'done' | 'failed';
+}
+
+interface StaticSlot extends VariableSlot {
+  /**
+   * A constant variable (JLS §4.12.4): a final primitive or String field with
+   * a constant initializer. It is set before the program starts, and reading
+   * it doesn't initialize its class, as javac inlines it.
+   */
+  constant: boolean;
+}
+
+/** One entry of the interpreter's call stack. */
+interface Frame {
+  name: string;
+  scope: Scope;
+  currentScope: Scope;
+  className?: string;
+}
 
 // ── Interpreter ──
 
@@ -184,13 +273,18 @@ export class JavaInterpreter {
   private stdoutBuffer = '';
   private heap: Map<string, JavaHeapEntry> = new Map();
   private nextHeapId = 1;
-  private callStack: { name: string; scope: Scope; currentScope: Scope; className?: string }[] = [];
+  private callStack: Frame[] = [];
   private methods: MethodTable = new Map();
   private methodsByClass: Map<string, MethodTable> = new Map();
-  private staticFields: Scope = createScope(null);
+  /** Each class's static fields, by class name. */
+  private staticFields: Map<string, Map<string, StaticSlot>> = new Map();
   private instanceFields: Map<string, FieldDef[]> = new Map();
   private constructors: Map<string, ConstructorDef[]> = new Map();
-  private classNames: Set<string> = new Set();
+  private classes: Map<string, ClassInfo> = new Map();
+  /** Constant variables and their initializers, evaluated before the program starts. */
+  private constantInits: { slot: StaticSlot; init: CstNode }[] = [];
+  /** Whether a condition's CST contains an instanceof pattern, per node. */
+  private patternCache = new WeakMap<CstNode, boolean>();
   private step = 0;
   private stdin: string;
   private ctx: StdlibContext;
@@ -209,6 +303,7 @@ export class JavaInterpreter {
       stdin: this.stdin,
       writeStdout: (text) => this.appendStdout(text),
       invokeUserMethod: (ref, name, args) => this.invokeUser(ref, name, args),
+      binaryName: (className) => this.binaryName(className),
     };
   }
 
@@ -218,15 +313,30 @@ export class JavaInterpreter {
    * Snapshot emission is suppressed so the call is atomic in the visualization.
    */
   private invokeUser(ref: JavaValue, name: string, args: JavaValue[]): JavaValue | undefined {
-    if (ref.kind !== 'objectRef' || !this.classNames.has(ref.className)) return undefined;
+    if (ref.kind !== 'objectRef' || !this.classes.has(ref.className)) return undefined;
     const method = this.resolveMethod(this.methodsByClass.get(ref.className), name, args.length);
-    if (!method || method.isStatic) return undefined;
+    if (!method || method.isStatic || !method.body) return undefined;
     this.suppressSnapshots++;
     try {
       return this.callMethod(method, args, undefined, ref);
     } finally {
       this.suppressSnapshots--;
     }
+  }
+
+  /**
+   * The name Java prints for a class: `Main$Node` for a class nested in Main,
+   * `java.lang.ArithmeticException` for a library exception class.
+   */
+  private binaryName(className: string): string {
+    const info = this.classes.get(className);
+    if (!info) return qualifiedExceptionName(className);
+    return info.outer ? `${this.binaryName(info.outer)}$${className}` : className;
+  }
+
+  /** Is this value an exception object (a library exception, or a user class extending one)? */
+  private isThrowable(value: JavaValue): boolean {
+    return value.kind === 'objectRef' && this.isSubclass(value.className, 'Throwable');
   }
 
   /**
@@ -241,8 +351,8 @@ export class JavaInterpreter {
       const obj = this.heap.get(value.heapId);
       if (obj && isJavaObject(obj)) {
         // Exceptions render as ClassName: message.
-        if (isExceptionClass(value.className) || /(?:Exception|Error)$/.test(value.className)) {
-          const exc = formatException(value, this.heap);
+        if (this.isThrowable(value)) {
+          const exc = formatException(value, this.heap, this.ctx.binaryName);
           if (exc !== undefined) return exc;
         }
         // Maps: {k=v, ...} — recurse via stringify so element toString() is honored.
@@ -290,38 +400,36 @@ export class JavaInterpreter {
       // class's methods live in `methodsByClass`, and `ClassName.method()` calls
       // dispatch against that table. `javac` forbids two *public* top-level
       // classes per file, but this educational engine is lenient about it.
-      const typeDecls = children(compUnit, 'typeDeclaration');
-      const classNamesInOrder: string[] = [];
-      for (const typeDecl of typeDecls) {
-        const classDecl = child(typeDecl, 'classDeclaration');
-        if (!classDecl) continue; // skip interfaces / enums / stray semicolons
-        const normalClass = child(classDecl, 'normalClassDeclaration');
-        if (normalClass) classNamesInOrder.push(this.registerClass(normalClass));
+      const topLevel: string[] = [];
+      for (const typeDecl of children(compUnit, 'typeDeclaration')) {
+        const decl = child(typeDecl, 'classDeclaration') ?? child(typeDecl, 'interfaceDeclaration');
+        if (decl) {
+          topLevel.push(this.registerTypeDeclaration(decl, undefined));
+        } else if (has(typeDecl, 'fieldDeclaration') || has(typeDecl, 'methodDeclaration')) {
+          throw new InterpreterError('Methods and fields must be declared inside a class', getLine(typeDecl));
+        }
       }
-      if (classNamesInOrder.length === 0) {
-        throw new InterpreterError('No class declaration found', 0);
-      }
+      if (topLevel.length === 0) throw new InterpreterError('No class declaration found', 0);
+      this.initConstants();
 
       // The entry class is the first top-level class that declares a static
       // `main`. Its methods become callable unqualified (so single-class
       // programs behave exactly as before).
-      let entryClass: string | undefined;
-      for (const name of classNamesInOrder) {
-        const main = this.resolveMethod(this.methodsByClass.get(name), 'main', 1)
-          || this.resolveMethod(this.methodsByClass.get(name), 'main', 0);
-        if (main && main.isStatic) { entryClass = name; break; }
-      }
-      if (!entryClass) throw new InterpreterError('No main method found', 0);
+      const entryClass = topLevel.find(name => this.findMain(name));
+      const mainMethod = entryClass ? this.findMain(entryClass) : undefined;
+      if (!entryClass || !mainMethod?.body) throw new InterpreterError('No main method found', 0);
       this.methods = this.methodsByClass.get(entryClass) ?? new Map();
 
-      // Initialize static fields
-      this.initStaticFields();
+      // Java initializes the entry class (its static fields and static blocks) before main runs.
+      this.initClass(entryClass);
 
-      // Find and run main
-      const mainMethod = this.resolveMethod(this.methods, 'main', 1) || this.resolveMethod(this.methods, 'main', 0);
-      if (!mainMethod) throw new InterpreterError('No main method found', 0);
-
-      const mainScope = createScope(this.staticFields);
+      const mainScope = createScope(null);
+      // args is an empty String[]. It is bound only when main mentions it, so
+      // programs that ignore it don't show an extra variable at every step.
+      const argsParam = mainMethod.params[0];
+      if (argsParam && mentionsName(mainMethod.body, argsParam.name)) {
+        setVariable(mainScope, argsParam.name, { kind: 'arrayRef', heapId: this.allocArray('String', []) }, 'String[]');
+      }
       this.callStack.push({ name: 'main', scope: mainScope, currentScope: mainScope, className: entryClass });
       this.executeBlock(mainMethod.body, mainScope);
       this.callStack.pop();
@@ -342,7 +450,7 @@ export class JavaInterpreter {
         return { snapshots: this.snapshots };
       }
       if (e instanceof JavaThrow) {
-        const s = formatException(e.value, this.heap) ?? this.stringify(e.value);
+        const s = formatException(e.value, this.heap, this.ctx.binaryName) ?? this.stringify(e.value);
         return { snapshots: this.snapshots, error: `Exception in thread "main" ${s}` };
       }
       const msg = e instanceof Error ? e.message : String(e);
@@ -350,67 +458,144 @@ export class JavaInterpreter {
     }
   }
 
-  // ── Method registration ──
+  /** `static void main(String[] args)` (or a static `main()`) of a class. */
+  private findMain(className: string): MethodDef | undefined {
+    const overloads = this.methodsByClass.get(className)?.get('main') ?? [];
+    return overloads.find(m => m.isStatic && m.params.length === 1)
+      ?? overloads.find(m => m.isStatic && m.params.length === 0);
+  }
 
-  private registerClass(normalClass: CstNode): string {
+  // ── Class registration ──
+
+  /** Register a class or interface declaration, top-level or nested, and return its name. */
+  private registerTypeDeclaration(decl: CstNode, outer: string | undefined): string {
+    const line = getLine(decl);
+    if (decl.name === 'interfaceDeclaration') {
+      const normal = child(decl, 'normalInterfaceDeclaration');
+      if (!normal) throw new UnsupportedFeatureError('Annotation types (@interface)', line);
+      return this.registerInterface(normal, outer);
+    }
+    const normal = child(decl, 'normalClassDeclaration');
+    if (normal) return this.registerClass(normal, children(decl, 'classModifier'), outer);
+    if (has(decl, 'enumDeclaration')) throw new UnsupportedFeatureError('Enums', line);
+    if (has(decl, 'recordDeclaration')) throw new UnsupportedFeatureError('Records', line);
+    throw new InterpreterError('Unrecognized class declaration', line);
+  }
+
+  private newClassInfo(name: string, kind: ClassInfo['kind'], outer: string | undefined, line: number): ClassInfo {
+    // Classes are known by their simple names, so two nested classes can't share one.
+    if (this.classes.has(name)) throw new UnsupportedFeatureError(`Two classes named ${name}`, line);
+    const info: ClassInfo = {
+      name, kind, outer, isInner: false, isAbstract: kind === 'interface',
+      interfaces: [], staticInit: [], instanceInit: [], initState: 'pending',
+    };
+    this.classes.set(name, info);
+    return info;
+  }
+
+  private registerClass(normalClass: CstNode, modifiers: CstNode[], outer: string | undefined): string {
     const className = this.extractClassName(normalClass);
-    this.classNames.add(className);
+    const info = this.newClassInfo(className, 'class', outer, getLine(normalClass));
+    info.isAbstract = modifiers.some(m => has(m, 'Abstract'));
+    // Members of an interface are implicitly static.
+    info.isInner = outer !== undefined && !modifiers.some(m => has(m, 'Static')) && this.classes.get(outer)?.kind === 'class';
+
+    // A class may extend a library exception class. Extending anything else
+    // needs inheritance, which is #15: stop rather than run it wrongly.
+    const ext = child(normalClass, 'classExtends');
+    if (ext) {
+      const superName = lastIdentifier(child(ext, 'classType'));
+      if (isExceptionClass(superName)) info.superclass = superName;
+      else if (superName !== 'Object') {
+        throw new UnsupportedFeatureError(`Inheritance (class ${className} extends ${superName})`, getLine(ext), true);
+      }
+    }
+    info.interfaces = interfaceNames(child(normalClass, 'classImplements'));
+
     const classBody = child(normalClass, 'classBody');
-    if (!classBody) throw new InterpreterError('Empty class body', getLine(normalClass));
-
-    const bodyDecls = children(classBody, 'classBodyDeclaration');
-    for (const bodyDecl of bodyDecls) {
-      const constructorDecl = child(bodyDecl, 'constructorDeclaration');
-      if (constructorDecl) {
-        this.registerConstructor(className, constructorDecl);
+    for (const bodyDecl of classBody ? children(classBody, 'classBodyDeclaration') : []) {
+      const ctor = child(bodyDecl, 'constructorDeclaration');
+      if (ctor) {
+        this.registerConstructor(className, ctor);
         continue;
       }
-
-      const memberDecl = child(bodyDecl, 'classMemberDeclaration');
-      if (!memberDecl) continue;
-
-      const nestedClassDecl = child(memberDecl, 'classDeclaration');
-      const nestedNormalClass = nestedClassDecl ? child(nestedClassDecl, 'normalClassDeclaration') : undefined;
-      if (nestedNormalClass) {
-        this.registerClass(nestedNormalClass);
+      const staticInit = child(bodyDecl, 'staticInitializer');
+      if (staticInit) {
+        info.staticInit.push({ kind: 'block', block: child(staticInit, 'block')! });
         continue;
       }
-
-      const methodDecl = child(memberDecl, 'methodDeclaration');
-      if (methodDecl) {
-        this.registerMethod(className, methodDecl);
+      const instanceInit = child(bodyDecl, 'instanceInitializer');
+      if (instanceInit) {
+        info.instanceInit.push({ kind: 'block', block: child(instanceInit, 'block')! });
         continue;
       }
-
-      const fieldDecl = child(memberDecl, 'fieldDeclaration');
-      if (fieldDecl) {
-        if (this.isStaticField(fieldDecl)) {
-          this.registerStaticField(fieldDecl);
-        } else {
-          this.registerInstanceField(className, fieldDecl);
-        }
+      const member = child(bodyDecl, 'classMemberDeclaration');
+      if (!member) continue;
+      const field = child(member, 'fieldDeclaration');
+      if (field) {
+        const fieldModifiers = children(field, 'fieldModifier');
+        this.registerFields(info, field, fieldModifiers.some(m => has(m, 'Static')), fieldModifiers.some(m => has(m, 'Final')));
+        continue;
       }
+      const method = child(member, 'methodDeclaration');
+      if (method) {
+        this.registerMethod(className, method, children(method, 'methodModifier').some(m => has(m, 'Static')));
+        continue;
+      }
+      const nested = child(member, 'classDeclaration') ?? child(member, 'interfaceDeclaration');
+      if (nested) this.registerTypeDeclaration(nested, className);
     }
     return className;
   }
 
-  private registerMethod(className: string, methodDecl: CstNode): void {
+  /**
+   * An interface: its constants (implicitly static and final) and static
+   * methods, and its superinterfaces for `instanceof`. Abstract methods need
+   * nothing, since the implementing class supplies them.
+   */
+  private registerInterface(normal: CstNode, outer: string | undefined): string {
+    const name = this.extractClassName(normal);
+    const info = this.newClassInfo(name, 'interface', outer, getLine(normal));
+    info.interfaces = interfaceNames(child(normal, 'interfaceExtends'));
+    const body = child(normal, 'interfaceBody');
+    for (const member of body ? children(body, 'interfaceMemberDeclaration') : []) {
+      const constant = child(member, 'constantDeclaration');
+      if (constant) {
+        this.registerFields(info, constant, true, true);
+        continue;
+      }
+      const method = child(member, 'interfaceMethodDeclaration');
+      if (method) {
+        const modifiers = children(method, 'interfaceMethodModifier');
+        if (modifiers.some(m => has(m, 'Default'))) {
+          throw new UnsupportedFeatureError('Default methods in interfaces', getLine(method));
+        }
+        const isStatic = modifiers.some(m => has(m, 'Static'));
+        if (isStatic || modifiers.some(m => has(m, 'Private'))) this.registerMethod(name, method, isStatic);
+        continue;
+      }
+      const nested = child(member, 'classDeclaration') ?? child(member, 'interfaceDeclaration');
+      if (nested) this.registerTypeDeclaration(nested, name);
+    }
+    return name;
+  }
+
+  private registerMethod(className: string, methodDecl: CstNode, isStatic: boolean): void {
     const header = child(methodDecl, 'methodHeader')!;
     const declarator = child(header, 'methodDeclarator')!;
-    const nameToken = token(declarator, 'Identifier')!;
-    const methodName = nameToken.image;
+    const methodName = token(declarator, 'Identifier')!.image;
 
     const result = child(header, 'result');
     const returnType = result ? this.extractResultType(result) : 'void';
+    // java-parser reads a record declared inside a class, `record P(int x) {}`,
+    // as a method named P whose return type is `record`.
+    if (returnType === 'record') throw new UnsupportedFeatureError('Records', getLine(methodDecl));
 
-    const paramList = child(declarator, 'formalParameterList');
-    const params = this.extractFormalParameters(paramList);
+    const { params, varargs } = this.extractFormalParameters(child(declarator, 'formalParameterList'));
+    const methodBody = child(methodDecl, 'methodBody');
+    const body = methodBody ? child(methodBody, 'block') : undefined; // none for an abstract method
 
-    const body = child(child(methodDecl, 'methodBody')!, 'block')!;
-    const modifiers = children(methodDecl, 'methodModifier');
-    const isStatic = modifiers.some(m => has(m, 'Static'));
-
-    const method: MethodDef = { name: methodName, returnType, params, body, isStatic, className };
+    const method: MethodDef = { name: methodName, returnType, params, varargs, body, isStatic, className };
     const classMethods = this.methodsByClass.get(className) || new Map<string, MethodDef[]>();
     const overloads = classMethods.get(methodName) || [];
     overloads.push(method);
@@ -418,10 +603,16 @@ export class JavaInterpreter {
     this.methodsByClass.set(className, classMethods);
   }
 
+  /**
+   * The overload of `methodName` for `argCount` arguments: one with exactly
+   * that many parameters, else a varargs method that can take them. Overloads
+   * are told apart by argument count only (choosing by type is #13).
+   */
   private resolveMethod(table: MethodTable | undefined, methodName: string, argCount: number): MethodDef | undefined {
     const overloads = table?.get(methodName);
-    if (!overloads || overloads.length === 0) return undefined;
-    return overloads.find(method => method.params.length === argCount) || overloads[0];
+    if (!overloads) return undefined;
+    return overloads.find(m => !m.varargs && m.params.length === argCount)
+      ?? overloads.find(m => m.varargs && argCount >= m.params.length - 1);
   }
 
   private extractClassName(normalClass: CstNode): string {
@@ -431,101 +622,127 @@ export class JavaInterpreter {
 
   private registerConstructor(className: string, ctorDecl: CstNode): void {
     const declarator = child(ctorDecl, 'constructorDeclarator')!;
-    const simpleTypeName = child(declarator, 'simpleTypeName');
-    const typeIdentifier = simpleTypeName ? child(simpleTypeName, 'typeIdentifier') : undefined;
-    const nameToken = typeIdentifier ? token(typeIdentifier, 'Identifier') : undefined;
-    const ctorName = nameToken?.image || className;
-    const paramList = child(declarator, 'formalParameterList');
-    const params = this.extractFormalParameters(paramList);
-    const body = child(ctorDecl, 'constructorBody')!;
+    const { params, varargs } = this.extractFormalParameters(child(declarator, 'formalParameterList'));
     const constructors = this.constructors.get(className) || [];
-    constructors.push({ className: ctorName, params, body });
+    constructors.push({ className, params, varargs, body: child(ctorDecl, 'constructorBody')! });
     this.constructors.set(className, constructors);
   }
 
-  private extractFormalParameters(paramList: CstNode | undefined): { name: string; type: JavaType }[] {
-    const params: { name: string; type: JavaType }[] = [];
-    if (!paramList) return params;
-
-    const formalParams = children(paramList, 'formalParameter');
-    for (const fp of formalParams) {
-      const regularParam = child(fp, 'variableParaRegularParameter');
-      if (regularParam) {
-        const paramType = this.extractUnannType(child(regularParam, 'unannType'));
-        const paramId = child(regularParam, 'variableDeclaratorId');
-        const paramName = paramId ? token(paramId, 'Identifier')?.image || 'unknown' : 'unknown';
-        // Check for array dims on the parameter
-        const hasDims = paramId && has(paramId, 'dims');
-        params.push({ name: paramName, type: hasDims ? paramType + '[]' : paramType });
+  private extractFormalParameters(paramList: CstNode | undefined): { params: Param[]; varargs: boolean } {
+    const params: Param[] = [];
+    let varargs = false;
+    for (const fp of paramList ? children(paramList, 'formalParameter') : []) {
+      const regular = child(fp, 'variableParaRegularParameter');
+      if (regular) {
+        const idNode = child(regular, 'variableDeclaratorId')!;
+        const type = this.extractUnannType(child(regular, 'unannType')) + dimsSuffix(child(idNode, 'dims'));
+        params.push({ name: token(idNode, 'Identifier')!.image, type });
+        continue;
+      }
+      // `int... nums`: the parameter is an int[] holding the trailing arguments.
+      const variadic = child(fp, 'variableArityParameter');
+      if (variadic) {
+        params.push({ name: token(variadic, 'Identifier')!.image, type: this.extractUnannType(child(variadic, 'unannType')) + '[]' });
+        varargs = true;
       }
     }
-
-    return params;
+    return { params, varargs };
   }
 
-  private registerStaticField(fieldDecl: CstNode): void {
-    const type = this.extractUnannType(child(fieldDecl, 'unannType'));
-    const declList = child(fieldDecl, 'variableDeclaratorList');
-    if (!declList) return;
-    const hasDims = has(fieldDecl, 'dims');
-
-    for (const decl of children(declList, 'variableDeclarator')) {
-      const idNode = child(decl, 'variableDeclaratorId');
-      const name = idNode ? token(idNode, 'Identifier')?.image || 'unknown' : 'unknown';
-      const declHasDims = idNode && has(idNode, 'dims');
-      const finalType = (hasDims || declHasDims) ? type + '[]' : type;
-      const init = child(decl, 'variableInitializer');
-      setVariable(this.staticFields, name, defaultValue(finalType), finalType);
-      if (init) {
-        // Store the initializer node for later execution
-        (this.staticFields.variables.get(name) as unknown as { initializer?: CstNode }).initializer = init;
-      }
-    }
-  }
-
-  private isStaticField(fieldDecl: CstNode): boolean {
-    return children(fieldDecl, 'fieldModifier').some(modifier => has(modifier, 'Static'));
-  }
-
-  private registerInstanceField(className: string, fieldDecl: CstNode): void {
-    const type = this.extractUnannType(child(fieldDecl, 'unannType'));
-    const declList = child(fieldDecl, 'variableDeclaratorList');
-    if (!declList) return;
-    const hasDims = has(fieldDecl, 'dims');
-    const fields = this.instanceFields.get(className) || [];
-
-    for (const decl of children(declList, 'variableDeclarator')) {
-      const idNode = child(decl, 'variableDeclaratorId');
-      const name = idNode ? token(idNode, 'Identifier')?.image || 'unknown' : 'unknown';
-      const declHasDims = idNode && has(idNode, 'dims');
-      const finalType = (hasDims || declHasDims) ? type + '[]' : type;
-      const initializer = child(decl, 'variableInitializer');
-      fields.push({ name, type: finalType, initializer });
-    }
-
-    this.instanceFields.set(className, fields);
-  }
-
-  private initStaticFields(): void {
-    for (const entry of this.staticFields.variables.values()) {
-      const asAny = entry as unknown as { initializer?: CstNode };
-      if (asAny.initializer) {
-        const val = this.evalVariableInitializer(asAny.initializer, entry.type, this.staticFields);
-        entry.value = val;
-        delete asAny.initializer;
+  /**
+   * The fields of one declaration, `int x, y = 2;`. A static field gets a slot
+   * in its class; an instance field is created with each object. Initializers
+   * join the class's static or instance initializer list in textual order,
+   * except a constant's, which is evaluated before the program starts.
+   */
+  private registerFields(info: ClassInfo, decl: CstNode, isStatic: boolean, isFinal: boolean): void {
+    const baseType = this.extractUnannType(child(decl, 'unannType'));
+    const declList = child(decl, 'variableDeclaratorList');
+    for (const declarator of declList ? children(declList, 'variableDeclarator') : []) {
+      const idNode = child(declarator, 'variableDeclaratorId')!;
+      const name = token(idNode, 'Identifier')!.image;
+      const type = baseType + dimsSuffix(child(idNode, 'dims'));
+      const init = child(declarator, 'variableInitializer');
+      if (isStatic) {
+        const slots = this.staticFields.get(info.name) ?? new Map<string, StaticSlot>();
+        this.staticFields.set(info.name, slots);
+        const constant = isFinal && init !== undefined && (PRIMITIVE_TYPES.has(type) || type === 'String') && isLiteralConstant(init);
+        const slot: StaticSlot = { value: defaultValue(type), type, constant };
+        slots.set(name, slot);
+        if (init && constant) this.constantInits.push({ slot, init });
+        else if (init) info.staticInit.push({ kind: 'field', name, type, init });
+      } else {
+        const fields = this.instanceFields.get(info.name) ?? [];
+        fields.push({ name, type });
+        this.instanceFields.set(info.name, fields);
+        if (init) info.instanceInit.push({ kind: 'field', name, type, init });
       }
     }
   }
 
-  private createInstanceFields(className: string, scope: Scope): Map<string, JavaValue> {
-    const fields = new Map<string, JavaValue>();
-    for (const field of this.instanceFields.get(className) || []) {
-      const value = field.initializer
-        ? this.evalVariableInitializer(field.initializer, field.type, scope)
-        : defaultValue(field.type);
-      fields.set(field.name, value);
+  /** Give every constant variable its value (javac folds them into the code that uses them). */
+  private initConstants(): void {
+    for (const { slot, init } of this.constantInits) {
+      slot.value = assignmentConversion(this.evalVariableInitializer(init, slot.type, createScope(null)), slot.type);
     }
-    return fields;
+  }
+
+  /**
+   * Initialize a class at its first active use (JLS §12.4.1): creating an
+   * instance, calling a static method, or using a static field that isn't a
+   * constant. Its static field initializers and static blocks run once, in
+   * textual order, in a `<clinit>` frame. A class that is already being
+   * initialized isn't initialized again, so an initializer can use its own class.
+   */
+  private initClass(className: string): void {
+    const info = this.classes.get(className);
+    if (!info) return;
+    if (info.initState === 'failed') {
+      throw new JavaThrow(this.newThrowable('NoClassDefFoundError', `Could not initialize class ${this.binaryName(className)}`));
+    }
+    if (info.initState !== 'pending') return;
+    info.initState = 'running';
+    if (info.staticInit.length === 0) {
+      info.initState = 'done';
+      return;
+    }
+    const scope = createScope(null);
+    this.callStack.push({ name: '<clinit>', scope, currentScope: scope, className });
+    try {
+      for (const item of info.staticInit) {
+        if (item.kind === 'field') {
+          const slot = this.staticFields.get(className)!.get(item.name)!;
+          slot.value = assignmentConversion(this.evalVariableInitializer(item.init, item.type, scope), item.type);
+        } else {
+          this.runBlockIn(item.block, scope);
+        }
+      }
+      info.initState = 'done';
+    } catch (e) {
+      const exc = this.toExceptionValue(e);
+      if (!exc) throw e; // an engine error or System.exit: not a Java exception
+      info.initState = 'failed';
+      // JLS §12.4.2: an exception other than an Error becomes an ExceptionInInitializerError.
+      const isError = exc.kind === 'objectRef' && this.isSubclass(exc.className, 'Error');
+      throw new JavaThrow(isError ? exc : this.newThrowable('ExceptionInInitializerError', null, exc));
+    } finally {
+      this.callStack.pop();
+    }
+  }
+
+  /** A new library exception object, with an optional message and cause. */
+  private newThrowable(className: string, message: string | null, cause?: JavaValue): JavaValue {
+    const ref = newException(className, message === null ? [] : [javaString(message)], this.ctx);
+    if (cause && ref.kind === 'objectRef') {
+      const obj = this.heap.get(ref.heapId);
+      if (obj && isJavaObject(obj)) obj.fields.set('cause', cause);
+    }
+    return ref;
+  }
+
+  /** A new object's instance fields, at their default values. Initializers run in the constructor. */
+  private defaultInstanceFields(className: string): Map<string, JavaValue> {
+    return new Map((this.instanceFields.get(className) ?? []).map(f => [f.name, defaultValue(f.type)]));
   }
 
   // ── Type extraction ──
@@ -536,32 +753,35 @@ export class JavaInterpreter {
     return unannType ? this.extractUnannType(unannType) : 'void';
   }
 
+  /**
+   * A declared type as a string: `int`, `int[][]`, `String`, `Point[]`. Type
+   * arguments are erased (`List<String>` is `List`) and package and outer class
+   * names dropped (`java.util.Scanner` is `Scanner`, `Map.Entry` is `Entry`).
+   */
   private extractUnannType(unannType: CstNode | undefined): JavaType {
     if (!unannType) return 'int';
 
     // Primitive types
     const primWithDims = child(unannType, 'unannPrimitiveTypeWithOptionalDimsSuffix');
     if (primWithDims) {
-      const prim = child(primWithDims, 'unannPrimitiveType');
-      const hasDims = has(primWithDims, 'dims');
-      const baseType = this.extractPrimitiveType(prim);
-      return hasDims ? baseType + '[]' : baseType;
+      return this.extractPrimitiveType(child(primWithDims, 'unannPrimitiveType')) + dimsSuffix(child(primWithDims, 'dims'));
     }
 
     // Reference types (String, class names, arrays of references)
     const refType = child(unannType, 'unannReferenceType');
-    if (refType) {
-      const classType = child(refType, 'unannClassOrInterfaceType');
-      if (classType) {
-        const unannClass = child(classType, 'unannClassType');
-        if (unannClass) {
-          const id = token(unannClass, 'Identifier');
-          return id?.image || 'Object';
-        }
-      }
-    }
+    const classType = refType ? child(refType, 'unannClassOrInterfaceType') : undefined;
+    const unannClass = classType ? child(classType, 'unannClassType') : undefined;
+    if (refType && unannClass) return lastIdentifier(unannClass) + dimsSuffix(child(refType, 'dims'));
 
     return 'Object';
+  }
+
+  /** The type a `referenceType` node names (after `instanceof`, or in a cast): `String`, `int[]`, `List`. */
+  private referenceTypeName(refType: CstNode): JavaType {
+    const primitive = child(refType, 'primitiveType');
+    const classType = child(child(refType, 'classOrInterfaceType') ?? refType, 'classType');
+    const base = primitive ? this.extractPrimitiveType(primitive) : classType ? lastIdentifier(classType) : 'Object';
+    return base + dimsSuffix(child(refType, 'dims'));
   }
 
   private extractPrimitiveType(primitiveType: CstNode | undefined): JavaType {
@@ -792,7 +1012,9 @@ export class JavaInterpreter {
     const stmt = child(blockStmt, 'statement');
     if (stmt) {
       this.executeStatement(stmt, scope);
+      return;
     }
+    throw localDeclarationError(blockStmt);
   }
 
   // ── Local variable declarations ──
@@ -800,7 +1022,7 @@ export class JavaInterpreter {
   private executeLocalVarDecl(declStmt: CstNode, scope: Scope): void {
     const decl = child(declStmt, 'localVariableDeclaration')!;
     const typeNode = child(decl, 'localVariableType')!;
-    let type = this.extractLocalVarType(typeNode);
+    const baseType = this.extractLocalVarType(typeNode);
 
     const declList = child(decl, 'variableDeclaratorList')!;
     for (const declarator of children(declList, 'variableDeclarator')) {
@@ -808,10 +1030,8 @@ export class JavaInterpreter {
       const name = token(idNode, 'Identifier')!.image;
       const line = token(idNode, 'Identifier')!.startLine;
 
-      // Check for array dims on the variable name (e.g., int nums[])
-      if (has(idNode, 'dims')) {
-        type = type + '[]';
-      }
+      // Array dims may follow the name instead of the type: int nums[]
+      let type = baseType + dimsSuffix(child(idNode, 'dims'));
 
       const init = child(declarator, 'variableInitializer');
       let value: JavaValue;
@@ -839,12 +1059,7 @@ export class JavaInterpreter {
     }
 
     // Expression
-    const expr = child(init, 'expression');
-    if (expr) {
-      return this.evalExpression(expr, scope);
-    }
-
-    return defaultValue(type);
+    return this.evalExpression(child(init, 'expression')!, scope);
   }
 
   private evalArrayInitializer(arrayInit: CstNode, type: JavaType, scope: Scope): JavaValue {
@@ -859,8 +1074,8 @@ export class JavaInterpreter {
         if (nestedArrayInit) {
           elements.push(this.evalArrayInitializer(nestedArrayInit, elementType, scope));
         } else {
-          const expr = child(vi, 'expression');
-          if (expr) elements.push(this.evalExpression(expr, scope));
+          // Each element is converted like any store: {1, 2} in a double[] holds 1.0 and 2.0.
+          elements.push(assignmentConversion(this.evalExpression(child(vi, 'expression')!, scope), elementType));
         }
       }
     }
@@ -874,50 +1089,59 @@ export class JavaInterpreter {
       case 'primitive': return val.javaType;
       case 'string': return 'String';
       case 'null': return 'Object';
-      case 'arrayRef': return 'Object[]';
+      case 'arrayRef': {
+        const arr = this.heap.get(val.heapId);
+        return arr && isJavaArray(arr) ? arr.elementType + '[]' : 'Object[]';
+      }
       case 'objectRef': return val.className;
     }
   }
 
   // ── Statement execution ──
 
-  private executeStatement(stmt: CstNode, scope: Scope): void {
-    // if statement
-    if (has(stmt, 'ifStatement')) {
-      this.executeIf(child(stmt, 'ifStatement')!, scope);
-      return;
+  /**
+   * Run one statement. `labels` are the labels written directly on it
+   * (`outer: for (…)`); a loop uses them to match `break outer` and
+   * `continue outer`.
+   */
+  private executeStatement(stmt: CstNode, scope: Scope, labels: readonly string[] = []): void {
+    // Java calls run on the JavaScript stack (#14), and this frame is on the
+    // path of every recursive call, so it holds no locals.
+    if (has(stmt, 'statementWithoutTrailingSubstatement')) {
+      return this.executeStatementWithoutTrailing(child(stmt, 'statementWithoutTrailingSubstatement')!, scope, labels);
     }
+    if (has(stmt, 'ifStatement')) return this.executeIf(child(stmt, 'ifStatement')!, scope);
+    if (has(stmt, 'forStatement')) return this.executeFor(child(stmt, 'forStatement')!, scope, labels);
+    if (has(stmt, 'whileStatement')) return this.executeWhile(child(stmt, 'whileStatement')!, scope, labels);
+    if (has(stmt, 'labeledStatement')) return this.executeLabeled(child(stmt, 'labeledStatement')!, scope, labels);
+    throw new InterpreterError('Unrecognized statement', getLine(stmt));
+  }
 
-    // for statement
-    if (has(stmt, 'forStatement')) {
-      this.executeFor(child(stmt, 'forStatement')!, scope);
-      return;
-    }
-
-    // while statement
-    if (has(stmt, 'whileStatement')) {
-      this.executeWhile(child(stmt, 'whileStatement')!, scope);
-      return;
-    }
-
-    // Note: do-while is handled via statementWithoutTrailingSubstatement > doStatement
-
-    // statementWithoutTrailingSubstatement
-    const swts = child(stmt, 'statementWithoutTrailingSubstatement');
-    if (swts) {
-      this.executeStatementWithoutTrailing(swts, scope);
+  /** `label: statement`. A `break label` inside ends the labeled statement. */
+  private executeLabeled(labeled: CstNode, scope: Scope, outerLabels: readonly string[]): void {
+    const label = token(labeled, 'Identifier')!.image;
+    try {
+      this.executeStatement(child(labeled, 'statement')!, scope, [...outerLabels, label]);
+    } catch (e) {
+      if (e instanceof BreakSignal && e.label === label) {
+        setCurrentScope(this.callStack, scope);
+        return;
+      }
+      throw e;
     }
   }
 
-  private executeStatementWithoutTrailing(swts: CstNode, scope: Scope): void {
+  private executeStatementWithoutTrailing(swts: CstNode, scope: Scope, labels: readonly string[]): void {
     // block
     const block = child(swts, 'block');
     if (block) {
       // Inherit the parent scope's label so variables declared inside
-      // a for/while/if body block show the correct scope name.
-      const innerScope = createScope(scope, scope.label);
-      setCurrentScope(this.callStack, innerScope);
-      this.executeBlock(block, innerScope);
+      // a for/while/if body block show the correct scope name. (This is
+      // runBlockIn, written out: blocks sit on the path of every recursive
+      // call, and Java calls still run on the JavaScript stack, #14.)
+      const inner = createScope(scope, scope.label);
+      setCurrentScope(this.callStack, inner);
+      this.executeBlock(block, inner);
       setCurrentScope(this.callStack, scope);
       return;
     }
@@ -943,122 +1167,239 @@ export class JavaInterpreter {
       throw new ReturnSignal(value);
     }
 
-    // break statement
+    this.executeOtherStatement(swts, scope, labels);
+  }
+
+  /** The statements less common than blocks, expressions and returns (kept apart so the frame above stays small). */
+  private executeOtherStatement(swts: CstNode, scope: Scope, labels: readonly string[]): void {
+    // break / continue, optionally with a label
     const breakStmt = child(swts, 'breakStatement');
     if (breakStmt) {
       const line = token(breakStmt, 'Break')?.startLine || getLine(breakStmt);
       this.emitSnapshot(line);
-      throw new BreakSignal();
+      throw new BreakSignal(token(breakStmt, 'Identifier')?.image);
     }
-
-    // continue statement
     const continueStmt = child(swts, 'continueStatement');
     if (continueStmt) {
       const line = token(continueStmt, 'Continue')?.startLine || getLine(continueStmt);
       this.emitSnapshot(line);
-      throw new ContinueSignal();
+      throw new ContinueSignal(token(continueStmt, 'Identifier')?.image);
+    }
+
+    // yield: the value of the enclosing switch expression
+    const yieldStmt = child(swts, 'yieldStatement');
+    if (yieldStmt) {
+      const line = token(yieldStmt, 'Yield')?.startLine || getLine(yieldStmt);
+      const value = this.evalExpression(child(yieldStmt, 'expression')!, scope);
+      this.emitSnapshot(line);
+      throw new YieldSignal(value);
     }
 
     // switch statement
     const switchStmt = child(swts, 'switchStatement');
     if (switchStmt) {
-      this.executeSwitch(switchStmt, scope);
+      this.evalSwitch(switchStmt, scope, false);
       return;
     }
 
     // do-while statement (called 'doStatement' in the CST)
     const doStmt = child(swts, 'doStatement');
     if (doStmt) {
-      this.executeDoWhile(doStmt, scope);
+      this.executeDoWhile(doStmt, scope, labels);
       return;
     }
 
     // throw statement
     const throwStmt = child(swts, 'throwStatement');
-    if (throwStmt) {
-      const line = token(throwStmt, 'Throw')?.startLine || getLine(throwStmt);
-      const expr = child(throwStmt, 'expression')!;
-      const value = this.evalExpression(expr, scope);
-      this.emitSnapshot(line);
-      throw new JavaThrow(value);
-    }
+    if (throwStmt) this.executeThrow(throwStmt, scope);
 
-    // try / catch / finally
+    // try / catch / finally, and try-with-resources
     const tryStmt = child(swts, 'tryStatement');
     if (tryStmt) {
       this.executeTry(tryStmt, scope);
       return;
+    }
+
+    // synchronized (lock) { … }: one thread, so it just runs the block once the lock is known not to be null.
+    const syncStmt = child(swts, 'synchronizedStatement');
+    if (syncStmt) {
+      const line = token(syncStmt, 'Synchronized')?.startLine || getLine(syncStmt);
+      const lockExpr = child(syncStmt, 'expression')!;
+      if (this.evalExpression(lockExpr, scope).kind === 'null') {
+        throw nullPointer(`Cannot enter synchronized block because "${sourceText(lockExpr)}" is null`, line);
+      }
+      this.emitSnapshot(line);
+      this.runBlockIn(child(syncStmt, 'block')!, scope);
+      return;
+    }
+
+    // assert: `java` runs with assertions disabled unless given -ea, so the
+    // condition isn't evaluated. The step still shows the statement was reached.
+    const assertStmt = child(swts, 'assertStatement');
+    if (assertStmt) {
+      this.emitSnapshot(token(assertStmt, 'Assert')?.startLine || getLine(assertStmt));
+      return;
+    }
+
+    // An empty statement (a lone `;`) does nothing.
+    if (has(swts, 'emptyStatement')) return;
+    throw new InterpreterError('Unrecognized statement', getLine(swts));
+  }
+
+  private executeThrow(throwStmt: CstNode, scope: Scope): never {
+    const line = token(throwStmt, 'Throw')?.startLine || getLine(throwStmt);
+    const expr = child(throwStmt, 'expression')!;
+    const value = this.evalExpression(expr, scope);
+    this.emitSnapshot(line);
+    if (value.kind === 'null') throw nullPointer(`Cannot throw exception because "${sourceText(expr)}" is null`, line);
+    throw new JavaThrow(value);
+  }
+
+  /** Run a block in a new scope nested in `scope`, so its locals end with the block. */
+  private runBlockIn(block: CstNode, scope: Scope, label: string | undefined = scope.label): void {
+    const inner = createScope(scope, label);
+    setCurrentScope(this.callStack, inner);
+    try {
+      this.executeBlock(block, inner);
+    } finally {
+      setCurrentScope(this.callStack, scope);
     }
   }
 
   // ── Exceptions ──
 
   private executeTry(tryStmt: CstNode, scope: Scope): void {
-    const tryBlock = child(tryStmt, 'block');
-    const catches = child(tryStmt, 'catches');
-    const finallyNode = child(tryStmt, 'finally');
-    const finallyBlock = finallyNode ? child(finallyNode, 'block') : undefined;
-
-    const runBlock = (block: CstNode) => {
-      const inner = createScope(scope, scope.label);
-      setCurrentScope(this.callStack, inner);
-      this.executeBlock(block, inner);
-      setCurrentScope(this.callStack, scope);
-    };
-    const runFinally = () => { if (finallyBlock) runBlock(finallyBlock); };
-
-    try {
-      if (tryBlock) runBlock(tryBlock);
-    } catch (e) {
-      // Control-flow signals (return/break/continue/exit) still run finally, then propagate.
-      if (e instanceof ReturnSignal || e instanceof BreakSignal || e instanceof ContinueSignal || e instanceof HaltSignal) {
-        runFinally();
-        throw e;
-      }
-      // Otherwise treat as a (Java) exception and look for a matching catch.
-      const exc = this.toExceptionValue(e);
-      const clause = exc && catches ? this.matchCatch(catches, exc) : undefined;
-      if (exc && clause) {
-        try {
-          const catchScope = createScope(scope, scope.label);
-          setVariable(catchScope, clause.name, exc, exc.kind === 'objectRef' ? exc.className : 'Exception');
-          setCurrentScope(this.callStack, catchScope);
-          this.executeBlock(clause.block, catchScope);
-          setCurrentScope(this.callStack, scope);
-        } finally {
-          runFinally();
-        }
-        return;
-      }
-      runFinally();
-      throw e; // unmatched (or non-Java) error: preserve original propagation
+    const withResources = child(tryStmt, 'tryWithResourcesStatement');
+    if (withResources) {
+      this.executeTryWithResources(withResources, scope);
+      return;
     }
-    runFinally();
+    const tryBlock = child(tryStmt, 'block')!;
+    this.runTryCatchFinally(() => this.runBlockIn(tryBlock, scope), child(tryStmt, 'catches'), child(tryStmt, 'finally'), scope);
   }
 
   /**
-   * Convert a thrown JS value into the Java exception object a catch clause can
-   * bind — either an explicit `throw`n value, or a synthesized object for a
-   * built-in runtime error (ArithmeticException, ArrayIndexOutOfBounds, …).
-   * Returns null for interpreter-internal errors that aren't real Java
-   * exceptions (so they keep propagating as engine errors).
+   * The try/catch/finally protocol around `body`. A Java exception is matched
+   * against the catch clauses; finally runs after the try or catch part however
+   * it ends, and if finally itself ends abruptly, that replaces the pending
+   * outcome. System.exit ends the program at once, running no catch or finally,
+   * and so does an engine error (an unsupported feature, the step limit).
+   */
+  private runTryCatchFinally(body: () => void, catches: CstNode | undefined, finallyNode: CstNode | undefined, scope: Scope): void {
+    let pending: { error: unknown } | undefined;
+    try {
+      body();
+    } catch (e) {
+      if (e instanceof HaltSignal) throw e;
+      const excClass = this.exceptionClassOf(e);
+      if (excClass === undefined && !isControlSignal(e)) throw e; // an engine error, not a Java exception
+      const clause = excClass !== undefined && catches ? this.matchCatch(catches, excClass) : undefined;
+      if (!clause) {
+        pending = { error: e };
+      } else {
+        const exc = this.toExceptionValue(e)!;
+        try {
+          const catchScope = createScope(scope, scope.label);
+          setVariable(catchScope, clause.name, exc, excClass!);
+          setCurrentScope(this.callStack, catchScope);
+          this.executeBlock(clause.block, catchScope);
+        } catch (inCatch) {
+          if (inCatch instanceof HaltSignal || !(isControlSignal(inCatch) || this.exceptionClassOf(inCatch) !== undefined)) throw inCatch;
+          pending = { error: inCatch };
+        } finally {
+          setCurrentScope(this.callStack, scope);
+        }
+      }
+    }
+    const finallyBlock = finallyNode ? child(finallyNode, 'block') : undefined;
+    if (finallyBlock) this.runBlockIn(finallyBlock, scope);
+    if (pending) throw pending.error;
+  }
+
+  /**
+   * try-with-resources (JLS §14.20.3): the resources are initialized in order
+   * and are in scope only in the try block. When the block ends, however it
+   * ends, the resources that were opened are closed in reverse order. An
+   * exception from a close is suppressed if another is already propagating.
+   * Catch and finally clauses then apply to all of it.
+   */
+  private executeTryWithResources(twr: CstNode, scope: Scope): void {
+    const line = token(twr, 'Try')?.startLine || getLine(twr);
+    const spec = child(twr, 'resourceSpecification')!;
+    const resources = children(child(spec, 'resourceList')!, 'resource');
+    const block = child(twr, 'block')!;
+    const body = () => {
+      const resourceScope = createScope(scope, scope.label);
+      setCurrentScope(this.callStack, resourceScope);
+      const opened: { value: JavaValue; name: string }[] = [];
+      let pending: { error: unknown } | undefined;
+      try {
+        for (const resource of resources) opened.push(this.openResource(resource, resourceScope));
+        this.runBlockIn(block, resourceScope);
+      } catch (e) {
+        if (e instanceof HaltSignal || !(isControlSignal(e) || this.exceptionClassOf(e) !== undefined)) throw e;
+        pending = { error: e };
+      }
+      for (let i = opened.length - 1; i >= 0; i--) {
+        const { value, name } = opened[i];
+        if (value.kind === 'null') continue;
+        try {
+          this.invokeMethod(value, 'close', [], name, line, line);
+        } catch (e) {
+          if (e instanceof HaltSignal || this.exceptionClassOf(e) === undefined) throw e;
+          pending ??= { error: e };
+        }
+      }
+      setCurrentScope(this.callStack, scope);
+      if (pending) throw pending.error;
+    };
+    this.runTryCatchFinally(body, child(twr, 'catches'), child(twr, 'finally'), scope);
+  }
+
+  /** Declare (or, for `try (existing)`, evaluate) one resource, returning it and the name to report it by. */
+  private openResource(resource: CstNode, scope: Scope): { value: JavaValue; name: string } {
+    const decl = child(resource, 'localVariableDeclaration');
+    if (!decl) {
+      const access = child(child(resource, 'variableAccess')!, 'primary')!;
+      return { value: this.evalPrimary(access, scope), name: sourceText(access) };
+    }
+    const declaredType = this.extractLocalVarType(child(decl, 'localVariableType')!);
+    const declarator = children(child(decl, 'variableDeclaratorList')!, 'variableDeclarator')[0];
+    const id = token(child(declarator, 'variableDeclaratorId')!, 'Identifier')!;
+    const value = this.evalVariableInitializer(child(declarator, 'variableInitializer')!, declaredType, scope);
+    setVariable(scope, id.image, value, declaredType === 'var' ? this.inferType(value) : declaredType);
+    this.emitSnapshot(id.startLine);
+    return { value, name: id.image };
+  }
+
+  /**
+   * The class of the Java exception a thrown JS value stands for: an explicit
+   * `throw`, or a runtime error such as `ArithmeticException: / by zero`.
+   * Undefined for control-flow signals and for engine errors (an unsupported
+   * feature, the step limit), which aren't Java exceptions and can't be caught.
+   */
+  private exceptionClassOf(e: unknown): string | undefined {
+    if (e instanceof JavaThrow) return e.value.kind === 'objectRef' ? e.value.className : undefined;
+    if (e instanceof InterpreterError || e instanceof StdlibError) return parseRuntimeException(e.message)?.className;
+    return undefined;
+  }
+
+  /**
+   * The Java exception object a catch clause binds: the value a `throw` threw,
+   * or a new object for a runtime error (ArithmeticException, …). Null for
+   * anything that isn't a Java exception.
    */
   private toExceptionValue(e: unknown): JavaValue | null {
     if (e instanceof JavaThrow) return e.value;
     if (e instanceof InterpreterError || e instanceof StdlibError) {
-      // InterpreterError prefixes "Line N: "; strip it before matching the type.
-      const msg = e.message.replace(/^Line \d+:\s*/, '');
-      const m = msg.match(/^([A-Za-z_][A-Za-z0-9_]*)(?::\s*(.*))?$/s);
-      if (m && isExceptionClass(m[1])) {
-        const detail = m[2] ?? '';
-        return newException(m[1], detail ? [javaString(detail)] : [], this.ctx);
-      }
+      const parsed = parseRuntimeException(e.message);
+      if (parsed) return newException(parsed.className, parsed.detail ? [javaString(parsed.detail)] : [], this.ctx);
     }
     return null;
   }
 
-  private matchCatch(catches: CstNode, exc: JavaValue): { name: string; block: CstNode } | undefined {
-    const actual = exc.kind === 'objectRef' ? exc.className : 'Exception';
+  /** The first catch clause with a type (for `A | B e`, either type) that the exception class is an instance of. */
+  private matchCatch(catches: CstNode, excClass: string): { name: string; block: CstNode } | undefined {
     for (const clause of children(catches, 'catchClause')) {
       const param = child(clause, 'catchFormalParameter');
       if (!param) continue;
@@ -1066,67 +1407,69 @@ export class JavaInterpreter {
       const types = catchType ? this.extractCatchTypes(catchType) : [];
       const name = token(child(param, 'variableDeclaratorId')!, 'Identifier')?.image || 'e';
       const block = child(clause, 'block');
-      if (block && types.some(t => exceptionAssignable(actual, t))) {
+      if (block && types.some(t => this.isSubclass(excClass, t))) {
         return { name, block };
       }
     }
     return undefined;
   }
 
+  /** The types a catch clause names; `catch (A | B e)` names two. */
   private extractCatchTypes(catchType: CstNode): string[] {
     const types: string[] = [];
     const unann = child(catchType, 'unannClassType');
-    if (unann) { const id = token(unann, 'Identifier'); if (id) types.push(id.image); }
-    for (const ct of children(catchType, 'classType')) {
-      const id = token(ct, 'Identifier');
-      if (id) types.push(id.image);
-    }
+    if (unann) types.push(lastIdentifier(unann));
+    for (const ct of children(catchType, 'classType')) types.push(lastIdentifier(ct));
     return types;
   }
 
   // ── Control flow ──
 
   private executeIf(ifStmt: CstNode, scope: Scope): void {
-    const line = token(ifStmt, 'If')?.startLine || getLine(ifStmt);
     const condition = child(ifStmt, 'expression')!;
-    const condValue = this.evalExpression(condition, scope);
-    const condBool = javaValueToBoolean(condValue);
+    // A condition with an instanceof pattern binds its variable in a scope of
+    // its own, which the branches nest in: `if (o instanceof String s) { … s … }`.
+    const condScope = this.containsPattern(condition) ? createScope(scope, 'if') : scope;
+    if (condScope !== scope) setCurrentScope(this.callStack, condScope);
+    const condBool = javaValueToBoolean(this.evalExpression(condition, condScope));
 
-    this.emitSnapshot(line);
+    this.emitSnapshot(token(ifStmt, 'If')?.startLine || getLine(ifStmt));
 
     const stmts = children(ifStmt, 'statement');
-    if (condBool) {
-      if (stmts.length > 0) {
-        const thenScope = createScope(scope, 'if');
-        setCurrentScope(this.callStack, thenScope);
-        this.executeStatement(stmts[0], thenScope);
-      }
-    } else {
-      if (stmts.length > 1) {
-        const elseScope = createScope(scope, 'else');
-        setCurrentScope(this.callStack, elseScope);
-        this.executeStatement(stmts[1], elseScope);
-      }
+    const branch = condBool ? stmts[0] : stmts[1];
+    if (branch) {
+      const branchScope = createScope(condScope, condBool ? 'if' : 'else');
+      setCurrentScope(this.callStack, branchScope);
+      this.executeStatement(branch, branchScope);
     }
     setCurrentScope(this.callStack, scope);
+    // `if (!(o instanceof String s)) return;` leaves s in scope after the if
+    // (JLS §6.3.2.2): the condition was false and the then-branch can't finish.
+    if (condScope !== scope && !condBool && stmts.length === 1 && !canCompleteNormally(stmts[0])) {
+      for (const [name, slot] of condScope.variables) scope.variables.set(name, slot);
+    }
   }
 
-  private executeFor(forStmt: CstNode, scope: Scope): void {
-    // Enhanced for loop
+  /** Does an expression contain an instanceof pattern (`o instanceof String s`)? */
+  private containsPattern(expr: CstNode): boolean {
+    let found = this.patternCache.get(expr);
+    if (found === undefined) {
+      found = findNode(expr, 'pattern') !== undefined;
+      this.patternCache.set(expr, found);
+    }
+    return found;
+  }
+
+  private executeFor(forStmt: CstNode, scope: Scope, labels: readonly string[]): void {
     const enhanced = child(forStmt, 'enhancedForStatement');
     if (enhanced) {
-      this.executeEnhancedFor(enhanced, scope);
+      this.executeEnhancedFor(enhanced, scope, labels);
       return;
     }
-
-    // Basic for loop
-    const basic = child(forStmt, 'basicForStatement');
-    if (basic) {
-      this.executeBasicFor(basic, scope);
-    }
+    this.executeBasicFor(child(forStmt, 'basicForStatement')!, scope, labels);
   }
 
-  private executeBasicFor(basic: CstNode, scope: Scope): void {
+  private executeBasicFor(basic: CstNode, scope: Scope, labels: readonly string[]): void {
     const forScope = createScope(scope, 'for');
     setCurrentScope(this.callStack, forScope);
     const line = token(basic, 'For')?.startLine || getLine(basic);
@@ -1173,9 +1516,9 @@ export class JavaInterpreter {
         try {
           this.executeStatement(bodyStmt, forScope);
         } catch (e) {
-          if (e instanceof BreakSignal) break;
-          if (e instanceof ContinueSignal) { /* fall through to update */ }
-          else throw e;
+          if (e instanceof BreakSignal && targets(e, labels)) break;
+          if (!(e instanceof ContinueSignal && targets(e, labels))) throw e;
+          // continue: fall through to the update
         }
       }
 
@@ -1197,21 +1540,22 @@ export class JavaInterpreter {
 
   private executeForLocalVarDecl(decl: CstNode, scope: Scope, line: number): void {
     const typeNode = child(decl, 'localVariableType')!;
-    let type = this.extractLocalVarType(typeNode);
+    const baseType = this.extractLocalVarType(typeNode);
     const declList = child(decl, 'variableDeclaratorList')!;
 
     for (const declarator of children(declList, 'variableDeclarator')) {
       const idNode = child(declarator, 'variableDeclaratorId')!;
       const name = token(idNode, 'Identifier')!.image;
-      if (has(idNode, 'dims')) type = type + '[]';
+      let type = baseType + dimsSuffix(child(idNode, 'dims'));
       const init = child(declarator, 'variableInitializer');
       const value = init ? this.evalVariableInitializer(init, type, scope) : defaultValue(type);
+      if (type === 'var') type = this.inferType(value);
       setVariable(scope, name, value, type);
     }
     this.emitSnapshot(line);
   }
 
-  private executeEnhancedFor(enhanced: CstNode, scope: Scope): void {
+  private executeEnhancedFor(enhanced: CstNode, scope: Scope, labels: readonly string[]): void {
     const forScope = createScope(scope, 'for');
     setCurrentScope(this.callStack, forScope);
     const line = token(enhanced, 'For')?.startLine || getLine(enhanced);
@@ -1219,7 +1563,7 @@ export class JavaInterpreter {
     // Get the loop variable
     const localVarDecl = child(enhanced, 'localVariableDeclaration')!;
     const typeNode = child(localVarDecl, 'localVariableType')!;
-    const type = this.extractLocalVarType(typeNode);
+    let type = this.extractLocalVarType(typeNode);
     const declList = child(localVarDecl, 'variableDeclaratorList')!;
     const declarator = children(declList, 'variableDeclarator')[0];
     const idNode = child(declarator, 'variableDeclaratorId')!;
@@ -1236,13 +1580,20 @@ export class JavaInterpreter {
         throw new InterpreterError('Enhanced for loop target is not an array', line);
       }
       iterElements = arr.elements;
+      if (type === 'var') type = arr.elementType;
+    } else if (iterValue.kind === 'null') {
+      throw nullPointer(`Cannot iterate over "${sourceText(iterExpr)}" because it is null`, line);
     } else {
       // Collections (ArrayList, HashSet, keySet()/values()/entrySet() results, …)
       const collected = iterValue.kind === 'objectRef' ? getIterableElements(iterValue, this.ctx) : undefined;
       if (!collected) {
+        if (iterValue.kind === 'objectRef' && this.classes.has(iterValue.className)) {
+          throw new UnsupportedFeatureError('For-each loops over your own Iterable classes', line);
+        }
         throw new InterpreterError('Enhanced for loop requires an array or collection', line);
       }
       iterElements = collected;
+      if (type === 'var') type = 'Object';
     }
 
     setVariable(forScope, varName, defaultValue(type), type);
@@ -1253,6 +1604,7 @@ export class JavaInterpreter {
         throw new InterpreterError('Loop exceeded maximum iterations.', line);
       }
 
+      setCurrentScope(this.callStack, forScope);
       updateVariable(forScope, varName, element);
       this.emitSnapshot(line);
 
@@ -1261,8 +1613,8 @@ export class JavaInterpreter {
         try {
           this.executeStatement(bodyStmt, forScope);
         } catch (e) {
-          if (e instanceof BreakSignal) { setCurrentScope(this.callStack, scope); return; }
-          if (e instanceof ContinueSignal) continue;
+          if (e instanceof BreakSignal && targets(e, labels)) break;
+          if (e instanceof ContinueSignal && targets(e, labels)) continue;
           throw e;
         }
       }
@@ -1270,7 +1622,7 @@ export class JavaInterpreter {
     setCurrentScope(this.callStack, scope);
   }
 
-  private executeWhile(whileStmt: CstNode, scope: Scope): void {
+  private executeWhile(whileStmt: CstNode, scope: Scope, labels: readonly string[]): void {
     const line = token(whileStmt, 'While')?.startLine || getLine(whileStmt);
     // Labeled scope so body variables show as "while block"
     const whileScope = createScope(scope, 'while');
@@ -1292,8 +1644,8 @@ export class JavaInterpreter {
         try {
           this.executeStatement(bodyStmt, whileScope);
         } catch (e) {
-          if (e instanceof BreakSignal) break;
-          if (e instanceof ContinueSignal) continue;
+          if (e instanceof BreakSignal && targets(e, labels)) break;
+          if (e instanceof ContinueSignal && targets(e, labels)) continue;
           throw e;
         }
       }
@@ -1301,7 +1653,7 @@ export class JavaInterpreter {
     setCurrentScope(this.callStack, scope);
   }
 
-  private executeDoWhile(doWhileStmt: CstNode, scope: Scope): void {
+  private executeDoWhile(doWhileStmt: CstNode, scope: Scope, labels: readonly string[]): void {
     const line = token(doWhileStmt, 'Do')?.startLine || getLine(doWhileStmt);
     const doScope = createScope(scope, 'do-while');
     let iterations = 0;
@@ -1317,8 +1669,8 @@ export class JavaInterpreter {
         try {
           this.executeStatement(bodyStmt, doScope);
         } catch (e) {
-          if (e instanceof BreakSignal) break;
-          if (!(e instanceof ContinueSignal)) throw e;
+          if (e instanceof BreakSignal && targets(e, labels)) break;
+          if (!(e instanceof ContinueSignal && targets(e, labels))) throw e;
         }
       }
 
@@ -1331,101 +1683,110 @@ export class JavaInterpreter {
     setCurrentScope(this.callStack, scope);
   }
 
-  private executeSwitch(switchStmt: CstNode, scope: Scope): void {
-    const line = token(switchStmt, 'Switch')?.startLine || getLine(switchStmt);
-    const switchExpr = child(switchStmt, 'expression')!;
-    const switchValue = this.evalExpression(switchExpr, scope);
+  /**
+   * A switch statement, or with `asExpression` a switch expression, which
+   * returns its value. The block is either `case … ->` rules, which never fall
+   * through, or `case …:` groups, which fall through until a break (or, in a
+   * switch expression, a yield). The first matching label wins; `default`
+   * applies only when no label matches, wherever it is written. The block is
+   * one scope, and a pattern label binds its variable in it.
+   */
+  private evalSwitch(switchNode: CstNode, scope: Scope, asExpression: boolean): JavaValue {
+    const line = token(switchNode, 'Switch')?.startLine || getLine(switchNode);
+    const selectorExpr = child(switchNode, 'expression')!;
+    const selector = this.evalExpression(selectorExpr, scope);
     this.emitSnapshot(line);
 
-    const switchBlock = child(switchStmt, 'switchBlock');
-    if (!switchBlock) return;
-
-    const groups = children(switchBlock, 'switchBlockStatementGroup');
-    let matched = false;
-    let falling = false;
-
-    for (const group of groups) {
-      const labels = children(group, 'switchLabel');
-      if (!falling) {
-        let labelMatches = false;
-        for (const label of labels) {
-          if (has(label, 'Default')) {
-            labelMatches = true;
-            break;
-          }
-          const caseConst = child(label, 'caseConstant');
-          if (caseConst) {
-            // caseConstant > conditionalExpression > ...
-            const condExpr = child(caseConst, 'conditionalExpression');
-            if (condExpr) {
-              const caseValue = this.evalConditionalExpression(condExpr, scope);
-              if (javaValuesEqual(switchValue, caseValue)) {
-                labelMatches = true;
-                break;
-              }
-            }
-          }
-        }
-        if (!labelMatches) continue;
-        matched = true;
+    const block = child(switchNode, 'switchBlock')!;
+    const rules = children(block, 'switchRule');
+    const groups = children(block, 'switchBlockStatementGroup');
+    const switchScope = createScope(scope, 'switch');
+    setCurrentScope(this.callStack, switchScope);
+    try {
+      const labelSets = rules.length > 0
+        ? rules.map(r => children(r, 'switchLabel'))
+        : groups.map(g => children(g, 'switchLabel'));
+      const match = this.findSwitchMatch(labelSets, selector, sourceText(selectorExpr), switchScope, line);
+      if (match < 0) {
+        // javac requires a switch expression to cover every value, so this is unreachable there.
+        if (asExpression) throw new InterpreterError('No case of the switch expression matched', line);
+        return javaNull();
       }
-
-      falling = true;
-
-      // Execute block statements in this group
-      const stmts = child(group, 'blockStatements');
-      if (stmts) {
-        try {
-          for (const blockStmt of children(stmts, 'blockStatement')) {
-            this.executeBlockStatement(blockStmt, scope);
-          }
-        } catch (e) {
-          if (e instanceof BreakSignal) return;
-          throw e;
+      if (rules.length > 0) return this.runSwitchRule(rules[match], switchScope, asExpression, line);
+      for (let i = match; i < groups.length; i++) {
+        const stmts = child(groups[i], 'blockStatements');
+        for (const blockStmt of stmts ? children(stmts, 'blockStatement') : []) {
+          this.executeBlockStatement(blockStmt, switchScope);
         }
+      }
+      if (asExpression) throw new InterpreterError('The switch expression ended without yielding a value', line);
+      return javaNull();
+    } catch (e) {
+      if (asExpression && e instanceof YieldSignal) return e.value;
+      if (!asExpression && e instanceof BreakSignal && e.label === undefined) return javaNull();
+      throw e;
+    } finally {
+      setCurrentScope(this.callStack, scope);
+    }
+  }
+
+  /** The index of the label set holding the first matching label, else of the one with `default`, else -1. */
+  private findSwitchMatch(labelSets: CstNode[][], selector: JavaValue, selectorText: string, scope: Scope, line: number): number {
+    if (selector.kind === 'null' && !labelSets.some(set => set.some(l => has(l, 'Null')))) {
+      throw nullPointer(`Cannot switch on "${selectorText}" because it is null`, line);
+    }
+    let defaultIndex = -1;
+    for (let i = 0; i < labelSets.length; i++) {
+      for (const label of labelSets[i]) {
+        if (this.switchLabelMatches(label, selector, scope)) return i;
+        if (has(label, 'Default')) defaultIndex = i;
       }
     }
+    return defaultIndex;
+  }
 
-    // If nothing matched, check for default as a standalone rule
-    if (!matched) {
-      for (const group of groups) {
-        const labels = children(group, 'switchLabel');
-        const isDefault = labels.some(l => has(l, 'Default'));
-        if (isDefault) {
-          const stmts = child(group, 'blockStatements');
-          if (stmts) {
-            try {
-              for (const blockStmt of children(stmts, 'blockStatement')) {
-                this.executeBlockStatement(blockStmt, scope);
-              }
-            } catch (e) {
-              if (e instanceof BreakSignal) return;
-              throw e;
-            }
-          }
-          break;
-        }
-      }
+  /** Does `case …` match the selector? A pattern label binds its variable in `scope` when it does. */
+  private switchLabelMatches(label: CstNode, selector: JavaValue, scope: Scope): boolean {
+    if (has(label, 'Null')) return selector.kind === 'null'; // `case null` or `case null, default`
+    for (const constant of children(label, 'caseConstant')) {
+      const value = this.evalConditionalExpression(child(constant, 'conditionalExpression')!, scope);
+      if (javaValuesEqual(selector, value)) return true;
     }
+    for (const casePattern of children(label, 'casePattern')) {
+      if (!this.matchPattern(child(casePattern, 'pattern')!, selector, scope)) continue;
+      const guard = child(label, 'guard');
+      if (!guard || javaValueToBoolean(this.evalExpression(child(guard, 'expression')!, scope))) return true;
+    }
+    return false;
+  }
+
+  /** Run the body of a `case … ->` rule: an expression, a block or a throw. */
+  private runSwitchRule(rule: CstNode, scope: Scope, asExpression: boolean, line: number): JavaValue {
+    const expr = child(rule, 'expression');
+    if (expr) {
+      const value = this.evalExpression(expr, scope);
+      if (!asExpression) this.emitSnapshot(getLine(expr));
+      return value;
+    }
+    const throwStmt = child(rule, 'throwStatement');
+    if (throwStmt) this.executeThrow(throwStmt, scope);
+    this.runBlockIn(child(rule, 'block')!, scope);
+    if (asExpression) throw new InterpreterError('The switch expression ended without yielding a value', line);
+    return javaNull();
   }
 
   // ── Expression evaluation ──
 
   evalExpression(expr: CstNode, scope: Scope): JavaValue {
-    // expression > conditionalExpression > ...
+    // expression > conditionalExpression > ... (assignments are binary expressions)
     const condExpr = child(expr, 'conditionalExpression');
     if (condExpr) return this.evalConditionalExpression(condExpr, scope);
-
-    // Direct assignment in expression (x = expr)
-    // This is handled inside binaryExpression when we see Equals
-    return javaNull();
+    if (has(expr, 'lambdaExpression')) throw new UnsupportedFeatureError('Lambda expressions', getLine(expr));
+    throw new InterpreterError('Unrecognized expression', getLine(expr));
   }
 
   private evalConditionalExpression(condExpr: CstNode, scope: Scope): JavaValue {
-    const binExpr = child(condExpr, 'binaryExpression');
-    if (!binExpr) return javaNull();
-
-    const result = this.evalBinaryExpression(binExpr, scope);
+    const result = this.evalBinaryExpression(child(condExpr, 'binaryExpression')!, scope);
 
     // Ternary operator: condition ? trueExpr : falseExpr
     if (has(condExpr, 'QuestionMark')) {
@@ -1479,7 +1840,8 @@ export class JavaInterpreter {
     //
     // `x instanceof Type` is folded here: the trailing `referenceType` operand
     // is combined with the preceding value into a single boolean operand, and
-    // the `instanceof` token is dropped from the operator chain.
+    // the `instanceof` token is dropped from the operator chain. A pattern,
+    // `x instanceof String s`, also binds s in `scope` when it matches.
     const operandThunks: Array<() => JavaValue> = [];
     const chainOps: string[] = [];
     for (const item of allChildren) {
@@ -1490,9 +1852,13 @@ export class JavaInterpreter {
         const node = item;
         operandThunks.push(() => this.evalExpression(node, scope));
       } else if (isCstNode(item) && item.name === 'referenceType') {
-        const typeName = this.firstIdentifier(item);
-        const operand = operandThunks.pop() ?? (() => javaNull());
+        const typeName = this.referenceTypeName(item);
+        const operand = operandThunks.pop()!;
         operandThunks.push(() => javaBool(this.isInstanceOf(operand(), typeName)));
+      } else if (isCstNode(item) && item.name === 'pattern') {
+        const pattern = item;
+        const operand = operandThunks.pop()!;
+        operandThunks.push(() => javaBool(this.matchPattern(pattern, operand(), scope)));
       } else if (isCstToken(item)) {
         const op = item.image;
         if (['(', ')', '{', '}', '[', ']', ';', ','].includes(op)) continue;
@@ -1501,7 +1867,7 @@ export class JavaInterpreter {
       }
     }
 
-    if (operandThunks.length === 0) return javaNull();
+    if (operandThunks.length === 0) throw new InterpreterError('Unrecognized expression', getLine(binExpr));
     if (chainOps.length === 0) return operandThunks[0]();
 
     // Evaluate left to right with precedence (short-circuits && / ||)
@@ -1561,13 +1927,13 @@ export class JavaInterpreter {
         return arrayElementReference(this.heap, array, index, targetText, last.line);
       }
       case 'unsupported':
-        throw new InterpreterError(`${last.step.construct} ${UNSUPPORTED}`, last.line);
+        throw new UnsupportedFeatureError(last.step.construct, last.line, last.step.singular);
       case 'call':
         throw new InterpreterError(`'${last.text}' is not a variable, so it can't be assigned to`, last.line);
     }
   }
 
-  /** A simple name as a variable: a local or parameter, a field of `this`, or a static field. */
+  /** A simple name as a variable: a local or parameter, a field of `this`, or a static field in scope. */
   private nameReference(name: string, scope: Scope, line: number): Reference {
     const local = this.lookupLocal(scope, name);
     if (local) return slotReference(local);
@@ -1575,9 +1941,9 @@ export class JavaInterpreter {
     if (self && this.objectHasField(self, name)) {
       return fieldReference(this.heap, self, name, this.fieldDeclaredType(self, name), 'this', line);
     }
-    const staticSlot = this.staticFields.variables.get(name);
-    if (staticSlot) return slotReference(staticSlot);
-    throw new InterpreterError(`Variable '${name}' is not defined`, line);
+    const found = this.findStatic(name);
+    if (found) return this.staticReference(found.owner, found.slot);
+    throw this.undefinedName(name, line);
   }
 
   /** `target.name` as a variable: an instance field, or a static field reached through its class. */
@@ -1589,20 +1955,91 @@ export class JavaInterpreter {
       return fieldReference(this.heap, target.value, name, this.fieldDeclaredType(target.value, name), targetText, line);
     }
     if (target.kind === 'type') {
-      if (this.classNames.has(target.name)) {
-        // Static fields share one namespace across classes until per-class statics (#15).
-        const slot = this.staticFields.variables.get(name);
-        if (slot) return slotReference(slot);
+      if (this.classes.has(target.name)) {
+        const found = this.staticSlotIn(target.name, name);
+        if (found) return this.staticReference(found.owner, found.slot);
         throw new InterpreterError(`Field '${name}' does not exist on ${target.name}`, line);
       }
       throw new InterpreterError(`${target.name}.${name} can't be assigned to`, line);
     }
-    throw new InterpreterError(`Variable '${target.path[0]}' is not defined`, line);
+    throw this.undefinedName(target.path[0], line);
   }
 
-  /** A local variable or parameter, searching block scopes out to the method's scope (statics excluded). */
-  private lookupLocal(scope: Scope, name: string): { value: JavaValue; type: JavaType } | undefined {
-    for (let s: Scope | null = scope; s && s !== this.staticFields; s = s.parent) {
+  /**
+   * A static field as a variable. Reading or writing it first initializes its
+   * class (JLS §12.4.1), unless it is a constant. The initialization happens
+   * at the access, so `C.x = f()` calls f() before initializing C, as Java does.
+   */
+  private staticReference(owner: string, slot: StaticSlot): Reference {
+    const init = () => {
+      if (!slot.constant) this.initClass(owner);
+    };
+    return {
+      get: () => {
+        init();
+        return slot.value;
+      },
+      set: (value) => {
+        init();
+        slot.value = assignmentConversion(value, slot.type);
+        return slot.value;
+      },
+      declaredType: slot.type,
+    };
+  }
+
+  /**
+   * The static field a simple name refers to: one of the current class's (or
+   * of an interface it implements), else one of a class it is nested in.
+   */
+  private findStatic(name: string): { owner: string; slot: StaticSlot } | undefined {
+    for (let cls = this.currentClassName(); cls; cls = this.classes.get(cls)?.outer) {
+      const found = this.staticSlotIn(cls, name);
+      if (found) return found;
+    }
+    return undefined;
+  }
+
+  /** A static field of a class, or a constant of an interface it implements. */
+  private staticSlotIn(className: string, name: string, seen = new Set<string>()): { owner: string; slot: StaticSlot } | undefined {
+    const slot = this.staticFields.get(className)?.get(name);
+    if (slot) return { owner: className, slot };
+    seen.add(className);
+    for (const iface of this.classes.get(className)?.interfaces ?? []) {
+      const found = seen.has(iface) ? undefined : this.staticSlotIn(iface, name, seen);
+      if (found) return found;
+    }
+    return undefined;
+  }
+
+  /**
+   * The error for a name that resolves to nothing. In an inner (non-static
+   * nested) class, a field of the enclosing object is reachable in Java, but
+   * that needs the outer instance, which is #16.
+   */
+  private undefinedName(name: string, line: number): InterpreterError {
+    if (this.enclosingInstanceMember(name, 'field')) {
+      return new UnsupportedFeatureError(`Inner classes using a field of the enclosing object ('${name}')`, line);
+    }
+    return new InterpreterError(`Variable '${name}' is not defined`, line);
+  }
+
+  /** Whether the current class is an inner class and an enclosing class has an instance field or method with this name. */
+  private enclosingInstanceMember(name: string, kind: 'field' | 'method'): boolean {
+    for (let cls = this.classes.get(this.currentClassName() ?? ''); cls?.isInner; cls = this.classes.get(cls.outer ?? '')) {
+      const outer = cls.outer;
+      if (!outer) break;
+      const found = kind === 'field'
+        ? this.instanceFields.get(outer)?.some(f => f.name === name)
+        : this.methodsByClass.get(outer)?.get(name)?.some(m => !m.isStatic);
+      if (found) return true;
+    }
+    return false;
+  }
+
+  /** A local variable or parameter, searching block scopes out to the method's scope. */
+  private lookupLocal(scope: Scope, name: string): VariableSlot | undefined {
+    for (let s: Scope | null = scope; s; s = s.parent) {
       const entry = s.variables.get(name);
       if (entry) return entry;
     }
@@ -1717,12 +2154,18 @@ export class JavaInterpreter {
   }
 
   private evalUnaryExpression(unary: CstNode, scope: Scope): JavaValue {
-    const primary = child(unary, 'primary');
-    if (!primary) return javaNull();
-
+    const primary = child(unary, 'primary')!;
+    // Most operands have no operators. Evaluating them directly keeps recursion
+    // shallow on the JavaScript stack, where Java calls still run (#14).
+    if (!unary.children.UnaryPrefixOperator && !unary.children.UnarySuffixOperator) return this.evalPrimary(primary, scope);
     // Prefix operators are listed in source order: `- ++x` is ['-', '++'].
     const prefixOps = tokens(unary, 'UnaryPrefixOperator').map(t => t.image);
     const postfixOp = token(unary, 'UnarySuffixOperator')?.image;
+    return this.evalOperand(primary, prefixOps, postfixOp, scope, getLine(unary));
+  }
+
+  /** A primary with its prefix operators (in source order) and postfix operator. */
+  private evalOperand(primary: CstNode, prefixOps: string[], postfixOp: string | undefined, scope: Scope, line: number): JavaValue {
     let value: JavaValue;
     if (postfixOp === '++' || postfixOp === '--') {
       // Postfix binds tighter than any prefix operator, and yields the old value.
@@ -1733,7 +2176,7 @@ export class JavaInterpreter {
       value = this.evalPrimary(primary, scope);
     }
     for (let i = prefixOps.length - 1; i >= 0; i--) {
-      value = this.applyPrefixOperator(prefixOps[i], value, getLine(unary));
+      value = this.applyPrefixOperator(prefixOps[i], value, line);
     }
     return value;
   }
@@ -1753,7 +2196,7 @@ export class JavaInterpreter {
       case '++': case '--':
         throw new InterpreterError(`${op} needs a variable to change`, line);
     }
-    return val;
+    throw new InterpreterError(`Unrecognized operator ${op}`, line);
   }
 
   /**
@@ -1775,89 +2218,119 @@ export class JavaInterpreter {
     return this.chainValue(this.evalChain(chain, chain.selectors.length, scope, primary), getLine(primary));
   }
 
-  /** A primary that starts with a literal, a parenthesized expression, a cast or `new`. */
+  /** A primary that starts with a literal, a parenthesized expression, a cast, `new` or a switch expression. */
   private evalPrimaryPrefix(prefix: CstNode, scope: Scope): JavaValue {
-    // Literal
     const literal = child(prefix, 'literal');
     if (literal) return this.evalLiteral(literal);
 
-    // Parenthesized expression
     const parenExpr = child(prefix, 'parenthesisExpression');
-    if (parenExpr) {
-      const expr = child(parenExpr, 'expression');
-      return expr ? this.evalExpression(expr, scope) : javaNull();
-    }
+    if (parenExpr) return this.evalExpression(child(parenExpr, 'expression')!, scope);
 
     // Cast expression, e.g. (int) values[0]
     const castExpr = child(prefix, 'castExpression');
     if (castExpr) return this.evalCastExpression(castExpr, scope);
 
-    // new expression
     const newExpr = child(prefix, 'newExpression');
     if (newExpr) return this.evalNewExpression(newExpr, scope);
 
-    return javaNull();
+    const switchExpr = child(prefix, 'switchStatement');
+    if (switchExpr) return this.evalSwitch(switchExpr, scope, true);
+
+    throw new InterpreterError('Unrecognized expression', getLine(prefix));
   }
 
   private evalCastExpression(castExpr: CstNode, scope: Scope): JavaValue {
+    const line = getLine(castExpr);
     const primitiveCast = child(castExpr, 'primitiveCastExpression');
     if (primitiveCast) {
       const primitiveType = this.extractPrimitiveType(child(primitiveCast, 'primitiveType'));
-      const unaryExpr = child(primitiveCast, 'unaryExpression');
-      const value = unaryExpr ? this.evalUnaryExpression(unaryExpr, scope) : javaNull();
-      return this.castPrimitiveValue(value, primitiveType);
+      return this.castPrimitiveValue(this.evalUnaryExpression(child(primitiveCast, 'unaryExpression')!, scope), primitiveType);
     }
 
-    // Reference cast, e.g. (P) o — types aren't enforced, so return the operand.
-    const refCast = child(castExpr, 'referenceTypeCastExpression');
-    if (refCast) {
-      const operand = child(refCast, 'unaryExpressionNotPlusMinus');
-      return operand ? this.evalUnaryExpressionNotPlusMinus(operand, scope) : javaNull();
+    // Reference cast, e.g. (Point) o. It is checked when JavaTutor knows the
+    // type; a cast to a type variable (T) is unchecked in Java too.
+    const refCast = child(castExpr, 'referenceTypeCastExpression')!;
+    if (has(refCast, 'lambdaExpression')) throw new UnsupportedFeatureError('Lambda expressions', line);
+    const type = this.referenceTypeName(child(refCast, 'referenceType')!);
+    const operand = child(refCast, 'unaryExpressionNotPlusMinus')!;
+    const prefixOps = tokens(operand, 'UnaryPrefixOperatorNotPlusMinus').map(t => t.image);
+    const value = this.evalOperand(child(operand, 'primary')!, prefixOps, token(operand, 'UnarySuffixOperator')?.image, scope, line);
+    if (value.kind !== 'null' && this.isCheckableType(type) && !this.isInstanceOf(value, type)) {
+      throw new JavaRuntimeError('ClassCastException', `class ${this.runtimeClassName(value)} cannot be cast to class ${type}`, line);
     }
-
-    return javaNull();
+    return value;
   }
 
-  /** First Identifier token anywhere under a node (e.g. the class name of a referenceType). */
-  private firstIdentifier(node: CstNode): string {
-    const direct = token(node, 'Identifier');
-    if (direct) return direct.image;
-    for (const key of Object.keys(node.children)) {
-      for (const c of node.children[key]) {
-        if (isCstNode(c)) { const r = this.firstIdentifier(c); if (r) return r; }
+  /** Can a cast to this type be checked? Not for a type variable (T) or a library type JavaTutor doesn't model. */
+  private isCheckableType(type: string): boolean {
+    const base = type.replace(/(\[\])+$/, '');
+    return PRIMITIVE_TYPES.has(base) || this.classes.has(base) || isKnownLibraryType(base);
+  }
+
+  /** The class of a value, as a ClassCastException names it. */
+  private runtimeClassName(value: JavaValue): string {
+    switch (value.kind) {
+      case 'string': return 'String';
+      case 'primitive': return BOXES[value.javaType];
+      case 'arrayRef': return this.inferType(value);
+      case 'objectRef': return this.binaryName(value.className);
+      case 'null': return 'null';
+    }
+  }
+
+  /** `value instanceof type`: user classes and interfaces, library types, boxed primitives, arrays. */
+  private isInstanceOf(value: JavaValue, type: string): boolean {
+    switch (value.kind) {
+      case 'null': return false;
+      case 'string': return isStringType(type);
+      case 'primitive': return isBoxedInstanceOf(value.javaType, type);
+      case 'arrayRef': {
+        if (!type.endsWith('[]')) return ARRAY_SUPERTYPES.has(type);
+        const arr = this.heap.get(value.heapId);
+        return !!arr && isJavaArray(arr) && this.isArrayElementAssignable(arr.elementType, type.slice(0, -2));
       }
+      case 'objectRef': return this.isSubclass(value.className, type);
     }
-    return '';
   }
 
-  /** `value instanceof typeName` — exact class match, exception hierarchy, or Object/String. */
-  private isInstanceOf(value: JavaValue, typeName: string): boolean {
-    if (value.kind === 'null') return false;
-    if (typeName === 'Object') return true;
-    if (value.kind === 'objectRef') {
-      if (value.className === typeName) return true;
-      if (isExceptionClass(value.className) || isExceptionClass(typeName)) {
-        return exceptionAssignable(value.className, typeName);
-      }
-      return false; // user inheritance isn't tracked
-    }
-    if (value.kind === 'string') return typeName === 'String' || typeName === 'CharSequence';
-    return false; // primitives / arrays
+  /** Is an array of `elementType` an array of `target`? Arrays of references are covariant: a String[] is an Object[]. */
+  private isArrayElementAssignable(elementType: string, target: string): boolean {
+    if (PRIMITIVE_TYPES.has(elementType) || PRIMITIVE_TYPES.has(target)) return elementType === target;
+    const elementIsArray = elementType.endsWith('[]');
+    const targetIsArray = target.endsWith('[]');
+    if (elementIsArray && targetIsArray) return this.isArrayElementAssignable(elementType.slice(0, -2), target.slice(0, -2));
+    if (elementIsArray) return ARRAY_SUPERTYPES.has(target);
+    return !targetIsArray && this.isSubclass(elementType, target);
   }
 
-  private evalUnaryExpressionNotPlusMinus(node: CstNode, scope: Scope): JavaValue {
-    const primary = child(node, 'primary');
-    if (primary) return this.evalPrimary(primary, scope);
-    const cast = child(node, 'castExpression');
-    if (cast) return this.evalCastExpression(cast, scope);
-    const unary = child(node, 'unaryExpression');
-    if (unary) {
-      const val = this.evalUnaryExpression(unary, scope);
-      if (has(node, 'Bang')) return javaBool(!javaValueToBoolean(val));
-      if (has(node, 'Tilde')) return javaInt(~(javaValueToNumber(val) | 0));
-      return val;
+  /**
+   * Is class `cls` the type `type` or a subtype of it? For a user class: itself,
+   * its interfaces and their superinterfaces, and the library exception class
+   * it extends. For a library class, the library's hierarchy.
+   */
+  private isSubclass(cls: string, type: string, seen = new Set<string>()): boolean {
+    if (cls === type || type === 'Object') return true;
+    const info = this.classes.get(cls);
+    if (!info) {
+      if (cls === 'String') return isStringType(type);
+      const unboxed = UNBOXED[cls];
+      return unboxed ? isBoxedInstanceOf(unboxed, type) : isLibrarySubtype(cls, type);
     }
-    return javaNull();
+    seen.add(cls);
+    if (info.interfaces.some(i => !seen.has(i) && this.isSubclass(i, type, seen))) return true;
+    return info.superclass !== undefined && this.isSubclass(info.superclass, type, seen);
+  }
+
+  /** Match a type pattern (`String s`) against a value, binding the variable in `scope` on a match. */
+  private matchPattern(pattern: CstNode, value: JavaValue, scope: Scope): boolean {
+    const typePattern = child(pattern, 'typePattern');
+    if (!typePattern) throw new UnsupportedFeatureError('Record patterns', getLine(pattern));
+    const decl = child(typePattern, 'localVariableDeclaration')!;
+    const type = this.extractLocalVarType(child(decl, 'localVariableType')!);
+    if (!this.isInstanceOf(value, type)) return false;
+    const declarator = children(child(decl, 'variableDeclaratorList')!, 'variableDeclarator')[0];
+    setVariable(scope, token(child(declarator, 'variableDeclaratorId')!, 'Identifier')!.image, value, type);
+    return true;
   }
 
   private castPrimitiveValue(value: JavaValue, targetType: JavaType): JavaValue {
@@ -1894,14 +2367,13 @@ export class JavaInterpreter {
     // Floating point literal
     const fpLit = child(literal, 'floatingPointLiteral');
     if (fpLit) {
-      const tok = token(fpLit, 'FloatLiteral') || token(fpLit, 'DoubleLiteral');
-      if (tok) {
-        let img = tok.image.replace(/_/g, '');
-        if (img.endsWith('f') || img.endsWith('F') || img.endsWith('d') || img.endsWith('D')) {
-          img = img.slice(0, -1);
-        }
-        return javaDouble(parseFloat(img));
+      const tok = token(fpLit, 'FloatLiteral');
+      if (!tok) throw new UnsupportedFeatureError('Hexadecimal floating-point literals', getLine(fpLit));
+      let img = tok.image.replace(/_/g, '');
+      if (img.endsWith('f') || img.endsWith('F') || img.endsWith('d') || img.endsWith('D')) {
+        img = img.slice(0, -1);
       }
+      return javaDouble(parseFloat(img));
     }
 
     // Boolean literal
@@ -1910,29 +2382,14 @@ export class JavaInterpreter {
       return javaBool(has(boolLit, 'True'));
     }
 
-    // String literal
     const strTok = token(literal, 'StringLiteral');
-    if (strTok) {
-      // Remove surrounding quotes and unescape
-      let s = strTok.image.slice(1, -1);
-      s = s.replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\r/g, '\r')
-        .replace(/\\"/g, '"').replace(/\\\\/g, '\\').replace(/\\'/g, "'");
-      return javaString(s);
-    }
-
-    // Char literal
+    if (strTok) return javaString(stringLiteralValue(strTok.image));
+    const textBlock = token(literal, 'TextBlock');
+    if (textBlock) return javaString(textBlockValue(textBlock.image));
     const charTok = token(literal, 'CharLiteral');
-    if (charTok) {
-      let s = charTok.image.slice(1, -1);
-      s = s.replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\r/g, '\r')
-        .replace(/\\'/g, "'").replace(/\\\\/g, '\\');
-      return javaChar(s.charCodeAt(0));
-    }
-
-    // Null literal
+    if (charTok) return javaChar(charLiteralValue(charTok.image));
     if (has(literal, 'Null')) return javaNull();
-
-    return javaNull();
+    throw new InterpreterError('Unrecognized literal', getLine(literal));
   }
 
   // ── Names, selectors and method calls ──
@@ -1971,21 +2428,23 @@ export class JavaInterpreter {
       case 'this':
         return { kind: 'value', value: this.resolveThis(scope, base.line) };
       case 'super':
-        throw new InterpreterError(`'super.' member access ${UNSUPPORTED}`, base.line);
+        throw new UnsupportedFeatureError("Members reached through 'super' (super.name)", base.line);
       case 'call': {
         const args = this.evalArguments(step.args, scope);
-        return { kind: 'value', value: this.invokeUnqualified(step.name, args, scope, primary, base.line) };
+        return { kind: 'value', value: this.invokeUnqualified(step.name, args, scope, getLine(primary), base.line) };
       }
       case 'expression':
         return { kind: 'value', value: this.evalPrimaryPrefix(step.prefix, scope) };
+      case 'unsupported':
+        throw new UnsupportedFeatureError(step.construct, base.line, step.singular);
     }
   }
 
   /**
    * What a simple name refers to, in Java's order: a local variable or
-   * parameter, a field of `this`, a static field, then a class. Anything else
-   * stays unresolved (a package prefix like `java.util`, or an undefined name)
-   * and is reported only if it is used as a value.
+   * parameter, a field of `this`, a static field in scope, then a class.
+   * Anything else stays unresolved (a package prefix like `java.util`, or an
+   * undefined name) and is reported only if it is used as a value.
    */
   private resolveSimpleName(name: string, scope: Scope): ChainValue {
     const local = this.lookupLocal(scope, name);
@@ -1994,14 +2453,14 @@ export class JavaInterpreter {
     if (self && this.objectHasField(self, name)) {
       return { kind: 'value', value: fieldReference(this.heap, self, name, 'Object', 'this', 0).get() };
     }
-    const staticSlot = this.staticFields.variables.get(name);
-    if (staticSlot) return { kind: 'value', value: staticSlot.value };
+    const found = this.findStatic(name);
+    if (found) return { kind: 'value', value: this.staticReference(found.owner, found.slot).get() };
     if (this.isKnownClass(name)) return { kind: 'type', name };
     return { kind: 'unresolved', path: [name] };
   }
 
   private isKnownClass(name: string): boolean {
-    return this.classNames.has(name) || LIBRARY_CLASSES.has(name);
+    return this.classes.has(name) || LIBRARY_CLASSES.has(name);
   }
 
   private applySelector(
@@ -2018,7 +2477,7 @@ export class JavaInterpreter {
       case 'call': {
         // The receiver is evaluated first, then the arguments (JLS §15.12.4).
         const args = this.evalArguments(step.args, scope);
-        return { kind: 'value', value: this.invokeOn(current, step.name, args, receiverText, primary, line) };
+        return { kind: 'value', value: this.invokeOn(current, step.name, args, receiverText, getLine(primary), line) };
       }
       case 'index': {
         const array = this.chainValue(current, line);
@@ -2026,7 +2485,7 @@ export class JavaInterpreter {
         return { kind: 'value', value: arrayElementReference(this.heap, array, index, receiverText, line).get() };
       }
       case 'unsupported':
-        throw new InterpreterError(`${step.construct} ${UNSUPPORTED}`, line);
+        throw new UnsupportedFeatureError(step.construct, line, step.singular);
     }
   }
 
@@ -2048,11 +2507,10 @@ export class JavaInterpreter {
 
   /** `ClassName.name`: a static field, a nested class, or a library constant such as Math.PI or System.out. */
   private staticMember(className: string, name: string, line: number): ChainValue {
-    if (this.classNames.has(className)) {
-      // Static fields share one namespace across classes until per-class statics (#15).
-      const slot = this.staticFields.variables.get(name);
-      if (slot) return { kind: 'value', value: slot.value };
-      if (this.classNames.has(name)) return { kind: 'type', name };
+    if (this.classes.has(className)) {
+      const found = this.staticSlotIn(className, name);
+      if (found) return { kind: 'value', value: this.staticReference(found.owner, found.slot).get() };
+      if (this.classes.has(name)) return { kind: 'type', name };
       if (this.instanceFields.get(className)?.some(f => f.name === name)) {
         throw new InterpreterError(`'${name}' is an instance field of ${className}, so it needs an object`, line);
       }
@@ -2063,7 +2521,7 @@ export class JavaInterpreter {
       if (name === 'err') return { kind: 'value', value: SYSTEM_ERR };
       if (name === 'in') return { kind: 'value', value: SYSTEM_IN };
     }
-    const constant = getStaticField(className, name);
+    const constant = getStaticField(className, name, this.ctx);
     if (constant) return { kind: 'value', value: constant };
     if (this.isKnownClass(name)) return { kind: 'type', name };
     throw new InterpreterError(`Unknown field: ${className}.${name}`, line);
@@ -2072,8 +2530,7 @@ export class JavaInterpreter {
   /** The value a chain evaluated to. A class, or a name that resolved to nothing, isn't a value. */
   private chainValue(current: ChainValue, line: number): JavaValue {
     if (current.kind === 'value') return current.value;
-    const name = current.kind === 'type' ? current.name : current.path[0];
-    throw new InterpreterError(`Variable '${name}' is not defined`, line);
+    throw this.undefinedName(current.kind === 'type' ? current.name : current.path[0], line);
   }
 
   private invokeOn(
@@ -2081,12 +2538,12 @@ export class JavaInterpreter {
     name: string,
     args: JavaValue[],
     receiverText: string,
-    primary: CstNode,
+    callSiteLine: number,
     line: number,
   ): JavaValue {
-    if (current.kind === 'value') return this.invokeMethod(current.value, name, args, receiverText, primary, line);
+    if (current.kind === 'value') return this.invokeMethod(current.value, name, args, receiverText, callSiteLine, line);
     const className = current.kind === 'type' ? current.name : current.path[current.path.length - 1];
-    return this.invokeStatic(className, name, args, receiverText, primary, line);
+    return this.invokeStatic(className, name, args, receiverText, callSiteLine, line);
   }
 
   /** An instance method call on a value: String, StringBuilder, library objects, or a user class. */
@@ -2095,7 +2552,7 @@ export class JavaInterpreter {
     name: string,
     args: JavaValue[],
     receiverText: string,
-    primary: CstNode,
+    callSiteLine: number,
     line: number,
   ): JavaValue {
     if (target.kind === 'null') {
@@ -2110,14 +2567,16 @@ export class JavaInterpreter {
       if (target.className === 'StringBuilder' || target.className === 'StringBuffer') {
         return this.evalStringBuilderMethod(target, name, args);
       }
-      if (!this.classNames.has(target.className) && target.heapId !== SYSTEM_IN_ID) {
+      if (!this.classes.has(target.className) && target.heapId !== SYSTEM_IN_ID) {
         const builtin = callInstanceMethod(target, name, args, this.ctx);
         if (builtin !== undefined) return builtin;
       }
-      const method = this.resolveMethod(this.methodsByClass.get(target.className), name, args.length);
-      if (method) return this.callMethod(method, args, getLine(primary), method.isStatic ? undefined : target);
+      const table = this.methodsByClass.get(target.className);
+      const method = this.resolveMethod(table, name, args.length);
+      if (method) return this.callMethod(method, args, callSiteLine, method.isStatic ? undefined : target);
       const excResult = this.exceptionFallback(target, name);
       if (excResult !== undefined) return excResult;
+      if (table?.has(name)) throw wrongArgumentCount(`${receiverText}.${name}`, args.length, line);
     }
     throw new InterpreterError(`Unknown method: ${receiverText}.${name}()`, line);
   }
@@ -2128,14 +2587,19 @@ export class JavaInterpreter {
     name: string,
     args: JavaValue[],
     receiverText: string,
-    primary: CstNode,
+    callSiteLine: number,
     line: number,
   ): JavaValue {
     // A user class takes precedence over a library class with the same name.
-    if (this.classNames.has(className)) {
-      const method = this.resolveMethod(this.methodsByClass.get(className), name, args.length);
-      if (method?.isStatic) return this.callMethod(method, args, getLine(primary));
+    if (this.classes.has(className)) {
+      const table = this.methodsByClass.get(className);
+      const method = this.resolveMethod(table, name, args.length);
+      if (method?.isStatic) {
+        this.initClass(className); // calling a static method initializes its class (JLS §12.4.1)
+        return this.callMethod(method, args, callSiteLine);
+      }
       if (method) throw new InterpreterError(`Cannot call instance method '${name}' without an object`, line);
+      if (table?.has(name)) throw wrongArgumentCount(`${receiverText}.${name}`, args.length, line);
     }
     const result = callStaticMethod(className, name, args, this.ctx);
     if (result !== undefined) return result;
@@ -2143,16 +2607,16 @@ export class JavaInterpreter {
   }
 
   /**
-   * An unqualified call `name(args)`: a static method of the enclosing class
-   * (so a helper in a non-entry class finds its own siblings), then of the
-   * entry class, then an instance method on `this`.
+   * An unqualified call `name(args)`: a method of the enclosing class, or of
+   * a class it is nested in, then (leniently) of the entry class. A static
+   * one is called directly; an instance one is called on `this`.
    */
-  private invokeUnqualified(name: string, args: JavaValue[], scope: Scope, primary: CstNode, line: number): JavaValue {
-    const currentClass = this.currentClassName();
-    const method =
-      (currentClass ? this.resolveMethod(this.methodsByClass.get(currentClass), name, args.length) : undefined)
-      || this.resolveMethod(this.methods, name, args.length);
-    if (method && method.isStatic) return this.callMethod(method, args, getLine(primary));
+  private invokeUnqualified(name: string, args: JavaValue[], scope: Scope, callSiteLine: number, line: number): JavaValue {
+    const method = this.findUnqualifiedMethod(name, args.length);
+    if (method?.isStatic) {
+      this.initClass(method.className);
+      return this.callMethod(method, args, callSiteLine);
+    }
 
     // An instance method called unqualified from an instance context, e.g. one
     // instance method invoking a sibling. Dispatch on `this`.
@@ -2160,14 +2624,33 @@ export class JavaInterpreter {
     if (self?.kind === 'objectRef') {
       const instanceMethod = this.resolveMethod(this.methodsByClass.get(self.className), name, args.length);
       if (instanceMethod && !instanceMethod.isStatic) {
-        return this.callMethod(instanceMethod, args, getLine(primary), self);
+        return this.callMethod(instanceMethod, args, callSiteLine, self);
       }
     }
+    throw this.unqualifiedCallError(name, args.length, method !== undefined, callSiteLine, line);
+  }
 
+  /** The method an unqualified call names: in the enclosing class or a class it is nested in, then (leniently) the entry class. */
+  private findUnqualifiedMethod(name: string, argCount: number): MethodDef | undefined {
+    for (let cls = this.currentClassName(); cls; cls = this.classes.get(cls)?.outer) {
+      const method = this.resolveMethod(this.methodsByClass.get(cls), name, argCount);
+      if (method) return method;
+    }
+    return this.resolveMethod(this.methods, name, argCount);
+  }
+
+  private unqualifiedCallError(name: string, argCount: number, foundInstanceMethod: boolean, callSiteLine: number, line: number): InterpreterError {
+    if (this.enclosingInstanceMember(name, 'method')) {
+      return new UnsupportedFeatureError(`Inner classes calling a method of the enclosing object ('${name}()')`, line);
+    }
     // Found the method, but it's an instance method and there's no `this`
     // (a genuine static context): surface the classic Java error.
-    if (method) throw new InterpreterError(`Cannot call instance method '${name}' without an object`, getLine(primary));
-    throw new InterpreterError(`Unknown method: ${name}()`, line);
+    if (foundInstanceMethod) return new InterpreterError(`Cannot call instance method '${name}' without an object`, callSiteLine);
+    let known = this.methods.has(name);
+    for (let cls = this.currentClassName(); cls && !known; cls = this.classes.get(cls)?.outer) {
+      known = this.methodsByClass.get(cls)?.has(name) ?? false;
+    }
+    return known ? wrongArgumentCount(name, argCount, line) : new InterpreterError(`Unknown method: ${name}()`, line);
   }
 
   /** System.out and System.err. Both write to the one console for now (stderr is #22). */
@@ -2197,14 +2680,12 @@ export class JavaInterpreter {
 
   /**
    * Fallback for Throwable methods (getMessage/getLocalizedMessage/toString/
-   * printStackTrace) on a user-defined exception object that doesn't define
-   * them itself. Returns undefined for unrelated methods.
+   * getCause/printStackTrace) on a user-defined exception object that doesn't
+   * define them itself. Returns undefined for unrelated methods.
    */
   private exceptionFallback(target: JavaValue, methodName: string): JavaValue | undefined {
-    if (methodName === 'getMessage' || methodName === 'getLocalizedMessage'
-      || methodName === 'printStackTrace'
-      || (methodName === 'toString' && target.kind === 'objectRef'
-          && /(?:Exception|Error)$/.test(target.className))) {
+    if (!this.isThrowable(target)) return undefined;
+    if (['getMessage', 'getLocalizedMessage', 'printStackTrace', 'toString', 'getCause'].includes(methodName)) {
       return exceptionMethod(target, methodName, this.ctx);
     }
     return undefined;
@@ -2216,17 +2697,12 @@ export class JavaInterpreter {
     callSiteLine?: number,
     thisValue?: JavaValue,
   ): JavaValue {
-    const methodScope = createScope(this.staticFields);
+    if (!method.body) throw new InterpreterError(`${method.name}() is abstract, so it has no code to run`, callSiteLine ?? 0);
+    const methodScope = createScope(null);
     if (thisValue) {
       setVariable(methodScope, 'this', thisValue, thisValue.kind === 'objectRef' ? thisValue.className : 'Object');
     }
-
-    // Bind parameters
-    for (let i = 0; i < method.params.length; i++) {
-      const param = method.params[i];
-      const arg = i < args.length ? args[i] : defaultValue(param.type);
-      setVariable(methodScope, param.name, arg, param.type);
-    }
+    this.bindParameters(methodScope, method.params, method.varargs, args);
 
     // Pre-call snapshot: show the call site line before entering the method
     if (callSiteLine) {
@@ -2245,44 +2721,93 @@ export class JavaInterpreter {
     }
   }
 
-  private findConstructor(className: string, args: JavaValue[]): ConstructorDef | undefined {
-    return (this.constructors.get(className) || []).find(ctor => ctor.params.length === args.length);
-  }
-
-  private callConstructor(
-    ctor: ConstructorDef,
-    thisValue: JavaValue,
-    args: JavaValue[],
-    callSiteLine: number,
-  ): void {
-    const ctorScope = createScope(this.staticFields);
-    setVariable(ctorScope, 'this', thisValue, ctor.className);
-
-    for (let i = 0; i < ctor.params.length; i++) {
-      const param = ctor.params[i];
-      const arg = i < args.length ? args[i] : defaultValue(param.type);
-      setVariable(ctorScope, param.name, arg, param.type);
-    }
-
-    // super("message") / this("message"): capture a detail message on the object
-    // so user-defined exceptions calling super(msg) still answer getMessage().
-    const eci = child(ctor.body, 'explicitConstructorInvocation');
-    const unqualified = eci ? child(eci, 'unqualifiedExplicitConstructorInvocation') : undefined;
-    if (unqualified && thisValue.kind === 'objectRef') {
-      const argList = child(unqualified, 'argumentList');
-      const first = argList ? children(argList, 'expression')[0] : undefined;
-      if (first) {
-        const val = this.evalExpression(first, ctorScope);
-        if (val.kind === 'string') {
-          const obj = this.heap.get(thisValue.heapId);
-          if (obj && isJavaObject(obj) && !obj.fields.has('message')) obj.fields.set('message', val);
+  /**
+   * Bind arguments to parameters. A varargs parameter receives the trailing
+   * arguments as a new array, unless it was passed an array (or null) itself.
+   */
+  private bindParameters(scope: Scope, params: Param[], varargs: boolean, args: JavaValue[]): void {
+    params.forEach((param, i) => {
+      let arg = args[i] ?? defaultValue(param.type);
+      if (varargs && i === params.length - 1) {
+        const passedArray = args.length === params.length && (arg.kind === 'arrayRef' || arg.kind === 'null');
+        if (!passedArray) {
+          const elementType = param.type.slice(0, -2);
+          const elements = args.slice(i).map(a => assignmentConversion(a, elementType));
+          arg = { kind: 'arrayRef', heapId: this.allocArray(elementType, elements) };
         }
       }
+      setVariable(scope, param.name, arg, param.type);
+    });
+  }
+
+  // ── Objects and constructors ──
+
+  /** The constructor of `className` for `argCount` arguments (chosen by count; choosing by type is #13). */
+  private findConstructor(className: string, argCount: number): ConstructorDef | undefined {
+    const ctors = this.constructors.get(className) ?? [];
+    return ctors.find(c => !c.varargs && c.params.length === argCount)
+      ?? ctors.find(c => c.varargs && argCount >= c.params.length - 1);
+  }
+
+  /**
+   * Run a new object's constructor. The object already exists with its fields
+   * at their default values. A class that declares no constructor has the
+   * default one, which only runs the instance initializers.
+   */
+  private construct(className: string, self: JavaObjectRef, args: JavaValue[], callSiteLine: number): void {
+    const info = this.classes.get(className)!;
+    if (!this.constructors.has(className)) {
+      if (args.length > 0) throw noConstructor(className, args.length, callSiteLine);
+      if (info.instanceInit.length > 0) {
+        const scope = createScope(null);
+        setVariable(scope, 'this', self, className);
+        const frame: Frame = { name: className, scope, currentScope: scope, className };
+        this.callStack.push(frame);
+        try {
+          this.runInstanceInitializers(info, self, frame);
+        } finally {
+          this.callStack.pop();
+        }
+      }
+      return;
     }
+    const ctor = this.findConstructor(className, args.length);
+    if (!ctor) throw noConstructor(className, args.length, callSiteLine);
+    this.callConstructor(ctor, self, args, callSiteLine);
+  }
+
+  /**
+   * One constructor call (JLS §12.5): bind the parameters; then either
+   * delegate to another constructor with `this(…)`, or run the superclass
+   * constructor (`super(…)`, or implicitly) followed by the instance
+   * initializers; then the rest of the body.
+   */
+  private callConstructor(ctor: ConstructorDef, self: JavaObjectRef, args: JavaValue[], callSiteLine: number): void {
+    const info = this.classes.get(ctor.className)!;
+    const ctorScope = createScope(null);
+    setVariable(ctorScope, 'this', self, ctor.className);
+    this.bindParameters(ctorScope, ctor.params, ctor.varargs, args);
 
     this.emitSnapshot(callSiteLine);
-    this.callStack.push({ name: ctor.className, scope: ctorScope, currentScope: ctorScope, className: ctor.className });
+    const frame: Frame = { name: ctor.className, scope: ctorScope, currentScope: ctorScope, className: ctor.className };
+    this.callStack.push(frame);
     try {
+      const eci = child(ctor.body, 'explicitConstructorInvocation');
+      const invocation = eci ? child(eci, 'unqualifiedExplicitConstructorInvocation') : undefined;
+      if (eci && !invocation) throw new UnsupportedFeatureError('Qualified superclass constructor calls (outer.super(…))', getLine(eci));
+      const argList = invocation ? child(invocation, 'argumentList') : undefined;
+      const invocationArgs = invocation ? this.evalArguments(argList ? children(argList, 'expression') : [], ctorScope) : [];
+      if (invocation && has(invocation, 'This')) {
+        // this(…) runs another constructor of the class on the same object; that one runs the initializers.
+        const line = getLine(invocation);
+        const target = this.findConstructor(ctor.className, invocationArgs.length);
+        if (!target) throw noConstructor(ctor.className, invocationArgs.length, line);
+        this.callConstructor(target, self, invocationArgs, line);
+        this.emitSnapshot(line);
+      } else {
+        this.superConstructor(info, self, invocationArgs, invocation ? getLine(invocation) : callSiteLine);
+        this.runInstanceInitializers(info, self, frame);
+      }
       this.executeBlock(ctor.body, ctorScope);
     } catch (e) {
       if (!(e instanceof ReturnSignal)) {
@@ -2293,127 +2818,134 @@ export class JavaInterpreter {
     }
   }
 
-  // ── new expression ──
+  /**
+   * The superclass constructor. Object's does nothing. A library exception
+   * class's records the message and cause: Throwable(String),
+   * Throwable(String, Throwable) or Throwable(Throwable), which takes the
+   * cause's toString() as its message.
+   */
+  private superConstructor(info: ClassInfo, self: JavaObjectRef, args: JavaValue[], line: number): void {
+    if (!info.superclass) {
+      if (args.length > 0) throw new InterpreterError(`${info.name} has no superclass constructor that takes arguments`, line);
+      return;
+    }
+    const obj = this.heap.get(self.heapId) as JavaObject;
+    const [first, second] = args;
+    if (first) {
+      // A user class's own `message` field keeps its value.
+      if (!obj.fields.has('message')) obj.fields.set('message', first.kind === 'null' ? javaNull() : javaString(this.stringify(first)));
+      if (this.isThrowable(first)) obj.fields.set('cause', first);
+    }
+    if (second) obj.fields.set('cause', second);
+  }
+
+  /**
+   * A class's instance field initializers and initializer blocks, in textual
+   * order, with `this` bound to the new object (JLS §12.5 step 4). They run in
+   * the constructor's frame but can't see its parameters, so the frame shows
+   * a scope of their own while they run.
+   */
+  private runInstanceInitializers(info: ClassInfo, self: JavaObjectRef, frame: Frame): void {
+    if (info.instanceInit.length === 0) return;
+    const saved = { scope: frame.scope, currentScope: frame.currentScope };
+    const initScope = createScope(null);
+    setVariable(initScope, 'this', self, info.name);
+    frame.scope = initScope;
+    frame.currentScope = initScope;
+    try {
+      for (const item of info.instanceInit) {
+        if (item.kind === 'field') {
+          const value = this.evalVariableInitializer(item.init, item.type, initScope);
+          fieldReference(this.heap, self, item.name, item.type, 'this', getLine(item.init)).set(value);
+        } else {
+          this.runBlockIn(item.block, initScope);
+        }
+      }
+    } finally {
+      frame.scope = saved.scope;
+      frame.currentScope = saved.currentScope;
+    }
+  }
 
   private evalNewExpression(newExpr: CstNode, scope: Scope): JavaValue {
     // Array creation: new int[5], new int[]{1, 2, 3}
     const arrayCreation = child(newExpr, 'arrayCreationExpression');
-    if (arrayCreation) {
-      return this.evalArrayCreation(arrayCreation, scope);
-    }
-
+    if (arrayCreation) return this.evalArrayCreation(arrayCreation, scope);
     // Object creation: new ClassName(args)
-    const unqualified = child(newExpr, 'unqualifiedClassInstanceCreationExpression');
-    if (unqualified) {
-      return this.evalObjectCreation(unqualified, scope);
-    }
-
-    return javaNull();
+    return this.evalObjectCreation(child(newExpr, 'unqualifiedClassInstanceCreationExpression')!, scope);
   }
 
   private evalArrayCreation(arrayCreation: CstNode, scope: Scope): JavaValue {
-    // Determine element type
-    let elementType = 'int';
+    const line = getLine(arrayCreation);
     const primType = child(arrayCreation, 'primitiveType');
-    if (primType) {
-      elementType = this.extractPrimitiveType(primType);
-    }
     const classType = child(arrayCreation, 'classOrInterfaceType');
-    if (classType) {
-      const classOrType = child(classType, 'classType');
-      if (classOrType) {
-        const id = token(classOrType, 'Identifier');
-        if (id) elementType = id.image;
-      }
-    }
+    const baseType = primType ? this.extractPrimitiveType(primType) : lastIdentifier(child(classType!, 'classType'));
 
-    // With initializer: new int[]{1, 2, 3}
+    // With an initializer: new int[]{1, 2, 3}, new int[][]{{1}, {2, 3}}
     const withInit = child(arrayCreation, 'arrayCreationWithInitializerSuffix');
     if (withInit) {
-      const arrayInit = child(withInit, 'arrayInitializer');
-      if (arrayInit) {
-        return this.evalArrayInitializer(arrayInit, elementType + '[]', scope);
-      }
+      return this.evalArrayInitializer(child(withInit, 'arrayInitializer')!, baseType + dimsSuffix(child(withInit, 'dims')), scope);
     }
 
-    // Without initializer: new int[5]
-    const withoutInit = child(arrayCreation, 'arrayCreationExpressionWithoutInitializerSuffix');
-    if (withoutInit) {
-      const dimExprs = child(withoutInit, 'dimExprs');
-      if (dimExprs) {
-        const dims = children(dimExprs, 'dimExpr');
-        if (dims.length > 0) {
-          const sizeExpr = child(dims[0], 'expression')!;
-          const size = javaValueToNumber(this.evalExpression(sizeExpr, scope));
+    // With lengths: new int[2][3][4], or new int[3][] for rows made later.
+    // Each length is evaluated once, left to right, before anything is allocated.
+    const suffix = child(arrayCreation, 'arrayCreationExpressionWithoutInitializerSuffix')!;
+    const lengths = children(child(suffix, 'dimExprs')!, 'dimExpr')
+      .map(dim => Math.trunc(javaValueToNumber(this.evalExpression(child(dim, 'expression')!, scope))));
+    const negative = lengths.find(n => n < 0);
+    if (negative !== undefined) throw new JavaRuntimeError('NegativeArraySizeException', String(negative), line);
+    return this.allocArrayOfLengths(baseType, lengths, dimsSuffix(child(suffix, 'dims')));
+  }
 
-          if (dims.length > 1) {
-            // Multi-dimensional array
-            const innerSize = child(dims[1], 'expression');
-            const elements: JavaValue[] = [];
-            for (let i = 0; i < size; i++) {
-              if (innerSize) {
-                const innerLen = javaValueToNumber(this.evalExpression(innerSize, scope));
-                const innerElements = Array(innerLen).fill(null).map(() => defaultValue(elementType));
-                const innerHeapId = this.allocArray(elementType, innerElements);
-                elements.push({ kind: 'arrayRef', heapId: innerHeapId });
-              } else {
-                elements.push(javaNull());
-              }
-            }
-            const heapId = this.allocArray(elementType + '[]', elements);
-            return { kind: 'arrayRef', heapId };
-          }
-
-          const elements = Array(size).fill(null).map(() => defaultValue(elementType));
-          const heapId = this.allocArray(elementType, elements);
-          return { kind: 'arrayRef', heapId };
-        }
-      }
+  /**
+   * An array with one length per dimension. The innermost elements get the
+   * default value of their type, which is null when unsized dimensions
+   * (`extraDims`) remain, as for `new int[3][]`.
+   */
+  private allocArrayOfLengths(baseType: string, lengths: number[], extraDims: string): JavaValue {
+    const [length, ...inner] = lengths;
+    const elementType = baseType + '[]'.repeat(inner.length) + extraDims;
+    const elements: JavaValue[] = [];
+    for (let i = 0; i < length; i++) {
+      elements.push(inner.length > 0 ? this.allocArrayOfLengths(baseType, inner, extraDims) : defaultValue(elementType));
     }
-
-    return javaNull();
+    return { kind: 'arrayRef', heapId: this.allocArray(elementType, elements) };
   }
 
   private evalObjectCreation(creation: CstNode, scope: Scope): JavaValue {
-    // Get class name
-    const classType = child(creation, 'classOrInterfaceTypeToInstantiate');
-    if (!classType) return javaNull();
-    const id = token(classType, 'Identifier');
-    const className = id?.image || 'Object';
-
-    // Get constructor arguments
-    const args: JavaValue[] = [];
+    const line = getLine(creation);
+    // new java.util.Scanner(…) and new Outer.Inner(…) name the class by the last part.
+    const className = lastIdentifier(child(creation, 'classOrInterfaceTypeToInstantiate')!);
+    if (has(creation, 'classBody')) throw new UnsupportedFeatureError('Anonymous classes', line);
+    const info = this.classes.get(className);
+    // `new` initializes the class before evaluating the arguments (JLS §12.4.1).
+    if (info) this.initClass(className);
     const argList = child(creation, 'argumentList');
-    if (argList) {
-      for (const argExpr of children(argList, 'expression')) {
-        args.push(this.evalExpression(argExpr, scope));
+    const args = this.evalArguments(argList ? children(argList, 'expression') : [], scope);
+
+    if (!info) {
+      // A plain Object, e.g. one used only as a lock.
+      if (className === 'Object') return { kind: 'objectRef', heapId: this.allocObject('Object', new Map()), className };
+      if (className === 'StringBuilder' || className === 'StringBuffer') {
+        const initial = args.length > 0 && args[0].kind !== 'primitive' ? javaValueToString(args[0], this.heap) : '';
+        const heapId = this.allocObject(className, new Map([
+          ['value', javaString(initial)],
+        ]));
+        return { kind: 'objectRef', heapId, className };
       }
-    }
-
-    // Built-in types
-    if (className === 'StringBuilder' || className === 'StringBuffer') {
-      const initial = args.length > 0 ? javaValueToString(args[0], this.heap) : '';
-      const heapId = this.allocObject(className, new Map([
-        ['value', javaString(initial)],
-      ]));
-      return { kind: 'objectRef', heapId, className };
-    }
-
-    // Collections, Scanner, Random — handled by the stdlib, unless the user
-    // defined their own class with the same name (which takes precedence).
-    if (!this.classNames.has(className)) {
+      // Collections, Scanner, Random and exceptions come from the stdlib.
       const builtin = newBuiltin(className, args, this.ctx);
       if (builtin) return builtin;
+      throw new UnsupportedFeatureError(`The ${className} class`, line, true);
+    }
+    if (info.kind === 'interface' || info.isAbstract) {
+      throw new InterpreterError(`${className} is ${info.kind === 'interface' ? 'an interface' : 'abstract'}, so it can't be instantiated`, line);
     }
 
-    // Generic object — create with declared instance fields, then run a matching constructor.
-    const heapId = this.allocObject(className, this.createInstanceFields(className, scope));
-    const objectRef: JavaValue = { kind: 'objectRef', heapId, className };
-    const ctor = this.findConstructor(className, args);
-    if (ctor) {
-      this.callConstructor(ctor, objectRef, args, getLine(creation));
-    }
-    return objectRef;
+    const heapId = this.allocObject(className, this.defaultInstanceFields(className));
+    const self: JavaObjectRef = { kind: 'objectRef', heapId, className };
+    this.construct(className, self, args, line);
+    return self;
   }
 
   // ── Built-in methods ──
@@ -2492,7 +3024,8 @@ export class JavaInterpreter {
     const curStr = cur && cur.kind === 'string' ? cur.value : '';
     switch (method) {
       case 'append': {
-        const next = curStr + (args.length > 0 ? javaValueToString(args[0], this.heap) : '');
+        // String.valueOf(arg): an object's own toString() is used.
+        const next = curStr + (args.length > 0 ? this.stringify(args[0]) : '');
         obj.fields.set('value', javaString(next));
         return ref; // append returns the builder for chaining
       }
@@ -2516,7 +3049,7 @@ export class JavaInterpreter {
       }
       case 'insert': {
         const idx = javaValueToNumber(args[0]) | 0;
-        const ins = javaValueToString(args[1], this.heap);
+        const ins = this.stringify(args[1]);
         obj.fields.set('value', javaString(curStr.slice(0, idx) + ins + curStr.slice(idx)));
         return ref;
       }
@@ -2531,6 +3064,113 @@ function isAssignmentOp(op: string): boolean {
   return ['=', '+=', '-=', '*=', '/=', '%=', '&=', '|=', '^=', '<<=', '>>=', '>>>='].includes(op);
 }
 
+const PRIMITIVE_TYPES = new Set<string>(['int', 'long', 'short', 'byte', 'char', 'float', 'double', 'boolean']);
+
+/** Each primitive type's box class, and the reverse. */
+const BOXES: Record<JavaPrimitiveType, string> = {
+  int: 'Integer', long: 'Long', short: 'Short', byte: 'Byte', char: 'Character', float: 'Float', double: 'Double', boolean: 'Boolean',
+};
+const UNBOXED: Record<string, JavaPrimitiveType> = Object.fromEntries(
+  Object.entries(BOXES).map(([primitive, box]) => [box, primitive as JavaPrimitiveType]),
+);
+
+/** What every array is, besides an array of its element type. */
+const ARRAY_SUPERTYPES = new Set(['Object', 'Cloneable', 'Serializable']);
+
+function plural(n: number, word: string): string {
+  return `${n} ${word}${n === 1 ? '' : 's'}`;
+}
+
+/** A call to a method that exists, but not with this many arguments. */
+function wrongArgumentCount(text: string, argCount: number, line: number): InterpreterError {
+  return new InterpreterError(`${text}() can't be called with ${plural(argCount, 'argument')}`, line);
+}
+
+function noConstructor(className: string, argCount: number, line: number): InterpreterError {
+  return new InterpreterError(`${className} has no constructor that takes ${plural(argCount, 'argument')}`, line);
+}
+
+/** `ClassName: detail` at the start of an error message, when ClassName is a known exception class. */
+function parseRuntimeException(message: string): { className: string; detail: string } | undefined {
+  // InterpreterError prefixes "Line N: "; strip it before matching the type.
+  const m = message.replace(/^Line \d+:\s*/, '').match(/^([A-Za-z_][A-Za-z0-9_]*)(?::\s*(.*))?$/s);
+  return m && isExceptionClass(m[1]) ? { className: m[1], detail: m[2] ?? '' } : undefined;
+}
+
+/** The last name of a possibly qualified type: `java.util.Scanner` is `Scanner`, `Map.Entry` is `Entry`. */
+function lastIdentifier(node: CstNode | undefined): string {
+  const ids = node ? tokens(node, 'Identifier') : [];
+  return ids.length > 0 ? ids[ids.length - 1].image : 'Object';
+}
+
+/** `[]` for each pair of brackets in a `dims` node. */
+function dimsSuffix(dims: CstNode | undefined): string {
+  return dims ? '[]'.repeat(tokens(dims, 'LSquare').length) : '';
+}
+
+/** The type names in an `implements` clause or an interface's `extends` clause. */
+function interfaceNames(clause: CstNode | undefined): string[] {
+  const list = clause ? child(clause, 'interfaceTypeList') : undefined;
+  return (list ? children(list, 'interfaceType') : []).map(type => lastIdentifier(child(type, 'classType')));
+}
+
+/** The error for a block statement that isn't a statement or a local variable: a class, interface, enum or record declared in a method. */
+function localDeclarationError(blockStmt: CstNode): InterpreterError {
+  const decl = child(blockStmt, 'classDeclaration') ?? child(blockStmt, 'interfaceDeclaration');
+  if (!decl) return new InterpreterError('Unrecognized statement', getLine(blockStmt));
+  const kind = decl.name === 'interfaceDeclaration' ? 'Interfaces'
+    : has(decl, 'enumDeclaration') ? 'Enums'
+    : has(decl, 'recordDeclaration') ? 'Records'
+    : 'Classes';
+  return new UnsupportedFeatureError(`${kind} declared inside a method`, getLine(decl));
+}
+
+/** Does a subtree contain a token with this text (e.g. a use of a variable)? */
+function mentionsName(node: CstNode, name: string): boolean {
+  return Object.values(node.children).some(items =>
+    items.some(item => (isCstNode(item) ? mentionsName(item, name) : item.image === name)));
+}
+
+/** The first node of this kind in a subtree. */
+function findNode(node: CstNode, name: string): CstNode | undefined {
+  if (node.name === name) return node;
+  for (const items of Object.values(node.children)) {
+    for (const item of items) {
+      const found = isCstNode(item) ? findNode(item, name) : undefined;
+      if (found) return found;
+    }
+  }
+  return undefined;
+}
+
+/** The nodes a constant expression built from literals and operators alone contains (JLS §15.29 without names). */
+const LITERAL_CONSTANT_NODES = new Set([
+  'variableInitializer', 'expression', 'conditionalExpression', 'binaryExpression', 'unaryExpression', 'primary',
+  'primaryPrefix', 'literal', 'integerLiteral', 'floatingPointLiteral', 'booleanLiteral', 'parenthesisExpression',
+  'castExpression', 'primitiveCastExpression', 'primitiveType', 'numericType', 'integralType', 'floatingPointType',
+]);
+
+/** Is a field initializer a constant made of literals and operators, like `10`, `-1`, `"a" + "b"` or `(int) 2.5`? */
+function isLiteralConstant(node: CstNode): boolean {
+  if (!LITERAL_CONSTANT_NODES.has(node.name) || has(node, 'Null')) return false;
+  return Object.values(node.children).every(items => items.every(item => !isCstNode(item) || isLiteralConstant(item)));
+}
+
+/**
+ * Can a statement finish without jumping away? Not return, throw, break,
+ * continue or yield, nor a block that ends with one (JLS §14.22, simplified).
+ */
+function canCompleteNormally(stmt: CstNode): boolean {
+  const swts = child(stmt, 'statementWithoutTrailingSubstatement');
+  if (!swts) return true;
+  const jumps = ['returnStatement', 'throwStatement', 'breakStatement', 'continueStatement', 'yieldStatement'];
+  if (jumps.some(kind => has(swts, kind))) return false;
+  const block = child(swts, 'block');
+  const stmts = block ? children(child(block, 'blockStatements') ?? block, 'blockStatement') : [];
+  const last = stmts.length > 0 ? child(stmts[stmts.length - 1], 'statement') : undefined;
+  return last ? canCompleteNormally(last) : true;
+}
+
 // ── Primary chains ──
 //
 // A primary expression such as `people[1].age`, `head.next.getVal()` or
@@ -2538,20 +3178,27 @@ function isAssignmentOp(op: string): boolean {
 // structure from the parser's tree once per node, and the interpreter walks it
 // for reads, method calls and writes alike.
 
+/** A construct JavaTutor can't run yet, as UnsupportedFeatureError names it. */
+interface UnsupportedConstruct {
+  construct: string;
+  singular?: boolean;
+}
+
 /** The start of a primary expression. */
 type ChainBase =
   | { kind: 'name'; name: string }                  // a simple name: variable, field, class or package
   | { kind: 'this' }
   | { kind: 'super' }
   | { kind: 'call'; name: string; args: CstNode[] }  // an unqualified method call: foo(1)
-  | { kind: 'expression'; prefix: CstNode };         // a literal, (parenthesized), cast or new
+  | { kind: 'expression'; prefix: CstNode }          // a literal, (parenthesized), cast, new or switch
+  | ({ kind: 'unsupported' } & UnsupportedConstruct); // int.class, void.class, int[]::new
 
 /** One step after the base. */
 type Selector =
   | { kind: 'field'; name: string }                  // .name
   | { kind: 'call'; name: string; args: CstNode[] }  // .name(args)
   | { kind: 'index'; index: CstNode }                // [index]
-  | { kind: 'unsupported'; construct: string };      // .this, .class, ::, outer.new Inner()
+  | ({ kind: 'unsupported' } & UnsupportedConstruct); // .this, .class, ::, outer.new Inner()
 
 interface ChainStep<T> {
   step: T;
@@ -2571,11 +3218,9 @@ type ChainValue =
   | { kind: 'type'; name: string }          // a user or library class: Main, Math, System
   | { kind: 'unresolved'; path: string[] }; // no variable, field or class: a package prefix, or undefined
 
-const UNSUPPORTED = "isn't supported in JavaTutor yet";
-
 /** Library classes that can start a qualified name (for their static members), besides user classes. */
 const LIBRARY_CLASSES = new Set([
-  'Math', 'System', 'String', 'Objects', 'Arrays', 'Collections', 'List', 'Set', 'Map',
+  'Math', 'System', 'String', 'Objects', 'Arrays', 'Collections', 'Comparator', 'List', 'Set', 'Map',
   'Integer', 'Long', 'Short', 'Byte', 'Double', 'Float', 'Boolean', 'Character',
 ]);
 
@@ -2621,6 +3266,11 @@ function buildPrimaryChain(primary: CstNode): PrimaryChain {
     base = { step: { kind: 'this' }, text: 'this', line: getLine(prefix) };
   } else if (has(prefix, 'Super')) {
     base = { step: { kind: 'super' }, text: 'super', line: getLine(prefix) };
+  } else if (has(prefix, 'Void') || has(prefix, 'unannPrimitiveTypeWithOptionalDimsSuffix')) {
+    // A type as an expression: `int.class`, `void.class` or `int[]::new`.
+    const construct = suffixes.length > 0 ? describeSuffix(suffixes[0]) : { construct: 'Class literals (.class)' };
+    base = { step: { kind: 'unsupported', ...construct }, text: sourceText(prefix), line: getLine(prefix) };
+    nextSuffix = suffixes.length;
   } else {
     base = { step: { kind: 'expression', prefix }, text: sourceText(prefix), line: getLine(prefix) };
   }
@@ -2649,7 +3299,7 @@ function buildPrimaryChain(primary: CstNode): PrimaryChain {
       }
       continue;
     }
-    selectors.push({ step: { kind: 'unsupported', construct: describeSuffix(suffix) }, text, line });
+    selectors.push({ step: { kind: 'unsupported', ...describeSuffix(suffix) }, text, line });
   }
   return { base, selectors };
 }
@@ -2685,12 +3335,16 @@ function memberName(suffix: CstNode): string | undefined {
   return plain ? id.image : undefined;
 }
 
-function describeSuffix(suffix: CstNode): string {
-  if (has(suffix, 'This')) return 'Qualified this (Outer.this)';
-  if (child(suffix, 'classLiteralSuffix')) return 'Class literals (.class)';
-  if (child(suffix, 'methodReferenceSuffix')) return 'Method references (::)';
-  if (child(suffix, 'unqualifiedClassInstanceCreationExpression')) return 'Creating an inner class through an object (outer.new Inner())';
-  return 'This kind of expression';
+/** The construct a selector the chain can't evaluate stands for. */
+function describeSuffix(suffix: CstNode): UnsupportedConstruct {
+  if (has(suffix, 'This')) return { construct: 'Qualified this (Outer.this)', singular: true };
+  if (child(suffix, 'classLiteralSuffix')) return { construct: 'Class literals (.class)' };
+  if (child(suffix, 'methodReferenceSuffix')) return { construct: 'Method references (::)' };
+  if (child(suffix, 'unqualifiedClassInstanceCreationExpression')) {
+    return { construct: 'Creating an inner class through an object (outer.new Inner())', singular: true };
+  }
+  if (child(suffix, 'templateArgument')) return { construct: 'String templates' };
+  return { construct: 'This kind of expression', singular: true };
 }
 
 function argumentsText(args: CstNode[]): string {

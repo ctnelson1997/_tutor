@@ -25,6 +25,9 @@ import {
 import { type StdlibContext, HaltSignal, StdlibError } from './context';
 import {
   compareValues,
+  compareWith,
+  isComparator,
+  libraryComparator,
   valuesEqual,
   javaEquals,
   backingArray,
@@ -65,8 +68,11 @@ function hashOf(v: JavaValue, heap: StdlibContext['heap']): number {
   return h;
 }
 
-export function getStaticField(className: string, field: string): JavaValue | undefined {
+export function getStaticField(className: string, field: string, ctx?: StdlibContext): JavaValue | undefined {
   switch (className) {
+    case 'String':
+      if (field === 'CASE_INSENSITIVE_ORDER' && ctx) return libraryComparator('caseInsensitive', undefined, ctx);
+      break;
     case 'Math':
       if (field === 'PI') return javaDouble(Math.PI);
       if (field === 'E') return javaDouble(Math.E);
@@ -136,6 +142,10 @@ export function callStaticMethod(
     case 'Collections': return collectionsMethod(method, args, ctx);
     case 'List': case 'Set': case 'Map':
       return factoryOf(className, method, args, ctx);
+    case 'Comparator':
+      if (method === 'naturalOrder') return libraryComparator('natural', undefined, ctx);
+      if (method === 'reverseOrder') return libraryComparator('reverse', undefined, ctx);
+      break;
   }
   return undefined;
 }
@@ -339,14 +349,17 @@ function arraysMethod(method: string, args: JavaValue[], ctx: StdlibContext): Ja
       return javaString(deep(args[0]));
     }
     case 'sort': {
+      // Arrays.sort(a), (a, cmp), (a, from, to) and (a, from, to, cmp).
       const arr = arrOf(args[0]);
+      const cmp = isComparator(args[args.length - 1]) ? args[args.length - 1] : undefined;
+      const ranged = args.length >= 3;
       if (arr && isJavaArray(arr)) {
-        if (args.length >= 3) {
+        if (ranged) {
           const from = javaValueToNumber(args[1]) | 0, to = javaValueToNumber(args[2]) | 0;
-          const seg = arr.elements.slice(from, to).sort((a, b) => compareValues(a, b, ctx));
+          const seg = arr.elements.slice(from, to).sort((a, b) => compareWith(cmp, a, b, ctx));
           for (let i = 0; i < seg.length; i++) arr.elements[from + i] = seg[i];
         } else {
-          arr.elements.sort((a, b) => compareValues(a, b, ctx));
+          arr.elements.sort((a, b) => compareWith(cmp, a, b, ctx));
         }
       }
       return javaNull();
@@ -446,8 +459,10 @@ function collectionsMethod(method: string, args: JavaValue[], ctx: StdlibContext
   const data = args.length > 0 ? backingArray(args[0], ctx) : undefined;
   switch (method) {
     case 'sort':
-      if (data) data.elements.sort((a, b) => compareValues(a, b, ctx));
+      if (data) data.elements.sort((a, b) => compareWith(args[1], a, b, ctx));
       return javaNull();
+    case 'reverseOrder':
+      return libraryComparator('reverse', args[0], ctx);
     case 'reverse':
       if (data) data.elements.reverse();
       return javaNull();
@@ -460,10 +475,12 @@ function collectionsMethod(method: string, args: JavaValue[], ctx: StdlibContext
       }
       return javaNull();
     case 'max':
-      if (data && data.elements.length) return data.elements.reduce((m, e) => (compareValues(e, m, ctx) > 0 ? e : m));
+      if (data && data.elements.length) return data.elements.reduce((m, e) => (compareWith(args[1], e, m, ctx) > 0 ? e : m));
+      if (data) throw new StdlibError('NoSuchElementException');
       return javaNull();
     case 'min':
-      if (data && data.elements.length) return data.elements.reduce((m, e) => (compareValues(e, m, ctx) < 0 ? e : m));
+      if (data && data.elements.length) return data.elements.reduce((m, e) => (compareWith(args[1], e, m, ctx) < 0 ? e : m));
+      if (data) throw new StdlibError('NoSuchElementException');
       return javaNull();
     case 'frequency': {
       if (!data) return javaInt(0);

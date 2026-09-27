@@ -1,0 +1,8 @@
+{
+  "stdout": "Roses are red,\n  violets are blue.\n[one\ntwo]\ntab:\there\nquote: \"hi\" and \"\"\"triple\"\"\"\nkept space: \njoined line\n[  deep\n]5\ntab\tquote\"back\\slash\\n'AB\nA 01\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "e915bdffded06910a7696f8eb28a2b16d8b1366d442316b2da0f956d611aba3f"
+}

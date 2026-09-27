@@ -1,0 +1,8 @@
+{
+  "stdout": "open A\nopen B\nbody\nclose B\nclose A\ncaught boom\nfinally\nopen C\nbody 2\nclose C\ncaught close failed: C\nopen D\nclose D\ncaught from body\nnull resource ok\nopen F\nusing F\nclose F\nopen E\nclose E\nfinally in early\nearly 7\nopen G\nclose G\ncaught cannot open H\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "20ec2bde2550a96fc11a0b18b6a6c5ae39e95d5d8060968dd37849dd465cb219"
+}

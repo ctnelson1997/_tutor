@@ -10,6 +10,8 @@ import { javaFormat } from '../stdlib/format';
 import { callStaticMethod, getStaticField } from '../stdlib/statics';
 import { newBuiltin, callInstanceMethod, getIterableElements } from '../stdlib/collections';
 import type { StdlibContext } from '../stdlib/context';
+import { isLibrarySubtype, isStringType, isBoxedInstanceOf, isKnownLibraryType } from '../stdlib/hierarchy';
+import { qualifiedExceptionName } from '../stdlib/exceptions';
 import {
   type JavaValue,
   type JavaHeapEntry,
@@ -40,6 +42,8 @@ function makeCtx(stdin = ''): StdlibContext {
     },
     random: () => 0.5,
     stdin,
+    writeStdout: () => {},
+    invokeUserMethod: () => undefined,
   };
 }
 
@@ -242,5 +246,150 @@ describe('Random', () => {
     const d = num(callInstanceMethod(r1, 'nextDouble', [], ctx));
     expect(d).toBeGreaterThanOrEqual(0);
     expect(d).toBeLessThan(1);
+  });
+});
+
+// ── Comparators (#6: a comparator argument is used, never silently ignored) ──
+
+/** A context whose "user" objects of class ByLength compare strings by length, like a student Comparator class. */
+function comparatorCtx(): StdlibContext {
+  const ctx = makeCtx();
+  ctx.invokeUserMethod = (ref, name, args) => {
+    if (ref.kind !== 'objectRef' || ref.className !== 'ByLength' || name !== 'compare') return undefined;
+    const [a, b] = args.map(v => javaValueToString(v, ctx.heap));
+    return javaInt(a.length - b.length);
+  };
+  return ctx;
+}
+const byLength = (ctx: StdlibContext): JavaValue => ({ kind: 'objectRef', heapId: ctx.allocObject('ByLength', new Map()), className: 'ByLength' });
+const strings = (ctx: StdlibContext, v: JavaValue | undefined) => javaValueToString(v!, ctx.heap);
+const list = (ctx: StdlibContext, words: string[]) => newBuiltin('ArrayList', [arrRef(ctx, words.map(javaString))], ctx)!;
+
+describe('comparators', () => {
+  it('Collections.sort, List.sort and Arrays.sort use a user comparator', () => {
+    const ctx = comparatorCtx();
+    const words = list(ctx, ['pear', 'fig', 'banana']);
+    callStaticMethod('Collections', 'sort', [words, byLength(ctx)], ctx);
+    expect(strings(ctx, words)).toBe('[fig, pear, banana]');
+    callInstanceMethod(words, 'sort', [callStaticMethod('Collections', 'reverseOrder', [], ctx)!], ctx);
+    expect(strings(ctx, words)).toBe('[pear, fig, banana]');
+    callInstanceMethod(words, 'sort', [javaNull()], ctx);
+    expect(strings(ctx, words)).toBe('[banana, fig, pear]');
+    const arr = arrRef(ctx, ['bb', 'a', 'ccc'].map(javaString));
+    callStaticMethod('Arrays', 'sort', [arr, byLength(ctx)], ctx);
+    expect(strings(ctx, arr)).toBe('[a, bb, ccc]');
+  });
+
+  it('library comparators: naturalOrder, reverseOrder, reversed(), CASE_INSENSITIVE_ORDER', () => {
+    const ctx = comparatorCtx();
+    const natural = callStaticMethod('Comparator', 'naturalOrder', [], ctx)!;
+    expect(num(callInstanceMethod(natural, 'compare', [javaInt(1), javaInt(2)], ctx))).toBe(-1);
+    const reversed = callInstanceMethod(natural, 'reversed', [], ctx)!;
+    expect(num(callInstanceMethod(reversed, 'compare', [javaInt(1), javaInt(2)], ctx))).toBe(1);
+    const reverseOfUser = callStaticMethod('Collections', 'reverseOrder', [byLength(ctx)], ctx)!;
+    expect(num(callInstanceMethod(reverseOfUser, 'compare', [javaString('aaa'), javaString('b')], ctx))).toBeLessThan(0);
+    const ci = getStaticField('String', 'CASE_INSENSITIVE_ORDER', ctx)!;
+    expect(num(callInstanceMethod(ci, 'compare', [javaString('B'), javaString('a')], ctx))).toBe(1);
+  });
+
+  it('a PriorityQueue, TreeSet or TreeMap keeps the comparator it was created with', () => {
+    const ctx = comparatorCtx();
+    const pq = newBuiltin('PriorityQueue', [callStaticMethod('Collections', 'reverseOrder', [], ctx)!], ctx)!;
+    for (const n of [4, 9, 1]) callInstanceMethod(pq, 'offer', [javaInt(n)], ctx);
+    expect(num(callInstanceMethod(pq, 'poll', [], ctx))).toBe(9);
+
+    const set = newBuiltin('TreeSet', [byLength(ctx)], ctx)!;
+    expect(bool(callInstanceMethod(set, 'add', [javaString('aa')], ctx))).toBe(true);
+    expect(bool(callInstanceMethod(set, 'add', [javaString('b')], ctx))).toBe(true);
+    // The comparator calls "cc" equal to "aa", so the set already holds it.
+    expect(bool(callInstanceMethod(set, 'add', [javaString('cc')], ctx))).toBe(false);
+    expect(bool(callInstanceMethod(set, 'contains', [javaString('zz')], ctx))).toBe(true);
+    expect(strings(ctx, set)).toBe('[b, aa]');
+
+    const map = newBuiltin('TreeMap', [getStaticField('String', 'CASE_INSENSITIVE_ORDER', ctx)!], ctx)!;
+    callInstanceMethod(map, 'put', [javaString('b'), javaInt(1)], ctx);
+    callInstanceMethod(map, 'put', [javaString('A'), javaInt(2)], ctx);
+    callInstanceMethod(map, 'put', [javaString('B'), javaInt(3)], ctx);
+    expect(strings(ctx, map)).toBe('{A=2, b=3}');
+  });
+
+  it('Collections.max/min take a comparator, and throw on an empty collection', () => {
+    const ctx = comparatorCtx();
+    const words = list(ctx, ['kiwi', 'fig', 'banana']);
+    expect(strings(ctx, callStaticMethod('Collections', 'max', [words, byLength(ctx)], ctx))).toBe('banana');
+    expect(strings(ctx, callStaticMethod('Collections', 'min', [words, byLength(ctx)], ctx))).toBe('fig');
+    expect(() => callStaticMethod('Collections', 'max', [list(ctx, [])], ctx)).toThrow('NoSuchElementException');
+  });
+
+  it("refuses to order objects that have neither compareTo nor a comparator, as Java's ClassCastException does", () => {
+    const ctx = comparatorCtx();
+    const point = { kind: 'objectRef', heapId: ctx.allocObject('Point', new Map()), className: 'Point' } as const;
+    const arr = arrRef(ctx, [point, point]);
+    expect(() => callStaticMethod('Arrays', 'sort', [arr], ctx)).toThrow('ClassCastException');
+    const notComparator = { kind: 'objectRef', heapId: ctx.allocObject('Point', new Map()), className: 'Point' } as const;
+    expect(() => callStaticMethod('Collections', 'sort', [list(ctx, ['a', 'b']), notComparator], ctx)).toThrow("Point can't be used as a Comparator");
+  });
+});
+
+describe('collection copy constructors', () => {
+  it('new HashMap / LinkedHashMap / TreeMap copy the entries of the map they are given', () => {
+    const ctx = makeCtx();
+    const source = newBuiltin('LinkedHashMap', [], ctx)!;
+    callInstanceMethod(source, 'put', [javaString('b'), javaInt(1)], ctx);
+    callInstanceMethod(source, 'put', [javaString('a'), javaInt(2)], ctx);
+    expect(javaValueToString(newBuiltin('HashMap', [source], ctx)!, ctx.heap)).toBe('{b=1, a=2}');
+    expect(javaValueToString(newBuiltin('TreeMap', [source], ctx)!, ctx.heap)).toBe('{a=2, b=1}');
+    expect(javaValueToString(newBuiltin('HashMap', [javaInt(16)], ctx)!, ctx.heap)).toBe('{}');
+  });
+});
+
+describe('library type hierarchy (instanceof, casts, catch)', () => {
+  it('knows the collection interfaces each class implements', () => {
+    expect(isLibrarySubtype('ArrayList', 'List')).toBe(true);
+    expect(isLibrarySubtype('ArrayList', 'Collection')).toBe(true);
+    expect(isLibrarySubtype('ArrayList', 'Iterable')).toBe(true);
+    expect(isLibrarySubtype('ArrayList', 'Set')).toBe(false);
+    expect(isLibrarySubtype('LinkedList', 'Deque')).toBe(true);
+    expect(isLibrarySubtype('Stack', 'List')).toBe(true);
+    expect(isLibrarySubtype('TreeMap', 'SortedMap')).toBe(true);
+    expect(isLibrarySubtype('HashMap', 'SortedMap')).toBe(false);
+    expect(isLibrarySubtype('LinkedHashSet', 'HashSet')).toBe(true);
+    expect(isLibrarySubtype('Scanner', 'AutoCloseable')).toBe(true);
+  });
+
+  it('knows the exception hierarchy', () => {
+    expect(isLibrarySubtype('NumberFormatException', 'IllegalArgumentException')).toBe(true);
+    expect(isLibrarySubtype('ArrayIndexOutOfBoundsException', 'RuntimeException')).toBe(true);
+    expect(isLibrarySubtype('IOException', 'RuntimeException')).toBe(false);
+    expect(isLibrarySubtype('ExceptionInInitializerError', 'Error')).toBe(true);
+    expect(isLibrarySubtype('ArithmeticException', 'Throwable')).toBe(true);
+    expect(isLibrarySubtype('ArithmeticException', 'Object')).toBe(true);
+  });
+
+  it('treats strings and boxed primitives as their classes', () => {
+    expect(isStringType('CharSequence')).toBe(true);
+    expect(isStringType('Comparable')).toBe(true);
+    expect(isStringType('Integer')).toBe(false);
+    expect(isBoxedInstanceOf('int', 'Integer')).toBe(true);
+    expect(isBoxedInstanceOf('int', 'Number')).toBe(true);
+    expect(isBoxedInstanceOf('int', 'Double')).toBe(false);
+    expect(isBoxedInstanceOf('char', 'Character')).toBe(true);
+    expect(isBoxedInstanceOf('boolean', 'Number')).toBe(false);
+    expect(isBoxedInstanceOf('double', 'Object')).toBe(true);
+  });
+
+  it('knows which library types a cast can be checked against', () => {
+    for (const known of ['String', 'Integer', 'List', 'HashMap', 'ArithmeticException', 'Comparable', 'Object']) {
+      expect(isKnownLibraryType(known)).toBe(true);
+    }
+    expect(isKnownLibraryType('T')).toBe(false);
+    expect(isKnownLibraryType('JFrame')).toBe(false);
+  });
+
+  it('prints library exceptions with their package', () => {
+    expect(qualifiedExceptionName('ArithmeticException')).toBe('java.lang.ArithmeticException');
+    expect(qualifiedExceptionName('NoSuchElementException')).toBe('java.util.NoSuchElementException');
+    expect(qualifiedExceptionName('IOException')).toBe('java.io.IOException');
+    expect(qualifiedExceptionName('MyException')).toBe('MyException');
   });
 });

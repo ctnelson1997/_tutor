@@ -37,3 +37,20 @@ export class JavaRuntimeError extends InterpreterError {
 export function nullPointer(detail: string, line: number): JavaRuntimeError {
   return new JavaRuntimeError('NullPointerException', detail, line);
 }
+
+/**
+ * A Java construct the interpreter can't run yet, such as a lambda or an enum.
+ * The interpreter raises this instead of guessing, so a program is either run
+ * correctly or stopped with a message that names the construct and the line:
+ * `Line 12: Lambda expressions aren't supported in JavaTutor yet`.
+ *
+ * `construct` is a noun phrase. It is plural unless `singular` is set, which
+ * picks "isn't" over "aren't".
+ */
+export class UnsupportedFeatureError extends InterpreterError {
+  construct: string;
+  constructor(construct: string, line: number, singular = false) {
+    super(`${construct} ${singular ? "isn't" : "aren't"} supported in JavaTutor yet`, line);
+    this.construct = construct;
+  }
+}

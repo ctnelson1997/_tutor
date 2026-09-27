@@ -1,0 +1,8 @@
+{
+  "stdout": "0\n5\n10\n30\na-b-c\n[]\n1.5\none int, varargs of 0, varargs of 2\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "b73cfa4bfb30ffc193ab544fefc98b3f62860a7c0da602ac28e9b6ef6e741877"
+}

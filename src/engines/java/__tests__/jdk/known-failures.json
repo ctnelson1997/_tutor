@@ -24,11 +24,7 @@
     },
     "collections/coll-foreach-lambda": {
       "issues": [16],
-      "reason": "List.forEach(lambda) is unsupported (Unknown method)"
-    },
-    "collections/coll-fqn-scanner": {
-      "issues": [6],
-      "reason": "new java.util.Scanner(...) creates an object of class 'java'"
+      "reason": "List.forEach needs a lambda, and lambdas are rejected until #16"
     },
     "collections/coll-hashmap-order-strings": {
       "issues": [21],
@@ -64,15 +60,15 @@
     },
     "collections/coll-map-computeIfAbsent": {
       "issues": [16],
-      "reason": "Map.computeIfAbsent with a lambda is unsupported (Unknown method)"
+      "reason": "Map.computeIfAbsent needs a lambda, and lambdas are rejected until #16"
     },
     "collections/coll-map-merge": {
       "issues": [16],
-      "reason": "Map.merge with the method reference Integer::sum is unsupported"
+      "reason": "Map.merge with Integer::sum needs a method reference, rejected until #16"
     },
     "collections/coll-priorityqueue-comparator-lambda": {
       "issues": [16],
-      "reason": "PriorityQueue ignores its lambda comparator (natural order, no error)"
+      "reason": "the PriorityQueue comparator is a lambda, rejected until #16"
     },
     "collections/coll-priorityqueue-print-order": {
       "issues": [21],
@@ -88,7 +84,7 @@
     },
     "collections/coll-sort-comparator-lambda": {
       "issues": [16],
-      "reason": "List.sort ignores its lambda comparator; Collections.reverseOrder() is unsupported"
+      "reason": "the List.sort comparator is a lambda, rejected until #16"
     },
     "collections/coll-stack-empty": {
       "issues": [21],
@@ -134,14 +130,6 @@
       "issues": [23],
       "reason": "runs count++ on a local that was never assigned"
     },
-    "compile-errors/ce-wrong-arg-count": {
-      "issues": [23],
-      "reason": "runs add(1) against add(int, int) instead of rejecting the call"
-    },
-    "core/array-3d": {
-      "issues": [6],
-      "reason": "new int[2][3][4] builds only two dimensions"
-    },
     "core/array-clone": {
       "issues": [15],
       "reason": "array.clone() is unsupported (Unknown method)"
@@ -158,33 +146,9 @@
       "issues": [14],
       "reason": "recursion 900 deep overflows the JavaScript stack"
     },
-    "core/field-init-shadow-caller-local": {
-      "issues": [6],
-      "reason": "a field initializer reads the caller's local x instead of the field"
-    },
-    "core/field-init-uses-field": {
-      "issues": [6],
-      "reason": "a field initializer can't see earlier fields (Variable 'size' is not defined)"
-    },
-    "core/instance-init-block": {
-      "issues": [6],
-      "reason": "instance initializer blocks are ignored"
-    },
     "core/integer-cache": {
       "issues": [13, 20],
       "reason": "Integer == ignores the -128..127 cache; Integer.equals is unsupported"
-    },
-    "core/labeled-break": {
-      "issues": [6],
-      "reason": "labeled loops and break label are skipped"
-    },
-    "core/labeled-continue": {
-      "issues": [6],
-      "reason": "labeled loops and continue label are skipped"
-    },
-    "core/main-args": {
-      "issues": [6],
-      "reason": "main's args isn't bound (Variable 'args' is not defined)"
     },
     "core/math-misc": {
       "issues": [10],
@@ -258,14 +222,6 @@
       "issues": [14, 7],
       "reason": "infinite recursion overflows the JavaScript stack instead of throwing a catchable StackOverflowError"
     },
-    "core/static-field-name-collision": {
-      "issues": [15, 6],
-      "reason": "qualified static reads return null, and A.count / B.count share one static namespace"
-    },
-    "core/static-init-block": {
-      "issues": [6],
-      "reason": "static initializer blocks are ignored"
-    },
     "core/string-charAt-oob": {
       "issues": [20],
       "reason": "charAt past the end returns \\u0000 instead of throwing StringIndexOutOfBoundsException"
@@ -276,7 +232,7 @@
     },
     "core/string-equality-ref": {
       "issues": [20],
-      "reason": "new String(\"hi\") isn't a real string, so equals fails"
+      "reason": "new String(...) is rejected; strings have no identity yet"
     },
     "core/string-format-rounding": {
       "issues": [19],
@@ -292,35 +248,11 @@
     },
     "core/string-new-from-chars": {
       "issues": [20],
-      "reason": "new String(char[]) and String.valueOf(char[]) don't build strings"
+      "reason": "new String(char[]) is rejected, and String.valueOf(char[]) doesn't build a string"
     },
     "core/string-split-regex": {
       "issues": [20],
       "reason": "split() isn't regex-based and keeps trailing empty strings"
-    },
-    "core/switch-arrow": {
-      "issues": [6],
-      "reason": "arrow switch rules (case 3 ->) are skipped"
-    },
-    "core/switch-default-first": {
-      "issues": [6],
-      "reason": "default written before the matching case is taken"
-    },
-    "core/switch-expression": {
-      "issues": [6],
-      "reason": "switch expressions evaluate to null"
-    },
-    "core/try-with-resources": {
-      "issues": [6],
-      "reason": "try-with-resources bodies never run"
-    },
-    "core/var-keyword": {
-      "issues": [6],
-      "reason": "new java.util.ArrayList<>() creates an object of class 'java'"
-    },
-    "core/varargs": {
-      "issues": [13],
-      "reason": "varargs parameters are dropped"
     },
     "extra/boxed-identity-eq": {
       "issues": [13],
@@ -330,10 +262,6 @@
       "issues": [10],
       "reason": "hex, octal and binary literals are parsed as decimal"
     },
-    "extra/lit-unicode-char-escape": {
-      "issues": [10],
-      "reason": "the char literal '\\u0041' isn't decoded"
-    },
     "extra/println-int-array": {
       "issues": [19],
       "reason": "\"\" + intArray gives [1, 2, 3] instead of an identity string like [I@1b6d3586"
@@ -341,10 +269,6 @@
     "extra/string-builder-identity": {
       "issues": [20],
       "reason": "strings have no identity, so == on distinct equal strings is true"
-    },
-    "misc/exc-instanceof-pattern": {
-      "issues": [6],
-      "reason": "instanceof pattern variables aren't bound"
     },
     "misc/exc-multi-catch": {
       "issues": [15],
@@ -370,69 +294,45 @@
       "issues": [20, 16],
       "reason": "String.chars() (and the stream after it) is unsupported"
     },
-    "misc/misc-toString-implicit-concat-in-list-element": {
-      "issues": [20],
-      "reason": "sb.append(obj) ignores obj's toString()"
-    },
-    "misc/misc-while-labeled-continue": {
-      "issues": [6],
-      "reason": "continue label is skipped"
-    },
     "oop/oop-abstract-class": {
       "issues": [15],
-      "reason": "inherited methods are not found (Unknown method: s.report())"
+      "reason": "inheritance (extends) is rejected until #15"
     },
     "oop/oop-anonymous-comparator": {
       "issues": [16],
-      "reason": "an anonymous Comparator is ignored (natural order, no error)"
-    },
-    "oop/oop-ctor-chaining-nondefault": {
-      "issues": [6],
-      "reason": "this(5, 7) constructor delegation is ignored"
+      "reason": "anonymous classes are rejected until #16"
     },
     "oop/oop-custom-iterable": {
       "issues": [16],
-      "reason": "for-each over a user Iterable (anonymous Iterator) is unsupported"
+      "reason": "for-each over a user Iterable, and its anonymous Iterator, are rejected until #16"
     },
     "oop/oop-enum-basic": {
       "issues": [16],
-      "reason": "enums are unsupported (Variable 'Color' is not defined)"
+      "reason": "enums are rejected until #16"
     },
     "oop/oop-enum-top-level": {
       "issues": [16],
-      "reason": "top-level enums are unsupported"
-    },
-    "oop/oop-exception-toString-and-uncaught": {
-      "issues": [22],
-      "reason": "exception toString() lacks the java.lang. package prefix"
+      "reason": "enums are rejected until #16"
     },
     "oop/oop-inheritance-basic": {
       "issues": [15],
-      "reason": "inherited methods are not found (Unknown method: a.describe())"
+      "reason": "inheritance (extends) is rejected until #15"
     },
     "oop/oop-inherited-field-access": {
       "issues": [15],
-      "reason": "inherited fields are not found (Variable 'sides' is not defined)"
+      "reason": "inheritance (extends) is rejected until #15"
     },
     "oop/oop-inner-class-outer-field": {
       "issues": [16],
-      "reason": "inner classes (m.new Walker()) are unsupported"
+      "reason": "creating an inner class through an object (m.new Walker()) is rejected until #16"
     },
     "oop/oop-instanceof-subclass": {
       "issues": [15],
-      "reason": "instanceof ignores the superclass chain"
-    },
-    "oop/oop-interface": {
-      "issues": [15],
-      "reason": "instanceof ignores implemented interfaces"
-    },
-    "oop/oop-interface-constant": {
-      "issues": [15],
-      "reason": "interface constants are not found (Variable 'LIMIT' is not defined)"
+      "reason": "inheritance (extends) is rejected until #15"
     },
     "oop/oop-interface-default-method": {
       "issues": [15],
-      "reason": "interface default methods are not found"
+      "reason": "interface default methods are rejected until #15"
     },
     "oop/oop-object-toString-default-call": {
       "issues": [15],
@@ -440,11 +340,11 @@
     },
     "oop/oop-record": {
       "issues": [16],
-      "reason": "records are unsupported"
+      "reason": "records are rejected until #16"
     },
     "oop/oop-super-method-call": {
       "issues": [15],
-      "reason": "super.toString() is unsupported"
+      "reason": "inheritance (extends) and super.method() are rejected until #15"
     },
     "realistic/real-arrays-sort-comparable": {
       "issues": [21],
@@ -456,7 +356,7 @@
     },
     "realistic/real-flood-fill": {
       "issues": [20],
-      "reason": "new String(char[]) doesn't build a string"
+      "reason": "new String(char[]) is rejected"
     },
     "realistic/real-hash-table-chaining": {
       "issues": [20],
@@ -464,7 +364,7 @@
     },
     "realistic/real-shape-hierarchy": {
       "issues": [15],
-      "reason": "an abstract superclass toString() calling area() prints Circle@1"
+      "reason": "inheritance (extends) is rejected until #15"
     }
   },
   "invariants": {
@@ -484,12 +384,6 @@
       "js-errors": {
         "issues": [7, 14],
         "reason": "shows \"Maximum call stack size exceeded\""
-      }
-    },
-    "core/enhanced-for-continue-scope": {
-      "scopes": {
-        "issues": [9],
-        "reason": "after continue, the next for-each header step still shows the previous iteration's 'doubled'"
       }
     },
     "core/stack-overflow": {

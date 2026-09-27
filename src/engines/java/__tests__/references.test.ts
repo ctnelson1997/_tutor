@@ -300,9 +300,10 @@ public class Main {
   });
 
   it.each([
-    ['super member access', 'class A { public String toString() { return "A"; } }\nclass B extends A { public String toString() { return super.toString(); } }', 'System.out.println(new B());', "'super.' member access isn't supported in JavaTutor yet"],
-    ['method references', '', 'java.util.function.BinaryOperator<Integer> f = Integer::sum;', "Method references (::) isn't supported in JavaTutor yet"],
-    ['class literals', '', 'System.out.println(String.class);', "Class literals (.class) isn't supported in JavaTutor yet"],
+    ['super member access', 'class B { public String toString() { return super.toString(); } }', 'System.out.println(new B());', "Line 6: Members reached through 'super' (super.name) aren't supported in JavaTutor yet"],
+    ['inheritance', 'class A { public String toString() { return "A"; } }\nclass B extends A { public String toString() { return super.toString(); } }', 'System.out.println(new B());', "Line 7: Inheritance (class B extends A) isn't supported in JavaTutor yet"],
+    ['method references', '', 'java.util.function.BinaryOperator<Integer> f = Integer::sum;', "Line 3: Method references (::) aren't supported in JavaTutor yet"],
+    ['class literals', '', 'System.out.println(String.class);', "Line 3: Class literals (.class) aren't supported in JavaTutor yet"],
   ])('fails loudly on %s', (_name, classes, statement, message) => {
     const result = run(`public class Main {
   public static void main(String[] args) {

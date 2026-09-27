@@ -272,8 +272,13 @@ function identifierOf(node: CstNode | undefined): CstToken | undefined {
   return node ? token(node, 'Identifier') : undefined;
 }
 
-/** The frame name the interpreter would use for a method or constructor node, if `node` is one. */
-function frameNameOf(node: CstNode): string | null | undefined {
+/**
+ * The frame name the interpreter would use for code in `node`, if it starts a
+ * frame: a method's name, a constructor's class name, the class name for an
+ * instance initializer block (it runs in a constructor's frame) and
+ * `<clinit>` for a static initializer block.
+ */
+function frameNameOf(node: CstNode, className: string | null): string | null | undefined {
   switch (node.name) {
     case 'methodDeclaration':
     case 'interfaceMethodDeclaration': {
@@ -286,13 +291,18 @@ function frameNameOf(node: CstNode): string | null | undefined {
       const simple = declarator && child(declarator, 'simpleTypeName');
       return identifierOf(simple && child(simple, 'typeIdentifier'))?.image ?? null;
     }
+    case 'instanceInitializer':
+      return className;
+    case 'staticInitializer':
+      return '<clinit>';
   }
   return undefined; // not a method: keep the enclosing one
 }
 
 /**
- * Block-scoped locals of every method and constructor, keyed the way the
- * interpreter names frames (method name; class name for constructors):
+ * Block-scoped locals of every method, constructor and initializer block,
+ * keyed the way the interpreter names frames (method name; class name for
+ * constructors and instance initializer blocks; `<clinit>` for static blocks):
  * locals in blocks and switch blocks, for-init and for-each variables, catch
  * parameters, try-with-resources resources and instanceof pattern variables.
  * A pattern variable is given its whole enclosing block, a superset of its real
@@ -307,8 +317,9 @@ export function blockScopedDeclarations(source: string): Map<string, ScopedDecla
     table.set(method, list);
   };
 
-  const walk = (node: CstNode, method: string | null, scopeEnd: number) => {
-    const frameName = frameNameOf(node);
+  const walk = (node: CstNode, method: string | null, scopeEnd: number, className: string | null) => {
+    if (node.name === 'normalClassDeclaration') className = identifierOf(child(node, 'typeIdentifier'))?.image ?? className;
+    const frameName = frameNameOf(node, className);
     if (frameName !== undefined) method = frameName;
     if (SCOPE_NODES.has(node.name) && node.location) scopeEnd = node.location.endLine;
 
@@ -323,7 +334,7 @@ export function blockScopedDeclarations(source: string): Map<string, ScopedDecla
 
     for (const items of Object.values(node.children)) {
       for (const item of items) {
-        if (isCstNode(item)) walk(item, method, scopeEnd);
+        if (isCstNode(item)) walk(item, method, scopeEnd, className);
       }
     }
   };
@@ -334,7 +345,7 @@ export function blockScopedDeclarations(source: string): Map<string, ScopedDecla
   } catch {
     return table; // unparseable: the interpreter produced no snapshots either
   }
-  walk(root, null, Number.MAX_SAFE_INTEGER);
+  walk(root, null, Number.MAX_SAFE_INTEGER, null);
   return table;
 }
 
@@ -411,6 +422,19 @@ export interface KnownFailures {
 export function loadKnownFailures(path = KNOWN_FAILURES_PATH): KnownFailures {
   const raw = JSON.parse(readFileSync(path, 'utf8')) as Partial<KnownFailures>;
   return { output: raw.output ?? {}, invariants: raw.invariants ?? {} };
+}
+
+/**
+ * Roadmap issues for constructs JavaTutor rejects until they land: unsupported
+ * syntax (#6), inheritance (#15), and enums, records, inner and anonymous
+ * classes and lambdas (#16). A program waiting on one of them must stop with
+ * an error; it must never print wrong output without one (#6's guard).
+ */
+export const LOUD_FAILURE_ISSUES: readonly number[] = [6, 15, 16];
+
+/** Must this known failure be an error rather than wrong output? (Its main issue is a rejected construct.) */
+export function mustFailLoudly(f: KnownFailure | undefined): boolean {
+  return f !== undefined && LOUD_FAILURE_ISSUES.includes(f.issues[0]);
 }
 
 /** Problems with the known-failures file itself: unknown cases or invariants, missing issue numbers. */

@@ -41,6 +41,9 @@ export const EXCEPTION_SUPER: Record<string, string> = {
   StackOverflowError: 'Error',
   OutOfMemoryError: 'Error',
   AssertionError: 'Error',
+  LinkageError: 'Error',
+  ExceptionInInitializerError: 'LinkageError',
+  NoClassDefFoundError: 'LinkageError',
   IOException: 'Exception',
   FileNotFoundException: 'IOException',
   InterruptedException: 'Exception',
@@ -49,6 +52,23 @@ export const EXCEPTION_SUPER: Record<string, string> = {
 
 export function isExceptionClass(name: string): boolean {
   return name in EXCEPTION_SUPER;
+}
+
+/** Packages of the library exception classes outside java.lang. */
+const EXCEPTION_PACKAGE: Record<string, string> = {
+  NoSuchElementException: 'java.util',
+  InputMismatchException: 'java.util',
+  ConcurrentModificationException: 'java.util',
+  IOException: 'java.io',
+  FileNotFoundException: 'java.io',
+};
+
+/**
+ * The name Throwable.toString() prints for a library exception class, with
+ * its package: `java.lang.ArithmeticException`, `java.util.NoSuchElementException`.
+ */
+export function qualifiedExceptionName(name: string): string {
+  return isExceptionClass(name) ? `${EXCEPTION_PACKAGE[name] ?? 'java.lang'}.${name}` : name;
 }
 
 /** Construct a built-in exception object carrying an optional detail message. */
@@ -77,13 +97,18 @@ function messageOf(ref: JavaValue, ctx: StdlibContext): JavaValue {
  * and what `System.out.println(exception)` shows. Returns undefined for a
  * non-object value.
  */
-export function formatException(ref: JavaValue, heap: Map<string, JavaHeapEntry>): string | undefined {
+export function formatException(
+  ref: JavaValue,
+  heap: Map<string, JavaHeapEntry>,
+  binaryName: (className: string) => string = qualifiedExceptionName,
+): string | undefined {
   if (ref.kind !== 'objectRef') return undefined;
   const obj = heap.get(ref.heapId);
   if (!obj || !isJavaObject(obj)) return undefined;
   const m = obj.fields.get('message') ?? obj.fields.get('detailMessage') ?? obj.fields.get('msg');
   const msg = m && m.kind !== 'null' ? javaValueToString(m, heap) : null;
-  return msg === null ? ref.className : `${ref.className}: ${msg}`;
+  const name = binaryName(ref.className);
+  return msg === null ? name : `${name}: ${msg}`;
 }
 
 /**
@@ -96,10 +121,15 @@ export function exceptionMethod(ref: JavaValue, method: string, ctx: StdlibConte
     case 'getLocalizedMessage':
       return messageOf(ref, ctx);
     case 'toString':
-      return javaString(formatException(ref, ctx.heap) ?? '');
+      return javaString(formatException(ref, ctx.heap, ctx.binaryName) ?? '');
     case 'printStackTrace':
-      ctx.writeStdout((formatException(ref, ctx.heap) ?? '') + '\n');
+      ctx.writeStdout((formatException(ref, ctx.heap, ctx.binaryName) ?? '') + '\n');
       return javaNull();
+    case 'getCause': {
+      if (ref.kind !== 'objectRef') return javaNull();
+      const obj = ctx.heap.get(ref.heapId);
+      return (obj && isJavaObject(obj) && obj.fields.get('cause')) || javaNull();
+    }
     case 'getClass':
       // Minimal: a stand-in object whose getName()/toString the interpreter can stringify.
       return ref;

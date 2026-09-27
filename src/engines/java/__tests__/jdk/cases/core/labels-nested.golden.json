@@ -1,0 +1,8 @@
+{
+  "stdout": "found 23\nn 3 visits 3\nearly\ntotal 6\ncount 33\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "9ee29a4d4802dcc84fddd4702be0606efd8d66152511e6daf2d4f09f6c01ce49"
+}

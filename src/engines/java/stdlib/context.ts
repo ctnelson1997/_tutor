@@ -32,6 +32,13 @@ export interface StdlibContext {
    * suppressed during the call so it stays atomic in the visualization.
    */
   invokeUserMethod(ref: JavaValue, name: string, args: JavaValue[]): JavaValue | undefined;
+  /**
+   * The name Java prints for a class, used when an exception is shown:
+   * `Main$MyException` for a user class nested in Main, or
+   * `java.lang.ArithmeticException` for a library class. Defaults to
+   * qualifying library exception classes only.
+   */
+  binaryName?(className: string): string;
 }
 
 /**

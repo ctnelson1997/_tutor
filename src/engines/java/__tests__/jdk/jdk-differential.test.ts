@@ -7,7 +7,9 @@
  *   - "matches real Java": the same stdout, and the run ends the same way —
  *     normally, with the same uncaught exception class, or (for programs javac
  *     rejects) with an error before anything runs;
- *   - one test per enforced snapshot invariant (see INVARIANTS in harness.ts).
+ *   - one test per enforced snapshot invariant (see INVARIANTS in harness.ts);
+ *   - for a known failure waiting on a construct JavaTutor rejects (#6, #15,
+ *     #16), a test that it fails with an error rather than wrong output.
  *
  * Checks listed in known-failures.json run as it.fails(): the suite stays green
  * while they fail, and turns red when a fix makes one pass — delete the entry then.
@@ -24,6 +26,7 @@ import {
   checkInvariant,
   compareOutput,
   loadKnownFailures,
+  mustFailLoudly,
   runInterpreter,
   validateKnownFailures,
   type InterpreterRun,
@@ -86,6 +89,14 @@ for (const c of cases) {
       }
       expect(verdict.problems, `${c.id} differs from real Java (${verdict.kind})`).toEqual([]);
     });
+
+    // #6's guard: a program using a construct JavaTutor rejects stops with an error.
+    if (usable && mustFailLoudly(knownOutput)) {
+      it(`fails with an error, not wrong output (#${knownOutput.issues[0]})`, () => {
+        const verdict = compareOutput(golden!, result());
+        expect(verdict.kind, `${c.id} prints wrong output instead of rejecting what it can't run`).not.toBe('wrong');
+      });
+    }
 
     for (const name of ENFORCED_INVARIANTS) {
       const knownInvariant = known.invariants[c.id]?.[name];

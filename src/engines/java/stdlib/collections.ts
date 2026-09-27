@@ -24,7 +24,8 @@ import {
 import { type StdlibContext, StdlibError } from './context';
 import {
   LIST_LIKE, SET_LIKE, MAP_LIKE, isSorted,
-  compareValues, valuesEqual, backingArray, mapArrays, syncSize, sortedInsert,
+  compareValues, compareWith, comparatorOf, isComparator, libraryComparator,
+  valuesEqual, backingArray, mapArrays, syncSize, sortedInsert,
   allocCollection, allocMap,
 } from './util';
 import { isExceptionClass, newException, exceptionMethod } from './exceptions';
@@ -51,19 +52,45 @@ function initialElements(arg: JavaValue | undefined, ctx: StdlibContext): JavaVa
   return [];
 }
 
+/**
+ * A PriorityQueue, TreeSet or TreeMap may be given a Comparator: `(cmp)` or,
+ * for a PriorityQueue, `(capacity, cmp)`. It is kept in a hidden `__cmp__`
+ * field and orders the collection from then on.
+ */
+function constructorComparator(args: JavaValue[]): JavaValue | undefined {
+  return args.find(isComparator);
+}
+
+function setComparator(ref: JavaValue, cmp: JavaValue | undefined, ctx: StdlibContext): void {
+  if (!cmp || ref.kind !== 'objectRef') return;
+  const obj = ctx.heap.get(ref.heapId);
+  if (obj && 'fields' in obj) obj.fields.set('__cmp__', cmp);
+}
+
 export function newBuiltin(className: string, args: JavaValue[], ctx: StdlibContext): JavaValue | undefined {
   if (LIST_LIKE.has(className)) {
-    const init = initialElements(args[0], ctx);
+    const cmp = className === 'PriorityQueue' ? constructorComparator(args) : undefined;
+    const init = cmp ? [] : initialElements(args[0], ctx);
     if (className === 'PriorityQueue') init.sort((a, b) => compareValues(a, b, ctx));
-    return allocCollection(className, init, 'Object', ctx);
+    const list = allocCollection(className, init, 'Object', ctx);
+    setComparator(list, cmp, ctx);
+    return list;
   }
   if (SET_LIKE.has(className)) {
+    const cmp = className === 'TreeSet' ? constructorComparator(args) : undefined;
     const set = allocCollection(className, [], 'Object', ctx);
-    for (const e of initialElements(args[0], ctx)) setAdd(set, e, className, ctx);
+    setComparator(set, cmp, ctx);
+    if (!cmp) for (const e of initialElements(args[0], ctx)) setAdd(set, e, className, ctx);
     return set;
   }
   if (MAP_LIKE.has(className)) {
-    return allocMap(className, [], [], ctx);
+    const cmp = className === 'TreeMap' ? constructorComparator(args) : undefined;
+    const map = allocMap(className, [], [], ctx);
+    setComparator(map, cmp, ctx);
+    // A copy constructor, new HashMap<>(other), copies the other map's entries.
+    const source = !cmp && args[0] ? mapArrays(args[0], ctx) : undefined;
+    source?.keys.elements.forEach((k, i) => mapMethod(map, className, 'put', [k, source.values.elements[i]], ctx));
+    return map;
   }
   if (className === 'Scanner') {
     // new Scanner(String) reads from the string; new Scanner(System.in) reads the preset stdin.
@@ -101,7 +128,15 @@ export function callInstanceMethod(
   if (cls === 'Random') return randomMethod(ref, method, args);
   if (cls === 'Iterator') return iteratorMethod(ref, method, ctx);
   if (cls === 'MapEntry') return entryMethod(ref, method, ctx);
+  if (cls === 'Comparator') return comparatorMethod(ref, method, args, ctx);
   if (isExceptionClass(cls)) return exceptionMethod(ref, method, ctx);
+  return undefined;
+}
+
+/** Methods of a library comparator such as Collections.reverseOrder(). */
+function comparatorMethod(ref: JavaValue, method: string, args: JavaValue[], ctx: StdlibContext): JavaValue | undefined {
+  if (method === 'compare') return javaInt(compareWith(ref, args[0], args[1], ctx));
+  if (method === 'reversed') return libraryComparator('reverse', ref, ctx);
   return undefined;
 }
 
@@ -127,7 +162,7 @@ function listMethod(ref: JavaValue, cls: string, method: string, args: JavaValue
       if (method === 'add' && args.length === 2) {
         el.splice(javaValueToNumber(args[0]) | 0, 0, args[1]);
       } else if (cls === 'PriorityQueue') {
-        sortedInsert(el, args[0], ctx);
+        sortedInsert(el, args[0], ctx, comparatorOf(ref, ctx));
       } else {
         el.push(args[0]);
       }
@@ -206,18 +241,29 @@ function listMethod(ref: JavaValue, cls: string, method: string, args: JavaValue
     case 'toArray': return { kind: 'arrayRef', heapId: ctx.allocArray('Object', el.slice()) };
     case 'toString': return javaString('[' + el.map(e => javaValueToString(e, ctx.heap)).join(', ') + ']');
     case 'equals': return javaBool(ref.kind === 'objectRef' && args[0]?.kind === 'objectRef' && ref.heapId === args[0].heapId);
-    case 'sort': el.sort((a, b) => compareValues(a, b, ctx)); return javaNull();
+    case 'sort': el.sort((a, b) => compareWith(args[0], a, b, ctx)); return javaNull();
   }
   return undefined;
 }
 
 // ── Sets ──
 
+/**
+ * Whether a set or map holds an element or key equal to `value`. A TreeSet or
+ * TreeMap with a comparator treats elements that compare as 0 as equal, as
+ * Java does; otherwise equals() decides.
+ */
+function sameElement(cmp: JavaValue | undefined, ctx: StdlibContext): (e: JavaValue, value: JavaValue) => boolean {
+  return cmp ? (e, value) => compareWith(cmp, e, value, ctx) === 0 : (e, value) => valuesEqual(e, value, ctx);
+}
+
 function setAdd(ref: JavaValue, value: JavaValue, cls: string, ctx: StdlibContext): boolean {
   const data = backingArray(ref, ctx);
   if (!data) return false;
-  if (data.elements.some(e => valuesEqual(e, value, ctx))) return false;
-  if (isSorted(cls)) sortedInsert(data.elements, value, ctx);
+  const cmp = comparatorOf(ref, ctx);
+  const same = sameElement(cmp, ctx);
+  if (data.elements.some(e => same(e, value))) return false;
+  if (isSorted(cls)) sortedInsert(data.elements, value, ctx, cmp);
   else data.elements.push(value);
   syncSize(ref, data.elements.length, ctx);
   return true;
@@ -227,14 +273,15 @@ function setMethod(ref: JavaValue, cls: string, method: string, args: JavaValue[
   const data = backingArray(ref, ctx);
   if (!data) return javaNull();
   const el = data.elements;
+  const same = sameElement(comparatorOf(ref, ctx), ctx);
   switch (method) {
     case 'add': return javaBool(setAdd(ref, args[0], cls, ctx));
     case 'remove': {
-      const idx = el.findIndex(e => valuesEqual(e, args[0], ctx));
+      const idx = el.findIndex(e => same(e, args[0]));
       if (idx >= 0) { el.splice(idx, 1); syncSize(ref, el.length, ctx); return javaBool(true); }
       return javaBool(false);
     }
-    case 'contains': return javaBool(el.some(e => valuesEqual(e, args[0], ctx)));
+    case 'contains': return javaBool(el.some(e => same(e, args[0])));
     case 'size': return javaInt(el.length);
     case 'isEmpty': return javaBool(el.length === 0);
     case 'clear': el.length = 0; syncSize(ref, 0, ctx); return javaNull();
@@ -258,14 +305,16 @@ function mapMethod(ref: JavaValue, cls: string, method: string, args: JavaValue[
   const m = mapArrays(ref, ctx);
   if (!m) return javaNull();
   const { keys, values } = m;
-  const findIndex = (k: JavaValue) => keys.elements.findIndex(e => valuesEqual(e, k, ctx));
+  const cmp = comparatorOf(ref, ctx);
+  const same = sameElement(cmp, ctx);
+  const findIndex = (k: JavaValue) => keys.elements.findIndex(e => same(e, k));
   switch (method) {
     case 'put': {
       const i = findIndex(args[0]);
       if (i >= 0) { const old = values.elements[i]; values.elements[i] = args[1]; return old; }
       if (cls === 'TreeMap') {
         let pos = 0;
-        while (pos < keys.elements.length && compareValues(keys.elements[pos], args[0], ctx) < 0) pos++;
+        while (pos < keys.elements.length && compareWith(cmp, keys.elements[pos], args[0], ctx) < 0) pos++;
         keys.elements.splice(pos, 0, args[0]);
         values.elements.splice(pos, 0, args[1]);
       } else {

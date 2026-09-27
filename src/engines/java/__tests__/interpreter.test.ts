@@ -423,7 +423,7 @@ describe('Java Interpreter', () => {
       const last = result.snapshots[result.snapshots.length - 1];
       const frame = last.callStack[last.callStack.length - 1];
       const xVar = frame.variables.find(v => v.name === 'x');
-      expect(xVar?.value.value).toBe(5);
+      expect(xVar?.value).toEqual({ type: 'number', value: 5 });
     });
 
     it('handles string escape sequences', () => {

@@ -1,0 +1,8 @@
+{
+  "stdout": "bad number x1\ntrue\nMain$NotFoundException: missing key\nouter handler: missing other\njava.lang.IllegalStateException: inner\ninner\nmulti-catch multi\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "0d9b0331bfc8fda66525b114764ffe1ed6ef93863e4e4ae8c568d015807035ae"
+}

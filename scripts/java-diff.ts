@@ -17,6 +17,7 @@ import {
   checkInvariant,
   compareOutput,
   loadKnownFailures,
+  mustFailLoudly,
   runInterpreter,
   type InvariantName,
   type KnownFailure,
@@ -58,6 +59,9 @@ for (const c of cases) {
     lines.push(`FAIL ${c.id}  ${tag(knownOutput)}  (${label}, ${run.snapshots.length} steps)`);
     lines.push(...verdict.problems.map(p => `     ${p}`));
     if (!knownOutput) surprises.push(`${c.id}: output fails but isn't in known-failures.json`);
+    if (verdict.kind === 'wrong' && mustFailLoudly(knownOutput)) {
+      surprises.push(`${c.id}: waits on #${knownOutput!.issues[0]}, so it must fail with an error, not wrong output`);
+    }
   } else if (knownOutput) {
     surprises.push(`${c.id}: output now matches real Java; remove it from known-failures.json`);
   }
@@ -86,6 +90,6 @@ console.log(`\n== ${counts.pass} pass · ${counts.wrong} wrong output, no error 
 console.log(`== compile-error cases rejected before running: ${compile.rejected}/${compile.total} ==`);
 console.log(`== invariant failures: ${INVARIANTS.map(n => `${n} ${invariantFailures[n]}${ENFORCED_INVARIANTS.includes(n) ? '' : ' (not enforced yet)'}`).join(' · ')} ==`);
 if (surprises.length) {
-  console.log(`\nknown-failures.json is out of date:\n${surprises.map(s => `  ${s}`).join('\n')}`);
+  console.log(`\nknown-failures.json is out of date, or a rejected construct printed wrong output:\n${surprises.map(s => `  ${s}`).join('\n')}`);
   process.exitCode = 1;
 }

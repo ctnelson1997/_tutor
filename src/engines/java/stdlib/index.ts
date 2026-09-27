@@ -21,4 +21,6 @@ export {
   exceptionMethod,
   exceptionAssignable,
   formatException,
+  qualifiedExceptionName,
 } from './exceptions';
+export { isLibrarySubtype, isStringType, isBoxedInstanceOf, isKnownLibraryType } from './hierarchy';

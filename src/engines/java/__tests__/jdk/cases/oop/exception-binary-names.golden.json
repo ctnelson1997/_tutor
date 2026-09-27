@@ -1,0 +1,11 @@
+{
+  "stdout": "Main$Oops: nested\nas text: Main$Oops: nested\nTopLevelProblem / null\n",
+  "stderr": "Exception in thread \"main\" Main$Oops: uncaught\n\tat Main.main(Main.java:18)\n",
+  "exitCode": 1,
+  "exception": {
+    "class": "Main$Oops",
+    "message": "uncaught"
+  },
+  "compileError": null,
+  "sourceSha256": "2251ba59b4f4ee4bc3110c93624e4b30cff005b266c40436ea42190261f6cd69"
+}

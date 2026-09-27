@@ -21,6 +21,7 @@ import {
   compareOutput,
   goldenStdout,
   interpreterExceptionClass,
+  mustFailLoudly,
   runInterpreter,
   simpleClassName,
   validateKnownFailures,
@@ -322,6 +323,20 @@ describe('invariant: scopes', () => {
     ]);
   });
 
+  it('keys instance initializer blocks by class name and static blocks as <clinit>', () => {
+    const table = blockScopedDeclarations([
+      'public class Main {',                                  // 1
+      '  static class Bag {',                                 // 2
+      '    int[] items;',                                     // 3
+      '    { for (int i = 0; i < 2; i++) { int sq = i; } }', // 4
+      '  }',                                                  // 5
+      '  static { int boot = 1; }',                           // 6
+      '}',                                                    // 7
+    ].join('\n'));
+    expect(table.get('Bag')).toEqual([{ name: 'i', from: 4, to: 4 }, { name: 'sq', from: 4, to: 4 }]);
+    expect(table.get('<clinit>')).toEqual([{ name: 'boot', from: 6, to: 6 }]);
+  });
+
   it('accepts block variables on lines where they are in scope', () => {
     expect(check(snap(0, 4, [main, block('n')]), snap(1, 5, [main, block('n', 'doubled')]), snap(2, 8, [main]))).toEqual([]);
   });
@@ -353,6 +368,20 @@ describe('invariant: reachable', () => {
     expect(v).toHaveLength(1);
     expect(v[0]).toContain('#3 int[]');
     expect(v[0]).not.toContain('#2');
+  });
+});
+
+describe('mustFailLoudly', () => {
+  it('holds for failures whose main issue is a construct JavaTutor rejects (#6, #15, #16)', () => {
+    expect(mustFailLoudly({ issues: [16], reason: 'lambda' })).toBe(true);
+    expect(mustFailLoudly({ issues: [15, 21], reason: 'inheritance' })).toBe(true);
+    expect(mustFailLoudly({ issues: [6], reason: 'syntax' })).toBe(true);
+  });
+
+  it("doesn't hold for other issues, a secondary rejected issue, or no known failure", () => {
+    expect(mustFailLoudly({ issues: [21], reason: 'collections' })).toBe(false);
+    expect(mustFailLoudly({ issues: [20, 16], reason: 'String.chars()' })).toBe(false);
+    expect(mustFailLoudly(undefined)).toBe(false);
   });
 });
 

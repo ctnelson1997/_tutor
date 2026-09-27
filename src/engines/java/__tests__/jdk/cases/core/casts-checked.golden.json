@@ -1,0 +1,8 @@
+{
+  "stdout": "5\n43\nCCE Integer to Double\nCCE Integer to String\nnull\n0\nCCE ArrayList to Map\nnot a number\n3\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "bf9506258a00ad9734f47e39659c0cbb2624c3f4b0ab857c8c6f94b885194e41"
+}

@@ -1,0 +1,8 @@
+{
+  "stdout": "area 4.0\ntrue true true\narea 3.0\nfalse false true\n3.0 3.0\nsquare\n12.0\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "2389212fb2380eeb3330a5d99a95a8d1f3ec7cacc9c6c0b9844ff881acb9be15"
+}

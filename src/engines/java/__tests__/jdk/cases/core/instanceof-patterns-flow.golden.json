@@ -1,0 +1,8 @@
+{
+  "stdout": "not a string\nstring HI\n5 -1 -1\nint 13\ndouble\ntrue\ntrue\nchars 4\ntrue\ntrue\nfalse\ntrue\ntrue\ntrue\nfalse\ntrue\nwords 1\nfalse\nabcabc\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "c6390c7fdb2b39ad31f8ea339960755d5944f7dd4d09b8341e935b5be0e8d4b6"
+}
