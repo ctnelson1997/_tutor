@@ -1,0 +1,8 @@
+{
+  "stdout": "Rex says Woof\nTom says Meow\nGeneric says ...\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "888a4a89eb62b1da3b2679c737008331bad0753b66711bfe6eb8f6161050f735"
+}

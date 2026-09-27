@@ -1,0 +1,8 @@
+{
+  "stdout": "out1\nout2\n",
+  "stderr": "err1\n",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "15427c7a790093ce91466aa2841b602e8b064dcfb06f6f8b1a97f2db26222a89"
+}

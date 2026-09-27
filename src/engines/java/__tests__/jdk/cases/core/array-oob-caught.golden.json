@@ -1,0 +1,8 @@
+{
+  "stdout": "caught: Index 5 out of bounds for length 3\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "85f3d9e5ef5f3a306b1ead549f3ceaac141a73198a1176712d5a18f2a0b39473"
+}

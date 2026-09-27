@@ -1,0 +1,8 @@
+{
+  "stdout": "3 + 4 = 7\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "d5f2aa84816a131a15d743299b59bc2219687e00396df08808b4cfca7bd2c581"
+}

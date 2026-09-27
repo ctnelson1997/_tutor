@@ -1,0 +1,8 @@
+{
+  "stdout": "gcd(48, 18) = 6\nlcm(4, 6) = 12\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "16a0731825854118386bb2b5317e96848caffc76fa3ac25fbea7301a33c137ae"
+}

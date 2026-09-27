@@ -1,0 +1,11 @@
+{
+  "stdout": "java.lang.IllegalStateException: bad state\n",
+  "stderr": "Exception in thread \"main\" java.lang.IllegalArgumentException: boom\n\tat Main.main(Main.java:8)\n",
+  "exitCode": 1,
+  "exception": {
+    "class": "java.lang.IllegalArgumentException",
+    "message": "boom"
+  },
+  "compileError": null,
+  "sourceSha256": "0e520f6e16c6900552b6caa831108d2616ec5c41dc629e3eb1119c575521df5d"
+}

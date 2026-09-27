@@ -1,0 +1,8 @@
+{
+  "stdout": "wrapped: inner\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "5c9dada21a0aca1541468155d425f0e803cdd2fc381a27cfadc70a1b5978f75d"
+}

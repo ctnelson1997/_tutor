@@ -1,0 +1,8 @@
+{
+  "stdout": "Enter your name: Enter your age: Hello Dana, next year you will be 20\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "03ca34a3b036e82a5cdb7b21db55853f6647ae74eb243db548d750d05fc2dd01"
+}

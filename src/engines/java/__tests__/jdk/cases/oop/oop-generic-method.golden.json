@@ -1,0 +1,8 @@
+{
+  "stdout": "a;b;\n1;2;\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "1d2b6d42d26676868e573e8f2117158bc449b9ad56c8495f3fa325501d23ada7"
+}

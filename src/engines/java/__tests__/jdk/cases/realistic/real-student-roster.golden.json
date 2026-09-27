@@ -1,0 +1,8 @@
+{
+  "stdout": "Roster: [Avery (3.4), Blake (3.9), Casey (2.8)]\nAverage GPA: 3.37\nTop student: Blake (3.9)\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "c79d0ca698b3581233d184298b345061429baf4b0d42d1270f79d037c42afd53"
+}

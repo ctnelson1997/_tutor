@@ -1,0 +1,8 @@
+{
+  "stdout": "[pen($1.5), book($12.0)]\n[pen($1.5), book($12.0)]\nbook($12.0)\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "a87d8d3c8a17135f1378c05e3c3bd4d11f7d6c70f4ba9ee51b826e5e8f296462"
+}

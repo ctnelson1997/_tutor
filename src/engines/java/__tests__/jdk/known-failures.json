@@ -1,0 +1,630 @@
+{
+  "$comment": [
+    "Checks in jdk-differential.test.ts that fail today, each tied to the roadmap issue (#3) that should fix it.",
+    "Listed checks run as it.fails(): the suite stays green, and turns red when a fix makes one pass. Delete the entry then.",
+    "\"issues\": what the failure is waiting on, main issue first. \"reason\": the symptom, in a few words.",
+    "See the details of any case with: npx tsx scripts/java-diff.ts <case id>"
+  ],
+  "output": {
+    "collections/coll-arrays-aslist-fixed": {
+      "issues": [21],
+      "reason": "Arrays.asList(...).add() succeeds instead of throwing UnsupportedOperationException"
+    },
+    "collections/coll-arrays-tostring-objects": {
+      "issues": [21],
+      "reason": "Arrays.toString ignores the elements' toString() (prints P@1)"
+    },
+    "collections/coll-char-keys": {
+      "issues": [21],
+      "reason": "HashMap<Character, Integer> prints in insertion order, not Java's hash order"
+    },
+    "collections/coll-concurrent-mod": {
+      "issues": [21],
+      "reason": "removing from a list inside its for-each throws no ConcurrentModificationException"
+    },
+    "collections/coll-foreach-lambda": {
+      "issues": [16],
+      "reason": "List.forEach(lambda) is unsupported (Unknown method)"
+    },
+    "collections/coll-fqn-scanner": {
+      "issues": [6],
+      "reason": "new java.util.Scanner(...) creates an object of class 'java'"
+    },
+    "collections/coll-hashmap-order-strings": {
+      "issues": [21],
+      "reason": "HashMap iterates in insertion order, not Java's hash order"
+    },
+    "collections/coll-hashset-order-ints": {
+      "issues": [21],
+      "reason": "HashSet iterates in insertion order, not Java's hash order"
+    },
+    "collections/coll-iterator-remove": {
+      "issues": [21],
+      "reason": "Iterator.remove() is unsupported (Unknown method)"
+    },
+    "collections/coll-list-equals": {
+      "issues": [21],
+      "reason": "List.equals compares identity instead of elements"
+    },
+    "collections/coll-list-of-immutable": {
+      "issues": [21],
+      "reason": "List.of(...).add() succeeds instead of throwing UnsupportedOperationException"
+    },
+    "collections/coll-list-of-user-objects-print": {
+      "issues": [21],
+      "reason": "an explicit list.toString() ignores the elements' toString()"
+    },
+    "collections/coll-list-remove-object-vs-index": {
+      "issues": [21, 13],
+      "reason": "list.remove(Integer.valueOf(40)) removes by index instead of by value"
+    },
+    "collections/coll-list-set-index": {
+      "issues": [21],
+      "reason": "list.set() past the end grows the list instead of throwing IndexOutOfBoundsException"
+    },
+    "collections/coll-map-computeIfAbsent": {
+      "issues": [16],
+      "reason": "Map.computeIfAbsent with a lambda is unsupported (Unknown method)"
+    },
+    "collections/coll-map-merge": {
+      "issues": [16],
+      "reason": "Map.merge with Integer::sum fails (Variable 'Integer' is not defined)"
+    },
+    "collections/coll-priorityqueue-comparator-lambda": {
+      "issues": [16],
+      "reason": "PriorityQueue ignores its lambda comparator (natural order, no error)"
+    },
+    "collections/coll-priorityqueue-print-order": {
+      "issues": [21],
+      "reason": "PriorityQueue prints fully sorted instead of in Java's heap-array order"
+    },
+    "collections/coll-queue-remove-noarg": {
+      "issues": [21],
+      "reason": "queue.remove() with no argument crashes with a JavaScript TypeError"
+    },
+    "collections/coll-scanner-input-mismatch": {
+      "issues": [22],
+      "reason": "Scanner.nextInt() on \"abc\" returns 0 instead of throwing InputMismatchException"
+    },
+    "collections/coll-sort-comparator-lambda": {
+      "issues": [16],
+      "reason": "List.sort ignores its lambda comparator; Collections.reverseOrder() is unsupported"
+    },
+    "collections/coll-stack-empty": {
+      "issues": [21],
+      "reason": "Stack.empty() is unsupported (Unknown method)"
+    },
+    "collections/coll-stream-basic": {
+      "issues": [16],
+      "reason": "streams are unsupported (Unknown method: nums.stream())"
+    },
+    "collections/coll-treemap": {
+      "issues": [21],
+      "reason": "TreeMap.floorKey / ceilingKey are unsupported"
+    },
+    "collections/coll-treeset-nav": {
+      "issues": [21],
+      "reason": "TreeSet.floor / ceiling / higher are unsupported"
+    },
+    "collections/coll-word-count": {
+      "issues": [21],
+      "reason": "HashMap prints in insertion order, not Java's hash order"
+    },
+    "compile-errors/ce-lossy-conversion": {
+      "issues": [23],
+      "reason": "runs int n = <double>, which javac rejects (possible lossy conversion)"
+    },
+    "compile-errors/ce-missing-return": {
+      "issues": [23],
+      "reason": "runs a method with a missing return statement"
+    },
+    "compile-errors/ce-string-minus": {
+      "issues": [23],
+      "reason": "runs \"5\" - 1, which javac rejects (bad operand types)"
+    },
+    "compile-errors/ce-type-mismatch": {
+      "issues": [23],
+      "reason": "runs int x = \"hello\", which javac rejects (incompatible types)"
+    },
+    "compile-errors/ce-undeclared-var-late": {
+      "issues": [23],
+      "reason": "runs until it reaches an undeclared variable javac reports before running"
+    },
+    "compile-errors/ce-uninitialized-local": {
+      "issues": [23],
+      "reason": "runs count++ on a local that was never assigned"
+    },
+    "compile-errors/ce-wrong-arg-count": {
+      "issues": [23],
+      "reason": "runs add(1) against add(int, int) instead of rejecting the call"
+    },
+    "core/array-3d": {
+      "issues": [6],
+      "reason": "new int[2][3][4] fails (Not an array)"
+    },
+    "core/array-clone": {
+      "issues": [15],
+      "reason": "array.clone() is unsupported (Unknown method)"
+    },
+    "core/array-oob-caught": {
+      "issues": [5],
+      "reason": "writing past the end of an array grows it instead of throwing ArrayIndexOutOfBoundsException"
+    },
+    "core/array-oob-write": {
+      "issues": [5],
+      "reason": "writing past the end of an array grows it instead of throwing ArrayIndexOutOfBoundsException"
+    },
+    "core/array-print-direct": {
+      "issues": [19],
+      "reason": "println(char[]) prints [h, i] instead of the characters"
+    },
+    "core/assign-array-elem-field": {
+      "issues": [5],
+      "reason": "people[1].age = 31 overwrites people"
+    },
+    "core/assign-obj-chain-3": {
+      "issues": [5],
+      "reason": "a.next.next = ... overwrites a"
+    },
+    "core/assign-obj-field-array": {
+      "issues": [5],
+      "reason": "s.data[0] = 42 fails (Not an array)"
+    },
+    "core/assign-this-array": {
+      "issues": [5],
+      "reason": "this.data[this.size] = v fails (Invalid assignment target)"
+    },
+    "core/assign-this-chain": {
+      "issues": [5],
+      "reason": "this.head.next = ... fails (Invalid assignment target)"
+    },
+    "core/boxed-methods": {
+      "issues": [20],
+      "reason": "methods on boxed values (Integer.compareTo, Double.intValue) are unsupported"
+    },
+    "core/deep-recursion": {
+      "issues": [14],
+      "reason": "recursion 900 deep overflows the JavaScript stack"
+    },
+    "core/exception-catch-order": {
+      "issues": [22],
+      "reason": "o.toString() on null fails with Unknown method instead of a catchable NullPointerException"
+    },
+    "core/field-init-shadow-caller-local": {
+      "issues": [6],
+      "reason": "a field initializer reads the caller's local x instead of the field"
+    },
+    "core/field-init-uses-field": {
+      "issues": [6],
+      "reason": "a field initializer can't see earlier fields (Variable 'size' is not defined)"
+    },
+    "core/incr-array-elem": {
+      "issues": [5],
+      "reason": "counts[1]++ replaces the array with a number"
+    },
+    "core/incr-letter-frequency": {
+      "issues": [5],
+      "reason": "freq[i]++ replaces the array with a number"
+    },
+    "core/incr-obj-field": {
+      "issues": [5],
+      "reason": "c.count++ replaces c with a number"
+    },
+    "core/incr-this-field": {
+      "issues": [5],
+      "reason": "this.count++ does nothing"
+    },
+    "core/instance-init-block": {
+      "issues": [6],
+      "reason": "instance initializer blocks are ignored"
+    },
+    "core/integer-cache": {
+      "issues": [13, 20],
+      "reason": "Integer == ignores the -128..127 cache; Integer.equals is unsupported"
+    },
+    "core/labeled-break": {
+      "issues": [6],
+      "reason": "labeled loops and break label are skipped"
+    },
+    "core/labeled-continue": {
+      "issues": [6],
+      "reason": "labeled loops and continue label are skipped"
+    },
+    "core/main-args": {
+      "issues": [6],
+      "reason": "main's args is null instead of an empty array"
+    },
+    "core/math-misc": {
+      "issues": [10],
+      "reason": "Math.rint(2.5) rounds half up instead of half to even"
+    },
+    "core/npe-field-access": {
+      "issues": [5],
+      "reason": "reading a field through null prints null instead of throwing NullPointerException"
+    },
+    "core/num-bool-bitwise": {
+      "issues": [10],
+      "reason": "&, | and ^ on booleans return ints"
+    },
+    "core/num-byte-cast": {
+      "issues": [10],
+      "reason": "(byte), (short) and (long) casts truncate wrongly"
+    },
+    "core/num-char-compound": {
+      "issues": [10, 5],
+      "reason": "c += 2 and c++ on a char produce ints"
+    },
+    "core/num-char-increment-loop": {
+      "issues": [10],
+      "reason": "c++ on a char produces ints"
+    },
+    "core/num-compound-narrowing": {
+      "issues": [10, 5],
+      "reason": "compound assignment doesn't narrow back to int (salary *= 1.5)"
+    },
+    "core/num-double-div-zero": {
+      "issues": [10],
+      "reason": "floating-point division by zero throws ArithmeticException instead of Infinity/NaN"
+    },
+    "core/num-double-printing": {
+      "issues": [19],
+      "reason": "doubles print without Java's scientific notation (1.0E7)"
+    },
+    "core/num-float": {
+      "issues": [10, 19],
+      "reason": "float arithmetic and printing use double precision"
+    },
+    "core/num-int-from-char": {
+      "issues": [10],
+      "reason": "int x = 'a' keeps the char instead of converting to 97"
+    },
+    "core/num-long-factorial": {
+      "issues": [10],
+      "reason": "long arithmetic wraps at 32 bits"
+    },
+    "core/num-long-literal": {
+      "issues": [10],
+      "reason": "long literals and arithmetic wrap at 32 bits"
+    },
+    "core/num-long-negate": {
+      "issues": [10],
+      "reason": "long values wrap at 32 bits"
+    },
+    "core/num-shifts": {
+      "issues": [10],
+      "reason": "<<, >> and >>> are evaluated as comparisons"
+    },
+    "core/num-ternary-promotion": {
+      "issues": [13],
+      "reason": "a conditional with int and double branches doesn't promote to double"
+    },
+    "core/object-default-methods": {
+      "issues": [15],
+      "reason": "Object.equals is missing when a class doesn't override it"
+    },
+    "core/overload-by-type": {
+      "issues": [13],
+      "reason": "overloads are chosen by argument count, not type"
+    },
+    "core/overload-ctor-by-type": {
+      "issues": [13],
+      "reason": "constructor overloads are chosen by argument count, not type"
+    },
+    "core/parseInt-invalid": {
+      "issues": [22],
+      "reason": "Integer.parseInt(\"12abc\") returns 12 instead of throwing NumberFormatException"
+    },
+    "core/sb-methods": {
+      "issues": [20],
+      "reason": "StringBuilder.setCharAt / delete / replace / indexOf are unsupported"
+    },
+    "core/stack-overflow": {
+      "issues": [14, 7],
+      "reason": "infinite recursion overflows the JavaScript stack instead of throwing a catchable StackOverflowError"
+    },
+    "core/static-constant-qualified": {
+      "issues": [6],
+      "reason": "Main.MAX (qualified static constant) evaluates to 0"
+    },
+    "core/static-field-name-collision": {
+      "issues": [15, 6],
+      "reason": "qualified static reads return null, and A.count / B.count share one static namespace"
+    },
+    "core/static-init-block": {
+      "issues": [6],
+      "reason": "static initializer blocks are ignored"
+    },
+    "core/static-qualified-field": {
+      "issues": [6],
+      "reason": "Main.total = 5 fails (Variable 'Main' is not defined)"
+    },
+    "core/string-charAt-oob": {
+      "issues": [20],
+      "reason": "charAt past the end returns \\u0000 instead of throwing StringIndexOutOfBoundsException"
+    },
+    "core/string-compareTo": {
+      "issues": [20],
+      "reason": "String.compareTo returns -1/0/1 instead of the character or length difference"
+    },
+    "core/string-equality-ref": {
+      "issues": [20],
+      "reason": "new String(\"hi\") isn't a real string, so equals fails"
+    },
+    "core/string-format-rounding": {
+      "issues": [19],
+      "reason": "String.format rounds with JavaScript's toFixed and prints e+1 for %e"
+    },
+    "core/string-format-user-toString": {
+      "issues": [19],
+      "reason": "%s ignores the argument's toString()"
+    },
+    "core/string-hashCode": {
+      "issues": [20],
+      "reason": "String.hashCode() is unsupported"
+    },
+    "core/string-new-from-chars": {
+      "issues": [20],
+      "reason": "new String(char[]) and String.valueOf(char[]) don't build strings"
+    },
+    "core/string-null-method": {
+      "issues": [22],
+      "reason": "s.length() on null fails with Unknown method instead of a catchable NullPointerException"
+    },
+    "core/string-split-regex": {
+      "issues": [20],
+      "reason": "split() isn't regex-based and keeps trailing empty strings"
+    },
+    "core/switch-arrow": {
+      "issues": [6],
+      "reason": "arrow switch rules (case 3 ->) are skipped"
+    },
+    "core/switch-default-first": {
+      "issues": [6],
+      "reason": "default written before the matching case is taken"
+    },
+    "core/switch-expression": {
+      "issues": [6],
+      "reason": "switch expressions evaluate to null"
+    },
+    "core/try-with-resources": {
+      "issues": [6],
+      "reason": "try-with-resources bodies never run"
+    },
+    "core/user-toString-in-entry-class-collides-with-Integer": {
+      "issues": [13],
+      "reason": "Integer.toString(42) runs the entry class's own toString()"
+    },
+    "core/var-keyword": {
+      "issues": [6],
+      "reason": "new java.util.ArrayList<>() creates an object of class 'java'"
+    },
+    "core/varargs": {
+      "issues": [13],
+      "reason": "varargs parameters are dropped"
+    },
+    "extra/boxed-identity-eq": {
+      "issues": [13],
+      "reason": "Integer == compares values, ignoring the -128..127 cache"
+    },
+    "extra/compound-assign-lhs-read-order": {
+      "issues": [5],
+      "reason": "x += (x = 5) evaluates the right side before reading x"
+    },
+    "extra/lit-hex-octal-binary": {
+      "issues": [10],
+      "reason": "hex, octal and binary literals are parsed as decimal"
+    },
+    "extra/lit-unicode-char-escape": {
+      "issues": [10],
+      "reason": "the char literal '\\u0041' isn't decoded"
+    },
+    "extra/println-int-array": {
+      "issues": [19],
+      "reason": "\"\" + intArray gives [1, 2, 3] instead of an identity string like [I@1b6d3586"
+    },
+    "extra/string-builder-identity": {
+      "issues": [20],
+      "reason": "strings have no identity, so == on distinct equal strings is true"
+    },
+    "misc/exc-instanceof-pattern": {
+      "issues": [6],
+      "reason": "instanceof pattern variables aren't bound"
+    },
+    "misc/exc-multi-catch": {
+      "issues": [15, 22],
+      "reason": "getClass().getSimpleName() is unsupported; s.trim() on null throws no NullPointerException"
+    },
+    "misc/exc-printStackTrace-stream": {
+      "issues": [22],
+      "reason": "printStackTrace() writes to stdout instead of stderr"
+    },
+    "misc/exc-system-err": {
+      "issues": [22],
+      "reason": "System.err output is mixed into stdout"
+    },
+    "misc/misc-integer-division-in-method-uncaught": {
+      "issues": [10],
+      "reason": "a double method's int return value isn't converted to double"
+    },
+    "misc/misc-math-long": {
+      "issues": [10],
+      "reason": "long values wrap at 32 bits; Long.MAX_VALUE loses precision"
+    },
+    "misc/misc-null-object-method": {
+      "issues": [22, 5],
+      "reason": "arr[0].v() on null fails with Unknown method instead of NullPointerException"
+    },
+    "misc/misc-string-methods-more": {
+      "issues": [20, 16],
+      "reason": "String.chars() (and the stream after it) is unsupported"
+    },
+    "misc/misc-toString-implicit-concat-in-list-element": {
+      "issues": [20],
+      "reason": "sb.append(obj) ignores obj's toString()"
+    },
+    "misc/misc-while-labeled-continue": {
+      "issues": [6],
+      "reason": "continue label is skipped"
+    },
+    "oop/oop-abstract-class": {
+      "issues": [15],
+      "reason": "inherited methods are not found (Unknown method: s.report())"
+    },
+    "oop/oop-anonymous-comparator": {
+      "issues": [16],
+      "reason": "an anonymous Comparator is ignored (natural order, no error)"
+    },
+    "oop/oop-ctor-chaining-nondefault": {
+      "issues": [6],
+      "reason": "this(5, 7) constructor delegation is ignored"
+    },
+    "oop/oop-custom-iterable": {
+      "issues": [16],
+      "reason": "for-each over a user Iterable (anonymous Iterator) is unsupported"
+    },
+    "oop/oop-enum-basic": {
+      "issues": [16],
+      "reason": "enums are unsupported (Color.GREEN is null)"
+    },
+    "oop/oop-enum-top-level": {
+      "issues": [16],
+      "reason": "top-level enums are unsupported"
+    },
+    "oop/oop-exception-toString-and-uncaught": {
+      "issues": [22],
+      "reason": "exception toString() lacks the java.lang. package prefix"
+    },
+    "oop/oop-field-collection-method-chain": {
+      "issues": [5],
+      "reason": "t.members.add(\"A\") fails (Unknown method)"
+    },
+    "oop/oop-inheritance-basic": {
+      "issues": [15],
+      "reason": "inherited methods are not found (Unknown method: a.describe())"
+    },
+    "oop/oop-inherited-field-access": {
+      "issues": [15],
+      "reason": "inherited fields are not found (Variable 'color' is not defined)"
+    },
+    "oop/oop-inner-class-outer-field": {
+      "issues": [16],
+      "reason": "inner classes can't reach their outer instance"
+    },
+    "oop/oop-instanceof-subclass": {
+      "issues": [15],
+      "reason": "instanceof ignores the superclass chain"
+    },
+    "oop/oop-interface": {
+      "issues": [15],
+      "reason": "instanceof ignores implemented interfaces"
+    },
+    "oop/oop-interface-constant": {
+      "issues": [15],
+      "reason": "interface constants are not found (Variable 'LIMIT' is not defined)"
+    },
+    "oop/oop-interface-default-method": {
+      "issues": [15],
+      "reason": "interface default methods are not found"
+    },
+    "oop/oop-method-call-on-field-chain": {
+      "issues": [5],
+      "reason": "head.next.getVal() fails (Unknown method)"
+    },
+    "oop/oop-null-check-then-call": {
+      "issues": [5],
+      "reason": "a.next.next = ... overwrites a, so the list has one node"
+    },
+    "oop/oop-object-toString-default-call": {
+      "issues": [15],
+      "reason": "Object.toString is missing when a class doesn't override it"
+    },
+    "oop/oop-record": {
+      "issues": [16],
+      "reason": "records are unsupported"
+    },
+    "oop/oop-static-counter-instances": {
+      "issues": [6],
+      "reason": "Ticket.nextId (qualified static field) evaluates to null"
+    },
+    "oop/oop-super-method-call": {
+      "issues": [15],
+      "reason": "super.toString() calls itself until the JavaScript stack overflows"
+    },
+    "realistic/real-arrays-sort-comparable": {
+      "issues": [21],
+      "reason": "Arrays.toString ignores the elements' toString()"
+    },
+    "realistic/real-count-occurrences-2d-char": {
+      "issues": [5],
+      "reason": "counts[c - 'a']++ replaces the array with a number"
+    },
+    "realistic/real-dice-simulation": {
+      "issues": [5],
+      "reason": "counts[roll]++ replaces the array with a number"
+    },
+    "realistic/real-doubly-linked": {
+      "issues": [5],
+      "reason": "head.next.next.prev = head overwrites head"
+    },
+    "realistic/real-fib-memo-static": {
+      "issues": [10],
+      "reason": "long arithmetic wraps at 32 bits"
+    },
+    "realistic/real-flood-fill": {
+      "issues": [20],
+      "reason": "new String(char[]) doesn't build a string"
+    },
+    "realistic/real-hash-table-chaining": {
+      "issues": [20],
+      "reason": "String.hashCode() is unsupported"
+    },
+    "realistic/real-shape-hierarchy": {
+      "issues": [15],
+      "reason": "an abstract superclass toString() calling area() prints Circle@1"
+    }
+  },
+  "invariants": {
+    "collections/coll-list-set-index": {
+      "refs": {
+        "issues": [21],
+        "reason": "list.set() past the end leaves holes in the list's backing array"
+      }
+    },
+    "collections/coll-queue-remove-noarg": {
+      "js-errors": {
+        "issues": [21, 7],
+        "reason": "queue.remove() shows \"Cannot read properties of undefined\""
+      }
+    },
+    "core/array-oob-caught": {
+      "refs": {
+        "issues": [5],
+        "reason": "a[5] = 1 grows the array, leaving undefined elements"
+      }
+    },
+    "core/deep-recursion": {
+      "js-errors": {
+        "issues": [7, 14],
+        "reason": "shows \"Maximum call stack size exceeded\""
+      }
+    },
+    "core/enhanced-for-continue-scope": {
+      "scopes": {
+        "issues": [9],
+        "reason": "after continue, the next for-each header step still shows the previous iteration's 'doubled'"
+      }
+    },
+    "core/stack-overflow": {
+      "js-errors": {
+        "issues": [7, 14],
+        "reason": "shows \"Maximum call stack size exceeded\""
+      }
+    },
+    "oop/oop-super-method-call": {
+      "js-errors": {
+        "issues": [6, 7],
+        "reason": "shows \"Maximum call stack size exceeded\""
+      }
+    }
+  }
+}

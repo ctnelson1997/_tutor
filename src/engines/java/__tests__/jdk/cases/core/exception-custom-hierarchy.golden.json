@@ -1,0 +1,8 @@
+{
+  "stdout": "ok\nError: need 50.0 more\ndone\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "b3681b1e17dcbd1eec7373f1bdd1cef057193eb5d2261533530cdf7b45b2a6d6"
+}

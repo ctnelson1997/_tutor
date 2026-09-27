@@ -1,0 +1,8 @@
+{
+  "stdout": "",
+  "stderr": "Main.java:3: error: ';' expected\n    int x = 5\n             ^\n1 error\nerror: compilation failed\n",
+  "exitCode": 1,
+  "exception": null,
+  "compileError": "Main.java:3: error: ';' expected\n    int x = 5\n             ^\n1 error",
+  "sourceSha256": "96fb0f469368048c0a47b2f4ff5431a111b2cd8759de76ed48c839ef1d7aca94"
+}

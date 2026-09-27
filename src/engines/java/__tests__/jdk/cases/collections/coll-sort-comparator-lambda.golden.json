@@ -1,0 +1,8 @@
+{
+  "stdout": "[fig, pear, banana]\n[pear, fig, banana]\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "2cd848590aa0298d2046d6fa02c0579241b6d247dd3eac227bdede3b673da844"
+}

@@ -106,8 +106,23 @@ npm run dev:py       # Python dev server
 | `npm run build:all` | Build all language targets |
 | `npm run test` | Run tests (Vitest) |
 | `npm run test:integration` | Build viewer-js then run integration tests against the real built `docs/viewer-js.html` |
+| `npm run test:java:golden` | Regenerate the Java engine's JDK goldens (needs JDK 21, see below) |
 | `npm run lint` | Run ESLint |
 | `npm run preview` | Preview the production build locally |
+
+### Testing the Java engine against real Java
+
+The Java engine re-implements Java, so its main test compares it with the real thing. [`src/engines/java/__tests__/jdk/`](src/engines/java/__tests__/jdk/) holds a corpus of Java programs: typical CS1/CS2 programs, targeted checks, programs `javac` rejects, and every shipped example. Each program has a committed golden file that records what JDK 21's `java` printed. `npm test` runs each program through the interpreter and compares its stdout and any uncaught exception with the golden. It also checks the snapshots: heap references are valid, line numbers are in the file, no JavaScript error text reaches the user, and no stale block variables are shown. No JDK is needed for any of this.
+
+Checks that fail today are listed in `known-failures.json`, each with the roadmap issue ([#3](https://github.com/ctnelson1997/_tutor/issues/3)) that should fix it. They run as expected failures, so the suite stays green. When a fix makes one pass, the suite turns red, and you delete the entry. The test run ends with a summary: how many programs pass, how many print wrong output with no error, and how many fail with an error.
+
+| Task | How |
+|---|---|
+| Add a program | Put `<name>.java` (and optionally `<name>.stdin`) in `cases/<category>/`, then run `npm run test:java:golden -- <category>/<name>` and commit both |
+| Regenerate every golden | `npm run test:java:golden` (JDK 21's `java` on `PATH`, or set `JAVA_BIN`) |
+| Check goldens are current, writing nothing | `npm run test:java:golden -- --check` |
+| See every difference from real Java, case by case | `npx tsx scripts/java-diff.ts [filter]` |
+| Print each step's frames and heap | `npx tsx scripts/java-viz.ts <case id \| file.java \| example:slug> [--final]` |
 
 ---
 
@@ -142,7 +157,8 @@ src/
 │       ├── worker.ts           # Web Worker: parse + interpret Java source
 │       ├── examples.ts         # Java example snippets, including visualization-friendly OOP data structures
 │       ├── security.ts         # Suspicious code pattern detection
-│       └── stdlib/             # Emulated standard library (Math, wrappers, Arrays, collections, Scanner, Random, …)
+│       ├── stdlib/             # Emulated standard library (Math, wrappers, Arrays, collections, Scanner, Random, …)
+│       └── __tests__/jdk/      # Differential corpus: Java programs + JDK 21 goldens, known-failures.json
 ├── engine/
 │   └── executor.ts             # Thin dispatcher: store → engine → store
 ├── components/
@@ -185,6 +201,7 @@ src/
 .env.java                       # Java build branding (VITE_APP_NAME=JavaTutor, etc.)
 viewer.html                     # HTML entry for the viewer-<lang> build (contains the __EXAMPLES__ placeholder)
 vite.config.ts                  # Build config — mode-based outDir + language targeting + singlefile viewer mode
+scripts/                        # Dev tools, run with tsx: java-golden.ts (JDK goldens), java-diff.ts, java-viz.ts
 ```
 
 ---

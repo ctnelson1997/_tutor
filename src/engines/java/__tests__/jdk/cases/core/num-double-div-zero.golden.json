@@ -1,0 +1,8 @@
+{
+  "stdout": "Infinity\nNaN\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "86e4692eb9bb903a9a6e8b175e9bc600fde49f1dc2e653ae60ecba5a3581ec87"
+}

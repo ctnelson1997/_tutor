@@ -1,0 +1,8 @@
+{
+  "stdout": "Error: Deposit must be positive\nBalance: 69.5\n - deposit 100.0\n - withdraw 30.5\n - FAILED withdraw 500.0\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "ee8aeacffd49636747e5075e8ba3d029eb1c18c8c9f38e759c79f3095874415a"
+}

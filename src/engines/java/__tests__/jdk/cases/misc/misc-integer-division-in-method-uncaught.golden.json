@@ -1,0 +1,11 @@
+{
+  "stdout": "1.0\n",
+  "stderr": "Exception in thread \"main\" java.lang.ArithmeticException: / by zero\n\tat Main.avg(Main.java:5)\n\tat Main.main(Main.java:9)\n",
+  "exitCode": 1,
+  "exception": {
+    "class": "java.lang.ArithmeticException",
+    "message": "/ by zero"
+  },
+  "compileError": null,
+  "sourceSha256": "b090b0a1fad073b032c1dfc59aee42699fcc737a1d44d574c7d05c59f7818482"
+}

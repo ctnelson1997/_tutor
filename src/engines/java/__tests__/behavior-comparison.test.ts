@@ -5,13 +5,13 @@
  *   - the last snapshot's stdout matches the expected output
  *   - (optionally) the final call stack contains no leaked block-scope frames
  *
- * Unlike the JS engine where we can run plain JS in a vm sandbox as the
- * ground truth, the Java engine is the only interpreter we have — so the
- * expected outputs here are computed by hand (matching real Java / javac
- * semantics). When a case fails, either the interpreter is wrong or the
- * expectation is wrong; reconcile against real `java` if available.
- *
- * Add a case here whenever you find an engine bug from real-world Java code.
+ * The expected outputs here are written by hand (matching real Java / javac
+ * semantics). The ground truth is real `java`: the JDK differential suite in
+ * ./jdk/ runs a corpus of programs against goldens recorded with JDK 21. When
+ * you find an engine bug in real-world Java code, add the program to that
+ * corpus (cases/<category>/<name>.java, then `npm run test:java:golden`), so its
+ * expected output comes from the JDK. Keep this file for small, focused
+ * regressions whose output is obvious.
  */
 import { describe, it, expect } from 'vitest';
 import { parseJava } from '../parser';

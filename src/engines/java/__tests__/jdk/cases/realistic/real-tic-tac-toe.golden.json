@@ -1,0 +1,8 @@
+{
+  "stdout": "X| |O\n-+-+-\n |X| \n-+-+-\n | |X\nX wins? true\nO wins? false\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "df64be0d6d79ebbb5161d3c22c9334adb891b1fcb047335b291ca68afb465321"
+}

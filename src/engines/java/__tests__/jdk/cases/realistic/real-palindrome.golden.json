@@ -1,0 +1,8 @@
+{
+  "stdout": "\"racecar\" -> true\n\"A man, a plan, a canal: Panama\" -> true\n\"hello\" -> false\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "4c65bf44c9479d25f23b2a2b949dacff907bbc7ebe4ddd466947652e56eafb58"
+}

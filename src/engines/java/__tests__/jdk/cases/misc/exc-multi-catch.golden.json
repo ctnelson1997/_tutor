@@ -1,0 +1,8 @@
+{
+  "stdout": "24\nbad: NumberFormatException\nbad: NullPointerException\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "ed39ad86a2c0fa418a9a92e8aeb1095c67f8c5bac8d1017147a9efb93069bfc5"
+}

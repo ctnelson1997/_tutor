@@ -1,0 +1,8 @@
+{
+  "stdout": "Guess: Too high\nGuess: Too low\nGuess: Got it in 3 guesses\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "cc5ecd31dad32c73dd88aeb306c2e4472e226933212a46ecf09bdfab7c21755a"
+}
