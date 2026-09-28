@@ -6,6 +6,7 @@ import type { HeapObject, RuntimeValue, StackFrame } from '../types/snapshot';
 import type { HeapTypeDisplay } from '../types/engine';
 import { getChangedKeys } from '../utils/diffSnapshots';
 import { promoteToHeap } from '../utils/promoteToHeap';
+import { primitiveText } from '../utils/valueDisplay';
 import DraggableCard from './DraggableCard';
 
 function ValueDisplay({ value }: { value: RuntimeValue }) {
@@ -19,18 +20,9 @@ function ValueDisplay({ value }: { value: RuntimeValue }) {
     );
   }
 
-  const display =
-    value.type === 'string'
-      ? `"${value.value}"`
-      : value.type === 'null'
-        ? 'null'
-        : value.type === 'undefined'
-          ? 'undefined'
-          : String(value.value);
-
   return (
     <span style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
-      {display}
+      {primitiveText(value)}
     </span>
   );
 }

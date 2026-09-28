@@ -3,6 +3,12 @@
 export interface PrimitiveValue {
   type: 'number' | 'string' | 'boolean' | 'null' | 'undefined' | 'symbol' | 'bigint';
   value: string | number | boolean | null;
+  /**
+   * The text to show, when the engine renders the value itself, e.g. Java's
+   * `'B'` for a char (not `"B"`), `5.0` for a double, `"a\nb"` for a string
+   * with a line break. Without it the UI renders `value` by `type`.
+   */
+  display?: string;
 }
 
 // ── Heap references ──

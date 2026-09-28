@@ -466,13 +466,3 @@ export function floatToString(f: number): string {
   const { digits, exponent } = shortestFloat(Math.abs(f));
   return (f < 0 ? '-' : '') + javaDecimalLayout(digits, exponent);
 }
-
-/**
- * A float as the JS number that has its shortest digits (1.1f is
- * 1.100000023841858, and this gives 1.1), so it displays as Java prints it.
- */
-export function floatDisplayValue(f: number): number {
-  if (f === 0 || !Number.isFinite(f)) return f;
-  const value = decimalValue(shortestFloat(Math.abs(f)));
-  return f < 0 ? -value : value;
-}

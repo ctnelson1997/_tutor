@@ -26,6 +26,14 @@ describe('getChangedKeys', () => {
     expect(changed.size).toBe(0);
   });
 
+  it('detects a change that shows only in the display text', () => {
+    const frame = (display: string) => makeSnapshot({
+      callStack: [{ name: 'main', variables: [{ name: 'x', value: { type: 'number', value: 1, display } }] }],
+    });
+    expect(getChangedKeys(frame('1.0'), frame('1.0')).size).toBe(0);
+    expect(getChangedKeys(frame('1.0'), frame('1.00'))).toEqual(new Set(['var:0:x']));
+  });
+
   it('returns empty set when curr is undefined', () => {
     const changed = getChangedKeys(makeSnapshot(), undefined);
     expect(changed.size).toBe(0);

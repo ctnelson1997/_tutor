@@ -3,7 +3,9 @@
  * (literals.ts). Expected values were checked against real `java` (JDK 21).
  */
 import { describe, it, expect } from 'vitest';
-import { unescapeJava, escapeJava, stringLiteralValue, charLiteralValue, textBlockValue, integerLiteralValue, floatingLiteralValue } from '../literals';
+import {
+  unescapeJava, escapeJava, stringLiteral, charLiteral, stringLiteralValue, charLiteralValue, textBlockValue, integerLiteralValue, floatingLiteralValue,
+} from '../literals';
 
 describe('unescapeJava', () => {
   it('translates escapes in one pass, so \\\\n is a backslash and an n', () => {
@@ -81,6 +83,18 @@ describe('escapeJava', () => {
     expect(escapeJava('say "hi" \\ bye')).toBe('say \\"hi\\" \\\\ bye');
     expect(escapeJava('\b\f\u0007\u007f')).toBe('\\b\\f\\u0007\\u007f');
     expect(escapeJava('plain text, é ✓')).toBe('plain text, é ✓');
+  });
+
+  it('writes string and char literals', () => {
+    expect(stringLiteral('a\n"b"')).toBe('"a\\n\\"b\\""');
+    expect(charLiteral(66)).toBe("'B'");
+    expect(charLiteral(10)).toBe("'\\n'");
+    expect(charLiteral(0)).toBe("'\\u0000'");
+    expect(charLiteral(0x27)).toBe("'\\''");
+    expect(charLiteral(0x22)).toBe(`'"'`);
+    expect(charLiteral(0x5c)).toBe("'\\\\'");
+    expect(charLiteral(0xd83d)).toBe("'\\ud83d'"); // half of an emoji
+    expect(charLiteral(0xe9)).toBe("'é'");
   });
 
   it('is undone by unescapeJava', () => {

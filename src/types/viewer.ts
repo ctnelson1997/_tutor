@@ -8,7 +8,8 @@ import type { LanguageId } from './engine';
 // v2: added optional `stdin` (preset console input for Java's Scanner) so
 // exported Scanner programs re-run with their original input.
 // Optional `error` (why the run stopped early) came later without a bump: a
-// viewer that doesn't know it still shows the steps.
+// viewer that doesn't know it still shows the steps. So did a primitive's
+// optional `display` text (Java's 'B', 5.0): without it, values render by type.
 export const CURRENT_EXAMPLE_SCHEMA_VERSION = 2;
 
 export interface ViewerExample {

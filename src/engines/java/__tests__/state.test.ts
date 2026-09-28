@@ -286,9 +286,9 @@ describe('library objects are drawn with their state', () => {
   it('a Scanner shows the input it has left, with line breaks visible', () => {
     const snapshots = runClean(program('Scanner in = new Scanner("5\\nhello\\n");\n    int n = in.nextInt();\n    String rest = in.nextLine();'));
     const remaining = (s: ExecutionSnapshot) => target(s, variable(s, 'in'))!.properties;
-    expect(remaining(stepsAt(snapshots, 5)[0])).toEqual([{ key: 'remaining', value: { type: 'string', value: '5\\nhello\\n' } }]);
-    expect(remaining(stepsAt(snapshots, 6)[0])[0].value).toEqual({ type: 'string', value: '\\nhello\\n' });
-    expect(remaining(stepsAt(snapshots, 7)[0])[0].value).toEqual({ type: 'string', value: 'hello\\n' });
+    expect(remaining(stepsAt(snapshots, 5)[0])).toEqual([{ key: 'remaining', value: { type: 'string', value: '5\nhello\n', display: '"5\\nhello\\n"' } }]);
+    expect(remaining(stepsAt(snapshots, 6)[0])[0].value).toMatchObject({ display: '"\\nhello\\n"' });
+    expect(remaining(stepsAt(snapshots, 7)[0])[0].value).toMatchObject({ display: '"hello\\n"' });
   });
 
   it('an Iterator shows its collection and its cursor', () => {
@@ -313,19 +313,50 @@ describe('library objects are drawn with their state', () => {
   it('a library Comparator shows how it orders', () => {
     const snapshots = runClean(program('Comparator<Integer> rev = Collections.reverseOrder();\n    Comparator<Integer> back = rev.reversed();'));
     const last = snapshots.at(-1)!;
-    expect(target(last, variable(last, 'rev'))!.properties).toEqual([{ key: 'order', value: { type: 'string', value: 'reverse' } }]);
+    const reverse = { type: 'string', value: 'reverse', display: '"reverse"' };
+    expect(target(last, variable(last, 'rev'))!.properties).toEqual([{ key: 'order', value: reverse }]);
     expect(target(last, variable(last, 'back'))!.properties).toEqual([
-      { key: 'order', value: { type: 'string', value: 'reverse' } },
+      { key: 'order', value: reverse },
       { key: 'base', value: variable(last, 'rev') },
     ]);
   });
 });
 
-describe('numbers are shown exactly', () => {
-  it('a long as its digits, even past 2^53, and a float with the digits Java prints', () => {
-    const last = runClean(program('long big = 9007199254740993L;\n    float f = 1.1f;\n    double d = f;')).at(-1)!;
-    expect(variable(last, 'big')).toEqual({ type: 'bigint', value: '9007199254740993' });
-    expect(variable(last, 'f')).toEqual({ type: 'number', value: 1.1 });
-    expect(variable(last, 'd')).toEqual({ type: 'number', value: Math.fround(1.1) }); // (double) 1.1f is 1.100000023841858
+describe('values show as Java writes them (#17)', () => {
+  const last = runClean(program(`char grade = 'B';
+    String letter = "B";
+    double avg = 5;
+    float f = 1.1f;
+    double widened = f;
+    long big = 9007199254740993L;
+    String quoted = "a\\n\\"b\\"";
+    char tab = '\\t';
+    char[] blank = new char[1];
+    int n = 7;`)).at(-1)!;
+  const shown = (name: string) => variable(last, name);
+
+  it(`tells a char from a String: 'B' and "B"`, () => {
+    expect(shown('grade')).toEqual({ type: 'string', value: 'B', display: "'B'" });
+    expect(shown('letter')).toEqual({ type: 'string', value: 'B', display: '"B"' });
+    expect(shown('tab')).toMatchObject({ display: "'\\t'" });
+    expect(target(last, shown('blank'))!.properties[0].value).toMatchObject({ display: "'\\u0000'" }); // the default char, visible
+  });
+
+  it('shows a whole-number double as 5.0, and a float with the digits Java prints', () => {
+    expect(shown('avg')).toEqual({ type: 'number', value: 5, display: '5.0' });
+    expect(shown('f')).toEqual({ type: 'number', value: Math.fround(1.1), display: '1.1' });
+    expect(shown('widened')).toMatchObject({ display: '1.100000023841858' }); // (double) 1.1f
+  });
+
+  it('shows a long exactly, even past 2^53', () => {
+    expect(shown('big')).toEqual({ type: 'bigint', value: '9007199254740993' });
+  });
+
+  it('shows the escapes of a string', () => {
+    expect(shown('quoted')).toEqual({ type: 'string', value: 'a\n"b"', display: '"a\\n\\"b\\""' });
+  });
+
+  it('leaves ints as they were', () => {
+    expect(shown('n')).toEqual({ type: 'number', value: 7 });
   });
 });

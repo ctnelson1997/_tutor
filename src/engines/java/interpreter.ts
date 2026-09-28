@@ -39,8 +39,10 @@ import {
   arrayElementReference,
   arrayLength,
 } from './references';
-import { stringLiteralValue, charLiteralValue, textBlockValue, escapeJava, integerLiteralValue, floatingLiteralValue } from './literals';
-import { binaryOperation, unaryOperation, castPrimitive, stepped, numericValue, floatDisplayValue } from './numeric';
+import {
+  stringLiteralValue, charLiteralValue, textBlockValue, integerLiteralValue, floatingLiteralValue, stringLiteral, charLiteral,
+} from './literals';
+import { binaryOperation, unaryOperation, castPrimitive, stepped, numericValue } from './numeric';
 import {
   type JavaValue,
   type JavaType,
@@ -1140,20 +1142,28 @@ export class JavaInterpreter {
     };
   }
 
+  /**
+   * A value as a step shows it. Primitives and strings carry Java's own
+   * rendering (`display`), so a char shows as 'B' (not like the String "B"),
+   * a double as 5.0, a float as Java prints it (1.1, not 1.100000023841858),
+   * a long exactly, and a string with its escapes ("a\nb").
+   */
   private javaToRuntime(val: JavaValue): RuntimeValue {
     switch (val.kind) {
       case 'primitive':
-        if (val.javaType === 'boolean')
-          return { type: 'boolean', value: val.value as boolean };
-        if (val.javaType === 'char')
-          return { type: 'string', value: String.fromCharCode(val.value as number) };
-        // A long can exceed 2^53, so it goes to the UI as its exact decimal digits.
-        if (val.javaType === 'long') return { type: 'bigint', value: String(val.value) };
-        // A float shows its shortest digits, as Java prints it (1.1, not 1.100000023841858).
-        if (val.javaType === 'float') return { type: 'number', value: floatDisplayValue(val.value as number) };
-        return { type: 'number', value: val.value as number };
+        switch (val.javaType) {
+          case 'boolean': return { type: 'boolean', value: val.value as boolean };
+          case 'char': {
+            const code = val.value as number;
+            return { type: 'string', value: String.fromCharCode(code), display: charLiteral(code) };
+          }
+          case 'long': return { type: 'bigint', value: String(val.value) }; // exact past 2^53
+          case 'float': case 'double':
+            return { type: 'number', value: val.value as number, display: javaValueToString(val, this.heap) };
+          default: return { type: 'number', value: val.value as number };
+        }
       case 'string':
-        return { type: 'string', value: val.value };
+        return { type: 'string', value: val.value, display: stringLiteral(val.value) };
       case 'null':
         return { type: 'null', value: null };
       case 'arrayRef':
@@ -1204,11 +1214,11 @@ export class JavaInterpreter {
       };
     }
     if (cls === 'Scanner') {
-      // The input still to be read, with line breaks written as \n, so a
-      // student can see that nextInt() leaves the rest of the line behind.
+      // The input still to be read. A string shows its escapes, so the line
+      // break that nextInt() leaves behind is visible as \n.
       return {
         id, objectType: 'object', label: cls,
-        properties: [{ key: 'remaining', value: { type: 'string', value: escapeJava(scannerRemaining(entry)) } }],
+        properties: [{ key: 'remaining', value: this.javaToRuntime(javaString(scannerRemaining(entry))) }],
       };
     }
     return {

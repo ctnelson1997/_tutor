@@ -21,7 +21,6 @@ import {
   parseIntegerText,
   rint,
   floatToString,
-  floatDisplayValue,
   javaDecimalLayout,
   INT_MIN,
   INT_MAX,
@@ -290,12 +289,6 @@ describe('floating point', () => {
       [0x00800000, '1.1754944E-38'], // the smallest normal float (JDK 18 and earlier printed 1.17549435E-38)
     ];
     for (const [bits, java] of cases) expect(floatToString(fromBits(bits)), java).toBe(java);
-  });
-
-  it("gives a float's display value its shortest digits", () => {
-    expect(floatDisplayValue(Math.fround(1.1))).toBe(1.1);
-    expect(floatDisplayValue(Math.fround(-0.3))).toBe(-0.3);
-    expect(floatDisplayValue(0)).toBe(0);
   });
 });
 

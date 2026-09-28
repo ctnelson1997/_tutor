@@ -4,6 +4,7 @@ import { useStore } from '../store/useStore';
 import type { RuntimeValue, StackFrame } from '../types/snapshot';
 import { getChangedKeys } from '../utils/diffSnapshots';
 import { promoteToHeap } from '../utils/promoteToHeap';
+import { primitiveText } from '../utils/valueDisplay';
 import DraggableCard from './DraggableCard';
 
 function ValueDisplay({ value }: { value: RuntimeValue }) {
@@ -29,18 +30,10 @@ function ValueDisplay({ value }: { value: RuntimeValue }) {
   };
 
   const color = colorMap[value.type] || '#333';
-  const display =
-    value.type === 'string'
-      ? `"${value.value}"`
-      : value.type === 'null'
-        ? 'null'
-        : value.type === 'undefined'
-          ? 'undefined'
-          : String(value.value);
 
   return (
     <span style={{ color, fontFamily: 'monospace', fontSize: '0.85rem' }}>
-      {display}
+      {primitiveText(value)}
     </span>
   );
 }

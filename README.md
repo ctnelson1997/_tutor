@@ -233,6 +233,7 @@ The Java engine is a teaching-oriented subset, not a full JVM. Generic type para
 - **Only objects the program can still reach** are drawn: from a variable, `this` or a static field. An array replaced by `Arrays.copyOf`, or the copy a `for (k : map.keySet())` loop walks, disappears the way garbage would.
 - **A local declared without a value** (`int count;`) isn't shown until it is assigned. Reading it first stops the run with javac's "might not have been initialized".
 - **Blocks are labeled by construct** (`for`, `if`, `try`, `catch`, `finally`), and `this` is shown apart from the variables.
+- **Values show as Java writes them**: a `char` as `'B'` (not like the String `"B"`), a whole-number `double` as `5.0`, a `float` with the digits Java prints, a `long` exactly, and a String with its escapes (`"a\nb"`).
 - **Library objects show their state**: a `Scanner` the input it has left (line breaks as `
 `, so the `nextInt`/`nextLine` gotcha is visible), an `Iterator` its collection and cursor, and a `Random` its seed.
 

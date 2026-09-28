@@ -140,6 +140,23 @@ export function escapeJava(text: string): string {
   return out;
 }
 
+/** A string as a string literal: `"a\nb"`. */
+export function stringLiteral(text: string): string {
+  return `"${escapeJava(text)}"`;
+}
+
+/**
+ * A char as a char literal: `'B'`, `'\n'`, `'\''`, `'\u0000'`. A surrogate
+ * half (one half of an emoji) is written as its `\u` escape, as it can't be
+ * shown on its own.
+ */
+export function charLiteral(code: number): string {
+  if (code === 0x27) return "'\\''";
+  if (code === 0x22) return `'"'`;
+  if (code >= 0xd800 && code <= 0xdfff) return `'\\u${code.toString(16)}'`;
+  return `'${escapeJava(String.fromCharCode(code))}'`;
+}
+
 /** The value of a string literal token, quotes included: `"a\tb"`. */
 export function stringLiteralValue(image: string): string {
   return unescapeJava(image.slice(1, -1));

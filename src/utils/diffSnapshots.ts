@@ -2,7 +2,7 @@ import type { ExecutionSnapshot, RuntimeValue } from '../types/snapshot';
 
 function serializeValue(v: RuntimeValue): string {
   if (v.type === 'ref') return `ref:${v.heapId}`;
-  return `${v.type}:${v.value}`;
+  return v.display === undefined ? `${v.type}:${v.value}` : `${v.type}:${v.value}:${v.display}`;
 }
 
 /**

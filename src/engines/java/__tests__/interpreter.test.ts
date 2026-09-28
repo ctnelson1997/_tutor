@@ -1231,7 +1231,7 @@ describe('Java Interpreter', () => {
       const msgObject = findHeapObject(snapshot, 'MSG');
       expect(msgObject).toBeDefined();
       expect(snapshot.stdout).toEqual(['Rex is 5', '5']);
-      expect(getPropertyValue(msgObject!, 'name')).toEqual({ type: 'string', value: 'Rex' });
+      expect(getPropertyValue(msgObject!, 'name')).toEqual({ type: 'string', value: 'Rex', display: '"Rex"' });
       expect(getPropertyValue(msgObject!, 'age')).toEqual({ type: 'number', value: 5 });
     });
 

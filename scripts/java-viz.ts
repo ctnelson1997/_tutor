@@ -14,6 +14,7 @@ import { examples } from '../src/engines/java/examples';
 import { loadCases } from '../src/engines/java/__tests__/jdk/corpus';
 import { runInterpreter } from '../src/engines/java/__tests__/jdk/harness';
 import type { ExecutionSnapshot, RuntimeValue } from '../src/types/snapshot';
+import { primitiveText } from '../src/utils/valueDisplay';
 
 const [target, ...flags] = process.argv.slice(2);
 const opt = (name: string) => flags.find(f => f.startsWith(`--${name}=`))?.slice(name.length + 3);
@@ -37,8 +38,8 @@ function load(): { source: string; stdin: string } {
   return { source: c.source, stdin: c.stdin };
 }
 
-const show = (v: RuntimeValue): string =>
-  v.type === 'ref' ? `#${v.heapId}` : v.type === 'string' ? JSON.stringify(v.value) : String(v.value);
+/** A value as the UI shows it: an arrow to an object, or the engine's own text (Java's 'B', 5.0). */
+const show = (v: RuntimeValue): string => (v.type === 'ref' ? `#${v.heapId}` : primitiveText(v));
 
 function print(s: ExecutionSnapshot, lines: string[]): void {
   console.log(`\n[step ${s.step}] line ${s.line}: ${(lines[s.line - 1] ?? '').trim()}`);
