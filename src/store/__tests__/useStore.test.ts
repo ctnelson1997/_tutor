@@ -174,3 +174,17 @@ describe('useStore', () => {
     expect(useStore.getState().hideFunctions).toBe(false);
   });
 });
+
+describe('useStore: a run that stopped early', () => {
+  beforeEach(() => useStore.getState().reset());
+
+  it('keeps an error set after the snapshots, and setSnapshots clears it', () => {
+    const snaps = [makeSnapshot(0, 1), makeSnapshot(1, 2)];
+    useStore.getState().setSnapshots(snaps);
+    useStore.getState().setError({ kind: 'limit', message: 'Stopped after 5000 steps', line: 2 });
+    expect(useStore.getState().snapshots).toBe(snaps);
+    expect(useStore.getState().error).toEqual({ kind: 'limit', message: 'Stopped after 5000 steps', line: 2 });
+    useStore.getState().setSnapshots(snaps);
+    expect(useStore.getState().error).toBeNull();
+  });
+});

@@ -4,6 +4,7 @@ import { useStore } from '../store/useStore';
 export default memo(function ConsolePanel() {
   const snapshots = useStore((s) => s.snapshots);
   const currentStep = useStore((s) => s.currentStep);
+  const error = useStore((s) => s.error);
   const bottomRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
@@ -14,10 +15,17 @@ export default memo(function ConsolePanel() {
     () => (snapshots.length > 0 && snapshots[currentStep] ? snapshots[currentStep].stdout : []),
     [snapshots, currentStep],
   );
+  // What an uncaught exception prints to stderr (Java's stack trace, Python's
+  // traceback) appears after the output at the last step, as in a terminal.
+  const atEnd = snapshots.length === 0 || currentStep === snapshots.length - 1;
+  const stderr = useMemo(
+    () => (atEnd && error?.stderr ? error.stderr.split('\n') : []),
+    [atEnd, error],
+  );
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [stdout]);
+  }, [stdout, stderr]);
 
   // Drag-to-resize logic (pointer events work on both mouse and touch)
   const onPointerDown = useCallback((e: React.PointerEvent) => {
@@ -71,12 +79,17 @@ export default memo(function ConsolePanel() {
         <div style={{ fontSize: '0.7rem', color: '#aaa', marginBottom: '0.25rem' }}>
           Console Output
         </div>
-        {stdout.length === 0 ? (
+        {stdout.length === 0 && stderr.length === 0 ? (
           <div style={{ color: '#999', fontStyle: 'italic' }}>No output yet</div>
         ) : (
-          stdout.map((line, i) => (
-            <div key={i}>{line}</div>
-          ))
+          <>
+            {stdout.map((line, i) => (
+              <div key={i}>{line}</div>
+            ))}
+            {stderr.map((line, i) => (
+              <div key={`stderr-${i}`} className="log-error">{line}</div>
+            ))}
+          </>
         )}
         <div ref={bottomRef} />
       </div>

@@ -83,6 +83,25 @@ export interface ExecutionSnapshot {
 
 // ── Execution result from the worker ──
 
+/**
+ * Why a run ended before the program finished normally.
+ *   exception  the program threw an exception that nothing caught
+ *   limit      the run hit the step cap or the time limit
+ *   error      the engine stopped it: a construct it can't run yet, a
+ *              problem the compiler would have reported, or an internal failure
+ * `kind` is absent for failures before anything ran (a parse error, the engine
+ * failing to load, the worker timing out).
+ */
+export interface RunError {
+  message: string;
+  line?: number;
+  kind?: 'exception' | 'limit' | 'error';
+  /** What the program's stderr would show, such as Java's stack trace. The console shows it at the last step. */
+  stderr?: string;
+}
+
 export type WorkerMessage =
-  | { type: 'result'; snapshots: ExecutionSnapshot[] }
+  /** The program ran: the steps it produced, and why it stopped early if it did. */
+  | { type: 'result'; snapshots: ExecutionSnapshot[]; error?: RunError }
+  /** Nothing ran: a parse error, the engine failing to load, or the worker timing out. */
   | { type: 'error'; message: string; line?: number };

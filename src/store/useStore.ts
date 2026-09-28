@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { ExecutionSnapshot } from '../types/snapshot';
+import type { ExecutionSnapshot, RunError } from '../types/snapshot';
 import type { LanguageId } from '../types/engine';
 import { branding } from '../config/branding';
 
@@ -20,7 +20,8 @@ export interface TutorState {
   snapshots: ExecutionSnapshot[];
   currentStep: number;
   isRunning: boolean;
-  error: { message: string; line?: number } | null;
+  /** Why the last run failed or stopped early. With snapshots, it belongs to the last step. */
+  error: RunError | null;
 
   // ── View options ──
   hideFunctions: boolean;
@@ -41,7 +42,7 @@ export interface TutorState {
   stepFirst: () => void;
   stepLast: () => void;
   setIsRunning: (running: boolean) => void;
-  setError: (error: { message: string; line?: number } | null) => void;
+  setError: (error: RunError | null) => void;
   reset: () => void;
 }
 
@@ -88,6 +89,7 @@ export const useStore = create<TutorState>((set, get) => ({
   clearHeapPositions: () => set({ heapPositions: {} }),
 
   // ── Actions ──
+  // Clears the error: a run that stopped early sets its snapshots first, then its error.
   setSnapshots: (snapshots) => set({ snapshots, currentStep: 0, error: null }),
 
   setCurrentStep: (step) => {

@@ -7,6 +7,7 @@ import { useStore } from '../store/useStore';
 import { useEngine } from '../engines/useEngine';
 import StdinPanel from './StdinPanel';
 import type { ColumnRange, ConditionResult } from '../types/snapshot';
+import { errorTitle } from '../utils/runError';
 
 // ── Line highlight via CodeMirror state effect ──
 
@@ -63,6 +64,28 @@ const prevHighlightField = StateField.define<DecorationSet>({
         const lineObj = tr.state.doc.line(line);
         const deco = Decoration.line({ class: 'cm-previous-step-line' });
         return Decoration.set([deco.range(lineObj.from)]);
+      }
+    }
+    return decos;
+  },
+  provide: (f) => EditorView.decorations.from(f),
+});
+
+// ── Error line: where an error or uncaught exception happened ──
+
+const setErrorLine = StateEffect.define<number | null>();
+
+const errorLineField = StateField.define<DecorationSet>({
+  create() {
+    return Decoration.none;
+  },
+  update(decos, tr) {
+    for (const effect of tr.effects) {
+      if (effect.is(setErrorLine)) {
+        const line = effect.value;
+        if (line === null || line < 1 || line > tr.state.doc.lines) return Decoration.none;
+        const deco = Decoration.line({ class: 'cm-error-line' });
+        return Decoration.set([deco.range(tr.state.doc.line(line).from)]);
       }
     }
     return decos;
@@ -193,6 +216,7 @@ const staticExtensions = [
   keymap.of([indentWithTab]),
   highlightField,
   prevHighlightField,
+  errorLineField,
   conditionField,
   gutterMarkerField,
   stepGutter,
@@ -305,12 +329,23 @@ export default function EditorPanel() {
     conditionKey,
   ]);
 
+  // A run that stopped early keeps its steps; its error belongs to the last one.
+  const atEnd = snapshots.length === 0 || currentStep === snapshots.length - 1;
+  const errorLine = error && atEnd ? error.line ?? null : null;
+  useEffect(() => {
+    viewRef.current?.dispatch({ effects: setErrorLine.of(errorLine) });
+  }, [errorLine]);
+
   return (
     <div className="d-flex flex-column h-100">
       {/* Error display */}
-      {error && (
-        <div className="alert alert-danger m-2 py-1 px-2 mb-0" role="alert" style={{ fontSize: '0.85rem' }}>
-          <strong>Error{error.line ? ` (line ${error.line})` : ''}:</strong> {error.message}
+      {error && atEnd && (
+        <div
+          className={`alert ${error.kind === 'limit' ? 'alert-warning' : 'alert-danger'} m-2 py-1 px-2 mb-0`}
+          role="alert"
+          style={{ fontSize: '0.85rem' }}
+        >
+          <strong>{errorTitle(error.kind)}{error.line ? ` (line ${error.line})` : ''}:</strong> {error.message}
         </div>
       )}
 

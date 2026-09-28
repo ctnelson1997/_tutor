@@ -470,3 +470,73 @@ c = C()
   it('snapshot shows dict contents', () => expectHeapMatches(`d = {"x": 1, "y": 2}`,
     snap => !!snap.heap.find(h => h.objectType === 'dict' && h.properties.length === 2)));
 });
+
+// ── Runs that end early keep their steps (#7) ──
+
+interface TracedResult {
+  type: 'result' | 'error';
+  snapshots?: Array<{ line: number; stdout: string[]; callStack: Array<{ name: string; variables: Array<{ name: string }> }> }>;
+  error?: { kind: string; message: string; line?: number; stderr?: string };
+  message?: string;
+  line?: number;
+}
+
+/** The tracer's whole reply: steps, plus why the run stopped early, if it did. */
+function runTracedResult(src: string): TracedResult {
+  const harness = `${TRACER}\n_result = run_traced(${JSON.stringify(src)})\nprint(_result)\n`;
+  const file = join(TMP, 'harness-result.py');
+  writeFileSync(file, harness);
+  const r = spawnSync(PYTHON!, [file], { encoding: 'utf-8', timeout: 20000 });
+  try { unlinkSync(file); } catch { /* ignore */ }
+  const lines = r.stdout.trim().split('\n');
+  return JSON.parse(lines[lines.length - 1]) as TracedResult;
+}
+
+describe.skipIf(!PYTHON_AVAILABLE)('Python tracer: runs that end early', () => {
+  it('keeps the steps before an uncaught exception, ending where it was raised', () => {
+    const r = runTracedResult('def divide(a, b):\n    return a / b\n\nx = 1\nprint(divide(10, x - 1))\nprint("never")');
+    expect(r.type).toBe('result');
+    expect(r.error).toEqual({
+      kind: 'exception',
+      message: 'ZeroDivisionError: division by zero',
+      line: 2,
+      stderr: [
+        'Traceback (most recent call last):',
+        '  File "main.py", line 5, in <module>',
+        '    print(divide(10, x - 1))',
+        '  File "main.py", line 2, in divide',
+        '    return a / b',
+        'ZeroDivisionError: division by zero',
+      ].join('\n'),
+    });
+    const last = r.snapshots!.at(-1)!;
+    expect(last.line).toBe(2);
+    expect(last.callStack.map(f => f.name)).toEqual(['<module>', 'divide']);
+  });
+
+  it("doesn't show a 'return None' step for a frame an exception leaves", () => {
+    const r = runTracedResult('def f(x):\n    if x > 1:\n        raise ValueError("big")\n    return x\ntry:\n    f(5)\nexcept ValueError as e:\n    print("handled", e)\nprint("after")');
+    expect(r.error).toBeUndefined();
+    const lines = r.snapshots!.map(s => s.line);
+    expect(lines).toEqual([1, 5, 6, 1, 2, 3, 7, 8, 9, 9]);
+    const returns = r.snapshots!.filter(s => s.callStack.some(f => f.variables.some(v => v.name.startsWith('return'))));
+    expect(returns).toHaveLength(0);
+  });
+
+  it('stops an endless loop at the step cap with a notice, even inside try/except Exception', () => {
+    const r = runTracedResult('n = 0\ntry:\n    while True:\n        n += 1\nexcept Exception:\n    print("caught")');
+    expect(r.snapshots).toHaveLength(5000);
+    expect(r.error).toEqual({ kind: 'limit', message: 'Stopped after 5000 steps, the most that can be shown. Your code may contain an infinite loop.' });
+    expect(r.snapshots!.at(-1)!.stdout).toEqual([]);
+  });
+
+  it('reports a syntax error with its line, before running anything', () => {
+    expect(runTracedResult('x = 1\ny = = 2')).toEqual({ type: 'error', message: 'SyntaxError: invalid syntax', line: 2 });
+  });
+
+  it('ends quietly on raise SystemExit', () => {
+    const r = runTracedResult('print("a")\nraise SystemExit\nprint("b")');
+    expect(r.error).toBeUndefined();
+    expect(r.snapshots!.at(-1)!.stdout).toEqual(['a']);
+  });
+});

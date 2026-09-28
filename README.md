@@ -157,7 +157,8 @@ src/
 │       ├── parser.ts           # java-parser wrapper: parseJava(), CST navigation helpers
 │       ├── types.ts            # Java runtime type system (primitives, strings, arrays, objects)
 │       ├── executor.ts         # Ephemeral Web Worker executor (passes stdin through)
-│       ├── worker.ts           # Web Worker: parse + interpret Java source
+│       ├── worker.ts           # Web Worker: posts runJava()'s reply
+│       ├── run.ts              # runJava(): parse + interpret, building the worker's reply (steps, and why a run stopped early)
 │       ├── examples.ts         # Java example snippets, including visualization-friendly OOP data structures
 │       ├── security.ts         # Suspicious code pattern detection
 │       ├── stdlib/             # Emulated standard library (Math, wrappers, Arrays, collections, Scanner, Random, …)
@@ -191,7 +192,8 @@ src/
 │   ├── share.ts                # LZ-string URL compression
 │   ├── diffSnapshots.ts        # Detects changed values between steps (yellow flash)
 │   ├── promoteToHeap.ts        # Promotes inline primitives to heap objects (Python reference mode)
-│   └── exportHtml.ts           # Splices examples into the viewer template + downloads (Export feature)
+│   ├── exportHtml.ts           # Splices examples into the viewer template + downloads (Export feature)
+│   └── runError.ts             # Labels for how a run ended early (error banner, step bar)
 ├── App.tsx                     # Main layout (resizable split, keyboard shortcuts)
 ├── main.tsx                    # React entry point + HashRouter routes
 ├── viewer-main.tsx             # Entry point for viewer-<lang>.html builds (reads window.__EXAMPLES__)
@@ -222,6 +224,8 @@ scripts/                        # Dev tools, run with tsx: java-golden.ts (JDK g
 **Java engine: CST interpreter** — Java source is parsed into a Concrete Syntax Tree using java-parser (Chevrotain-based), then interpreted directly. Supports Java primitives, strings, arrays including `T[] a = {...}` and `new T[]{...}` initializers, custom object allocation with constructors, readable/writable instance fields, unqualified instance field/method access inside instance contexts, instance methods, simple arity-based overloads, nested static class methods, static methods, primitive casts, common numeric wrapper constants, recursion, and standard control flow. A single source may declare **multiple top-level classes** — the class defining `main` is the entry point, and `ClassName.method(...)` dispatches a static call to another class (the tester + logic split common in coursework). Dotted names and assignment targets (`a.b.c = v`, `arr[i].f++`, `Main.count += 1`) all resolve through one reference model, with Java's evaluation order, `NullPointerException` on null receivers, array bounds checks, and compound assignment narrowing back to the variable's type. Each class has its own static fields, and a class is initialized lazily at its first use, as in Java. Runs in disposable Web Workers like the JS engine.
 
 The Java engine is a teaching-oriented subset, not a full JVM. Generic type parameters parse but are not enforced. It does not currently support inheritance (other than a class extending a library exception), enums, records, lambdas and method references, anonymous, local and inner classes that use their enclosing object, interface default methods, access control, overloaded constructor/method resolution beyond argument counts, file/network I/O, threads, or reflection. These stop the program with an "isn't supported in JavaTutor yet" message that names the line. (Multiple top-level classes, interfaces, and `try`/`catch` exceptions *are* supported.) Its standard library is an emulated subset (the classes listed above), not the real JDK — unsupported methods raise an `Unknown method` error.
+
+**A run that ends early keeps its steps** — in all three engines, an uncaught exception, the 5,000-step cap or the time budget ends the run but keeps every step recorded so far. The error shows at the last step: a banner with the line (marked in the editor), and what the program printed to stderr (a Java stack trace, a Python traceback) in the console. Java also records a step where a runtime exception such as `/ by zero` starts, so a caught one shows the method that threw it. A deep Java recursion becomes a catchable `StackOverflowError`, and an internal engine failure is reported without JavaScript text. Only a parse error, or code that runs 10 seconds without yielding, produces no steps.
 
 **TDZ-aware instrumentation** — `let`/`const` declarations are tracked incrementally so the visualizer never reads variables before they are initialized.
 

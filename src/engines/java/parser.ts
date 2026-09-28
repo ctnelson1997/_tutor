@@ -83,3 +83,43 @@ export function parseJava(source: string): CstNode {
   const cst = javaParse(source);
   return cst as unknown as CstNode;
 }
+
+/**
+ * A readable version of java-parser's error ("Sad sad panda, parsing errors
+ * detected in line: 4, column: 5! Expecting --> ';' <-- but found -->
+ * 'System' <--! ->compilationUnit ->…"): `Syntax error: expected ';' but
+ * found 'System'`, with the line to mark. A missing `;` is reported on the
+ * line it belongs at the end of, as javac does, not on the next token's line.
+ */
+export function describeParseError(rawMessage: string, source: string): { message: string; line?: number } {
+  const [header = '', ...rest] = rawMessage.split('\n');
+  const position = /line: (\d+), column: (\d+)/.exec(header);
+  let line = position ? Number(position[1]) : undefined;
+  const column = position ? Number(position[2]) : undefined;
+  const detail = rest.join('\n').split('\n\t->')[0].trim();
+
+  const expecting = /^Expecting --> '(.*)' <-- but found --> '(.*)' <--!/s.exec(detail);
+  const foundAt = /but found: '(.*)'/s.exec(detail);
+  let message: string;
+  if (expecting) {
+    const [, expected, found] = expecting;
+    message = `expected '${expected}' but found ${found ? `'${found}'` : 'the end of the code'}`;
+    if (expected === ';' && line !== undefined && column !== undefined) line = lineBefore(source, line, column) ?? line;
+  } else if (foundAt) {
+    message = foundAt[1] ? `unexpected '${foundAt[1]}'` : 'the code ends too early';
+  } else {
+    message = detail.split('\n')[0] || header;
+  }
+  return line !== undefined ? { message: `Syntax error: ${message}`, line } : { message: `Syntax error: ${message}` };
+}
+
+/** The line of the last non-blank character before (line, column), both 1-based. */
+function lineBefore(source: string, line: number, column: number): number | undefined {
+  const lines = source.split(/\r?\n/);
+  let text = (lines[line - 1] ?? '').slice(0, column - 1);
+  for (let l = line; l >= 1; l--) {
+    if (text.trim() !== '') return l;
+    text = lines[l - 2] ?? '';
+  }
+  return undefined;
+}

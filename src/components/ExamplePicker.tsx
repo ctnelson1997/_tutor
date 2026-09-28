@@ -17,6 +17,8 @@ export default function ExamplePicker({ examples }: Props) {
   const setCode = useStore((s) => s.setCode);
   const setLanguage = useStore((s) => s.setLanguage);
   const setSnapshots = useStore((s) => s.setSnapshots);
+  const setStdin = useStore((s) => s.setStdin);
+  const setError = useStore((s) => s.setError);
   const setCurrentStep = useStore((s) => s.setCurrentStep);
   const reset = useStore((s) => s.reset);
 
@@ -29,7 +31,9 @@ export default function ExamplePicker({ examples }: Props) {
     reset();
     setLanguage(ex.language);
     setCode(ex.code);
+    setStdin(ex.stdin ?? '');
     setSnapshots(ex.snapshots);
+    if (ex.error) setError(ex.error);
     setCurrentStep(0);
   };
 

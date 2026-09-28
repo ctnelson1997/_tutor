@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { createContext, runInContext } from 'node:vm';
 import { instrument } from '../../engines/js/instrumenter';
 import { getRuntimeCode } from '../../engines/js/runtime';
-import type { ExecutionSnapshot } from '../../types/snapshot';
+import type { ExecutionSnapshot, WorkerMessage } from '../../types/snapshot';
 
 /**
  * Helper: run instrumented code through the full pipeline (without a Web Worker).
@@ -13,6 +13,16 @@ import type { ExecutionSnapshot } from '../../types/snapshot';
  * between tests.
  */
 function runPipeline(source: string): ExecutionSnapshot[] {
+  const result = runPipelineResult(source);
+  if (result.type !== 'result') throw new Error(result.message);
+  return result.snapshots;
+}
+
+/**
+ * Helper: run code as the worker does and return its reply: the steps, and
+ * why the run stopped early (an uncaught exception, the step cap), if it did.
+ */
+function runPipelineResult(source: string): WorkerMessage {
   const instrumented = instrument(source);
   const fullCode = getRuntimeCode() + '\n' + instrumented;
 
@@ -57,10 +67,15 @@ function runPipeline(source: string): ExecutionSnapshot[] {
   sandbox.self = sandbox;
 
   const ctx = createContext(sandbox);
-  runInContext(fullCode, ctx);
-
-  const snapshots = ctx.__snapshots__ as ExecutionSnapshot[];
-  return JSON.parse(JSON.stringify(snapshots));
+  const runResult = ctx as unknown as { __runResult__: (err?: unknown) => WorkerMessage };
+  let reply: WorkerMessage;
+  try {
+    runInContext(fullCode, ctx);
+    reply = runResult.__runResult__();
+  } catch (err) {
+    reply = runResult.__runResult__(err);
+  }
+  return JSON.parse(JSON.stringify(reply));
 }
 
 /** Helper to find a variable in a snapshot's callstack */
@@ -372,20 +387,68 @@ console.log("second");`);
 
   // ── Infinite loop guard ──
 
-  it('throws on infinite loop', () => {
-    expect(() => runPipeline('while (true) { }')).toThrow(/Infinite loop|exceeded/);
+  it('stops an infinite loop, keeping its steps and saying why', () => {
+    const result = runPipelineResult('let n = 0;\nwhile (true) { n++; }');
+    expect(result.type).toBe('result');
+    if (result.type !== 'result') return;
+    expect(result.snapshots.length).toBeGreaterThan(0);
+    expect(result.error?.kind).toBe('limit');
+    expect(result.error?.message).toMatch(/Infinite loop|Stopped after 5000 steps/);
   });
 
   // ── Snapshot limit ──
 
-  it('caps snapshots at 5000', () => {
+  it('caps snapshots at 5000, then stops the program with a notice', () => {
     // A loop that generates many snapshots
-    const snaps = runPipeline(`let x = 0;
+    const result = runPipelineResult(`let x = 0;
 for (let i = 0; i < 5000; i++) {
   x++;
 }`);
+    if (result.type !== 'result') throw new Error('expected a result');
+    expect(result.snapshots.length).toBe(5000);
+    expect(result.error).toEqual({
+      kind: 'limit',
+      message: 'Stopped after 5000 steps, the most that can be shown. Your code may contain an infinite loop.',
+    });
+  });
 
-    expect(snaps.length).toBeLessThanOrEqual(5000);
+  // ── Runs that end early keep their steps (#7) ──
+
+  it('keeps the steps before an uncaught exception, including the throw', () => {
+    const result = runPipelineResult(`let a = 1;
+function fail(x) {
+  if (x > 0) throw new RangeError('too big: ' + x);
+  return x;
+}
+let b = 2;
+fail(a + b);
+let c = 3;`);
+    if (result.type !== 'result') throw new Error('expected a result');
+    expect(result.error).toEqual({ kind: 'exception', message: 'RangeError: too big: 3', stderr: 'Uncaught RangeError: too big: 3' });
+    const last = result.snapshots[result.snapshots.length - 1];
+    expect(last.line).toBe(3); // the throw statement
+    expect(last.callStack.map(f => f.name)).toContain('fail');
+    expect(result.snapshots.some(s => s.line === 8)).toBe(false);
+  });
+
+  it('reports a runtime TypeError with the steps before it', () => {
+    const result = runPipelineResult('let o = null;\nlet x = 1;\nlet y = o.field;');
+    if (result.type !== 'result') throw new Error('expected a result');
+    expect(result.error?.kind).toBe('exception');
+    expect(result.error?.message).toMatch(/^TypeError: /);
+    expect(result.snapshots.length).toBeGreaterThan(0);
+  });
+
+  it('reports a thrown non-Error value as it is', () => {
+    const result = runPipelineResult('let x = 1;\nthrow "plain string";');
+    if (result.type !== 'result') throw new Error('expected a result');
+    expect(result.error).toEqual({ kind: 'exception', message: 'plain string', stderr: 'Uncaught plain string' });
+  });
+
+  it('adds no error to a run that finishes normally', () => {
+    const result = runPipelineResult('let x = 1;');
+    expect(result).toMatchObject({ type: 'result' });
+    expect((result as { error?: unknown }).error).toBeUndefined();
   });
 
   // ── Snapshot structure ──

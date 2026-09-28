@@ -23,10 +23,13 @@ export async function runCode(source: string): Promise<void> {
     const result = await engine.execute(source, { stdin });
 
     if (result.type === 'result') {
-      if (result.snapshots.length === 0) {
+      // A run that stopped early (an uncaught exception, the step limit) still
+      // shows its steps: set them first, since setSnapshots clears the error.
+      if (result.snapshots.length > 0) store.setSnapshots(result.snapshots);
+      if (result.error) {
+        store.setError(result.error);
+      } else if (result.snapshots.length === 0) {
         store.setError({ message: 'No execution steps were captured. The code may be empty or only contain declarations.' });
-      } else {
-        store.setSnapshots(result.snapshots);
       }
     } else {
       store.setError({ message: result.message, line: result.line });

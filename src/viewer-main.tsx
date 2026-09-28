@@ -27,6 +27,7 @@ if (initial) {
   store.setCode(initial.code);
   store.setStdin(initial.stdin ?? '');
   store.setSnapshots(initial.snapshots);
+  if (initial.error) store.setError(initial.error);
 }
 
 createRoot(document.getElementById('root')!).render(

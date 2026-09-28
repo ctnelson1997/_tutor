@@ -9,9 +9,12 @@
  */
 export class InterpreterError extends Error {
   line: number;
+  /** The message without its "Line N: " prefix. */
+  reason: string;
   constructor(message: string, line: number) {
     super(line > 0 ? `Line ${line}: ${message}` : message);
     this.line = line;
+    this.reason = message;
   }
 }
 

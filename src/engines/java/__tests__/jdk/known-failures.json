@@ -218,10 +218,6 @@
       "issues": [20],
       "reason": "StringBuilder.setCharAt / delete / replace / indexOf are unsupported"
     },
-    "core/stack-overflow": {
-      "issues": [14, 7],
-      "reason": "infinite recursion overflows the JavaScript stack instead of throwing a catchable StackOverflowError"
-    },
     "core/string-charAt-oob": {
       "issues": [20],
       "reason": "charAt past the end returns \\u0000 instead of throwing StringIndexOutOfBoundsException"
@@ -376,20 +372,8 @@
     },
     "collections/coll-queue-remove-noarg": {
       "js-errors": {
-        "issues": [21, 7],
-        "reason": "queue.remove() shows \"Cannot read properties of undefined\""
-      }
-    },
-    "core/deep-recursion": {
-      "js-errors": {
-        "issues": [7, 14],
-        "reason": "shows \"Maximum call stack size exceeded\""
-      }
-    },
-    "core/stack-overflow": {
-      "js-errors": {
-        "issues": [7, 14],
-        "reason": "shows \"Maximum call stack size exceeded\""
+        "issues": [21],
+        "reason": "queue.remove() crashes the engine; students see \"Internal JavaTutor error\", but the summary keeps the JavaScript text"
       }
     }
   }

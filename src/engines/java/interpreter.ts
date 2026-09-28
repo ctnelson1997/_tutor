@@ -14,6 +14,7 @@ import type {
   Variable,
   HeapObject,
   RuntimeValue,
+  RunError,
 } from '../../types/snapshot';
 import {
   type CstNode,
@@ -86,7 +87,16 @@ import {
 // ── Limits ──
 
 const MAX_SNAPSHOTS = 5000;
-const MAX_LOOP_ITERATIONS = 10000;
+/**
+ * Work a run may do in all, counted in statements and loop iterations whether
+ * or not they record a step. Code in a toString() callback records none, so
+ * the step cap alone wouldn't stop an endless loop there.
+ */
+const MAX_WORK = 1_000_000;
+/** Stop a little before the worker's 10-second kill, so the steps recorded so far survive. */
+const TIME_BUDGET_MS = 8_500;
+/** Stack trace lines to keep; a stack overflow would print thousands. */
+const MAX_TRACE_FRAMES = 64;
 
 // ── Control flow signals ──
 
@@ -137,6 +147,16 @@ class JavaThrow {
 /** Signals that leave a statement early but aren't exceptions: finally blocks still run for them. */
 function isControlSignal(e: unknown): boolean {
   return e instanceof ReturnSignal || e instanceof BreakSignal || e instanceof ContinueSignal || e instanceof YieldSignal;
+}
+
+/**
+ * A JavaScript stack overflow. Java calls run on the JavaScript stack (until
+ * #14), so deep recursion ends in one. This runs at the stack's limit, so it
+ * uses no regular expression: compiling one there can itself overflow, as
+ * "Invalid regular expression: …: Stack overflow".
+ */
+function isStackOverflow(e: unknown): boolean {
+  return e instanceof RangeError && (e.message.includes('call stack') || e.message.includes('Stack overflow'));
 }
 
 // ── Scope / Environment ──
@@ -264,6 +284,50 @@ interface Frame {
   scope: Scope;
   currentScope: Scope;
   className?: string;
+  /** What the frame runs, for stack traces: a method, a constructor (`<init>`) or a static initializer (`<clinit>`). */
+  kind: 'method' | 'constructor' | 'clinit';
+  /** The line the frame is executing: its current statement, or the call it is waiting on. */
+  line: number;
+}
+
+/**
+ * Stops a run that is too long to show: past the step cap, or close to the
+ * worker's time limit. It isn't a Java exception, so nothing catches it and
+ * no finally block runs; the steps recorded so far are kept.
+ */
+class ExecutionLimit {
+  message: string;
+  line: number;
+  constructor(message: string, line: number) {
+    this.message = message;
+    this.line = line;
+  }
+}
+
+/** Where a failure happened, recorded the first time it passes a catch point (before frames are popped). */
+interface FailureSite {
+  line: number;
+  /** `Main.divide(Main.java:3)`, innermost first, as a Java stack trace lists them. */
+  trace: string[];
+}
+
+/** How long a run may go before it is stopped (tests lower them). */
+export interface RunLimits {
+  /** Steps recorded before the run is stopped. */
+  maxSteps: number;
+  /** Steps and loop iterations, recorded or not. */
+  maxWork: number;
+  /** Milliseconds, checked every 1024 units of work. */
+  timeBudgetMs: number;
+}
+
+/** What `execute()` reports about a run. */
+export interface ExecuteResult {
+  snapshots: ExecutionSnapshot[];
+  /** A one-line summary of how the run failed, e.g. `Exception in thread "main" java.lang.ArithmeticException: / by zero`. */
+  error?: string;
+  /** Why the run stopped early, for the UI: kind, line, and what stderr would show. */
+  failure?: RunError;
 }
 
 // ── Interpreter ──
@@ -282,7 +346,15 @@ export class JavaInterpreter {
   private constructors: Map<string, ConstructorDef[]> = new Map();
   private classes: Map<string, ClassInfo> = new Map();
   /** Constant variables and their initializers, evaluated before the program starts. */
-  private constantInits: { slot: StaticSlot; init: CstNode }[] = [];
+  private constantInits: { slot: StaticSlot; init: CstNode; owner: string }[] = [];
+  private limits: RunLimits;
+  /** Units of work done so far (see RunLimits.maxWork), and when the run started (see RunLimits.timeBudgetMs). */
+  private work = 0;
+  private startTime = 0;
+  /** The source file's name in stack traces: the entry class's name + .java. */
+  private fileName = 'Main.java';
+  /** Where each failure (an exception or engine error) happened, keyed by the thrown object. */
+  private failureSites = new WeakMap<object, FailureSite>();
   /** Whether a condition's CST contains an instanceof pattern, per node. */
   private patternCache = new WeakMap<CstNode, boolean>();
   private step = 0;
@@ -293,8 +365,9 @@ export class JavaInterpreter {
   /** Parsed primary-expression chains, per CST node. */
   private chainCache = new WeakMap<CstNode, PrimaryChain>();
 
-  constructor(stdin: string = '') {
+  constructor(stdin: string = '', limits: Partial<RunLimits> = {}) {
     this.stdin = stdin;
+    this.limits = { maxSteps: MAX_SNAPSHOTS, maxWork: MAX_WORK, timeBudgetMs: TIME_BUDGET_MS, ...limits };
     this.ctx = {
       heap: this.heap,
       allocArray: (elementType, elements) => this.allocArray(elementType, elements),
@@ -390,7 +463,13 @@ export class JavaInterpreter {
     return s.split('\n');
   }
 
-  execute(cst: CstNode): { snapshots: ExecutionSnapshot[]; error?: string } {
+  /**
+   * Run a program. A run that ends early (an uncaught exception, the step
+   * limit, a construct JavaTutor can't run) still returns every step up to
+   * that point, plus `failure` saying why it stopped and where.
+   */
+  execute(cst: CstNode): ExecuteResult {
+    this.startTime = Date.now();
     try {
       const compUnit = child(cst, 'ordinaryCompilationUnit');
       if (!compUnit) throw new InterpreterError('No compilation unit found', 0);
@@ -419,6 +498,7 @@ export class JavaInterpreter {
       const mainMethod = entryClass ? this.findMain(entryClass) : undefined;
       if (!entryClass || !mainMethod?.body) throw new InterpreterError('No main method found', 0);
       this.methods = this.methodsByClass.get(entryClass) ?? new Map();
+      this.fileName = `${entryClass}.java`;
 
       // Java initializes the entry class (its static fields and static blocks) before main runs.
       this.initClass(entryClass);
@@ -430,32 +510,108 @@ export class JavaInterpreter {
       if (argsParam && mentionsName(mainMethod.body, argsParam.name)) {
         setVariable(mainScope, argsParam.name, { kind: 'arrayRef', heapId: this.allocArray('String', []) }, 'String[]');
       }
-      this.callStack.push({ name: 'main', scope: mainScope, currentScope: mainScope, className: entryClass });
+      this.callStack.push({ name: 'main', scope: mainScope, currentScope: mainScope, className: entryClass, kind: 'method', line: 0 });
       this.executeBlock(mainMethod.body, mainScope);
       this.callStack.pop();
 
       return { snapshots: this.snapshots };
     } catch (e) {
-      if (e instanceof InterpreterError) {
-        return {
-          snapshots: this.snapshots,
-          error: e.message,
-        };
-      }
-      if (e instanceof ReturnSignal) {
-        return { snapshots: this.snapshots };
-      }
-      if (e instanceof HaltSignal) {
-        // System.exit(...) — clean stop, return snapshots gathered so far.
-        return { snapshots: this.snapshots };
-      }
-      if (e instanceof JavaThrow) {
-        const s = formatException(e.value, this.heap, this.ctx.binaryName) ?? this.stringify(e.value);
-        return { snapshots: this.snapshots, error: `Exception in thread "main" ${s}` };
-      }
-      const msg = e instanceof Error ? e.message : String(e);
-      return { snapshots: this.snapshots, error: msg };
+      return this.endedBy(e);
     }
+  }
+
+  /**
+   * The result of a run that ended by throwing `e`: its steps, a summary line,
+   * and the failure the UI shows. An uncaught Java exception is reported the
+   * way `java` reports it, with a stack trace for the console. A JavaScript
+   * failure inside the engine is reported without its JavaScript text.
+   */
+  private endedBy(thrown: unknown): ExecuteResult {
+    const snapshots = this.snapshots;
+    if (thrown instanceof ReturnSignal || thrown instanceof HaltSignal) return { snapshots }; // main returned, or System.exit
+    if (thrown instanceof ExecutionLimit) {
+      const failure: RunError = { kind: 'limit', message: thrown.message, ...(thrown.line ? { line: thrown.line } : {}) };
+      return { snapshots, error: thrown.message, failure };
+    }
+    const e = this.atFailureSite(thrown);
+    const site = typeof e === 'object' && e !== null ? this.failureSites.get(e) : undefined;
+    const at = site?.line ? { line: site.line } : {};
+
+    if (this.exceptionClassOf(e) !== undefined) {
+      const text = this.describeException(e);
+      const summary = `Exception in thread "main" ${text}`;
+      const trace = site?.trace ?? [];
+      const stderr = [summary, ...trace.map(frame => (frame.startsWith('...') ? `\t${frame}` : `\tat ${frame}`))].join('\n');
+      return { snapshots, error: summary, failure: { kind: 'exception', message: text, ...at, stderr } };
+    }
+    let message: string;
+    if (e instanceof InterpreterError) message = e.reason;
+    else if (e instanceof StdlibError) message = e.message;
+    else if (e instanceof BreakSignal || e instanceof ContinueSignal) message = `'${e instanceof BreakSignal ? 'break' : 'continue'}' is only allowed inside a loop`;
+    else if (e instanceof YieldSignal) message = "'yield' is only allowed inside a switch expression";
+    else {
+      // An engine bug. Tests see the JavaScript text; students don't.
+      const raw = e instanceof Error ? e.message : String(e);
+      const internal = 'Internal JavaTutor error (please report it)';
+      return { snapshots, error: `${internal}: ${raw}`, failure: { kind: 'error', message: internal, ...at } };
+    }
+    const summary = site?.line ? `Line ${site.line}: ${message}` : message;
+    return { snapshots, error: summary, failure: { kind: 'error', message, ...at } };
+  }
+
+  /** An uncaught exception as `java` prints it: `java.lang.ArithmeticException: / by zero`, or its own toString(). */
+  private describeException(e: unknown): string {
+    if (e instanceof JavaThrow) {
+      try {
+        return this.stringify(e.value); // honors a user exception's own toString()
+      } catch {
+        return formatException(e.value, this.heap, this.ctx.binaryName) ?? 'java.lang.Throwable';
+      }
+    }
+    const parsed = e instanceof InterpreterError || e instanceof StdlibError ? parseRuntimeException(e.message) : undefined;
+    if (!parsed) return 'java.lang.Throwable';
+    return parsed.detail ? `${qualifiedExceptionName(parsed.className)}: ${parsed.detail}` : qualifiedExceptionName(parsed.className);
+  }
+
+  /**
+   * Note where a failure happened, the first time it passes a catch point,
+   * while the frames that threw it are still on the stack: its line and stack
+   * trace, and a step at that line (a `throw` statement has already recorded
+   * one). A JavaScript stack overflow becomes a StackOverflowError first, so
+   * the program can catch it. Returns the (possibly converted) failure.
+   */
+  private atFailureSite(thrown: unknown): unknown {
+    if (typeof thrown !== 'object' || thrown === null) return thrown;
+    if (isControlSignal(thrown) || thrown instanceof HaltSignal || thrown instanceof ExecutionLimit) return thrown;
+    if (this.failureSites.has(thrown)) return thrown;
+    const top = this.callStack[this.callStack.length - 1];
+    const overflow = isStackOverflow(thrown);
+    const e = overflow ? new JavaRuntimeError('StackOverflowError', '', top?.line ?? 0) : thrown;
+    const line = e instanceof InterpreterError && e.line > 0 ? e.line : top?.line ?? 0;
+    this.failureSites.set(e, { line, trace: this.stackTrace(line) });
+    // A step where a runtime exception (/ by zero, a null field) started, so the
+    // throwing frame shows before it unwinds. An engine error gets no step: the
+    // program never really got there. Nor does a stack overflow: thousands of
+    // frames deep, there is no room to build one.
+    const runtimeException = !(e instanceof JavaThrow) && this.exceptionClassOf(e) !== undefined;
+    if (runtimeException && !overflow && top && this.suppressSnapshots === 0 && this.snapshots.length < this.limits.maxSteps) {
+      top.line = line;
+      this.recordStep(line);
+    }
+    return e;
+  }
+
+  /** The frames of a Java stack trace, innermost first: `Main.divide(Main.java:3)`. */
+  private stackTrace(line: number): string[] {
+    const trace: string[] = [];
+    const innermost = this.callStack.length - 1;
+    for (let i = innermost; i >= 0 && trace.length < MAX_TRACE_FRAMES; i--) {
+      const frame = this.callStack[i];
+      const method = frame.kind === 'constructor' ? '<init>' : frame.kind === 'clinit' ? '<clinit>' : frame.name;
+      trace.push(`${this.binaryName(frame.className ?? 'Main')}.${method}(${this.fileName}:${i === innermost ? line : frame.line})`);
+    }
+    if (innermost + 1 > MAX_TRACE_FRAMES) trace.push(`... ${innermost + 1 - MAX_TRACE_FRAMES} more`);
+    return trace;
   }
 
   /** `static void main(String[] args)` (or a static `main()`) of a class. */
@@ -669,7 +825,7 @@ export class JavaInterpreter {
         const constant = isFinal && init !== undefined && (PRIMITIVE_TYPES.has(type) || type === 'String') && isLiteralConstant(init);
         const slot: StaticSlot = { value: defaultValue(type), type, constant };
         slots.set(name, slot);
-        if (init && constant) this.constantInits.push({ slot, init });
+        if (init && constant) this.constantInits.push({ slot, init, owner: info.name });
         else if (init) info.staticInit.push({ kind: 'field', name, type, init });
       } else {
         const fields = this.instanceFields.get(info.name) ?? [];
@@ -680,10 +836,21 @@ export class JavaInterpreter {
     }
   }
 
-  /** Give every constant variable its value (javac folds them into the code that uses them). */
+  /**
+   * Give every constant variable its value (javac folds them into the code
+   * that uses them). One whose initializer throws, like `1 / 0`, isn't a
+   * constant after all: it runs with its class's static initializers instead,
+   * so the exception surfaces when the class is initialized, as in Java.
+   */
   private initConstants(): void {
-    for (const { slot, init } of this.constantInits) {
-      slot.value = assignmentConversion(this.evalVariableInitializer(init, slot.type, createScope(null)), slot.type);
+    for (const { slot, init, owner } of this.constantInits) {
+      try {
+        slot.value = assignmentConversion(this.evalVariableInitializer(init, slot.type, createScope(null)), slot.type);
+      } catch {
+        slot.constant = false;
+        const name = [...this.staticFields.get(owner)!].find(([, s]) => s === slot)![0];
+        this.classes.get(owner)!.staticInit.unshift({ kind: 'field', name, type: slot.type, init });
+      }
     }
   }
 
@@ -707,18 +874,20 @@ export class JavaInterpreter {
       return;
     }
     const scope = createScope(null);
-    this.callStack.push({ name: '<clinit>', scope, currentScope: scope, className });
+    this.callStack.push({ name: '<clinit>', scope, currentScope: scope, className, kind: 'clinit', line: 0 });
     try {
       for (const item of info.staticInit) {
         if (item.kind === 'field') {
           const slot = this.staticFields.get(className)!.get(item.name)!;
+          this.atLine(getLine(item.init));
           slot.value = assignmentConversion(this.evalVariableInitializer(item.init, item.type, scope), item.type);
         } else {
           this.runBlockIn(item.block, scope);
         }
       }
       info.initState = 'done';
-    } catch (e) {
+    } catch (thrown) {
+      const e = this.atFailureSite(thrown);
       const exc = this.toExceptionValue(e);
       if (!exc) throw e; // an engine error or System.exit: not a Java exception
       info.initState = 'failed';
@@ -815,16 +984,35 @@ export class JavaInterpreter {
 
   // ── Snapshot emission ──
 
+  /** Record a step at `line`, after a statement runs. Stops the run at the step cap or the work and time budgets. */
   private emitSnapshot(line: number): void {
+    this.tick(line);
     // Suppressed during atomic user-method callbacks (toString/equals/compareTo).
     if (this.suppressSnapshots > 0) return;
-    if (this.snapshots.length >= MAX_SNAPSHOTS) {
-      throw new InterpreterError(
-        `Execution exceeded ${MAX_SNAPSHOTS} steps. Your code may contain an infinite loop.`,
-        line,
-      );
+    if (this.snapshots.length >= this.limits.maxSteps) {
+      throw new ExecutionLimit(`Stopped after ${this.limits.maxSteps} steps, the most that can be shown. Your code may contain an infinite loop.`, line);
     }
+    this.recordStep(line);
+  }
 
+  /** Count one unit of work (a step or a loop iteration), stopping a run that goes on too long to show. */
+  private tick(line: number): void {
+    if (++this.work > this.limits.maxWork) {
+      throw new ExecutionLimit(`Stopped after ${this.limits.maxWork.toLocaleString('en-US')} steps of work (most of them inside calls that show no steps), the most a program can do here`, line);
+    }
+    if ((this.work & 1023) === 0 && Date.now() - this.startTime > this.limits.timeBudgetMs) {
+      throw new ExecutionLimit(`Stopped after ${this.limits.timeBudgetMs / 1000} seconds, the longest a program can run here`, line);
+    }
+  }
+
+  /** Set the line the innermost frame is executing (for errors and stack traces). */
+  private atLine(line: number): void {
+    const frame = this.callStack[this.callStack.length - 1];
+    if (frame) frame.line = line;
+  }
+
+  /** Build a snapshot of the current state and add it to the steps. */
+  private recordStep(line: number): void {
     const callStack: StackFrame[] = [];
     for (const frame of this.callStack) {
       // Emit the frame's root scope variables (the method-level variables)
@@ -1029,6 +1217,7 @@ export class JavaInterpreter {
       const idNode = child(declarator, 'variableDeclaratorId')!;
       const name = token(idNode, 'Identifier')!.image;
       const line = token(idNode, 'Identifier')!.startLine;
+      this.atLine(line);
 
       // Array dims may follow the name instead of the type: int nums[]
       let type = baseType + dimsSuffix(child(idNode, 'dims'));
@@ -1107,6 +1296,7 @@ export class JavaInterpreter {
   private executeStatement(stmt: CstNode, scope: Scope, labels: readonly string[] = []): void {
     // Java calls run on the JavaScript stack (#14), and this frame is on the
     // path of every recursive call, so it holds no locals.
+    this.atLine(stmt.location?.startLine ?? getLine(stmt));
     if (has(stmt, 'statementWithoutTrailingSubstatement')) {
       return this.executeStatementWithoutTrailing(child(stmt, 'statementWithoutTrailingSubstatement')!, scope, labels);
     }
@@ -1289,8 +1479,9 @@ export class JavaInterpreter {
     let pending: { error: unknown } | undefined;
     try {
       body();
-    } catch (e) {
-      if (e instanceof HaltSignal) throw e;
+    } catch (thrown) {
+      if (thrown instanceof HaltSignal) throw thrown;
+      const e = this.atFailureSite(thrown);
       const excClass = this.exceptionClassOf(e);
       if (excClass === undefined && !isControlSignal(e)) throw e; // an engine error, not a Java exception
       const clause = excClass !== undefined && catches ? this.matchCatch(catches, excClass) : undefined;
@@ -1303,7 +1494,8 @@ export class JavaInterpreter {
           setVariable(catchScope, clause.name, exc, excClass!);
           setCurrentScope(this.callStack, catchScope);
           this.executeBlock(clause.block, catchScope);
-        } catch (inCatch) {
+        } catch (thrownInCatch) {
+          const inCatch = this.atFailureSite(thrownInCatch);
           if (inCatch instanceof HaltSignal || !(isControlSignal(inCatch) || this.exceptionClassOf(inCatch) !== undefined)) throw inCatch;
           pending = { error: inCatch };
         } finally {
@@ -1336,7 +1528,8 @@ export class JavaInterpreter {
       try {
         for (const resource of resources) opened.push(this.openResource(resource, resourceScope));
         this.runBlockIn(block, resourceScope);
-      } catch (e) {
+      } catch (thrown) {
+        const e = this.atFailureSite(thrown);
         if (e instanceof HaltSignal || !(isControlSignal(e) || this.exceptionClassOf(e) !== undefined)) throw e;
         pending = { error: e };
       }
@@ -1345,7 +1538,8 @@ export class JavaInterpreter {
         if (value.kind === 'null') continue;
         try {
           this.invokeMethod(value, 'close', [], name, line, line);
-        } catch (e) {
+        } catch (thrown) {
+          const e = this.atFailureSite(thrown);
           if (e instanceof HaltSignal || this.exceptionClassOf(e) === undefined) throw e;
           pending ??= { error: e };
         }
@@ -1380,6 +1574,7 @@ export class JavaInterpreter {
    */
   private exceptionClassOf(e: unknown): string | undefined {
     if (e instanceof JavaThrow) return e.value.kind === 'objectRef' ? e.value.className : undefined;
+    if (e instanceof JavaRuntimeError) return e.className; // no parsing, so it works at the stack's limit too
     if (e instanceof InterpreterError || e instanceof StdlibError) return parseRuntimeException(e.message)?.className;
     return undefined;
   }
@@ -1493,11 +1688,9 @@ export class JavaInterpreter {
       }
     }
 
-    let iterations = 0;
     while (true) {
-      if (iterations++ > MAX_LOOP_ITERATIONS) {
-        throw new InterpreterError('Loop exceeded maximum iterations. Possible infinite loop.', line);
-      }
+      this.tick(line); // a loop can run without recording steps (in a toString() call, or `for (;;);`)
+      this.atLine(line);
 
       // Condition
       setCurrentScope(this.callStack, forScope);
@@ -1585,7 +1778,7 @@ export class JavaInterpreter {
       throw nullPointer(`Cannot iterate over "${sourceText(iterExpr)}" because it is null`, line);
     } else {
       // Collections (ArrayList, HashSet, keySet()/values()/entrySet() results, …)
-      const collected = iterValue.kind === 'objectRef' ? getIterableElements(iterValue, this.ctx) : undefined;
+      const collected = iterValue.kind === 'objectRef' ? this.stdlib(line, () => getIterableElements(iterValue, this.ctx)) : undefined;
       if (!collected) {
         if (iterValue.kind === 'objectRef' && this.classes.has(iterValue.className)) {
           throw new UnsupportedFeatureError('For-each loops over your own Iterable classes', line);
@@ -1597,12 +1790,10 @@ export class JavaInterpreter {
     }
 
     setVariable(forScope, varName, defaultValue(type), type);
-    let iterations = 0;
 
     for (const element of iterElements) {
-      if (iterations++ > MAX_LOOP_ITERATIONS) {
-        throw new InterpreterError('Loop exceeded maximum iterations.', line);
-      }
+      this.tick(line); // a loop can run without recording steps (in a toString() call, or `for (;;);`)
+      this.atLine(line);
 
       setCurrentScope(this.callStack, forScope);
       updateVariable(forScope, varName, element);
@@ -1626,12 +1817,10 @@ export class JavaInterpreter {
     const line = token(whileStmt, 'While')?.startLine || getLine(whileStmt);
     // Labeled scope so body variables show as "while block"
     const whileScope = createScope(scope, 'while');
-    let iterations = 0;
 
     while (true) {
-      if (iterations++ > MAX_LOOP_ITERATIONS) {
-        throw new InterpreterError('Loop exceeded maximum iterations. Possible infinite loop.', line);
-      }
+      this.tick(line); // a loop can run without recording steps (in a toString() call, or `for (;;);`)
+      this.atLine(line);
 
       setCurrentScope(this.callStack, scope);
       const condExpr = child(whileStmt, 'expression')!;
@@ -1656,13 +1845,11 @@ export class JavaInterpreter {
   private executeDoWhile(doWhileStmt: CstNode, scope: Scope, labels: readonly string[]): void {
     const line = token(doWhileStmt, 'Do')?.startLine || getLine(doWhileStmt);
     const doScope = createScope(scope, 'do-while');
-    let iterations = 0;
     let shouldContinue = true;
 
     do {
-      if (iterations++ > MAX_LOOP_ITERATIONS) {
-        throw new InterpreterError('Loop exceeded maximum iterations. Possible infinite loop.', line);
-      }
+      this.tick(line); // a loop can run without recording steps (in a toString() call, or `for (;;);`)
+      this.atLine(line);
 
       const bodyStmt = child(doWhileStmt, 'statement');
       if (bodyStmt) {
@@ -2568,7 +2755,7 @@ export class JavaInterpreter {
         return this.evalStringBuilderMethod(target, name, args);
       }
       if (!this.classes.has(target.className) && target.heapId !== SYSTEM_IN_ID) {
-        const builtin = callInstanceMethod(target, name, args, this.ctx);
+        const builtin = this.stdlib(line, () => callInstanceMethod(target, name, args, this.ctx));
         if (builtin !== undefined) return builtin;
       }
       const table = this.methodsByClass.get(target.className);
@@ -2601,7 +2788,7 @@ export class JavaInterpreter {
       if (method) throw new InterpreterError(`Cannot call instance method '${name}' without an object`, line);
       if (table?.has(name)) throw wrongArgumentCount(`${receiverText}.${name}`, args.length, line);
     }
-    const result = callStaticMethod(className, name, args, this.ctx);
+    const result = this.stdlib(line, () => callStaticMethod(className, name, args, this.ctx));
     if (result !== undefined) return result;
     throw new InterpreterError(`Unknown method: ${receiverText}.${name}()`, line);
   }
@@ -2665,13 +2852,23 @@ export class JavaInterpreter {
       case 'printf':
       case 'format': {
         const fmt = args.length > 0 ? javaValueToString(args[0], this.heap) : '';
-        this.appendStdout(javaFormat(fmt, args.slice(1), this.heap));
+        this.appendStdout(this.stdlib(line, () => javaFormat(fmt, args.slice(1), this.heap)));
         return javaNull();
       }
       case 'flush':
         return javaNull();
     }
     throw new InterpreterError(`Unknown method: ${receiverText}.${name}()`, line);
+  }
+
+  /** Run a standard-library call, giving an error it raises the call's line (a StdlibError carries none). */
+  private stdlib<T>(line: number, call: () => T): T {
+    try {
+      return call();
+    } catch (e) {
+      if (e instanceof StdlibError) throw new InterpreterError(e.message, line);
+      throw e;
+    }
   }
 
   private evalArguments(args: CstNode[], scope: Scope): JavaValue[] {
@@ -2706,16 +2903,17 @@ export class JavaInterpreter {
 
     // Pre-call snapshot: show the call site line before entering the method
     if (callSiteLine) {
+      this.atLine(callSiteLine);
       this.emitSnapshot(callSiteLine);
     }
 
-    this.callStack.push({ name: method.name, scope: methodScope, currentScope: methodScope, className: method.className });
+    this.callStack.push({ name: method.name, scope: methodScope, currentScope: methodScope, className: method.className, kind: 'method', line: 0 });
     try {
       this.executeBlock(method.body, methodScope);
       return javaNull();
     } catch (e) {
       if (e instanceof ReturnSignal) return e.value;
-      throw e; // propagate JavaThrow / signals; frame popped in finally
+      throw this.atFailureSite(e); // record where it happened before this frame is popped
     } finally {
       this.callStack.pop();
     }
@@ -2761,10 +2959,13 @@ export class JavaInterpreter {
       if (info.instanceInit.length > 0) {
         const scope = createScope(null);
         setVariable(scope, 'this', self, className);
-        const frame: Frame = { name: className, scope, currentScope: scope, className };
+        this.atLine(callSiteLine);
+        const frame: Frame = { name: className, scope, currentScope: scope, className, kind: 'constructor', line: 0 };
         this.callStack.push(frame);
         try {
           this.runInstanceInitializers(info, self, frame);
+        } catch (e) {
+          throw this.atFailureSite(e);
         } finally {
           this.callStack.pop();
         }
@@ -2788,8 +2989,9 @@ export class JavaInterpreter {
     setVariable(ctorScope, 'this', self, ctor.className);
     this.bindParameters(ctorScope, ctor.params, ctor.varargs, args);
 
+    this.atLine(callSiteLine);
     this.emitSnapshot(callSiteLine);
-    const frame: Frame = { name: ctor.className, scope: ctorScope, currentScope: ctorScope, className: ctor.className };
+    const frame: Frame = { name: ctor.className, scope: ctorScope, currentScope: ctorScope, className: ctor.className, kind: 'constructor', line: 0 };
     this.callStack.push(frame);
     try {
       const eci = child(ctor.body, 'explicitConstructorInvocation');
@@ -2811,7 +3013,7 @@ export class JavaInterpreter {
       this.executeBlock(ctor.body, ctorScope);
     } catch (e) {
       if (!(e instanceof ReturnSignal)) {
-        throw e;
+        throw this.atFailureSite(e);
       }
     } finally {
       this.callStack.pop();
@@ -2855,6 +3057,7 @@ export class JavaInterpreter {
     try {
       for (const item of info.instanceInit) {
         if (item.kind === 'field') {
+          this.atLine(getLine(item.init));
           const value = this.evalVariableInitializer(item.init, item.type, initScope);
           fieldReference(this.heap, self, item.name, item.type, 'this', getLine(item.init)).set(value);
         } else {
@@ -2934,7 +3137,7 @@ export class JavaInterpreter {
         return { kind: 'objectRef', heapId, className };
       }
       // Collections, Scanner, Random and exceptions come from the stdlib.
-      const builtin = newBuiltin(className, args, this.ctx);
+      const builtin = this.stdlib(line, () => newBuiltin(className, args, this.ctx));
       if (builtin) return builtin;
       throw new UnsupportedFeatureError(`The ${className} class`, line, true);
     }

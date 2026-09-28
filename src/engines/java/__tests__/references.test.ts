@@ -20,9 +20,9 @@ import {
 } from '../references';
 import { type JavaHeapEntry, javaInt, javaDouble, javaChar, javaNull, javaString } from '../types';
 
-function run(source: string): { stdout: string; error?: string } {
+function run(source: string): { stdout: string; error?: string; line?: number } {
   const result = new JavaInterpreter().execute(parseJava(source));
-  return { stdout: result.snapshots.at(-1)?.stdout.join('\n') ?? '', error: result.error };
+  return { stdout: result.snapshots.at(-1)?.stdout.join('\n') ?? '', error: result.error, line: result.failure?.line };
 }
 
 function expectOutput(source: string, expected: string) {
@@ -222,7 +222,8 @@ public class Main {
     System.out.println(n.next.val);
   }
 }`);
-    expect(result.error).toBe('Line 5: NullPointerException: Cannot read field "val" because "n.next" is null');
+    expect(result.error).toBe('Exception in thread "main" java.lang.NullPointerException: Cannot read field "val" because "n.next" is null');
+    expect(result.line).toBe(5);
   });
 
   it('describes method calls on null the same way', () => {
@@ -232,7 +233,8 @@ public class Main {
     s.length();
   }
 }`);
-    expect(result.error).toBe('Line 4: NullPointerException: Cannot invoke "length()" because "s" is null');
+    expect(result.error).toBe('Exception in thread "main" java.lang.NullPointerException: Cannot invoke "length()" because "s" is null');
+    expect(result.line).toBe(4);
   });
 });
 

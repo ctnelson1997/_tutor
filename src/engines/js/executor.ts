@@ -20,12 +20,14 @@ function createWorker(): Worker {
       try {
         var indirectEval = eval;
         indirectEval(data.code);
-
-        var snapshots = self.__snapshots__ || [];
-        self.postMessage({ type: 'result', snapshots: snapshots });
+        self.postMessage(self.__runResult__());
       } catch (err) {
-        var message = err instanceof Error ? err.message : String(err);
-        self.postMessage({ type: 'error', message: message });
+        // The steps recorded before an uncaught exception (or the step cap) are kept.
+        if (typeof self.__runResult__ === 'function') {
+          self.postMessage(self.__runResult__(err));
+        } else {
+          self.postMessage({ type: 'error', message: err instanceof Error ? err.message : String(err) });
+        }
       }
     };
   `;

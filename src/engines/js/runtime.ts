@@ -30,9 +30,34 @@ var __heapMap__ = new Map();  // object identity → heap ID
 var __heapRegistry__ = {};   // heapId → most recent serialized HeapObject
 var __heapCounter__ = 0;
 var __MAX_SNAPSHOTS = 5000;
+// Thrown at the step cap, so the program stops instead of running on unrecorded.
+var __STOP__ = { __tutorStop__: true };
 
 // Expose snapshots on the global scope so the worker can read them
 self.__snapshots__ = __snapshots__;
+
+// The worker's reply once the program has run: its steps, and why it stopped
+// early if it did. Called with the thrown value when the program threw: the
+// step cap, the loop guard, or an exception the program didn't catch.
+function __runResult__(err) {
+  var msg = { type: "result", snapshots: __snapshots__ };
+  if (arguments.length === 0) {
+    if (__snapshots__.length >= __MAX_SNAPSHOTS) {
+      msg.error = { kind: "limit", message: "Stopped recording after " + __MAX_SNAPSHOTS + " steps, the most that can be shown." };
+    }
+    return msg;
+  }
+  if (err === __STOP__) {
+    msg.error = { kind: "limit", message: "Stopped after " + __MAX_SNAPSHOTS + " steps, the most that can be shown. Your code may contain an infinite loop." };
+  } else if (err instanceof Error && err.message.indexOf("Infinite loop detected") === 0) {
+    msg.error = { kind: "limit", message: err.message };
+  } else {
+    var text = err instanceof Error ? err.name + ": " + err.message : String(err);
+    msg.error = { kind: "exception", message: text, stderr: "Uncaught " + text };
+  }
+  return msg;
+}
+self.__runResult__ = __runResult__;
 
 // ── Serialization ──
 
@@ -209,7 +234,7 @@ function __collectHeap__(stackSnapshot) {
 // ── Condition tracking ──
 
 function __condition__(value, line, expression) {
-  if (__snapshots__.length >= __MAX_SNAPSHOTS) return value;
+  if (__snapshots__.length >= __MAX_SNAPSHOTS) throw __STOP__;
 
   var columnRange = null;
   if (Array.isArray(line)) {
@@ -259,7 +284,7 @@ function __condition__(value, line, expression) {
 // ── Capture ──
 
 function __capture__(line, vars, parentVarNames, closureVars) {
-  if (__snapshots__.length >= __MAX_SNAPSHOTS) return;
+  if (__snapshots__.length >= __MAX_SNAPSHOTS) throw __STOP__;
 
   var columnRange = null;
   if (Array.isArray(line)) {

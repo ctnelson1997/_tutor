@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { runCode } from '../engine/executor';
 import { encodeShareCode } from '../utils/share';
+import { runEndLabel } from '../utils/runError';
 import { branding } from '../config/branding';
 import ExportModal from './ExportModal';
 
@@ -59,6 +60,7 @@ export default function ControlBar({ embed = false, viewer = false }: { embed?: 
   const stepFirst = useStore((s) => s.stepFirst);
   const stepLast = useStore((s) => s.stepLast);
   const reset = useStore((s) => s.reset);
+  const error = useStore((s) => s.error);
 
   const [shareUrl, setShareUrl] = useState('');
   const [showShareModal, setShowShareModal] = useState(false);
@@ -204,6 +206,17 @@ export default function ControlBar({ embed = false, viewer = false }: { embed?: 
             >
               <IconSkipEnd aria-hidden="true" />
             </Button>
+            {error && (
+              <Button
+                variant="link"
+                size="sm"
+                className={`run-end-link run-end-${error.kind ?? 'error'}`}
+                onClick={stepLast}
+                title={`${error.message} (go to step ${total})`}
+              >
+                {runEndLabel(error.kind)}
+              </Button>
+            )}
           </>
         )}
         <div className="vr" />
