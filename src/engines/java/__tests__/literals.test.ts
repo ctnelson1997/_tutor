@@ -3,7 +3,7 @@
  * were checked against real `java` (JDK 21).
  */
 import { describe, it, expect } from 'vitest';
-import { unescapeJava, stringLiteralValue, charLiteralValue, textBlockValue } from '../literals';
+import { unescapeJava, escapeJava, stringLiteralValue, charLiteralValue, textBlockValue } from '../literals';
 
 describe('unescapeJava', () => {
   it('translates escapes in one pass, so \\\\n is a backslash and an n', () => {
@@ -25,6 +25,20 @@ describe('unescapeJava', () => {
 
   it('joins lines at a backslash before a line break (text blocks)', () => {
     expect(unescapeJava('one \\\ntwo')).toBe('one two');
+  });
+});
+
+describe('escapeJava', () => {
+  it('writes text as a string literal body would', () => {
+    expect(escapeJava('5\nhello\tworld\r\n')).toBe('5\\nhello\\tworld\\r\\n');
+    expect(escapeJava('say "hi" \\ bye')).toBe('say \\"hi\\" \\\\ bye');
+    expect(escapeJava('\b\f\u0007\u007f')).toBe('\\b\\f\\u0007\\u007f');
+    expect(escapeJava('plain text, é ✓')).toBe('plain text, é ✓');
+  });
+
+  it('is undone by unescapeJava', () => {
+    const text = 'a\n"b"\\c\u0001\td';
+    expect(unescapeJava(escapeJava(text))).toBe(text);
   });
 });
 

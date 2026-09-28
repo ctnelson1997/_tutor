@@ -12,7 +12,9 @@
 
 import {
   type JavaValue,
+  type JavaObject,
   isJavaArray,
+  isJavaObject,
   javaValueToNumber,
   javaValueToString,
   javaInt,
@@ -102,9 +104,8 @@ export function newBuiltin(className: string, args: JavaValue[], ctx: StdlibCont
     return { kind: 'objectRef', heapId, className: 'Scanner' };
   }
   if (className === 'Random') {
-    const heapId = ctx.allocObject('Random', new Map());
     const seed = args.length > 0 ? BigInt(Math.trunc(javaValueToNumber(args[0]))) : BigInt(Math.trunc(ctx.random() * 2 ** 48));
-    rngState.set(heapId, (seed ^ 0x5DEECE66Dn) & RNG_MASK);
+    const heapId = ctx.allocObject('Random', new Map<string, JavaValue>([['seed', scrambledSeed(seed)]]));
     return { kind: 'objectRef', heapId, className: 'Random' };
   }
   if (isExceptionClass(className)) {
@@ -125,7 +126,7 @@ export function callInstanceMethod(
   if (SET_LIKE.has(cls)) return setMethod(ref, cls, method, args, ctx);
   if (MAP_LIKE.has(cls)) return mapMethod(ref, cls, method, args, ctx);
   if (cls === 'Scanner') return scannerMethod(ref, method, ctx);
-  if (cls === 'Random') return randomMethod(ref, method, args);
+  if (cls === 'Random') return randomMethod(ref, method, args, ctx);
   if (cls === 'Iterator') return iteratorMethod(ref, method, ctx);
   if (cls === 'MapEntry') return entryMethod(ref, method, ctx);
   if (cls === 'Comparator') return comparatorMethod(ref, method, args, ctx);
@@ -237,7 +238,7 @@ function listMethod(ref: JavaValue, cls: string, method: string, args: JavaValue
       for (const e of initialElements(args[args.length - 1], ctx)) el.push(e);
       sync(); return javaBool(true);
     }
-    case 'iterator': return makeIterator(el.slice(), ctx);
+    case 'iterator': return makeIterator(ref, ctx);
     case 'toArray': return { kind: 'arrayRef', heapId: ctx.allocArray('Object', el.slice()) };
     case 'toString': return javaString('[' + el.map(e => javaValueToString(e, ctx.heap)).join(', ') + ']');
     case 'equals': return javaBool(ref.kind === 'objectRef' && args[0]?.kind === 'objectRef' && ref.heapId === args[0].heapId);
@@ -292,7 +293,7 @@ function setMethod(ref: JavaValue, cls: string, method: string, args: JavaValue[
     }
     case 'first': return el.length ? el[0] : javaNull();
     case 'last': return el.length ? el[el.length - 1] : javaNull();
-    case 'iterator': return makeIterator(el.slice(), ctx);
+    case 'iterator': return makeIterator(ref, ctx);
     case 'toArray': return { kind: 'arrayRef', heapId: ctx.allocArray('Object', el.slice()) };
     case 'toString': return javaString('[' + el.map(e => javaValueToString(e, ctx.heap)).join(', ') + ']');
   }
@@ -386,11 +387,15 @@ function entryMethod(ref: JavaValue, method: string, ctx: StdlibContext): JavaVa
 
 // ── Iterator ──
 
-function makeIterator(elements: JavaValue[], ctx: StdlibContext): JavaValue {
-  const dataId = ctx.allocArray('Object', elements);
+/**
+ * An iterator over a list or set: the collection it walks, and the index of
+ * the element next() returns (`cursor`, as in java.util.ArrayList's own
+ * iterator). Both are fields, so the drawing shows where it is.
+ */
+function makeIterator(collection: JavaValue, ctx: StdlibContext): JavaValue {
   const heapId = ctx.allocObject('Iterator', new Map<string, JavaValue>([
-    ['__data__', { kind: 'arrayRef', heapId: dataId }],
-    ['__pos__', javaInt(0)],
+    ['collection', collection],
+    ['cursor', javaInt(0)],
   ]));
   return { kind: 'objectRef', heapId, className: 'Iterator' };
 }
@@ -398,19 +403,27 @@ function makeIterator(elements: JavaValue[], ctx: StdlibContext): JavaValue {
 function iteratorMethod(ref: JavaValue, method: string, ctx: StdlibContext): JavaValue | undefined {
   if (ref.kind !== 'objectRef') return undefined;
   const obj = ctx.heap.get(ref.heapId);
-  const data = backingArray(ref, ctx);
-  if (!obj || !('fields' in obj) || !data) return javaNull();
-  const pos = javaValueToNumber(obj.fields.get('__pos__') ?? javaInt(0)) | 0;
-  if (method === 'hasNext') return javaBool(pos < data.elements.length);
+  if (!obj || !isJavaObject(obj)) return javaNull();
+  const data = backingArray(obj.fields.get('collection') ?? javaNull(), ctx);
+  if (!data) return javaNull();
+  const cursor = javaValueToNumber(obj.fields.get('cursor') ?? javaInt(0)) | 0;
+  if (method === 'hasNext') return javaBool(cursor < data.elements.length);
   if (method === 'next') {
-    if (pos >= data.elements.length) throw new StdlibError('NoSuchElementException');
-    obj.fields.set('__pos__', javaInt(pos + 1));
-    return data.elements[pos];
+    if (cursor >= data.elements.length) throw new StdlibError('NoSuchElementException');
+    obj.fields.set('cursor', javaInt(cursor + 1));
+    return data.elements[cursor];
   }
   return undefined;
 }
 
 // ── Scanner ──
+
+/** The part of a Scanner's input it hasn't read yet. */
+export function scannerRemaining(scanner: JavaObject): string {
+  const buf = scanner.fields.get('__buf__');
+  const pos = javaValueToNumber(scanner.fields.get('__pos__') ?? javaInt(0)) | 0;
+  return buf?.kind === 'string' ? buf.value.slice(pos) : '';
+}
 
 function scannerMethod(ref: JavaValue, method: string, ctx: StdlibContext): JavaValue | undefined {
   if (ref.kind !== 'objectRef') return undefined;
@@ -484,52 +497,61 @@ function scannerMethod(ref: JavaValue, method: string, ctx: StdlibContext): Java
 
 // ── Random (Java's 48-bit LCG, so seeded sequences match real java.util.Random) ──
 
-const rngState = new Map<string, bigint>();
 const RNG_MULT = 0x5DEECE66Dn;
 const RNG_ADD = 0xBn;
 const RNG_MASK = (1n << 48n) - 1n;
 
-function rngNext(heapId: string, bits: number): number {
-  let s = rngState.get(heapId) ?? 0n;
-  s = (s * RNG_MULT + RNG_ADD) & RNG_MASK;
-  rngState.set(heapId, s);
+/**
+ * The 48-bit state java.util.Random keeps in its `seed` field: the seed it is
+ * given, scrambled (Random.setSeed). It fits a double exactly, so it is kept
+ * as a long field of the Random object, and the drawing shows it change.
+ */
+function scrambledSeed(seed: bigint): JavaValue {
+  return { kind: 'primitive', javaType: 'long', value: Number((seed ^ RNG_MULT) & RNG_MASK) };
+}
+
+function rngNext(rng: JavaObject, bits: number): number {
+  const state = rng.fields.get('seed');
+  const s = (BigInt(state?.kind === 'primitive' ? Number(state.value) : 0) * RNG_MULT + RNG_ADD) & RNG_MASK;
+  rng.fields.set('seed', { kind: 'primitive', javaType: 'long', value: Number(s) });
   // Top `bits` bits, interpreted as a signed 32-bit int.
   const shifted = s >> BigInt(48 - bits);
   return Number(BigInt.asIntN(32, shifted));
 }
 
-function randomMethod(ref: JavaValue, method: string, args: JavaValue[]): JavaValue | undefined {
+function randomMethod(ref: JavaValue, method: string, args: JavaValue[], ctx: StdlibContext): JavaValue | undefined {
   if (ref.kind !== 'objectRef') return undefined;
-  const id = ref.heapId;
+  const rng = ctx.heap.get(ref.heapId);
+  if (!rng || !isJavaObject(rng)) return undefined;
   switch (method) {
     case 'nextInt': {
-      if (args.length === 0) return javaInt(rngNext(id, 32));
+      if (args.length === 0) return javaInt(rngNext(rng, 32));
       const bound = javaValueToNumber(args[0]) | 0;
       if (bound <= 0) throw new StdlibError('IllegalArgumentException: bound must be positive');
       if ((bound & -bound) === bound) { // power of two
-        return javaInt(Number((BigInt(bound) * BigInt(rngNext(id, 31))) >> 31n));
+        return javaInt(Number((BigInt(bound) * BigInt(rngNext(rng, 31))) >> 31n));
       }
       let bits: number, val: number;
       do {
-        bits = rngNext(id, 31);
+        bits = rngNext(rng, 31);
         val = bits % bound;
       } while (((bits - val + (bound - 1)) | 0) < 0);
       return javaInt(val);
     }
     case 'nextLong': {
-      const hi = BigInt(rngNext(id, 32));
-      const lo = BigInt(rngNext(id, 32));
+      const hi = BigInt(rngNext(rng, 32));
+      const lo = BigInt(rngNext(rng, 32));
       return { kind: 'primitive', javaType: 'long', value: Number((hi << 32n) + lo) };
     }
-    case 'nextBoolean': return javaBool(rngNext(id, 1) !== 0);
+    case 'nextBoolean': return javaBool(rngNext(rng, 1) !== 0);
     case 'nextDouble': {
-      const hi = rngNext(id, 26);
-      const lo = rngNext(id, 27);
+      const hi = rngNext(rng, 26);
+      const lo = rngNext(rng, 27);
       return javaDouble((hi * 2 ** 27 + lo) / 2 ** 53);
     }
-    case 'nextFloat': return javaDouble(rngNext(id, 24) / 2 ** 24);
+    case 'nextFloat': return javaDouble(rngNext(rng, 24) / 2 ** 24);
     case 'setSeed':
-      rngState.set(id, (BigInt(Math.trunc(javaValueToNumber(args[0]))) ^ RNG_MULT) & RNG_MASK);
+      rng.fields.set('seed', scrambledSeed(BigInt(Math.trunc(javaValueToNumber(args[0])))));
       return javaNull();
   }
   return undefined;

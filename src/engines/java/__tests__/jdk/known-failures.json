@@ -128,7 +128,7 @@
     },
     "compile-errors/ce-uninitialized-local": {
       "issues": [23],
-      "reason": "runs count++ on a local that was never assigned"
+      "reason": "reports the read of a never-assigned local when that line runs, not before the program starts"
     },
     "core/array-clone": {
       "issues": [15],

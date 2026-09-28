@@ -71,6 +71,24 @@ export function unescapeJava(body: string): string {
   return out;
 }
 
+const ESCAPES: Record<string, string> = {
+  '\\': '\\\\', '"': '\\"', '\n': '\\n', '\t': '\\t', '\b': '\\b', '\r': '\\r', '\f': '\\f',
+};
+
+/**
+ * Text written as the body of a string literal would write it: backslashes,
+ * quotes and control characters escaped (`\n`, `\t`, `\u0007`). The inverse
+ * of unescapeJava.
+ */
+export function escapeJava(text: string): string {
+  let out = '';
+  for (const c of text) {
+    const code = c.charCodeAt(0);
+    out += ESCAPES[c] ?? (code < 0x20 || code === 0x7f ? '\\u' + code.toString(16).padStart(4, '0') : c);
+  }
+  return out;
+}
+
 /** The value of a string literal token, quotes included: `"a\tb"`. */
 export function stringLiteralValue(image: string): string {
   return unescapeJava(image.slice(1, -1));

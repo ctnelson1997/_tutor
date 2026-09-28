@@ -33,16 +33,18 @@ import {
   type Reference,
   type VariableSlot,
   assignmentConversion,
+  notInitialized,
   slotReference,
   fieldReference,
   arrayElementReference,
   arrayLength,
 } from './references';
-import { stringLiteralValue, charLiteralValue, textBlockValue } from './literals';
+import { stringLiteralValue, charLiteralValue, textBlockValue, escapeJava } from './literals';
 import {
   type JavaValue,
   type JavaType,
   type JavaHeapEntry,
+  type JavaArray,
   type JavaObject,
   type JavaObjectRef,
   type JavaPrimitiveType,
@@ -71,6 +73,7 @@ import {
   newBuiltin,
   callInstanceMethod,
   getIterableElements,
+  scannerRemaining,
   LIST_LIKE,
   SET_LIKE,
   MAP_LIKE,
@@ -98,6 +101,9 @@ const MAX_WORK = 1_000_000;
 const TIME_BUDGET_MS = 8_500;
 /** Stack trace lines to keep; a stack overflow would print thousands. */
 const MAX_TRACE_FRAMES = 64;
+
+/** The name of the frame that holds static fields, shown before main's. */
+export const STATIC_FIELDS_FRAME = 'Static fields';
 
 // ── Control flow signals ──
 
@@ -163,7 +169,7 @@ function isStackOverflow(e: unknown): boolean {
 // ── Scope / Environment ──
 
 interface Scope {
-  variables: Map<string, { value: JavaValue; type: JavaType }>;
+  variables: Map<string, VariableSlot>;
   parent: Scope | null;
   label?: string; // e.g. "for", "while", "if" — used for block scope display
 }
@@ -172,7 +178,7 @@ function createScope(parent: Scope | null, label?: string): Scope {
   return { variables: new Map(), parent, label };
 }
 
-function lookupVariable(scope: Scope, name: string): { value: JavaValue; type: JavaType } | undefined {
+function lookupVariable(scope: Scope, name: string): VariableSlot | undefined {
   const entry = scope.variables.get(name);
   if (entry) return entry;
   if (scope.parent) return lookupVariable(scope.parent, name);
@@ -193,6 +199,15 @@ function stepValue(val: JavaValue, delta: number): JavaValue {
 
 function setVariable(scope: Scope, name: string, value: JavaValue, type: JavaType): void {
   scope.variables.set(name, { value: assignmentConversion(value, type), type });
+}
+
+/**
+ * Declare a local without an initializer, `int count;`. It has no value until
+ * it is assigned, so it isn't drawn until then (see VariableSlot.unassigned).
+ */
+function declareUnassigned(scope: Scope, name: string, type: JavaType, line: number): void {
+  if (type === 'var') throw new InterpreterError(`Can't infer the type of '${name}': 'var' needs an initializer`, line);
+  scope.variables.set(name, { value: defaultValue(type), type, unassigned: true });
 }
 
 function updateVariable(scope: Scope, name: string, value: JavaValue): boolean {
@@ -886,7 +901,7 @@ export class JavaInterpreter {
           this.atLine(getLine(item.init));
           slot.value = assignmentConversion(this.evalVariableInitializer(item.init, item.type, scope), item.type);
         } else {
-          this.runBlockIn(item.block, scope);
+          this.runBlockIn(item.block, scope, 'static');
         }
       }
       info.initState = 'done';
@@ -1018,13 +1033,13 @@ export class JavaInterpreter {
   /** Build a snapshot of the current state and add it to the steps. */
   private recordStep(line: number): void {
     const callStack: StackFrame[] = [];
+    if (this.staticFields.size > 0) callStack.push(this.staticFieldsFrame());
     for (const frame of this.callStack) {
-      // Emit the frame's root scope variables (the method-level variables)
-      const rootVars: Variable[] = [];
-      for (const [name, entry] of frame.scope.variables) {
-        rootVars.push({ name, value: this.javaToRuntime(entry.value) });
-      }
-      callStack.push({ name: frame.name, variables: rootVars });
+      // The frame's root scope: its parameters and method-level locals, and `this`.
+      const root: StackFrame = { name: frame.name, variables: this.visibleVariables(frame.scope) };
+      const self = frame.scope.variables.get('this');
+      if (self) root.thisArg = this.javaToRuntime(self.value);
+      callStack.push(root);
 
       // Walk from currentScope up to (but not including) frame.scope,
       // emitting each intermediate scope as a block-scope frame.
@@ -1041,10 +1056,7 @@ export class JavaInterpreter {
       let lastEmittedScope: Scope | null = null;
       for (let i = blockScopes.length - 1; i >= 0; i--) {
         const scopeLabel = blockScopes[i].label || frame.name;
-        const blockVars: Variable[] = [];
-        for (const [name, entry] of blockScopes[i].variables) {
-          blockVars.push({ name, value: this.javaToRuntime(entry.value) });
-        }
+        const blockVars = this.visibleVariables(blockScopes[i]);
         // Merge into previous block frame if same label AND direct child
         const prev = callStack.length > 0 ? callStack[callStack.length - 1] : null;
         const isDirectChild = lastEmittedScope && blockScopes[i].parent === lastEmittedScope;
@@ -1059,46 +1071,81 @@ export class JavaInterpreter {
       }
     }
 
-    // Collections store their contents in backing arrays (__data__ / __keys__ /
-    // __values__). Collect those array ids so we can render their contents
-    // inline on the collection object and omit the raw backing arrays.
-    const internalArrayIds = new Set<string>();
-    for (const [, entry] of this.heap) {
-      if (isBuiltinObject(entry)) {
-        for (const key of ['__data__', '__keys__', '__values__']) {
-          const r = entry.fields.get(key);
-          if (r && r.kind === 'arrayRef') internalArrayIds.add(r.heapId);
-        }
-      }
-    }
-
-    const heapObjects: HeapObject[] = [];
-    for (const [id, entry] of this.heap) {
-      if (isJavaArray(entry)) {
-        if (internalArrayIds.has(id)) continue; // shown via its owning collection
-        heapObjects.push({
-          id,
-          objectType: 'array',
-          label: entry.elementType + '[]',
-          properties: entry.elements.map((el, i) => ({
-            key: String(i),
-            value: this.javaToRuntime(el),
-          })),
-        });
-      } else if (isJavaObject(entry)) {
-        heapObjects.push(this.serializeObject(id, entry));
-      }
-    }
-
     this.snapshots.push({
       step: this.step++,
       line,
       callStack,
-      heap: heapObjects,
+      heap: this.reachableHeap(callStack),
       stdout: this.snapshotStdout(),
     });
   }
 
+  /** A scope's variables as a step shows them: without `this` (a frame shows it apart) and locals that have no value yet. */
+  private visibleVariables(scope: Scope): Variable[] {
+    const variables: Variable[] = [];
+    for (const [name, slot] of scope.variables) {
+      if (slot.unassigned || name === 'this') continue;
+      variables.push({ name, value: this.javaToRuntime(slot.value) });
+    }
+    return variables;
+  }
+
+  /**
+   * The "Static fields" frame, shown first, like the global frame of the JS
+   * and Python engines: every static field of each class that has been
+   * initialized, as `Main.moves`. A class is initialized at its first use
+   * (JLS §12.4.1), so its fields appear then, with the values its
+   * initializers gave them. A program with no static fields has no such frame.
+   */
+  private staticFieldsFrame(): StackFrame {
+    const variables: Variable[] = [];
+    for (const [className, slots] of this.staticFields) {
+      if (this.classes.get(className)?.initState === 'pending') continue;
+      for (const [name, slot] of slots) variables.push({ name: `${className}.${name}`, value: this.javaToRuntime(slot.value) });
+    }
+    return { name: STATIC_FIELDS_FRAME, variables };
+  }
+
+  /**
+   * The heap objects a step shows: those reachable from its frames' variables,
+   * `this` and static fields, in the order they were created. An object nothing
+   * refers to any more is left out, as it is garbage in Java. The walk follows
+   * the references the drawing shows, so a collection's backing array (drawn as
+   * the collection's contents) is left out too.
+   */
+  private reachableHeap(callStack: StackFrame[]): HeapObject[] {
+    const objects: HeapObject[] = [];
+    const reached = new Set<string>();
+    const pending: string[] = [];
+    const reach = (value: RuntimeValue | undefined) => {
+      if (value?.type === 'ref' && !reached.has(value.heapId)) {
+        reached.add(value.heapId);
+        pending.push(value.heapId);
+      }
+    };
+    for (const frame of callStack) {
+      for (const v of frame.variables) reach(v.value);
+      reach(frame.thisArg);
+    }
+    while (pending.length > 0) {
+      const id = pending.pop()!;
+      const entry = this.heap.get(id);
+      if (!entry) continue;
+      const obj = isJavaArray(entry) ? this.serializeArray(id, entry) : this.serializeObject(id, entry);
+      objects.push(obj);
+      for (const p of obj.properties) reach(p?.value); // a hole in a sparse list is reported by the refs invariant
+    }
+    return objects.sort((a, b) => Number(a.id) - Number(b.id));
+  }
+
+  private serializeArray(id: string, entry: JavaArray): HeapObject {
+    return {
+      id,
+      objectType: 'array',
+      label: entry.elementType + '[]',
+      properties: entry.elements.map((el, i) => ({ key: String(i), value: this.javaToRuntime(el) })),
+    };
+  }
 
   private javaToRuntime(val: JavaValue): RuntimeValue {
     switch (val.kind) {
@@ -1122,7 +1169,8 @@ export class JavaInterpreter {
   /**
    * Render a heap object for a snapshot. Library collections show their
    * contents inline (with list/set/map objectTypes); StringBuilder shows its
-   * text; other library objects hide their internal `__`-prefixed fields.
+   * text; a Scanner shows the input it has left; other library objects hide
+   * their internal `__`-prefixed fields.
    * An instance of a user class shows its fields as declared, even when the
    * class is called LinkedList or Stack.
    */
@@ -1156,6 +1204,14 @@ export class JavaInterpreter {
       return {
         id, objectType: 'object', label: cls,
         properties: [{ key: 'value', value: this.javaToRuntime(entry.fields.get('value') ?? javaNull()) }],
+      };
+    }
+    if (cls === 'Scanner') {
+      // The input still to be read, with line breaks written as \n, so a
+      // student can see that nextInt() leaves the rest of the line behind.
+      return {
+        id, objectType: 'object', label: cls,
+        properties: [{ key: 'remaining', value: { type: 'string', value: escapeJava(scannerRemaining(entry)) } }],
       };
     }
     return {
@@ -1236,12 +1292,12 @@ export class JavaInterpreter {
       let type = baseType + dimsSuffix(child(idNode, 'dims'));
 
       const init = child(declarator, 'variableInitializer');
-      let value: JavaValue;
-      if (init) {
-        value = this.evalVariableInitializer(init, type, scope);
-      } else {
-        value = defaultValue(type);
+      if (!init) {
+        declareUnassigned(scope, name, type, line);
+        this.emitSnapshot(line);
+        continue;
       }
+      const value = this.evalVariableInitializer(init, type, scope);
 
       // Infer type for 'var'
       if (type === 'var') {
@@ -1432,7 +1488,7 @@ export class JavaInterpreter {
         throw nullPointer(`Cannot enter synchronized block because "${sourceText(lockExpr)}" is null`, line);
       }
       this.emitSnapshot(line);
-      this.runBlockIn(child(syncStmt, 'block')!, scope);
+      this.runBlockIn(child(syncStmt, 'block')!, scope, 'synchronized');
       return;
     }
 
@@ -1464,6 +1520,8 @@ export class JavaInterpreter {
     setCurrentScope(this.callStack, inner);
     try {
       this.executeBlock(block, inner);
+    } catch (e) {
+      throw this.atFailureSite(e); // while the block's locals are still shown
     } finally {
       setCurrentScope(this.callStack, scope);
     }
@@ -1478,7 +1536,7 @@ export class JavaInterpreter {
       return;
     }
     const tryBlock = child(tryStmt, 'block')!;
-    this.runTryCatchFinally(() => this.runBlockIn(tryBlock, scope), child(tryStmt, 'catches'), child(tryStmt, 'finally'), scope);
+    this.runTryCatchFinally(() => this.runBlockIn(tryBlock, scope, 'try'), child(tryStmt, 'catches'), child(tryStmt, 'finally'), scope);
   }
 
   /**
@@ -1503,7 +1561,7 @@ export class JavaInterpreter {
       } else {
         const exc = this.toExceptionValue(e)!;
         try {
-          const catchScope = createScope(scope, scope.label);
+          const catchScope = createScope(scope, 'catch');
           setVariable(catchScope, clause.name, exc, excClass!);
           setCurrentScope(this.callStack, catchScope);
           this.executeBlock(clause.block, catchScope);
@@ -1517,7 +1575,7 @@ export class JavaInterpreter {
       }
     }
     const finallyBlock = finallyNode ? child(finallyNode, 'block') : undefined;
-    if (finallyBlock) this.runBlockIn(finallyBlock, scope);
+    if (finallyBlock) this.runBlockIn(finallyBlock, scope, 'finally');
     if (pending) throw pending.error;
   }
 
@@ -1534,7 +1592,7 @@ export class JavaInterpreter {
     const resources = children(child(spec, 'resourceList')!, 'resource');
     const block = child(twr, 'block')!;
     const body = () => {
-      const resourceScope = createScope(scope, scope.label);
+      const resourceScope = createScope(scope, 'try');
       setCurrentScope(this.callStack, resourceScope);
       const opened: { value: JavaValue; name: string }[] = [];
       let pending: { error: unknown } | undefined;
@@ -1754,7 +1812,11 @@ export class JavaInterpreter {
       const name = token(idNode, 'Identifier')!.image;
       let type = baseType + dimsSuffix(child(idNode, 'dims'));
       const init = child(declarator, 'variableInitializer');
-      const value = init ? this.evalVariableInitializer(init, type, scope) : defaultValue(type);
+      if (!init) {
+        declareUnassigned(scope, name, type, line);
+        continue;
+      }
+      const value = this.evalVariableInitializer(init, type, scope);
       if (type === 'var') type = this.inferType(value);
       setVariable(scope, name, value, type);
     }
@@ -1926,7 +1988,7 @@ export class JavaInterpreter {
     } catch (e) {
       if (asExpression && e instanceof YieldSignal) return e.value;
       if (!asExpression && e instanceof BreakSignal && e.label === undefined) return javaNull();
-      throw e;
+      throw this.atFailureSite(e); // while the switch block's locals are still shown
     } finally {
       setCurrentScope(this.callStack, scope);
     }
@@ -2138,7 +2200,7 @@ export class JavaInterpreter {
   /** A simple name as a variable: a local or parameter, a field of `this`, or a static field in scope. */
   private nameReference(name: string, scope: Scope, line: number): Reference {
     const local = this.lookupLocal(scope, name);
-    if (local) return slotReference(local);
+    if (local) return slotReference(local, name, line);
     const self = this.getCurrentThis(scope);
     if (self && this.objectHasField(self, name)) {
       return fieldReference(this.heap, self, name, this.fieldDeclaredType(self, name), 'this', line);
@@ -2628,7 +2690,7 @@ export class JavaInterpreter {
     const step = base.step;
     switch (step.kind) {
       case 'name':
-        return this.resolveSimpleName(step.name, scope);
+        return this.resolveSimpleName(step.name, scope, base.line);
       case 'this':
         return { kind: 'value', value: this.resolveThis(scope, base.line) };
       case 'super':
@@ -2650,9 +2712,12 @@ export class JavaInterpreter {
    * Anything else stays unresolved (a package prefix like `java.util`, or an
    * undefined name) and is reported only if it is used as a value.
    */
-  private resolveSimpleName(name: string, scope: Scope): ChainValue {
+  private resolveSimpleName(name: string, scope: Scope, line: number): ChainValue {
     const local = this.lookupLocal(scope, name);
-    if (local) return { kind: 'value', value: local.value };
+    if (local) {
+      if (local.unassigned) throw notInitialized(name, line);
+      return { kind: 'value', value: local.value };
+    }
     const self = this.getCurrentThis(scope);
     if (self && this.objectHasField(self, name)) {
       return { kind: 'value', value: fieldReference(this.heap, self, name, 'Object', 'this', 0).get() };
@@ -3083,6 +3148,8 @@ export class JavaInterpreter {
           this.runBlockIn(item.block, initScope);
         }
       }
+    } catch (e) {
+      throw this.atFailureSite(e); // while the initializers' scope is still shown
     } finally {
       frame.scope = saved.scope;
       frame.currentScope = saved.currentScope;

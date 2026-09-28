@@ -343,6 +343,15 @@ describe('references module', () => {
     expect(ref.get()).toEqual(javaDouble(3));
   });
 
+  it("slotReference won't read a local that has no value yet, and the first write gives it one", () => {
+    const slot: { value: ReturnType<typeof javaInt>; type: string; unassigned?: boolean } = { value: javaInt(0), type: 'int', unassigned: true };
+    const ref = slotReference(slot, 'count', 4);
+    expect(() => ref.get()).toThrow(new InterpreterError("Variable 'count' might not have been initialized", 4));
+    ref.set(javaInt(2));
+    expect(slot.unassigned).toBe(false);
+    expect(ref.get()).toEqual(javaInt(2));
+  });
+
   it('fieldReference reads and writes the named field only', () => {
     const h = heap();
     const ref = fieldReference(h, node, 'v', 'int', 'n', 1);

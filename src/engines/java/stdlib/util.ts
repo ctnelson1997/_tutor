@@ -127,11 +127,12 @@ export function compareValues(a: JavaValue, b: JavaValue, ctx: StdlibContext): n
 /**
  * A library comparator: Collections.reverseOrder(), Comparator.naturalOrder(),
  * String.CASE_INSENSITIVE_ORDER, or another comparator's reversed(). It is a
- * `Comparator` object whose hidden fields say how it orders.
+ * `Comparator` object whose fields say how it orders: `order`, and for
+ * reversed() the `base` comparator it reverses. The drawing shows both.
  */
 export function libraryComparator(order: 'natural' | 'reverse' | 'caseInsensitive', base: JavaValue | undefined, ctx: StdlibContext): JavaValue {
-  const fields = new Map<string, JavaValue>([['__order__', javaString(order)]]);
-  if (base) fields.set('__base__', base);
+  const fields = new Map<string, JavaValue>([['order', javaString(order)]]);
+  if (base) fields.set('base', base);
   return { kind: 'objectRef', heapId: ctx.allocObject('Comparator', fields), className: 'Comparator' };
 }
 
@@ -150,8 +151,8 @@ export function compareWith(cmp: JavaValue | undefined, a: JavaValue, b: JavaVal
   if (cmp.kind === 'objectRef' && cmp.className === 'Comparator' && isBuiltinObject(ctx.heap.get(cmp.heapId))) {
     const obj = ctx.heap.get(cmp.heapId);
     const fields = obj && isJavaObject(obj) ? obj.fields : new Map<string, JavaValue>();
-    const order = fields.get('__order__');
-    const base = fields.get('__base__');
+    const order = fields.get('order');
+    const base = fields.get('base');
     if (order?.kind === 'string' && order.value === 'reverse') return compareWith(base, b, a, ctx);
     if (order?.kind === 'string' && order.value === 'caseInsensitive') {
       const x = javaValueToString(a, ctx.heap).toLowerCase(), y = javaValueToString(b, ctx.heap).toLowerCase();

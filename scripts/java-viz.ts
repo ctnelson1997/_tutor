@@ -43,7 +43,7 @@ const show = (v: RuntimeValue): string =>
 function print(s: ExecutionSnapshot, lines: string[]): void {
   console.log(`\n[step ${s.step}] line ${s.line}: ${(lines[s.line - 1] ?? '').trim()}`);
   for (const f of s.callStack) {
-    const vars = f.variables.map(x => `${x.name}=${show(x.value)}`).join(', ');
+    const vars = [...(f.thisArg ? [`this=${show(f.thisArg)}`] : []), ...f.variables.map(x => `${x.name}=${show(x.value)}`)].join(', ');
     console.log(`  ${f.isBlockScope ? `  {${f.name} block}` : `FRAME ${f.name}`}: ${vars}`);
   }
   for (const h of s.heap) {

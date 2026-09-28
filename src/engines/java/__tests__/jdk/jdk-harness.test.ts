@@ -24,8 +24,10 @@ import {
   mustFailLoudly,
   runInterpreter,
   simpleClassName,
+  staticFieldsOf,
   validateKnownFailures,
   type InterpreterRun,
+  type InvariantName,
 } from './harness';
 
 function snap(step: number, line: number, callStack: StackFrame[], heap: HeapObject[] = [], stdout: string[] = []): ExecutionSnapshot {
@@ -369,6 +371,60 @@ describe('invariant: reachable', () => {
     expect(v[0]).toContain('#3 int[]');
     expect(v[0]).not.toContain('#2');
   });
+
+  it("counts a frame's this and the static fields as roots", () => {
+    const s = snap(0, 1, [
+      { name: 'Static fields', variables: [{ name: 'Main.memo', value: { type: 'ref', heapId: '1' } }] },
+      { name: 'main', variables: [] },
+      { name: 'Node', variables: [], thisArg: { type: 'ref', heapId: '2' } },
+    ], [
+      { id: '1', objectType: 'array', label: 'long[]', properties: [] },
+      { id: '2', objectType: 'object', label: 'Node', properties: [] },
+    ]);
+    expect(checkInvariant('reachable', c, { snapshots: [s], error: null, phase: 'run' })).toEqual([]);
+  });
+});
+
+describe('invariant: statics', () => {
+  const source = `public class Main {
+  static int moves, depth = 2;
+  static class Helper { static int calls; }
+  public static void main(String[] args) { moves++; }
+}
+interface Limits { int MAX = 3; }
+`;
+  const statics = (...names: string[]): StackFrame => ({
+    name: 'Static fields',
+    variables: names.map(name => ({ name, value: { type: 'number', value: 0 } })),
+  });
+  const check = (...callStacks: StackFrame[][]) =>
+    checkInvariant('statics', testCase(source), { snapshots: callStacks.map((cs, i) => snap(i, 4, cs)), error: null, phase: 'run' });
+
+  it("finds the entry class's static fields, and whether any class or interface has one", () => {
+    expect(staticFieldsOf(source)).toEqual({ entry: ['Main.moves', 'Main.depth'], any: true });
+    expect(staticFieldsOf('interface I { int X = 1; }\npublic class Main { public static void main(String[] a) {} }\n'))
+      .toEqual({ entry: [], any: true });
+    expect(staticFieldsOf('public class Main { int x; public static void main(String[] a) {} }\n')).toEqual({ entry: [], any: false });
+  });
+
+  it("passes when every step shows the entry class's static fields first", () => {
+    expect(check([statics('Main.moves', 'Main.depth'), { name: 'main', variables: [] }],
+      [statics('Main.moves', 'Main.depth', 'Helper.calls'), { name: 'main', variables: [] }])).toEqual([]);
+  });
+
+  it('flags a step without the frame, or missing one of the fields', () => {
+    const v = check([{ name: 'main', variables: [] }], [statics('Main.moves'), { name: 'main', variables: [] }]);
+    expect(v).toEqual([
+      'step 0: has no "Static fields" frame first',
+      "step 1: doesn't show the static field(s) Main.depth",
+    ]);
+  });
+
+  it('flags the frame in a program with no static fields', () => {
+    const v = checkInvariant('statics', testCase('public class Main { public static void main(String[] a) {} }\n'),
+      { snapshots: [snap(0, 1, [statics(), { name: 'main', variables: [] }])], error: null, phase: 'run' });
+    expect(v).toEqual(['step 0: shows a "Static fields" frame, but the program has no static fields']);
+  });
 });
 
 describe('mustFailLoudly', () => {
@@ -397,11 +453,11 @@ describe('validateKnownFailures', () => {
   it('rejects unknown cases and invariants, and entries without an issue or reason', () => {
     const problems = validateKnownFailures({
       output: { 'core/missing': { issues: [10], reason: 'x' }, 'core/a': { issues: [], reason: '' } },
-      invariants: { 'core/b': { reachable: { issues: [9], reason: 'not enforced yet' } } },
+      invariants: { 'core/b': { ['bogus' as InvariantName]: { issues: [9], reason: 'no such invariant' } } },
     }, ids).join('\n');
     expect(problems).toContain('output.core/missing: no such case');
     expect(problems).toContain('output.core/a: needs "issues"');
     expect(problems).toContain('output.core/a: needs a "reason"');
-    expect(problems).toContain('invariants.core/b.reachable: not an enforced invariant');
+    expect(problems).toContain('invariants.core/b.bogus: not an enforced invariant');
   });
 });

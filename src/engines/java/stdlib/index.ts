@@ -13,6 +13,7 @@ export {
   callInstanceMethod,
   getIterableElements,
   isBuiltinCollection,
+  scannerRemaining,
 } from './collections';
 export { LIST_LIKE, SET_LIKE, MAP_LIKE } from './util';
 export {

@@ -1,0 +1,8 @@
+{
+  "stdout": "total 1\nnegative at 1\nsq 9\nsq 16\ncaught / by zero 2\nfinally 3\nswitch caught 7\ninit failed: Index 5 out of bounds for length 2\nstep 0\nstep 4\nend 3\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "0832f5ddd7bf3d32dca6e12899b2a9fef4907f54e708653f019476ff63c0ae26"
+}

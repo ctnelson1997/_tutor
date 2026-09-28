@@ -5,7 +5,7 @@
  */
 import { readFileSync } from 'node:fs';
 import { parseJava, child, children, token, isCstNode, type CstNode, type CstToken } from '../../parser';
-import { JavaInterpreter } from '../../interpreter';
+import { JavaInterpreter, STATIC_FIELDS_FRAME } from '../../interpreter';
 import type { ExecutionSnapshot, RuntimeValue } from '../../../../types/snapshot';
 import { KNOWN_FAILURES_PATH, type JdkCase, type JdkGolden } from './corpus';
 
@@ -146,13 +146,16 @@ function describeStdoutDiff(want: string, got: string, maxLines = 8): string[] {
  *   js-errors  no raw JavaScript error text reaches the user
  *   scopes     block-scope frames only show variables that are in scope at the step's line
  *              (catches stale variables left behind by break/continue/return/exceptions, #9)
- *   reachable  every heap object is reachable from a frame (not enforced until #9 drops dead objects)
+ *   reachable  every heap object is reachable from a frame (its variables, `this` or the static fields):
+ *              garbage isn't drawn (#9)
+ *   statics    every step shows the entry class's static fields in a first "Static fields" frame, and a
+ *              program without static fields has no such frame (#9)
  */
-export const INVARIANTS = ['refs', 'lines', 'js-errors', 'scopes', 'reachable'] as const;
+export const INVARIANTS = ['refs', 'lines', 'js-errors', 'scopes', 'reachable', 'statics'] as const;
 export type InvariantName = typeof INVARIANTS[number];
 
-/** Invariants the suite asserts. `reachable` joins once #9 removes unreachable objects. */
-export const ENFORCED_INVARIANTS: readonly InvariantName[] = ['refs', 'lines', 'js-errors', 'scopes'];
+/** Invariants the suite asserts: all of them. */
+export const ENFORCED_INVARIANTS: readonly InvariantName[] = INVARIANTS;
 
 /** At most this many violations are reported per invariant per case. */
 const MAX_VIOLATIONS = 5;
@@ -165,6 +168,7 @@ export function checkInvariant(name: InvariantName, c: JdkCase, run: Interpreter
       case 'js-errors': return checkJsErrors(run.error);
       case 'scopes': return checkScopes(run.snapshots, c.source);
       case 'reachable': return checkReachable(run.snapshots);
+      case 'statics': return checkStatics(run.snapshots, c.source);
     }
   } catch (e) {
     // Snapshots malformed in a way the checker didn't anticipate: report, don't crash the run.
@@ -398,6 +402,73 @@ function checkReachable(snapshots: ExecutionSnapshot[]): string[] {
     }
     const dead = s.heap.filter(h => !reached.has(h.id)).map(h => `#${h.id} ${h.label ?? h.objectType}`);
     if (dead.length) out.push(`step ${s.step}: unreachable heap object(s) ${dead.slice(0, 5).join(', ')}${dead.length > 5 ? ` and ${dead.length - 5} more` : ''}`);
+    if (out.length >= MAX_VIOLATIONS) break;
+  }
+  return out;
+}
+
+/**
+ * The static fields of a program's entry class (the first top-level class with
+ * a static main) as the "Static fields" frame names them (`Main.moves`), and
+ * whether the program declares any static field at all, in any class or
+ * interface (an interface's fields are static).
+ */
+export function staticFieldsOf(source: string): { entry: string[]; any: boolean } {
+  let root: CstNode;
+  try {
+    root = parseJava(source);
+  } catch {
+    return { entry: [], any: false };
+  }
+  const isStatic = (modifiers: CstNode[]) => modifiers.some(m => m.children.Static);
+  const fieldNames = (field: CstNode) => {
+    const list = child(field, 'variableDeclaratorList');
+    return (list ? children(list, 'variableDeclarator') : []).map(d => identifierOf(child(d, 'variableDeclaratorId'))?.image ?? '?');
+  };
+
+  let any = false;
+  const findAny = (node: CstNode) => {
+    if (node.name === 'constantDeclaration' || (node.name === 'fieldDeclaration' && isStatic(children(node, 'fieldModifier')))) any = true;
+    for (const items of Object.values(node.children)) for (const item of items) if (isCstNode(item)) findAny(item);
+  };
+  findAny(root);
+
+  const unit = child(root, 'ordinaryCompilationUnit');
+  for (const typeDecl of unit ? children(unit, 'typeDeclaration') : []) {
+    const normal = child(child(typeDecl, 'classDeclaration') ?? typeDecl, 'normalClassDeclaration');
+    const body = normal && child(normal, 'classBody');
+    if (!normal || !body) continue;
+    const name = identifierOf(child(normal, 'typeIdentifier'))?.image;
+    const statics: string[] = [];
+    let hasMain = false;
+    for (const decl of children(body, 'classBodyDeclaration')) {
+      const member = child(decl, 'classMemberDeclaration');
+      const field = member && child(member, 'fieldDeclaration');
+      if (field && isStatic(children(field, 'fieldModifier'))) statics.push(...fieldNames(field).map(f => `${name}.${f}`));
+      const method = member && child(member, 'methodDeclaration');
+      const header = method && child(method, 'methodHeader');
+      if (method && isStatic(children(method, 'methodModifier')) && identifierOf(header && child(header, 'methodDeclarator'))?.image === 'main') hasMain = true;
+    }
+    if (hasMain) return { entry: statics, any };
+  }
+  return { entry: [], any };
+}
+
+function checkStatics(snapshots: ExecutionSnapshot[], source: string): string[] {
+  if (snapshots.length === 0) return [];
+  const { entry, any } = staticFieldsOf(source);
+  const out: string[] = [];
+  for (const s of snapshots) {
+    const frame = s.callStack[0]?.name === STATIC_FIELDS_FRAME ? s.callStack[0] : undefined;
+    if (!any) {
+      if (frame) out.push(`step ${s.step}: shows a "${STATIC_FIELDS_FRAME}" frame, but the program has no static fields`);
+    } else if (!frame) {
+      out.push(`step ${s.step}: has no "${STATIC_FIELDS_FRAME}" frame first`);
+    } else {
+      const shown = new Set(frame.variables.map(v => v?.name));
+      const missing = entry.filter(name => !shown.has(name));
+      if (missing.length) out.push(`step ${s.step}: doesn't show the static field(s) ${missing.join(', ')}`);
+    }
     if (out.length >= MAX_VIOLATIONS) break;
   }
   return out;

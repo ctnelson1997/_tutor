@@ -38,6 +38,18 @@ export interface Reference {
 export interface VariableSlot {
   value: JavaValue;
   type: JavaType;
+  /**
+   * A local declared without an initializer (`int count;`) that hasn't been
+   * assigned yet. Java gives it no value: it isn't drawn, and reading it is an
+   * error (javac rejects such a read, JLS §16), so it can never be read in a
+   * program javac accepts.
+   */
+  unassigned?: boolean;
+}
+
+/** Reading a local that has no value yet (see VariableSlot.unassigned). */
+export function notInitialized(name: string, line: number): InterpreterError {
+  return new InterpreterError(`Variable '${name}' might not have been initialized`, line);
 }
 
 /**
@@ -65,12 +77,18 @@ export function assignmentConversion(value: JavaValue, type: JavaType): JavaValu
   return value;
 }
 
-/** A local variable, parameter or static field. */
-export function slotReference(slot: VariableSlot): Reference {
+/** A local variable, parameter or static field. `name` and `line` report a read of a local that has no value yet. */
+export function slotReference(slot: VariableSlot, name = '', line = 0): Reference {
   return {
     declaredType: slot.type,
-    get: () => slot.value,
-    set: value => (slot.value = assignmentConversion(value, slot.type)),
+    get: () => {
+      if (slot.unassigned) throw notInitialized(name, line);
+      return slot.value;
+    },
+    set: value => {
+      if (slot.unassigned) slot.unassigned = false;
+      return (slot.value = assignmentConversion(value, slot.type));
+    },
   };
 }
 

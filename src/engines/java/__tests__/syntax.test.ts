@@ -31,8 +31,9 @@ ${members}
 }
 
 /** Names of the variables in each frame of a step, e.g. "main(o) if(s)". */
+/** Each frame as `name(variables)`, `this` first if the frame has one. */
 function frames(snapshot: ExecutionSnapshot): string {
-  return snapshot.callStack.map((f: StackFrame) => `${f.name}(${f.variables.map(v => v.name).join(',')})`).join(' ');
+  return snapshot.callStack.map((f: StackFrame) => `${f.name}(${[...(f.thisArg ? ['this'] : []), ...f.variables.map(v => v.name)].join(',')})`).join(' ');
 }
 
 function stepsAt(result: { snapshots: ExecutionSnapshot[] }, line: number): ExecutionSnapshot[] {
@@ -159,8 +160,9 @@ describe('what the steps show', () => {
 }`;
     const result = execute(source);
     expect(result.stdout).toBe('4\n7');
-    expect(frames(result.snapshots[0])).toBe('<clinit>() for(i)');
-    expect(frames(stepsAt(result, 6)[0])).toBe('main() <clinit>()');
+    expect(frames(result.snapshots[0])).toBe('Static fields(Main.squares) <clinit>() for(i)');
+    // Later's static field appears once Later is initialized, at its first use.
+    expect(frames(stepsAt(result, 6)[0])).toBe('Static fields(Main.squares,Later.value) main() <clinit>()');
   });
 
   it("runs instance initializers in the constructor's frame, without its parameters", () => {
@@ -212,7 +214,7 @@ describe('what the steps show', () => {
     } finally {
       System.out.println("finally");
     }`));
-    expect(frames(stepsAt(result, 4)[0])).toBe('main() main(sc)');
+    expect(frames(stepsAt(result, 4)[0])).toBe('main() try(sc)');
     expect(frames(stepsAt(result, 6)[0])).toBe('main()');
   });
 

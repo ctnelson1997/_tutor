@@ -248,6 +248,47 @@ describe('Random', () => {
     expect(d).toBeGreaterThanOrEqual(0);
     expect(d).toBeLessThan(1);
   });
+
+  it("keeps its state in its seed field, and matches java.util.Random's sequence (checked with JDK 21)", () => {
+    const ctx = makeCtx();
+    const r = newBuiltin('Random', [javaInt(42)], ctx)!;
+    const seed = () => (ctx.heap.get((r as { heapId: string }).heapId) as { fields: Map<string, JavaValue> }).fields.get('seed');
+    expect(seed()).toEqual({ kind: 'primitive', javaType: 'long', value: Number(42n ^ 0x5DEECE66Dn) });
+    const draws = Array.from({ length: 5 }, () => num(callInstanceMethod(r, 'nextInt', [javaInt(10)], ctx)));
+    expect(draws).toEqual([0, 3, 8, 4, 0]);
+    callInstanceMethod(r, 'setSeed', [javaInt(42)], ctx);
+    expect(seed()).toEqual({ kind: 'primitive', javaType: 'long', value: Number(42n ^ 0x5DEECE66Dn) });
+    expect(num(callInstanceMethod(r, 'nextInt', [javaInt(10)], ctx))).toBe(0);
+  });
+});
+
+describe('Iterator', () => {
+  it('refers to its collection and walks it with a cursor', () => {
+    const ctx = makeCtx();
+    const list = newBuiltin('ArrayList', [], ctx)!;
+    callInstanceMethod(list, 'add', [javaInt(3)], ctx);
+    callInstanceMethod(list, 'add', [javaInt(1)], ctx);
+    const it = callInstanceMethod(list, 'iterator', [], ctx)!;
+    const fields = (ctx.heap.get((it as { heapId: string }).heapId) as { fields: Map<string, JavaValue> }).fields;
+    expect(fields.get('collection')).toEqual(list);
+    expect(fields.get('cursor')).toEqual(javaInt(0));
+    expect(num(callInstanceMethod(it, 'next', [], ctx))).toBe(3);
+    expect(fields.get('cursor')).toEqual(javaInt(1));
+    expect(bool(callInstanceMethod(it, 'hasNext', [], ctx))).toBe(true);
+    expect(num(callInstanceMethod(it, 'next', [], ctx))).toBe(1);
+    expect(bool(callInstanceMethod(it, 'hasNext', [], ctx))).toBe(false);
+    expect(() => callInstanceMethod(it, 'next', [], ctx)).toThrow('NoSuchElementException');
+  });
+
+  it('walks a set in its iteration order', () => {
+    const ctx = makeCtx();
+    const set = newBuiltin('TreeSet', [], ctx)!;
+    for (const n of [5, 2, 9]) callInstanceMethod(set, 'add', [javaInt(n)], ctx);
+    const it = callInstanceMethod(set, 'iterator', [], ctx)!;
+    const seen: number[] = [];
+    while (bool(callInstanceMethod(it, 'hasNext', [], ctx))) seen.push(num(callInstanceMethod(it, 'next', [], ctx)));
+    expect(seen).toEqual([2, 5, 9]);
+  });
 });
 
 // ── Comparators (#6: a comparator argument is used, never silently ignored) ──
