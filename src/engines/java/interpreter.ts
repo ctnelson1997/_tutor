@@ -47,6 +47,7 @@ import {
   type JavaObjectRef,
   type JavaPrimitiveType,
   isJavaArray,
+  isBuiltinObject,
   isJavaObject,
   defaultValue,
   javaValueToNumber,
@@ -371,7 +372,8 @@ export class JavaInterpreter {
     this.ctx = {
       heap: this.heap,
       allocArray: (elementType, elements) => this.allocArray(elementType, elements),
-      allocObject: (className, fields) => this.allocObject(className, fields),
+      // Everything the standard library allocates is a library object.
+      allocObject: (className, fields) => this.allocObject(className, fields, true),
       random: () => Math.random(),
       stdin: this.stdin,
       writeStdout: (text) => this.appendStdout(text),
@@ -386,7 +388,7 @@ export class JavaInterpreter {
    * Snapshot emission is suppressed so the call is atomic in the visualization.
    */
   private invokeUser(ref: JavaValue, name: string, args: JavaValue[]): JavaValue | undefined {
-    if (ref.kind !== 'objectRef' || !this.classes.has(ref.className)) return undefined;
+    if (ref.kind !== 'objectRef' || !this.classes.has(ref.className) || isBuiltinObject(this.heap.get(ref.heapId))) return undefined;
     const method = this.resolveMethod(this.methodsByClass.get(ref.className), name, args.length);
     if (!method || method.isStatic || !method.body) return undefined;
     this.suppressSnapshots++;
@@ -428,6 +430,8 @@ export class JavaInterpreter {
           const exc = formatException(value, this.heap, this.ctx.binaryName);
           if (exc !== undefined) return exc;
         }
+        // A user class named HashMap or Stack prints as HashMap@id, not as a collection.
+        if (!obj.builtin) return javaValueToString(value, this.heap);
         // Maps: {k=v, ...} — recurse via stringify so element toString() is honored.
         const keysRef = obj.fields.get('__keys__'), valuesRef = obj.fields.get('__values__');
         if (keysRef?.kind === 'arrayRef' && valuesRef?.kind === 'arrayRef') {
@@ -1060,7 +1064,7 @@ export class JavaInterpreter {
     // inline on the collection object and omit the raw backing arrays.
     const internalArrayIds = new Set<string>();
     for (const [, entry] of this.heap) {
-      if (isJavaObject(entry)) {
+      if (isBuiltinObject(entry)) {
         for (const key of ['__data__', '__keys__', '__values__']) {
           const r = entry.fields.get(key);
           if (r && r.kind === 'arrayRef') internalArrayIds.add(r.heapId);
@@ -1116,12 +1120,20 @@ export class JavaInterpreter {
   }
 
   /**
-   * Render a heap object for a snapshot. Built-in collections show their
+   * Render a heap object for a snapshot. Library collections show their
    * contents inline (with list/set/map objectTypes); StringBuilder shows its
-   * text; generic objects hide internal `__`-prefixed fields.
+   * text; other library objects hide their internal `__`-prefixed fields.
+   * An instance of a user class shows its fields as declared, even when the
+   * class is called LinkedList or Stack.
    */
   private serializeObject(id: string, entry: JavaObject): HeapObject {
     const cls = entry.className;
+    if (!entry.builtin) {
+      return {
+        id, objectType: 'object', label: cls,
+        properties: Array.from(entry.fields.entries()).map(([k, v]) => ({ key: k, value: this.javaToRuntime(v) })),
+      };
+    }
     if (MAP_LIKE.has(cls)) {
       const keys = this.getBackingElements(entry, '__keys__');
       const values = this.getBackingElements(entry, '__values__');
@@ -1171,9 +1183,10 @@ export class JavaInterpreter {
     return id;
   }
 
-  private allocObject(className: string, fields: Map<string, JavaValue>): string {
+  /** Allocate an object. `builtin` marks a library object (see JavaObject.builtin); a user class's instance isn't one. */
+  private allocObject(className: string, fields: Map<string, JavaValue>, builtin = false): string {
     const id = String(this.nextHeapId++);
-    this.heap.set(id, { className, fields });
+    this.heap.set(id, builtin ? { className, fields, builtin } : { className, fields });
     return id;
   }
 
@@ -1778,7 +1791,9 @@ export class JavaInterpreter {
       throw nullPointer(`Cannot iterate over "${sourceText(iterExpr)}" because it is null`, line);
     } else {
       // Collections (ArrayList, HashSet, keySet()/values()/entrySet() results, …)
-      const collected = iterValue.kind === 'objectRef' ? this.stdlib(line, () => getIterableElements(iterValue, this.ctx)) : undefined;
+      const collected = iterValue.kind === 'objectRef' && isBuiltinObject(this.heap.get(iterValue.heapId))
+        ? this.stdlib(line, () => getIterableElements(iterValue, this.ctx))
+        : undefined;
       if (!collected) {
         if (iterValue.kind === 'objectRef' && this.classes.has(iterValue.className)) {
           throw new UnsupportedFeatureError('For-each loops over your own Iterable classes', line);
@@ -2476,7 +2491,9 @@ export class JavaInterpreter {
         const arr = this.heap.get(value.heapId);
         return !!arr && isJavaArray(arr) && this.isArrayElementAssignable(arr.elementType, type.slice(0, -2));
       }
-      case 'objectRef': return this.isSubclass(value.className, type);
+      case 'objectRef':
+        // A library object follows the library's hierarchy, even if a user class shares its name.
+        return isBuiltinObject(this.heap.get(value.heapId)) ? isLibrarySubtype(value.className, type) : this.isSubclass(value.className, type);
     }
   }
 
@@ -2751,10 +2768,12 @@ export class JavaInterpreter {
       if (target.heapId === SYSTEM_OUT_ID || target.heapId === SYSTEM_ERR_ID) {
         return this.printStreamMethod(name, args, receiverText, line);
       }
-      if (target.className === 'StringBuilder' || target.className === 'StringBuffer') {
-        return this.evalStringBuilderMethod(target, name, args);
-      }
-      if (!this.classes.has(target.className) && target.heapId !== SYSTEM_IN_ID) {
+      // A library object runs the library's methods; a user class's object, its own
+      // (even for a user class named StringBuilder or Stack).
+      if (isBuiltinObject(this.heap.get(target.heapId))) {
+        if (target.className === 'StringBuilder' || target.className === 'StringBuffer') {
+          return this.evalStringBuilderMethod(target, name, args);
+        }
         const builtin = this.stdlib(line, () => callInstanceMethod(target, name, args, this.ctx));
         if (builtin !== undefined) return builtin;
       }
@@ -3128,12 +3147,12 @@ export class JavaInterpreter {
 
     if (!info) {
       // A plain Object, e.g. one used only as a lock.
-      if (className === 'Object') return { kind: 'objectRef', heapId: this.allocObject('Object', new Map()), className };
+      if (className === 'Object') return { kind: 'objectRef', heapId: this.allocObject('Object', new Map(), true), className };
       if (className === 'StringBuilder' || className === 'StringBuffer') {
         const initial = args.length > 0 && args[0].kind !== 'primitive' ? javaValueToString(args[0], this.heap) : '';
         const heapId = this.allocObject(className, new Map([
           ['value', javaString(initial)],
-        ]));
+        ]), true);
         return { kind: 'objectRef', heapId, className };
       }
       // Collections, Scanner, Random and exceptions come from the stdlib.

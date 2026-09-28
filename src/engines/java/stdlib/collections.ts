@@ -57,8 +57,8 @@ function initialElements(arg: JavaValue | undefined, ctx: StdlibContext): JavaVa
  * for a PriorityQueue, `(capacity, cmp)`. It is kept in a hidden `__cmp__`
  * field and orders the collection from then on.
  */
-function constructorComparator(args: JavaValue[]): JavaValue | undefined {
-  return args.find(isComparator);
+function constructorComparator(args: JavaValue[], ctx: StdlibContext): JavaValue | undefined {
+  return args.find(a => isComparator(a, ctx));
 }
 
 function setComparator(ref: JavaValue, cmp: JavaValue | undefined, ctx: StdlibContext): void {
@@ -69,7 +69,7 @@ function setComparator(ref: JavaValue, cmp: JavaValue | undefined, ctx: StdlibCo
 
 export function newBuiltin(className: string, args: JavaValue[], ctx: StdlibContext): JavaValue | undefined {
   if (LIST_LIKE.has(className)) {
-    const cmp = className === 'PriorityQueue' ? constructorComparator(args) : undefined;
+    const cmp = className === 'PriorityQueue' ? constructorComparator(args, ctx) : undefined;
     const init = cmp ? [] : initialElements(args[0], ctx);
     if (className === 'PriorityQueue') init.sort((a, b) => compareValues(a, b, ctx));
     const list = allocCollection(className, init, 'Object', ctx);
@@ -77,14 +77,14 @@ export function newBuiltin(className: string, args: JavaValue[], ctx: StdlibCont
     return list;
   }
   if (SET_LIKE.has(className)) {
-    const cmp = className === 'TreeSet' ? constructorComparator(args) : undefined;
+    const cmp = className === 'TreeSet' ? constructorComparator(args, ctx) : undefined;
     const set = allocCollection(className, [], 'Object', ctx);
     setComparator(set, cmp, ctx);
     if (!cmp) for (const e of initialElements(args[0], ctx)) setAdd(set, e, className, ctx);
     return set;
   }
   if (MAP_LIKE.has(className)) {
-    const cmp = className === 'TreeMap' ? constructorComparator(args) : undefined;
+    const cmp = className === 'TreeMap' ? constructorComparator(args, ctx) : undefined;
     const map = allocMap(className, [], [], ctx);
     setComparator(map, cmp, ctx);
     // A copy constructor, new HashMap<>(other), copies the other map's entries.

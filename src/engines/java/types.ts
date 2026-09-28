@@ -44,6 +44,18 @@ export interface JavaArray {
 export interface JavaObject {
   className: string;
   fields: Map<string, JavaValue>;
+  /**
+   * Made by the standard library (a collection, Scanner, StringBuilder, a
+   * library exception, …). How an object is drawn, printed and dispatched
+   * depends on this, not on its class name, since a user class may be called
+   * LinkedList or Stack too.
+   */
+  builtin?: boolean;
+}
+
+/** Is this heap entry a standard-library object (see JavaObject.builtin)? */
+export function isBuiltinObject(entry: JavaHeapEntry | undefined): entry is JavaObject {
+  return entry !== undefined && isJavaObject(entry) && entry.builtin === true;
 }
 
 export type JavaHeapEntry = JavaArray | JavaObject;
@@ -108,7 +120,8 @@ export function javaValueToString(val: JavaValue, heap: Map<string, JavaHeapEntr
     }
     case 'objectRef': {
       const obj = heap.get(val.heapId);
-      if (obj && isJavaObject(obj)) {
+      // Only library objects have these forms; a user class named LinkedList prints as LinkedList@id.
+      if (isBuiltinObject(obj)) {
         // StringBuilder / StringBuffer -> their accumulated text
         if (val.className === 'StringBuilder' || val.className === 'StringBuffer') {
           const v = obj.fields.get('value');

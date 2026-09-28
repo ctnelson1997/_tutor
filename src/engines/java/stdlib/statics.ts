@@ -351,7 +351,7 @@ function arraysMethod(method: string, args: JavaValue[], ctx: StdlibContext): Ja
     case 'sort': {
       // Arrays.sort(a), (a, cmp), (a, from, to) and (a, from, to, cmp).
       const arr = arrOf(args[0]);
-      const cmp = isComparator(args[args.length - 1]) ? args[args.length - 1] : undefined;
+      const cmp = isComparator(args[args.length - 1], ctx) ? args[args.length - 1] : undefined;
       const ranged = args.length >= 3;
       if (arr && isJavaArray(arr)) {
         if (ranged) {

@@ -35,9 +35,10 @@ function makeCtx(stdin = ''): StdlibContext {
       heap.set(id, { elementType, elements });
       return id;
     },
+    // Like the interpreter's context: everything the stdlib allocates is a library object.
     allocObject: (className, fields) => {
       const id = String(next++);
-      heap.set(id, { className, fields });
+      heap.set(id, { className, fields, builtin: true });
       return id;
     },
     random: () => 0.5,
@@ -261,7 +262,13 @@ function comparatorCtx(): StdlibContext {
   };
   return ctx;
 }
-const byLength = (ctx: StdlibContext): JavaValue => ({ kind: 'objectRef', heapId: ctx.allocObject('ByLength', new Map()), className: 'ByLength' });
+/** An object of a user class (not a library object), put straight on the heap. */
+function userObject(ctx: StdlibContext, className: string): JavaValue {
+  const heapId = 'user' + ctx.heap.size;
+  ctx.heap.set(heapId, { className, fields: new Map() });
+  return { kind: 'objectRef', heapId, className };
+}
+const byLength = (ctx: StdlibContext): JavaValue => userObject(ctx, 'ByLength');
 const strings = (ctx: StdlibContext, v: JavaValue | undefined) => javaValueToString(v!, ctx.heap);
 const list = (ctx: StdlibContext, words: string[]) => newBuiltin('ArrayList', [arrRef(ctx, words.map(javaString))], ctx)!;
 
@@ -323,10 +330,10 @@ describe('comparators', () => {
 
   it("refuses to order objects that have neither compareTo nor a comparator, as Java's ClassCastException does", () => {
     const ctx = comparatorCtx();
-    const point = { kind: 'objectRef', heapId: ctx.allocObject('Point', new Map()), className: 'Point' } as const;
+    const point = userObject(ctx, 'Point');
     const arr = arrRef(ctx, [point, point]);
     expect(() => callStaticMethod('Arrays', 'sort', [arr], ctx)).toThrow('ClassCastException');
-    const notComparator = { kind: 'objectRef', heapId: ctx.allocObject('Point', new Map()), className: 'Point' } as const;
+    const notComparator = userObject(ctx, 'Point');
     expect(() => callStaticMethod('Collections', 'sort', [list(ctx, ['a', 'b']), notComparator], ctx)).toThrow("Point can't be used as a Comparator");
   });
 });

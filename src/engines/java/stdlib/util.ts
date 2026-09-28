@@ -11,6 +11,7 @@ import {
   type JavaType,
   isJavaArray,
   isJavaObject,
+  isBuiltinObject,
   javaValueToNumber,
   javaValueToBoolean,
   javaValueToString,
@@ -134,10 +135,10 @@ export function libraryComparator(order: 'natural' | 'reverse' | 'caseInsensitiv
   return { kind: 'objectRef', heapId: ctx.allocObject('Comparator', fields), className: 'Comparator' };
 }
 
-/** Could this argument be a Comparator? A library comparator, or an object of a class that isn't a library collection. */
-export function isComparator(value: JavaValue | undefined): boolean {
+/** Could this argument be a Comparator? A library Comparator, or an object of a user class (whose compare() is called); not a library collection. */
+export function isComparator(value: JavaValue | undefined, ctx: StdlibContext): boolean {
   if (value?.kind !== 'objectRef') return false;
-  return value.className === 'Comparator' || !(LIST_LIKE.has(value.className) || SET_LIKE.has(value.className) || MAP_LIKE.has(value.className));
+  return isBuiltinObject(ctx.heap.get(value.heapId)) ? value.className === 'Comparator' : true;
 }
 
 /**
@@ -146,7 +147,7 @@ export function isComparator(value: JavaValue | undefined): boolean {
  */
 export function compareWith(cmp: JavaValue | undefined, a: JavaValue, b: JavaValue, ctx: StdlibContext): number {
   if (!cmp || cmp.kind === 'null') return compareValues(a, b, ctx);
-  if (cmp.kind === 'objectRef' && cmp.className === 'Comparator') {
+  if (cmp.kind === 'objectRef' && cmp.className === 'Comparator' && isBuiltinObject(ctx.heap.get(cmp.heapId))) {
     const obj = ctx.heap.get(cmp.heapId);
     const fields = obj && isJavaObject(obj) ? obj.fields : new Map<string, JavaValue>();
     const order = fields.get('__order__');
