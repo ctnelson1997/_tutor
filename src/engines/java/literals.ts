@@ -1,9 +1,60 @@
 /**
- * The values of Java string, char and text-block literals (JLS §3.3, §3.10.4–§3.10.7).
+ * The values of Java literals: integer and floating-point (JLS §3.10.1–§3.10.2),
+ * string, char and text block (JLS §3.3, §3.10.4–§3.10.7).
  *
  * This module doesn't depend on the interpreter, so the planned core rewrite
  * (#12–#14) can reuse it.
  */
+
+/**
+ * The value of an integer literal token: decimal, hex (`0x`), octal (a
+ * leading `0`) or binary (`0b`) digits, with underscores, and an `L` or `l`
+ * suffix for a long. Hex, octal and binary digits may use every bit of the
+ * type (`0xFFFFFFFF` is the int -1). Undefined when the value doesn't fit,
+ * which javac reports as "integer number too large". A decimal 2147483648
+ * (or 9223372036854775808L) is allowed and wraps to the minimum value, as it
+ * is only legal after a minus sign.
+ */
+export function integerLiteralValue(image: string): { type: 'int'; value: number } | { type: 'long'; value: bigint } | undefined {
+  let text = image.replace(/_/g, '');
+  const long = /[lL]$/.test(text);
+  if (long) text = text.slice(0, -1);
+  const bits = long ? 64 : 32;
+  let magnitude: bigint;
+  let limit = (1n << BigInt(bits)) - 1n;
+  try {
+    if (/^0[xX]/.test(text)) magnitude = BigInt('0x' + text.slice(2));
+    else if (/^0[bB]/.test(text)) magnitude = BigInt('0b' + text.slice(2));
+    else if (text.length > 1 && text[0] === '0') magnitude = BigInt('0o' + text.slice(1));
+    else {
+      magnitude = BigInt(text);
+      limit = 1n << BigInt(bits - 1);
+    }
+  } catch {
+    return undefined; // not digits of that base, e.g. 09
+  }
+  if (magnitude > limit) return undefined;
+  const value = BigInt.asIntN(bits, magnitude);
+  return long ? { type: 'long', value } : { type: 'int', value: Number(value) };
+}
+
+/**
+ * The value of a decimal floating-point literal token, with underscores and
+ * an optional `f`/`F` (float) or `d`/`D` suffix. A float literal is rounded
+ * to double and then to float, which differs from rounding it directly only
+ * for digits extremely close to halfway between two floats. Undefined when
+ * the value is too large for its type, or rounds to zero though its digits
+ * aren't all zero: javac rejects both.
+ */
+export function floatingLiteralValue(image: string): { type: 'float' | 'double'; value: number } | undefined {
+  let text = image.replace(/_/g, '');
+  const float = /[fF]$/.test(text);
+  if (float || /[dD]$/.test(text)) text = text.slice(0, -1);
+  const value = float ? Math.fround(Number(text)) : Number(text);
+  if (!Number.isFinite(value)) return undefined;
+  if (value === 0 && /[1-9]/.test(text.split(/[eE]/)[0])) return undefined;
+  return { type: float ? 'float' : 'double', value };
+}
 
 /**
  * Translate Unicode escapes (`A`, also `\uu0041`). A backslash can start

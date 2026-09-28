@@ -78,10 +78,6 @@
       "issues": [21],
       "reason": "queue.remove() with no argument crashes with a JavaScript TypeError"
     },
-    "collections/coll-scanner-input-mismatch": {
-      "issues": [22],
-      "reason": "Scanner.nextInt() on \"abc\" returns 0 instead of throwing InputMismatchException"
-    },
     "collections/coll-sort-comparator-lambda": {
       "issues": [16],
       "reason": "the List.sort comparator is a lambda, rejected until #16"
@@ -116,7 +112,7 @@
     },
     "compile-errors/ce-string-minus": {
       "issues": [23],
-      "reason": "runs \"5\" - 1, which javac rejects (bad operand types)"
+      "reason": "reports \"5\" - 1 (bad operand types) when that line runs, not before the program starts"
     },
     "compile-errors/ce-type-mismatch": {
       "issues": [23],
@@ -150,49 +146,9 @@
       "issues": [13, 20],
       "reason": "Integer == ignores the -128..127 cache; Integer.equals is unsupported"
     },
-    "core/math-misc": {
-      "issues": [10],
-      "reason": "Math.rint(2.5) rounds half up instead of half to even"
-    },
-    "core/num-bool-bitwise": {
-      "issues": [10],
-      "reason": "&, | and ^ on booleans return ints"
-    },
-    "core/num-byte-cast": {
-      "issues": [10],
-      "reason": "(byte), (short) and (long) casts truncate wrongly"
-    },
-    "core/num-double-div-zero": {
-      "issues": [10],
-      "reason": "floating-point division by zero throws ArithmeticException instead of Infinity/NaN"
-    },
     "core/num-double-printing": {
       "issues": [19],
       "reason": "doubles print without Java's scientific notation (1.0E7)"
-    },
-    "core/num-float": {
-      "issues": [10, 19],
-      "reason": "float arithmetic and printing use double precision"
-    },
-    "core/num-int-from-char": {
-      "issues": [10],
-      "reason": "int x = 'a' keeps the char instead of converting to 97"
-    },
-    "core/num-long-factorial": {
-      "issues": [10],
-      "reason": "long arithmetic wraps at 32 bits"
-    },
-    "core/num-long-literal": {
-      "issues": [10],
-      "reason": "long literals and arithmetic wrap at 32 bits"
-    },
-    "core/num-long-negate": {
-      "issues": [10],
-      "reason": "long values wrap at 32 bits"
-    },
-    "core/num-shifts": {
-      "issues": [10],
-      "reason": "<<, >> and >>> are evaluated as comparisons"
     },
     "core/num-ternary-promotion": {
       "issues": [13],
@@ -209,10 +165,6 @@
     "core/overload-ctor-by-type": {
       "issues": [13],
       "reason": "constructor overloads are chosen by argument count, not type"
-    },
-    "core/parseInt-invalid": {
-      "issues": [22],
-      "reason": "Integer.parseInt(\"12abc\") returns 12 instead of throwing NumberFormatException"
     },
     "core/sb-methods": {
       "issues": [20],
@@ -254,10 +206,6 @@
       "issues": [13],
       "reason": "Integer == compares values, ignoring the -128..127 cache"
     },
-    "extra/lit-hex-octal-binary": {
-      "issues": [10],
-      "reason": "hex, octal and binary literals are parsed as decimal"
-    },
     "extra/println-int-array": {
       "issues": [19],
       "reason": "\"\" + intArray gives [1, 2, 3] instead of an identity string like [I@1b6d3586"
@@ -277,14 +225,6 @@
     "misc/exc-system-err": {
       "issues": [22],
       "reason": "System.err output is mixed into stdout"
-    },
-    "misc/misc-integer-division-in-method-uncaught": {
-      "issues": [10],
-      "reason": "a double method's int return value isn't converted to double"
-    },
-    "misc/misc-math-long": {
-      "issues": [10],
-      "reason": "long values wrap at 32 bits; Long.MAX_VALUE loses precision"
     },
     "misc/misc-string-methods-more": {
       "issues": [20, 16],
@@ -345,10 +285,6 @@
     "realistic/real-arrays-sort-comparable": {
       "issues": [21],
       "reason": "Arrays.toString ignores the elements' toString()"
-    },
-    "realistic/real-fib-memo-static": {
-      "issues": [10],
-      "reason": "long arithmetic wraps at 32 bits"
     },
     "realistic/real-flood-fill": {
       "issues": [20],

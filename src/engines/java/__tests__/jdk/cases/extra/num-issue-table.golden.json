@@ -1,0 +1,8 @@
+{
+  "stdout": "3000000000\n2432902008176640000\n12586269025\n-5000000000\n9223372036854775807\n255 15 5\nA\nabcde\nc\n97\n1500\n7\n-56 -25536 39000000000\nInfinity NaN\nfalse true\n16 -4 15\n1.0\n3.3000002\n2.0\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "8a2ff0f10b5ba85802e28dda290df9648a94eb9075f5a0843847337fde32157b"
+}

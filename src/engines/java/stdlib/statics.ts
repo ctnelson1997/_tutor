@@ -10,18 +10,39 @@
 
 import {
   type JavaValue,
-  type JavaPrimitive,
   isJavaArray,
+  defaultValue,
   javaValueToNumber,
   javaValueToBoolean,
   javaValueToString,
   javaInt,
   javaDouble,
+  javaLong,
+  javaFloat,
   javaBool,
   javaChar,
   javaString,
   javaNull,
 } from '../types';
+import {
+  type NumericType,
+  type NumericValue,
+  isNumericType,
+  unaryPromotion,
+  binaryPromotion,
+  convertNumber,
+  negate,
+  numericValue,
+  parseIntegerText,
+  rint,
+  floatToString,
+  INT_MIN,
+  INT_MAX,
+  LONG_MIN,
+  LONG_MAX,
+} from '../numeric';
+import { JavaRuntimeError } from '../errors';
+import { assignmentConversion } from '../references';
 import { type StdlibContext, HaltSignal, StdlibError } from './context';
 import {
   compareValues,
@@ -36,30 +57,25 @@ import {
 } from './util';
 import { javaFormat } from './format';
 
-const INT_MAX = 2147483647;
-const INT_MIN = -2147483648;
-
-function longVal(value: number): JavaPrimitive {
-  return { kind: 'primitive', javaType: 'long', value };
+/** A numeric argument's type, or int for anything else (javac rejects that). */
+function numericTypeOf(v: JavaValue | undefined): NumericType {
+  return v?.kind === 'primitive' && isNumericType(v.javaType) ? v.javaType : 'int';
 }
 
-/** Preserve int/long/double result typing for Math.abs/max/min. */
-function numResult(args: JavaValue[], value: number): JavaValue {
-  if (args.some(a => a?.kind === 'primitive' && (a.javaType === 'double' || a.javaType === 'float'))) {
-    return javaDouble(value);
-  }
-  if (args.some(a => a?.kind === 'primitive' && a.javaType === 'long')) return longVal(value);
-  return javaInt(value);
-}
-
-function toRadix(n: number, radix: number): string {
-  return (n < 0 ? '-' : '') + Math.abs(Math.trunc(n)).toString(radix);
+/** A numeric argument converted to `type`. */
+function numberAs(v: JavaValue | undefined, type: NumericType): NumericValue {
+  return v?.kind === 'primitive' && typeof v.value !== 'boolean' ? convertNumber(v.value, type) : convertNumber(javaValueToNumber(v ?? javaNull()), type);
 }
 
 function hashOf(v: JavaValue, heap: StdlibContext['heap']): number {
   if (v.kind === 'null') return 0;
   if (v.kind === 'primitive') {
     if (typeof v.value === 'boolean') return v.value ? 1231 : 1237;
+    if (typeof v.value === 'bigint') {
+      // Long.hashCode: the two halves of the long, xor'ed.
+      const bits = BigInt.asUintN(64, v.value);
+      return Number(BigInt.asIntN(32, bits ^ (bits >> 32n)));
+    }
     return Math.trunc(v.value) | 0;
   }
   const s = javaValueToString(v, heap);
@@ -83,17 +99,16 @@ export function getStaticField(className: string, field: string, ctx?: StdlibCon
       if (field === 'MIN_VALUE') return javaInt(INT_MIN);
       break;
     case 'Long':
-      // Not exactly representable in float64; use the closest double, as `(double) Long.MAX_VALUE` would.
-      if (field === 'MAX_VALUE') return longVal(2 ** 63 - 1);
-      if (field === 'MIN_VALUE') return longVal(-(2 ** 63));
+      if (field === 'MAX_VALUE') return javaLong(LONG_MAX);
+      if (field === 'MIN_VALUE') return javaLong(LONG_MIN);
       break;
     case 'Short':
-      if (field === 'MAX_VALUE') return javaInt(32767);
-      if (field === 'MIN_VALUE') return javaInt(-32768);
+      if (field === 'MAX_VALUE') return numericValue('short', 32767);
+      if (field === 'MIN_VALUE') return numericValue('short', -32768);
       break;
     case 'Byte':
-      if (field === 'MAX_VALUE') return javaInt(127);
-      if (field === 'MIN_VALUE') return javaInt(-128);
+      if (field === 'MAX_VALUE') return numericValue('byte', 127);
+      if (field === 'MIN_VALUE') return numericValue('byte', -128);
       break;
     case 'Double':
       if (field === 'MAX_VALUE') return javaDouble(Number.MAX_VALUE);
@@ -103,11 +118,11 @@ export function getStaticField(className: string, field: string, ctx?: StdlibCon
       if (field === 'NaN') return javaDouble(Number.NaN);
       break;
     case 'Float':
-      if (field === 'MAX_VALUE') return { kind: 'primitive', javaType: 'float', value: 3.4028235e38 };
-      if (field === 'MIN_VALUE') return { kind: 'primitive', javaType: 'float', value: 1.4e-45 };
-      if (field === 'POSITIVE_INFINITY') return { kind: 'primitive', javaType: 'float', value: Number.POSITIVE_INFINITY };
-      if (field === 'NEGATIVE_INFINITY') return { kind: 'primitive', javaType: 'float', value: Number.NEGATIVE_INFINITY };
-      if (field === 'NaN') return { kind: 'primitive', javaType: 'float', value: Number.NaN };
+      if (field === 'MAX_VALUE') return javaFloat(3.4028235e38);
+      if (field === 'MIN_VALUE') return javaFloat(1.4e-45);
+      if (field === 'POSITIVE_INFINITY') return javaFloat(Number.POSITIVE_INFINITY);
+      if (field === 'NEGATIVE_INFINITY') return javaFloat(Number.NEGATIVE_INFINITY);
+      if (field === 'NaN') return javaFloat(Number.NaN);
       break;
     case 'Character':
       if (field === 'MAX_VALUE') return javaChar(65535);
@@ -154,9 +169,21 @@ function mathMethod(method: string, args: JavaValue[]): JavaValue | undefined {
   const a = args.length > 0 ? javaValueToNumber(args[0]) : 0;
   const b = args.length > 1 ? javaValueToNumber(args[1]) : 0;
   switch (method) {
-    case 'abs': return numResult([args[0]], Math.abs(a));
-    case 'max': return numResult(args.slice(0, 2), Math.max(a, b));
-    case 'min': return numResult(args.slice(0, 2), Math.min(a, b));
+    case 'abs': {
+      // abs keeps the (promoted) type: Math.abs(-5L) is a long. abs of the minimum int or long is itself.
+      const type = unaryPromotion(numericTypeOf(args[0]));
+      const x = numberAs(args[0], type);
+      return numericValue(type, x < 0 || Object.is(x, -0) ? negate(x, type) : x);
+    }
+    case 'max': case 'min': {
+      const type = binaryPromotion(numericTypeOf(args[0]), numericTypeOf(args[1]));
+      const x = numberAs(args[0], type), y = numberAs(args[1], type);
+      if (type === 'float' || type === 'double') {
+        // Math.max and min treat NaN and -0.0 as Java does.
+        return numericValue(type, method === 'max' ? Math.max(x as number, y as number) : Math.min(x as number, y as number));
+      }
+      return numericValue(type, (method === 'max' ? x > y : x < y) ? x : y);
+    }
     case 'pow': return javaDouble(Math.pow(a, b));
     case 'sqrt': return javaDouble(Math.sqrt(a));
     case 'cbrt': return javaDouble(Math.cbrt(a));
@@ -166,10 +193,12 @@ function mathMethod(method: string, args: JavaValue[]): JavaValue | undefined {
     case 'log10': return javaDouble(Math.log10(a));
     case 'floor': return javaDouble(Math.floor(a));
     case 'ceil': return javaDouble(Math.ceil(a));
-    case 'rint': return javaDouble(Math.round(a));
-    case 'round': return args[0]?.kind === 'primitive' && args[0].javaType === 'double'
-      ? longVal(Math.round(a)) : javaInt(Math.round(a));
-    case 'signum': return javaDouble(Math.sign(a));
+    case 'rint': return javaDouble(rint(a));
+    // Math.round(double) is a long and Math.round(float) an int, rounding half up.
+    case 'round': return numericTypeOf(args[0]) === 'float'
+      ? javaInt(convertNumber(Math.round(a), 'int') as number)
+      : javaLong(convertNumber(Math.round(a), 'long') as bigint);
+    case 'signum': return numericTypeOf(args[0]) === 'float' ? javaFloat(Math.sign(a)) : javaDouble(Math.sign(a));
     case 'random': return javaDouble(Math.random());
     case 'sin': return javaDouble(Math.sin(a));
     case 'cos': return javaDouble(Math.cos(a));
@@ -180,66 +209,97 @@ function mathMethod(method: string, args: JavaValue[]): JavaValue | undefined {
     case 'atan2': return javaDouble(Math.atan2(a, b));
     case 'toRadians': return javaDouble(a * Math.PI / 180);
     case 'toDegrees': return javaDouble(a * 180 / Math.PI);
-    case 'floorDiv': return numResult(args.slice(0, 2), Math.floor(a / b));
-    case 'floorMod': return numResult(args.slice(0, 2), ((a % b) + b) % b);
+    case 'floorDiv': case 'floorMod': return floorDivision(method, args);
     case 'PI': return javaDouble(Math.PI);
     case 'E': return javaDouble(Math.E);
   }
   return undefined;
 }
 
+/** Math.floorDiv and Math.floorMod on ints or longs: division rounding toward negative infinity, and its remainder. */
+function floorDivision(method: 'floorDiv' | 'floorMod', args: JavaValue[]): JavaValue {
+  const type = binaryPromotion(numericTypeOf(args[0]), numericTypeOf(args[1])) === 'long' ? 'long' : 'int';
+  const x = numberAs(args[0], type), y = numberAs(args[1], type);
+  if (y === 0 || y === 0n) throw new JavaRuntimeError('ArithmeticException', '/ by zero', 0);
+  if (type === 'long') {
+    const a = x as bigint, b = y as bigint, remainder = a % b;
+    const adjust = remainder !== 0n && (remainder < 0n) !== (b < 0n);
+    return javaLong(method === 'floorDiv' ? a / b - (adjust ? 1n : 0n) : adjust ? remainder + b : remainder);
+  }
+  const a = x as number, b = y as number;
+  return javaInt(method === 'floorDiv' ? Math.floor(a / b) | 0 : a - Math.floor(a / b) * b);
+}
+
+/**
+ * Integer, Long, Short and Byte statics. Long's methods work on longs; the
+ * others on ints, except that parse and valueOf give the class's own type.
+ */
 function integerWrapper(cls: string, method: string, args: JavaValue[], ctx: StdlibContext): JavaValue | undefined {
+  const type = cls === 'Long' ? 'long' : cls === 'Short' ? 'short' : cls === 'Byte' ? 'byte' : 'int';
+  const work = type === 'long' ? 'long' : 'int';
   const str = args.length > 0 ? javaValueToString(args[0], ctx.heap) : '';
-  const a = args.length > 0 ? javaValueToNumber(args[0]) : 0;
-  const b = args.length > 1 ? javaValueToNumber(args[1]) : 0;
-  const wrap = (n: number): JavaValue => cls === 'Long' ? longVal(n) : javaInt(n);
-  const parse = (radix: number): number => {
-    const t = str.trim();
-    const n = parseInt(t, radix);
-    if (Number.isNaN(n) || !/^[+-]?[0-9a-zA-Z]+$/.test(t)) {
-      throw new StdlibError(`NumberFormatException: For input string: "${str}"`);
-    }
-    return n;
-  };
+  const x = numberAs(args[0], work), y = numberAs(args[1], work);
+  const result = (v: NumericValue) => numericValue(work, v);
+  const radix = args.length > 1 ? javaValueToNumber(args[1]) | 0 : 10;
+  const unsigned = (r: number) => javaString(typeof x === 'bigint' ? BigInt.asUintN(64, x).toString(r) : ((x as number) >>> 0).toString(r));
   switch (method) {
     case 'parseInt': case 'parseLong': case 'parseShort': case 'parseByte':
-      return wrap(args.length > 1 ? parse(javaValueToNumber(args[1])) : parse(10));
+      if (args[0]?.kind === 'null') throw new JavaRuntimeError('NumberFormatException', 'Cannot parse null string: null', 0);
+      return numericValue(type, parseIntegerText(str, radix, type));
     case 'valueOf':
-      return args[0]?.kind === 'string' ? wrap(parse(10)) : wrap(a);
+      if (args[0]?.kind === 'string') return numericValue(type, parseIntegerText(str, radix, type));
+      return numericValue(type, numberAs(args[0], type));
     case 'toString':
-      return args.length > 1 ? javaString(toRadix(a, b)) : javaString(String(Math.trunc(a)));
-    case 'toBinaryString': return javaString((a >>> 0).toString(2));
-    case 'toHexString': return javaString((a >>> 0).toString(16));
-    case 'toOctalString': return javaString((a >>> 0).toString(8));
-    case 'compare': return javaInt(a < b ? -1 : a > b ? 1 : 0);
-    case 'max': return wrap(Math.max(a, b));
-    case 'min': return wrap(Math.min(a, b));
-    case 'sum': return wrap(a + b);
-    case 'signum': return javaInt(Math.sign(a));
+      return javaString(args.length > 1 ? x.toString(radix) : String(x));
+    case 'toBinaryString': return unsigned(2);
+    case 'toHexString': return unsigned(16);
+    case 'toOctalString': return unsigned(8);
+    // Short.compare and Byte.compare return the difference; Integer's and Long's return -1, 0 or 1.
+    case 'compare': return javaInt(type === 'short' || type === 'byte' ? (x as number) - (y as number) : x < y ? -1 : x > y ? 1 : 0);
+    case 'max': return result(x > y ? x : y);
+    case 'min': return result(x < y ? x : y);
+    case 'sum': return result(typeof x === 'bigint' ? BigInt.asIntN(64, x + (y as bigint)) : ((x as number) + (y as number)) | 0);
+    case 'signum': return javaInt(x > 0 ? 1 : x < 0 ? -1 : 0);
+    case 'hashCode': return javaInt(hashOf(numericValue(work, x), ctx.heap));
     case 'bitCount': {
-      let n = a >>> 0, c = 0;
-      while (n) { c += n & 1; n >>>= 1; }
-      return javaInt(c);
+      let bits = typeof x === 'bigint' ? BigInt.asUintN(64, x) : BigInt((x as number) >>> 0);
+      let count = 0;
+      while (bits) { count += Number(bits & 1n); bits >>= 1n; }
+      return javaInt(count);
     }
     case 'MAX_VALUE': case 'MIN_VALUE': return getStaticField(cls, method);
   }
   return undefined;
 }
 
+/** Double.compare and Float.compare: NaN above everything (and equal to itself), -0.0 below 0.0. */
+function compareFloating(a: number, b: number): number {
+  if (a < b) return -1;
+  if (a > b) return 1;
+  const aNaN = a !== a, bNaN = b !== b;
+  if (aNaN || bNaN) return aNaN === bNaN ? 0 : aNaN ? 1 : -1;
+  const aNegativeZero = Object.is(a, -0), bNegativeZero = Object.is(b, -0);
+  return aNegativeZero === bNegativeZero ? 0 : aNegativeZero ? -1 : 1;
+}
+
+/** Double and Float statics; Float's work on floats. */
 function floatWrapper(cls: string, method: string, args: JavaValue[], ctx: StdlibContext): JavaValue | undefined {
+  const type = cls === 'Float' ? 'float' : 'double';
   const str = args.length > 0 ? javaValueToString(args[0], ctx.heap) : '';
-  const a = args.length > 0 ? javaValueToNumber(args[0]) : 0;
-  const b = args.length > 1 ? javaValueToNumber(args[1]) : 0;
+  const a = numberAs(args[0], type) as number;
+  const b = numberAs(args[1], type) as number;
+  const result = (v: number) => numericValue(type, type === 'float' ? Math.fround(v) : v);
   switch (method) {
-    case 'parseDouble': case 'parseFloat': return javaDouble(parseFloat(str));
-    case 'valueOf': return args[0]?.kind === 'string' ? javaDouble(parseFloat(str)) : javaDouble(a);
-    case 'toString': return javaString(javaValueToString(javaDouble(a), ctx.heap));
+    case 'parseDouble': case 'parseFloat': return result(parseFloat(str));
+    case 'valueOf': return args[0]?.kind === 'string' ? result(parseFloat(str)) : result(a);
+    case 'toString': return javaString(type === 'float' ? floatToString(a) : javaValueToString(javaDouble(a), ctx.heap));
     case 'isNaN': return javaBool(Number.isNaN(a));
     case 'isInfinite': return javaBool(!Number.isFinite(a) && !Number.isNaN(a));
-    case 'compare': return javaInt(a < b ? -1 : a > b ? 1 : 0);
-    case 'max': return javaDouble(Math.max(a, b));
-    case 'min': return javaDouble(Math.min(a, b));
-    case 'sum': return javaDouble(a + b);
+    case 'isFinite': return javaBool(Number.isFinite(a));
+    case 'compare': return javaInt(compareFloating(a, b));
+    case 'max': return result(Math.max(a, b));
+    case 'min': return result(Math.min(a, b));
+    case 'sum': return result(a + b);
     case 'MAX_VALUE': case 'MIN_VALUE': case 'POSITIVE_INFINITY': case 'NEGATIVE_INFINITY': case 'NaN':
       return getStaticField(cls, method);
   }
@@ -309,8 +369,8 @@ function stringStatic(method: string, args: JavaValue[], ctx: StdlibContext): Ja
 
 function systemMethod(method: string, args: JavaValue[], ctx: StdlibContext): JavaValue | undefined {
   switch (method) {
-    case 'currentTimeMillis': return longVal(Date.now());
-    case 'nanoTime': return longVal(Math.trunc(ctx.random() * 1e9) + Date.now() * 1e6);
+    case 'currentTimeMillis': return javaLong(BigInt(Date.now()));
+    case 'nanoTime': return javaLong(BigInt(Date.now()) * 1000000n + BigInt(Math.trunc(ctx.random() * 1e6)));
     case 'lineSeparator': return javaString('\n');
     case 'exit': throw new HaltSignal();
     case 'arraycopy': {
@@ -369,9 +429,11 @@ function arraysMethod(method: string, args: JavaValue[], ctx: StdlibContext): Ja
       if (arr && isJavaArray(arr)) {
         if (args.length >= 4) {
           const from = javaValueToNumber(args[1]) | 0, to = javaValueToNumber(args[2]) | 0;
-          for (let i = from; i < to; i++) arr.elements[i] = args[3];
+          const value = assignmentConversion(args[3], arr.elementType);
+          for (let i = from; i < to; i++) arr.elements[i] = value;
         } else {
-          for (let i = 0; i < arr.elements.length; i++) arr.elements[i] = args[1];
+          const value = assignmentConversion(args[1], arr.elementType);
+          for (let i = 0; i < arr.elements.length; i++) arr.elements[i] = value;
         }
       }
       return javaNull();
@@ -381,7 +443,7 @@ function arraysMethod(method: string, args: JavaValue[], ctx: StdlibContext): Ja
       if (!arr || !isJavaArray(arr)) return javaNull();
       const n = javaValueToNumber(args[1]) | 0;
       const out: JavaValue[] = [];
-      for (let i = 0; i < n; i++) out.push(arr.elements[i] ?? defaultLike(arr.elements[0]));
+      for (let i = 0; i < n; i++) out.push(arr.elements[i] ?? defaultValue(arr.elementType));
       return { kind: 'arrayRef', heapId: ctx.allocArray(arr.elementType, out) };
     }
     case 'copyOfRange': {
@@ -389,7 +451,7 @@ function arraysMethod(method: string, args: JavaValue[], ctx: StdlibContext): Ja
       if (!arr || !isJavaArray(arr)) return javaNull();
       const from = javaValueToNumber(args[1]) | 0, to = javaValueToNumber(args[2]) | 0;
       const out: JavaValue[] = [];
-      for (let i = from; i < to; i++) out.push(arr.elements[i] ?? defaultLike(arr.elements[0]));
+      for (let i = from; i < to; i++) out.push(arr.elements[i] ?? defaultValue(arr.elementType));
       return { kind: 'arrayRef', heapId: ctx.allocArray(arr.elementType, out) };
     }
     case 'equals': case 'deepEquals': {
@@ -422,13 +484,6 @@ function arraysMethod(method: string, args: JavaValue[], ctx: StdlibContext): Ja
     }
   }
   return undefined;
-}
-
-function defaultLike(sample: JavaValue | undefined): JavaValue {
-  if (sample?.kind === 'primitive') {
-    return { kind: 'primitive', javaType: sample.javaType, value: typeof sample.value === 'boolean' ? false : 0 };
-  }
-  return javaNull();
 }
 
 function objectsMethod(method: string, args: JavaValue[], ctx: StdlibContext): JavaValue | undefined {

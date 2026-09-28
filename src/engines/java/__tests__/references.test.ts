@@ -327,10 +327,13 @@ describe('references module', () => {
   const node = { kind: 'objectRef', heapId: '1', className: 'Node' } as const;
   const doubles = { kind: 'arrayRef', heapId: '2' } as const;
 
-  it('assignmentConversion widens toward double, float and long, and never narrows', () => {
+  it('assignmentConversion converts a number to the numeric type it is stored as, and leaves anything else', () => {
     expect(assignmentConversion(javaInt(1), 'double')).toEqual(javaDouble(1));
-    expect(assignmentConversion(javaChar(65), 'long')).toEqual({ kind: 'primitive', javaType: 'long', value: 65 });
-    expect(assignmentConversion(javaDouble(2.5), 'int')).toEqual(javaDouble(2.5));
+    expect(assignmentConversion(javaChar(65), 'long')).toEqual({ kind: 'primitive', javaType: 'long', value: 65n });
+    expect(assignmentConversion(javaChar(97), 'int')).toEqual(javaInt(97)); // int x = 'a';
+    expect(assignmentConversion(javaInt(65), 'char')).toEqual(javaChar(65)); // char c = 65; (a constant that fits)
+    expect(assignmentConversion(javaInt(1), 'float')).toEqual({ kind: 'primitive', javaType: 'float', value: 1 });
+    expect(assignmentConversion(javaInt(5), 'Integer')).toEqual(javaInt(5));
     expect(assignmentConversion(javaString('x'), 'double')).toEqual(javaString('x'));
   });
 

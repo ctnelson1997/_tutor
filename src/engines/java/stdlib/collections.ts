@@ -19,10 +19,13 @@ import {
   javaValueToString,
   javaInt,
   javaDouble,
+  javaLong,
+  javaFloat,
   javaBool,
   javaString,
   javaNull,
 } from '../types';
+import { numericValue, parseIntegerText } from '../numeric';
 import { type StdlibContext, StdlibError } from './context';
 import {
   LIST_LIKE, SET_LIKE, MAP_LIKE, isSorted,
@@ -457,15 +460,24 @@ function scannerMethod(ref: JavaValue, method: string, ctx: StdlibContext): Java
       return javaString(t);
     }
     case 'nextInt': case 'nextLong': case 'nextShort': case 'nextByte': {
-      const t = nextToken();
+      // A token that isn't a number of the type stays unread, as in Java.
+      const t = peekToken();
       if (t === undefined) throw new StdlibError('NoSuchElementException');
-      const n = parseInt(t, 10);
-      return method === 'nextLong' ? { kind: 'primitive', javaType: 'long', value: n } : javaInt(n);
+      const type = method === 'nextLong' ? 'long' : method === 'nextShort' ? 'short' : method === 'nextByte' ? 'byte' : 'int';
+      if (!/^[+-]?\d+$/.test(t)) throw new StdlibError('InputMismatchException');
+      let value;
+      try {
+        value = parseIntegerText(t, 10, type);
+      } catch {
+        throw new StdlibError(`InputMismatchException: For input string: "${t}"`); // out of the type's range
+      }
+      nextToken();
+      return numericValue(type, value);
     }
     case 'nextDouble': case 'nextFloat': {
       const t = nextToken();
       if (t === undefined) throw new StdlibError('NoSuchElementException');
-      return javaDouble(parseFloat(t));
+      return method === 'nextFloat' ? javaFloat(parseFloat(t)) : javaDouble(parseFloat(t));
     }
     case 'nextBoolean': {
       const t = nextToken();
@@ -507,13 +519,13 @@ const RNG_MASK = (1n << 48n) - 1n;
  * as a long field of the Random object, and the drawing shows it change.
  */
 function scrambledSeed(seed: bigint): JavaValue {
-  return { kind: 'primitive', javaType: 'long', value: Number((seed ^ RNG_MULT) & RNG_MASK) };
+  return javaLong((seed ^ RNG_MULT) & RNG_MASK);
 }
 
 function rngNext(rng: JavaObject, bits: number): number {
   const state = rng.fields.get('seed');
-  const s = (BigInt(state?.kind === 'primitive' ? Number(state.value) : 0) * RNG_MULT + RNG_ADD) & RNG_MASK;
-  rng.fields.set('seed', { kind: 'primitive', javaType: 'long', value: Number(s) });
+  const s = ((state?.kind === 'primitive' && typeof state.value === 'bigint' ? state.value : 0n) * RNG_MULT + RNG_ADD) & RNG_MASK;
+  rng.fields.set('seed', javaLong(s));
   // Top `bits` bits, interpreted as a signed 32-bit int.
   const shifted = s >> BigInt(48 - bits);
   return Number(BigInt.asIntN(32, shifted));
@@ -541,7 +553,7 @@ function randomMethod(ref: JavaValue, method: string, args: JavaValue[], ctx: St
     case 'nextLong': {
       const hi = BigInt(rngNext(rng, 32));
       const lo = BigInt(rngNext(rng, 32));
-      return { kind: 'primitive', javaType: 'long', value: Number((hi << 32n) + lo) };
+      return javaLong((hi << 32n) + lo);
     }
     case 'nextBoolean': return javaBool(rngNext(rng, 1) !== 0);
     case 'nextDouble': {
@@ -549,7 +561,7 @@ function randomMethod(ref: JavaValue, method: string, args: JavaValue[], ctx: St
       const lo = rngNext(rng, 27);
       return javaDouble((hi * 2 ** 27 + lo) / 2 ** 53);
     }
-    case 'nextFloat': return javaDouble(rngNext(rng, 24) / 2 ** 24);
+    case 'nextFloat': return javaFloat(rngNext(rng, 24) / 2 ** 24);
     case 'setSeed':
       rng.fields.set('seed', scrambledSeed(BigInt(Math.trunc(javaValueToNumber(args[0])))));
       return javaNull();

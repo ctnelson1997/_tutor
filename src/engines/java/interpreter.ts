@@ -39,7 +39,8 @@ import {
   arrayElementReference,
   arrayLength,
 } from './references';
-import { stringLiteralValue, charLiteralValue, textBlockValue, escapeJava } from './literals';
+import { stringLiteralValue, charLiteralValue, textBlockValue, escapeJava, integerLiteralValue, floatingLiteralValue } from './literals';
+import { binaryOperation, unaryOperation, castPrimitive, stepped, numericValue, floatDisplayValue } from './numeric';
 import {
   type JavaValue,
   type JavaType,
@@ -57,7 +58,6 @@ import {
   javaValueToString,
   javaValuesEqual,
   javaInt,
-  javaDouble,
   javaBool,
   javaChar,
   javaString,
@@ -111,6 +111,11 @@ class ReturnSignal {
   value: JavaValue;
   constructor(value: JavaValue) {
     this.value = value;
+  }
+
+  /** The returned value converted to the method's return type, like an assignment: `return 1;` in a double method returns 1.0. */
+  valueAs(returnType: JavaType): JavaValue {
+    return assignmentConversion(this.value, returnType);
   }
 }
 
@@ -183,18 +188,6 @@ function lookupVariable(scope: Scope, name: string): VariableSlot | undefined {
   if (entry) return entry;
   if (scope.parent) return lookupVariable(scope.parent, name);
   return undefined;
-}
-
-/**
- * Increment / decrement (`++` / `--`) preserving the operand's numeric type, so
- * `double d = 1.5; d++;` yields 2.5 (not a truncated int). Falls back to int.
- */
-function stepValue(val: JavaValue, delta: number): JavaValue {
-  const n = javaValueToNumber(val) + delta;
-  if (val.kind === 'primitive' && (val.javaType === 'double' || val.javaType === 'float' || val.javaType === 'long')) {
-    return { kind: 'primitive', javaType: val.javaType, value: n };
-  }
-  return javaInt(n);
 }
 
 function setVariable(scope: Scope, name: string, value: JavaValue, type: JavaType): void {
@@ -1154,6 +1147,10 @@ export class JavaInterpreter {
           return { type: 'boolean', value: val.value as boolean };
         if (val.javaType === 'char')
           return { type: 'string', value: String.fromCharCode(val.value as number) };
+        // A long can exceed 2^53, so it goes to the UI as its exact decimal digits.
+        if (val.javaType === 'long') return { type: 'bigint', value: String(val.value) };
+        // A float shows its shortest digits, as Java prints it (1.1, not 1.100000023841858).
+        if (val.javaType === 'float') return { type: 'number', value: floatDisplayValue(val.value as number) };
         return { type: 'number', value: val.value as number };
       case 'string':
         return { type: 'string', value: val.value };
@@ -2119,6 +2116,8 @@ export class JavaInterpreter {
         const typeName = this.referenceTypeName(item);
         const operand = operandThunks.pop()!;
         operandThunks.push(() => javaBool(this.isInstanceOf(operand(), typeName)));
+      } else if (isCstNode(item) && item.name === 'shiftOperator') {
+        chainOps.push(shiftOperatorText(item));
       } else if (isCstNode(item) && item.name === 'pattern') {
         const pattern = item;
         const operand = operandThunks.pop()!;
@@ -2352,15 +2351,8 @@ export class JavaInterpreter {
    * variable's own type, so `salary *= 1.5` stays an int and `c += 2` stays a char.
    */
   private narrowToDeclaredType(value: JavaValue, type: JavaType): JavaValue {
-    if (value.kind !== 'primitive') return value;
-    switch (type) {
-      case 'int': case 'short': case 'byte': case 'char': case 'boolean': case 'float': case 'double':
-        return this.castPrimitiveValue(value, type);
-      case 'long':
-        // castPrimitiveValue cuts long to 32 bits (#10); keep the magnitude instead.
-        return { kind: 'primitive', javaType: 'long', value: Math.trunc(javaValueToNumber(value)) || 0 };
-    }
-    return value; // String (+=), boxed and reference types
+    if (value.kind !== 'primitive' || !PRIMITIVE_TYPES.has(type)) return value; // String (+=), boxed and reference types
+    return castPrimitive(value, type as JavaPrimitiveType);
   }
 
   private evalOperatorChain(operandThunks: Array<() => JavaValue>, operators: string[]): JavaValue {
@@ -2447,16 +2439,10 @@ export class JavaInterpreter {
 
   private applyPrefixOperator(op: string, val: JavaValue, line: number): JavaValue {
     switch (op) {
-      case '!': return javaBool(!javaValueToBoolean(val));
-      case '-': {
-        const n = javaValueToNumber(val);
-        if (val.kind === 'primitive' && (val.javaType === 'double' || val.javaType === 'float')) {
-          return javaDouble(-n);
-        }
-        return javaInt(-n);
-      }
-      case '+': return val;
-      case '~': return javaInt(~(javaValueToNumber(val) | 0));
+      case '!': case '-': case '+': case '~':
+        if (val.kind === 'null') throw nullPointer(`Cannot use null as a number with the operator ${op}`, line); // unboxing null
+        if (val.kind !== 'primitive') throw new InterpreterError(`The operator ${op} can't be applied to ${describeOperand(val)}`, line);
+        return unaryOperation(op, val);
       case '++': case '--':
         throw new InterpreterError(`${op} needs a variable to change`, line);
     }
@@ -2471,7 +2457,10 @@ export class JavaInterpreter {
   private incrementVariable(primary: CstNode, scope: Scope, delta: number, returnNew: boolean): JavaValue {
     const ref = this.resolveReference(primary, scope);
     const old = ref.get();
-    const stored = ref.set(this.narrowToDeclaredType(stepValue(old, delta), ref.declaredType));
+    if (old.kind !== 'primitive' || old.javaType === 'boolean') {
+      throw new InterpreterError(`${delta > 0 ? '++' : '--'} needs a numeric variable`, getLine(primary));
+    }
+    const stored = ref.set(this.narrowToDeclaredType(stepped(old, delta > 0 ? 1 : -1), ref.declaredType));
     return returnNew ? stored : old;
   }
 
@@ -2507,8 +2496,11 @@ export class JavaInterpreter {
     const line = getLine(castExpr);
     const primitiveCast = child(castExpr, 'primitiveCastExpression');
     if (primitiveCast) {
-      const primitiveType = this.extractPrimitiveType(child(primitiveCast, 'primitiveType'));
-      return this.castPrimitiveValue(this.evalUnaryExpression(child(primitiveCast, 'unaryExpression')!, scope), primitiveType);
+      const primitiveType = this.extractPrimitiveType(child(primitiveCast, 'primitiveType')) as JavaPrimitiveType;
+      const operand = this.evalUnaryExpression(child(primitiveCast, 'unaryExpression')!, scope);
+      if (operand.kind === 'null') throw nullPointer(`Cannot cast null to ${primitiveType}`, line);
+      if (operand.kind !== 'primitive') throw new InterpreterError(`A ${operand.kind === 'string' ? 'String' : 'reference'} can't be cast to ${primitiveType}`, line);
+      return castPrimitive(operand, primitiveType);
     }
 
     // Reference cast, e.g. (Point) o. It is checked when JavaTutor knows the
@@ -2599,34 +2591,15 @@ export class JavaInterpreter {
     return true;
   }
 
-  private castPrimitiveValue(value: JavaValue, targetType: JavaType): JavaValue {
-    if (targetType === 'boolean') return javaBool(javaValueToBoolean(value));
-    const n = javaValueToNumber(value);
-    switch (targetType) {
-      case 'double':
-      case 'float':
-        return { kind: 'primitive', javaType: targetType, value: n };
-      case 'char':
-        return javaChar(n | 0);
-      case 'long':
-      case 'byte':
-      case 'short':
-        return { kind: 'primitive', javaType: targetType, value: n | 0 };
-      case 'int':
-      default:
-        return javaInt(n);
-    }
-  }
-
   private evalLiteral(literal: CstNode): JavaValue {
     // Integer literal
     const intLit = child(literal, 'integerLiteral');
     if (intLit) {
       const tok = token(intLit, 'DecimalLiteral') || token(intLit, 'HexLiteral') || token(intLit, 'OctalLiteral') || token(intLit, 'BinaryLiteral');
       if (tok) {
-        let img = tok.image.replace(/_/g, '');
-        if (img.endsWith('L') || img.endsWith('l')) img = img.slice(0, -1);
-        return javaInt(parseInt(img, 10));
+        const parsed = integerLiteralValue(tok.image);
+        if (!parsed) throw new InterpreterError(`Integer number too large: ${tok.image}`, tok.startLine);
+        return numericValue(parsed.type, parsed.value);
       }
     }
 
@@ -2635,11 +2608,9 @@ export class JavaInterpreter {
     if (fpLit) {
       const tok = token(fpLit, 'FloatLiteral');
       if (!tok) throw new UnsupportedFeatureError('Hexadecimal floating-point literals', getLine(fpLit));
-      let img = tok.image.replace(/_/g, '');
-      if (img.endsWith('f') || img.endsWith('F') || img.endsWith('d') || img.endsWith('D')) {
-        img = img.slice(0, -1);
-      }
-      return javaDouble(parseFloat(img));
+      const parsed = floatingLiteralValue(tok.image);
+      if (!parsed) throw new InterpreterError(`Floating-point number out of range: ${tok.image}`, tok.startLine);
+      return numericValue(parsed.type, parsed.value);
     }
 
     // Boolean literal
@@ -2996,7 +2967,7 @@ export class JavaInterpreter {
       this.executeBlock(method.body, methodScope);
       return javaNull();
     } catch (e) {
-      if (e instanceof ReturnSignal) return e.value;
+      if (e instanceof ReturnSignal) return e.valueAs(method.returnType);
       throw this.atFailureSite(e); // record where it happened before this frame is popped
     } finally {
       this.callStack.pop();
@@ -3694,38 +3665,31 @@ function applyBinaryOp(
     return javaString(str(left) + str(right));
   }
 
-  const l = javaValueToNumber(left);
-  const r = javaValueToNumber(right);
+  // Two primitives: Java's arithmetic, with numeric promotion (numeric.ts).
+  if (left.kind === 'primitive' && right.kind === 'primitive') return binaryOperation(op, left, right);
+  // References: == and != compare identity (strings by value, #20).
+  if (op === '==') return javaBool(javaValuesEqual(left, right));
+  if (op === '!=') return javaBool(!javaValuesEqual(left, right));
+  if (left.kind === 'null' || right.kind === 'null') {
+    // Unboxing null, as `Integer n = null; n + 1` does.
+    throw nullPointer(`Cannot use null as a number with the operator ${op}`, 0);
+  }
+  throw new InterpreterError(`The operator ${op} can't be applied to ${describeOperand(left)} and ${describeOperand(right)}`, 0);
+}
 
-  // Determine if result should be double
-  const isDouble = (left.kind === 'primitive' && (left.javaType === 'double' || left.javaType === 'float'))
-    || (right.kind === 'primitive' && (right.javaType === 'double' || right.javaType === 'float'));
+/** The operator of a shiftOperator node. java-parser lexes << >> >>> as single < and > tokens (for generics) and groups them in it. */
+function shiftOperatorText(node: CstNode): string {
+  return tokens(node, 'Less').concat(tokens(node, 'Greater')).map(t => t.image).join('');
+}
 
-  switch (op) {
-    case '+': return isDouble ? javaDouble(l + r) : javaInt((l + r) | 0);
-    case '-': return isDouble ? javaDouble(l - r) : javaInt((l - r) | 0);
-    case '*': return isDouble ? javaDouble(l * r) : javaInt(Math.imul(l | 0, r | 0));
-    case '/':
-      if (r === 0) throw new InterpreterError('ArithmeticException: / by zero', 0);
-      return isDouble ? javaDouble(l / r) : javaInt((l / r) | 0);
-    case '%':
-      if (r === 0) throw new InterpreterError('ArithmeticException: / by zero', 0);
-      return isDouble ? javaDouble(l % r) : javaInt((l % r) | 0);
-    case '<': return javaBool(l < r);
-    case '>': return javaBool(l > r);
-    case '<=': return javaBool(l <= r);
-    case '>=': return javaBool(l >= r);
-    case '==': return javaBool(javaValuesEqual(left, right));
-    case '!=': return javaBool(!javaValuesEqual(left, right));
-    case '&': return javaInt((l | 0) & (r | 0));
-    case '|': return javaInt((l | 0) | (r | 0));
-    case '^': return javaInt((l | 0) ^ (r | 0));
-    case '<<': return javaInt((l | 0) << (r | 0));
-    case '>>': return javaInt((l | 0) >> (r | 0));
-    case '>>>': return javaInt((l | 0) >>> (r | 0));
-    case '&&': return javaBool(javaValueToBoolean(left) && javaValueToBoolean(right));
-    case '||': return javaBool(javaValueToBoolean(left) || javaValueToBoolean(right));
-    default: return javaNull();
+/** An operand's type for an error message: `int`, `String`, `Point`, `an array`. */
+function describeOperand(value: JavaValue): string {
+  switch (value.kind) {
+    case 'primitive': return value.javaType;
+    case 'string': return 'String';
+    case 'null': return 'null';
+    case 'arrayRef': return 'an array';
+    case 'objectRef': return value.className;
   }
 }
 

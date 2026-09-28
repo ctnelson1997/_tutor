@@ -76,7 +76,8 @@ describe('static fields', () => {
     const last = snapshots.at(-1)!;
     const memo = target(last, variable(last, 'Main.memo'));
     expect(memo).toMatchObject({ objectType: 'array', label: 'long[]' });
-    expect(memo!.properties.map(p => p.value)).toEqual([0, 1, 0].map(value => ({ type: 'number', value })));
+    // A long goes to the UI as its exact digits.
+    expect(memo!.properties.map(p => p.value)).toEqual(['0', '1', '0'].map(value => ({ type: 'bigint', value })));
   });
 
   it("appear for another class when it is first used, with its initializers' values", () => {
@@ -304,7 +305,7 @@ describe('library objects are drawn with their state', () => {
   it('a Random shows its seed, which each call advances', () => {
     const snapshots = runClean(program('Random rng = new Random(42);\n    int r = rng.nextInt(10);\n    System.out.println(r);'));
     const seed = (s: ExecutionSnapshot) => target(s, variable(s, 'rng'))!.properties;
-    expect(seed(stepsAt(snapshots, 5)[0])).toEqual([{ key: 'seed', value: { type: 'number', value: Number(42n ^ 0x5DEECE66Dn) } }]);
+    expect(seed(stepsAt(snapshots, 5)[0])).toEqual([{ key: 'seed', value: { type: 'bigint', value: String(42n ^ 0x5DEECE66Dn) } }]);
     expect(seed(stepsAt(snapshots, 6)[0])[0].value).not.toEqual(seed(stepsAt(snapshots, 5)[0])[0].value);
     expect(snapshots.at(-1)!.stdout).toEqual(['0']); // new Random(42).nextInt(10) is 0 in Java too
   });
@@ -317,5 +318,14 @@ describe('library objects are drawn with their state', () => {
       { key: 'order', value: { type: 'string', value: 'reverse' } },
       { key: 'base', value: variable(last, 'rev') },
     ]);
+  });
+});
+
+describe('numbers are shown exactly', () => {
+  it('a long as its digits, even past 2^53, and a float with the digits Java prints', () => {
+    const last = runClean(program('long big = 9007199254740993L;\n    float f = 1.1f;\n    double d = f;')).at(-1)!;
+    expect(variable(last, 'big')).toEqual({ type: 'bigint', value: '9007199254740993' });
+    expect(variable(last, 'f')).toEqual({ type: 'number', value: 1.1 });
+    expect(variable(last, 'd')).toEqual({ type: 'number', value: Math.fround(1.1) }); // (double) 1.1f is 1.100000023841858
   });
 });

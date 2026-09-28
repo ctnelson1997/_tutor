@@ -41,6 +41,9 @@ export function compareJava(a: JavaValue, b: JavaValue): number {
   if (a.kind === 'string' && b.kind === 'string') {
     return a.value < b.value ? -1 : a.value > b.value ? 1 : 0;
   }
+  if (a.kind === 'primitive' && b.kind === 'primitive' && typeof a.value !== 'boolean' && typeof b.value !== 'boolean') {
+    return a.value < b.value ? -1 : a.value > b.value ? 1 : 0; // exact for longs, and for a long against an int
+  }
   const na = javaValueToNumber(a);
   const nb = javaValueToNumber(b);
   return na < nb ? -1 : na > nb ? 1 : 0;

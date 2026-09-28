@@ -26,11 +26,29 @@ function group(intDigits: string): string {
   return intDigits.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
-function signOf(n: number, flags: string): string {
+function signOf(n: number | bigint, flags: string): string {
   if (n < 0) return '-';
   if (flags.includes('+')) return '+';
   if (flags.includes(' ')) return ' ';
   return '';
+}
+
+/** An integral argument's value: a long stays a bigint, so its digits are exact. */
+function integral(arg: JavaValue | undefined): number | bigint {
+  if (arg?.kind === 'primitive' && typeof arg.value === 'bigint') return arg.value;
+  return Math.trunc(arg ? javaValueToNumber(arg) : 0);
+}
+
+/**
+ * The digits %x and %o print: the value's two's-complement bits, as wide as
+ * its type (a byte -1 is ff, an int -1 ffffffff, a long -1 sixteen f's).
+ */
+function unsignedDigits(arg: JavaValue | undefined, radix: number): string {
+  const n = integral(arg);
+  if (typeof n === 'bigint') return BigInt.asUintN(64, n).toString(radix);
+  const type = arg?.kind === 'primitive' ? arg.javaType : 'int';
+  const bits = type === 'byte' ? n & 0xff : type === 'short' ? n & 0xffff : n >>> 0;
+  return bits.toString(radix);
 }
 
 export function javaFormat(fmt: string, args: JavaValue[], heap: Map<string, JavaHeapEntry>): string {
@@ -51,9 +69,9 @@ export function javaFormat(fmt: string, args: JavaValue[], heap: Map<string, Jav
 
     switch (lower) {
       case 'd': {
-        const n = Math.trunc(javaValueToNumber(arg));
+        const n = integral(arg);
         const sign = signOf(n, flags);
-        let body = Math.abs(n).toString();
+        let body = (n < 0 ? -n : n).toString();
         if (grouping) body = group(body);
         return pad(body, width, left, zero, sign);
       }
@@ -86,15 +104,12 @@ export function javaFormat(fmt: string, args: JavaValue[], heap: Map<string, Jav
         return pad(body, width, left, zero, sign);
       }
       case 'x': {
-        const n = Math.trunc(javaValueToNumber(arg));
-        let body = (n >>> 0).toString(16);
+        let body = unsignedDigits(arg, 16);
         if (conv === 'X') body = body.toUpperCase();
         return pad(body, width, left, zero, '');
       }
-      case 'o': {
-        const n = Math.trunc(javaValueToNumber(arg));
-        return pad((n >>> 0).toString(8), width, left, zero, '');
-      }
+      case 'o':
+        return pad(unsignedDigits(arg, 8), width, left, zero, '');
       case 'c': {
         const body = arg?.kind === 'primitive'
           ? String.fromCharCode(javaValueToNumber(arg))

@@ -5,13 +5,20 @@
  * objects/arrays are stored on a heap and referenced by ID.
  */
 
+import { floatToString } from './numeric';
+
 export type JavaPrimitiveType = 'int' | 'double' | 'boolean' | 'char' | 'long' | 'float' | 'byte' | 'short';
 export type JavaType = JavaPrimitiveType | 'String' | 'void' | 'null' | string; // string for class names
 
+/**
+ * A primitive value. A long is a bigint, a boolean a boolean, and every other
+ * type a number within its range (a float rounded to single precision); see
+ * numeric.ts.
+ */
 export interface JavaPrimitive {
   kind: 'primitive';
   javaType: JavaPrimitiveType;
-  value: number | boolean;
+  value: number | boolean | bigint;
 }
 
 export interface JavaString {
@@ -70,8 +77,10 @@ export function isJavaObject(entry: JavaHeapEntry): entry is JavaObject {
 
 export function defaultValue(type: JavaType): JavaValue {
   switch (type) {
-    case 'int': case 'byte': case 'short': case 'long':
+    case 'int': case 'byte': case 'short':
       return { kind: 'primitive', javaType: type, value: 0 };
+    case 'long':
+      return { kind: 'primitive', javaType: 'long', value: 0n };
     case 'float': case 'double':
       return { kind: 'primitive', javaType: type, value: 0.0 };
     case 'boolean':
@@ -83,8 +92,9 @@ export function defaultValue(type: JavaType): JavaValue {
   }
 }
 
+/** A value as a JS number, for contexts that need one (an index, a size). A long beyond 2^53 loses precision. */
 export function javaValueToNumber(val: JavaValue): number {
-  if (val.kind === 'primitive') return typeof val.value === 'boolean' ? (val.value ? 1 : 0) : val.value;
+  if (val.kind === 'primitive') return typeof val.value === 'boolean' ? (val.value ? 1 : 0) : Number(val.value);
   if (val.kind === 'string') return parseFloat(val.value) || 0;
   return 0;
 }
@@ -92,7 +102,7 @@ export function javaValueToNumber(val: JavaValue): number {
 export function javaValueToBoolean(val: JavaValue): boolean {
   if (val.kind === 'primitive') {
     if (val.javaType === 'boolean') return val.value as boolean;
-    return (val.value as number) !== 0;
+    return typeof val.value === 'bigint' ? val.value !== 0n : val.value !== 0;
   }
   if (val.kind === 'null') return false;
   return true;
@@ -103,11 +113,13 @@ export function javaValueToString(val: JavaValue, heap: Map<string, JavaHeapEntr
     case 'primitive':
       if (val.javaType === 'char') return String.fromCharCode(val.value as number);
       if (val.javaType === 'boolean') return val.value ? 'true' : 'false';
-      if (val.javaType === 'double' || val.javaType === 'float') {
+      if (val.javaType === 'float') return floatToString(val.value as number);
+      if (val.javaType === 'double') {
         const n = val.value as number;
+        if (Object.is(n, -0)) return '-0.0';
         return Number.isInteger(n) ? n + '.0' : String(n);
       }
-      return String(val.value);
+      return String(val.value); // a long's bigint prints without an n
     case 'string':
       return val.value;
     case 'null':
@@ -160,7 +172,10 @@ export function javaValueToString(val: JavaValue, heap: Map<string, JavaHeapEntr
 export function javaValuesEqual(a: JavaValue, b: JavaValue): boolean {
   if (a.kind === 'null' && b.kind === 'null') return true;
   if (a.kind === 'null' || b.kind === 'null') return false;
-  if (a.kind === 'primitive' && b.kind === 'primitive') return a.value === b.value;
+  if (a.kind === 'primitive' && b.kind === 'primitive') {
+    // A long (bigint) against another type compares by value.
+    return typeof a.value === typeof b.value ? a.value === b.value : Number(a.value) === Number(b.value);
+  }
   if (a.kind === 'string' && b.kind === 'string') return a.value === b.value;
   if (a.kind === 'arrayRef' && b.kind === 'arrayRef') return a.heapId === b.heapId;
   if (a.kind === 'objectRef' && b.kind === 'objectRef') return a.heapId === b.heapId;
@@ -174,6 +189,15 @@ export function javaInt(n: number): JavaPrimitive {
 
 export function javaDouble(n: number): JavaPrimitive {
   return { kind: 'primitive', javaType: 'double', value: n };
+}
+
+export function javaLong(n: bigint): JavaPrimitive {
+  return { kind: 'primitive', javaType: 'long', value: BigInt.asIntN(64, n) };
+}
+
+/** A float, rounded to single precision. */
+export function javaFloat(n: number): JavaPrimitive {
+  return { kind: 'primitive', javaType: 'float', value: Math.fround(n) };
 }
 
 export function javaBool(b: boolean): JavaPrimitive {

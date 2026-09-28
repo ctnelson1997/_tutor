@@ -18,12 +18,12 @@
 import {
   type JavaValue,
   type JavaType,
-  type JavaPrimitiveType,
   type JavaHeapEntry,
   isJavaArray,
   isJavaObject,
 } from './types';
 import { InterpreterError, JavaRuntimeError, nullPointer } from './errors';
+import { isNumericType, toNumericType } from './numeric';
 
 export interface Reference {
   /** Read the variable. */
@@ -53,28 +53,18 @@ export function notInitialized(name: string, line: number): InterpreterError {
 }
 
 /**
- * Assignment conversion (JLS §5.2): widen a numeric primitive to the declared
- * type of the variable, parameter, field or array element it is stored in.
- *
- * Without this, `double x = 1;` would store the int *literal's* type, so a later
- * `target / x` would run integer division instead of floating-point division
- * (the √2013 Newton's-method regression in behavior-comparison.test.ts). This is
- * JLS widening primitive conversion (int/char/short/byte/long/float → double,
- * and so on). It intentionally does NOT narrow (e.g. double → int), since real
- * Java requires an explicit cast there.
+ * Assignment conversion (JLS §5.2): a numeric primitive stored in a variable,
+ * parameter, field, array element or return value of a numeric type becomes
+ * a value of that type. So `double x = 1;` holds 1.0 (and a later `target / x`
+ * divides as doubles: the √2013 Newton's-method regression in
+ * behavior-comparison.test.ts), `long n = 5;` holds the long 5, and
+ * `int x = 'a';` holds 97. Java also narrows a constant that fits
+ * (`byte b = 10;`, `char c = 65;`). javac rejects any other narrowing, so
+ * converting whatever arrives is correct for every program it accepts.
  */
 export function assignmentConversion(value: JavaValue, type: JavaType): JavaValue {
-  if (value.kind !== 'primitive' || typeof value.value !== 'number') return value;
-  if (type === 'double' || type === 'float') {
-    if (value.javaType !== type) {
-      return { kind: 'primitive', javaType: type as JavaPrimitiveType, value: value.value };
-    }
-  } else if (type === 'long') {
-    if (value.javaType === 'int' || value.javaType === 'char' || value.javaType === 'short' || value.javaType === 'byte') {
-      return { kind: 'primitive', javaType: 'long', value: value.value };
-    }
-  }
-  return value;
+  if (value.kind !== 'primitive' || value.javaType === type || value.javaType === 'boolean' || !isNumericType(type)) return value;
+  return toNumericType(value, type);
 }
 
 /** A local variable, parameter or static field. `name` and `line` report a read of a local that has no value yet. */

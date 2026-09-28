@@ -1,9 +1,9 @@
 /**
- * String, char and text-block literal values (literals.ts). Expected values
- * were checked against real `java` (JDK 21).
+ * Integer, floating-point, string, char and text-block literal values
+ * (literals.ts). Expected values were checked against real `java` (JDK 21).
  */
 import { describe, it, expect } from 'vitest';
-import { unescapeJava, escapeJava, stringLiteralValue, charLiteralValue, textBlockValue } from '../literals';
+import { unescapeJava, escapeJava, stringLiteralValue, charLiteralValue, textBlockValue, integerLiteralValue, floatingLiteralValue } from '../literals';
 
 describe('unescapeJava', () => {
   it('translates escapes in one pass, so \\\\n is a backslash and an n', () => {
@@ -25,6 +25,53 @@ describe('unescapeJava', () => {
 
   it('joins lines at a backslash before a line break (text blocks)', () => {
     expect(unescapeJava('one \\\ntwo')).toBe('one two');
+  });
+});
+
+describe('integerLiteralValue', () => {
+  it('reads decimal, hex, octal and binary digits, with underscores and an L suffix', () => {
+    expect(integerLiteralValue('255')).toEqual({ type: 'int', value: 255 });
+    expect(integerLiteralValue('0xFF')).toEqual({ type: 'int', value: 255 });
+    expect(integerLiteralValue('017')).toEqual({ type: 'int', value: 15 });
+    expect(integerLiteralValue('0b101')).toEqual({ type: 'int', value: 5 });
+    expect(integerLiteralValue('1_000_000')).toEqual({ type: 'int', value: 1000000 });
+    expect(integerLiteralValue('0')).toEqual({ type: 'int', value: 0 });
+    expect(integerLiteralValue('3000000000L')).toEqual({ type: 'long', value: 3000000000n });
+    expect(integerLiteralValue('0x7fff_ffff_ffff_ffffl')).toEqual({ type: 'long', value: 9223372036854775807n });
+  });
+
+  it('lets hex, octal and binary use every bit, and wraps the decimal minimum', () => {
+    expect(integerLiteralValue('0xFFFFFFFF')).toEqual({ type: 'int', value: -1 });
+    expect(integerLiteralValue('0x80000000')).toEqual({ type: 'int', value: -2147483648 });
+    expect(integerLiteralValue('0xFFFFFFFFFFFFFFFFL')).toEqual({ type: 'long', value: -1n });
+    expect(integerLiteralValue('2147483648')).toEqual({ type: 'int', value: -2147483648 }); // only legal as -2147483648
+    expect(integerLiteralValue('9223372036854775808L')).toEqual({ type: 'long', value: -9223372036854775808n });
+  });
+
+  it("is undefined for a value that doesn't fit, as javac rejects it", () => {
+    expect(integerLiteralValue('2147483649')).toBeUndefined();
+    expect(integerLiteralValue('0x100000000')).toBeUndefined();
+    expect(integerLiteralValue('9223372036854775809L')).toBeUndefined();
+    expect(integerLiteralValue('09')).toBeUndefined();
+  });
+});
+
+describe('floatingLiteralValue', () => {
+  it('reads doubles and floats, with underscores and suffixes', () => {
+    expect(floatingLiteralValue('1.5')).toEqual({ type: 'double', value: 1.5 });
+    expect(floatingLiteralValue('1_000.25d')).toEqual({ type: 'double', value: 1000.25 });
+    expect(floatingLiteralValue('.5')).toEqual({ type: 'double', value: 0.5 });
+    expect(floatingLiteralValue('5.')).toEqual({ type: 'double', value: 5 });
+    expect(floatingLiteralValue('1e10')).toEqual({ type: 'double', value: 1e10 });
+    expect(floatingLiteralValue('1.1f')).toEqual({ type: 'float', value: Math.fround(1.1) });
+    expect(floatingLiteralValue('0.0F')).toEqual({ type: 'float', value: 0 });
+  });
+
+  it('is undefined for a value too large, or too small but not zero, for its type', () => {
+    expect(floatingLiteralValue('1e40f')).toBeUndefined();
+    expect(floatingLiteralValue('1e-50f')).toBeUndefined();
+    expect(floatingLiteralValue('1e400')).toBeUndefined();
+    expect(floatingLiteralValue('0e400')).toEqual({ type: 'double', value: 0 });
   });
 });
 

@@ -48,9 +48,9 @@ function makeCtx(stdin = ''): StdlibContext {
   };
 }
 
-const arrRef = (ctx: StdlibContext, els: JavaValue[]): JavaValue => ({
+const arrRef = (ctx: StdlibContext, els: JavaValue[], elementType = 'Object'): JavaValue => ({
   kind: 'arrayRef',
-  heapId: ctx.allocArray('Object', els),
+  heapId: ctx.allocArray(elementType, els),
 });
 const num = (v: JavaValue | undefined) => javaValueToNumber(v!);
 const bool = (v: JavaValue | undefined) => javaValueToBoolean(v!);
@@ -126,7 +126,7 @@ describe('callStaticMethod — Math / wrappers / Character', () => {
 describe('callStaticMethod — Arrays / Objects / Collections', () => {
   it('Arrays.toString / sort / copyOf', () => {
     const ctx = makeCtx();
-    const a = arrRef(ctx, [javaInt(3), javaInt(1), javaInt(2)]);
+    const a = arrRef(ctx, [javaInt(3), javaInt(1), javaInt(2)], 'int');
     expect(javaValueToString(callStaticMethod('Arrays', 'toString', [a], ctx)!, ctx.heap)).toBe('[3, 1, 2]');
     callStaticMethod('Arrays', 'sort', [a], ctx);
     expect(javaValueToString(a, ctx.heap)).toBe('[1, 2, 3]');
@@ -253,11 +253,11 @@ describe('Random', () => {
     const ctx = makeCtx();
     const r = newBuiltin('Random', [javaInt(42)], ctx)!;
     const seed = () => (ctx.heap.get((r as { heapId: string }).heapId) as { fields: Map<string, JavaValue> }).fields.get('seed');
-    expect(seed()).toEqual({ kind: 'primitive', javaType: 'long', value: Number(42n ^ 0x5DEECE66Dn) });
+    expect(seed()).toEqual({ kind: 'primitive', javaType: 'long', value: 42n ^ 0x5DEECE66Dn });
     const draws = Array.from({ length: 5 }, () => num(callInstanceMethod(r, 'nextInt', [javaInt(10)], ctx)));
     expect(draws).toEqual([0, 3, 8, 4, 0]);
     callInstanceMethod(r, 'setSeed', [javaInt(42)], ctx);
-    expect(seed()).toEqual({ kind: 'primitive', javaType: 'long', value: Number(42n ^ 0x5DEECE66Dn) });
+    expect(seed()).toEqual({ kind: 'primitive', javaType: 'long', value: 42n ^ 0x5DEECE66Dn });
     expect(num(callInstanceMethod(r, 'nextInt', [javaInt(10)], ctx))).toBe(0);
   });
 });
