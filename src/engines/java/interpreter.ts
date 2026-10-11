@@ -16,6 +16,7 @@ import type {
   RuntimeValue,
   RunError,
 } from '../../types/snapshot';
+import { SnapshotSharer } from '../../utils/snapshotSharing';
 import {
   type CstNode,
   type CstToken,
@@ -375,6 +376,8 @@ export class JavaInterpreter {
   private suppressSnapshots = 0;
   /** Parsed primary-expression chains, per CST node. */
   private chainCache = new WeakMap<CstNode, PrimaryChain>();
+  /** Makes each step share what didn't change with the steps before it (#18). */
+  private sharer = new SnapshotSharer();
 
   constructor(stdin: string = '', limits: Partial<RunLimits> = {}) {
     this.stdin = stdin;
@@ -1066,13 +1069,13 @@ export class JavaInterpreter {
       }
     }
 
-    this.snapshots.push({
+    this.snapshots.push(this.sharer.share({
       step: this.step++,
       line,
       callStack,
       heap: this.reachableHeap(callStack),
       stdout: this.snapshotStdout(),
-    });
+    }));
   }
 
   /** A scope's variables as a step shows them: without `this` (a frame shows it apart) and locals that have no value yet. */

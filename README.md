@@ -123,6 +123,7 @@ Checks that fail today are listed in `known-failures.json`, each with the roadma
 | Check goldens are current, writing nothing | `npm run test:java:golden -- --check` |
 | See every difference from real Java, case by case | `npx tsx scripts/java-diff.ts [filter]` |
 | Print each step's frames and heap | `npx tsx scripts/java-viz.ts <case id \| file.java \| example:slug> [--final]` |
+| Measure snapshot size and time | `npx tsx scripts/java-payload.ts [--quick]` |
 
 ---
 
@@ -207,7 +208,7 @@ src/
 .env.java                       # Java build branding (VITE_APP_NAME=JavaTutor, etc.)
 viewer.html                     # HTML entry for the viewer-<lang> build (contains the __EXAMPLES__ placeholder)
 vite.config.ts                  # Build config — mode-based outDir + language targeting + singlefile viewer mode
-scripts/                        # Dev tools, run with tsx: java-golden.ts (JDK goldens), java-diff.ts, java-viz.ts
+scripts/                        # Dev tools, run with tsx: java-golden.ts (JDK goldens), java-diff.ts, java-viz.ts, java-payload.ts
 ```
 
 ---
@@ -227,6 +228,8 @@ scripts/                        # Dev tools, run with tsx: java-golden.ts (JDK g
 The Java engine is a teaching-oriented subset, not a full JVM. Generic type parameters parse but are not enforced. It does not currently support inheritance (other than a class extending a library exception), enums, records, lambdas and method references, anonymous, local and inner classes that use their enclosing object, interface default methods, access control, overloaded constructor/method resolution beyond argument counts, file/network I/O, threads, or reflection. These stop the program with an "isn't supported in JavaTutor yet" message that names the line. (Multiple top-level classes, interfaces, and `try`/`catch` exceptions *are* supported.) Its standard library is an emulated subset (the classes listed above), not the real JDK — unsupported methods raise an `Unknown method` error.
 
 **A run that ends early keeps its steps** — in all three engines, an uncaught exception, the 5,000-step cap or the time budget ends the run but keeps every step recorded so far. The error shows at the last step: a banner with the line (marked in the editor), and what the program printed to stderr (a Java stack trace, a Python traceback) in the console. Java also records a step where a runtime exception such as `/ by zero` starts, so a caught one shows the method that threw it. A deep Java recursion becomes a catchable `StackOverflowError`, and an internal engine failure is reported without JavaScript text. Only a parse error, or code that runs 10 seconds without yielding, produces no steps.
+
+**Steps share what didn't change** — consecutive snapshots reuse every frame, variable, heap object and output line that is unchanged (`src/utils/snapshotSharing.ts`), so a run costs what changes at each step rather than the whole heap again. The Java engine shares as it records, so its worker sends far less (an insertion sort of 300 ints: 75 MB before, 2.3 MB now); the store shares the steps of every engine, which cuts what JS and Python runs keep in memory.
 
 **What a Java step shows** — the frames and heap show the program's real state:
 - **Static fields** appear in a "Static fields" frame before `main`'s, as `Main.moves`. A class's static fields appear when the class is initialized, at its first use, as in Java.

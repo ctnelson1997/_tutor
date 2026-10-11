@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { ExecutionSnapshot, RunError } from '../types/snapshot';
 import type { LanguageId } from '../types/engine';
 import { branding } from '../config/branding';
+import { shareSnapshots } from '../utils/snapshotSharing';
 
 export interface TutorState {
   // ── Language ──
@@ -90,7 +91,8 @@ export const useStore = create<TutorState>((set, get) => ({
 
   // ── Actions ──
   // Clears the error: a run that stopped early sets its snapshots first, then its error.
-  setSnapshots: (snapshots) => set({ snapshots, currentStep: 0, error: null }),
+  // Consecutive steps share their unchanged parts, so memory grows with what changes, not with the heap (#18).
+  setSnapshots: (snapshots) => set({ snapshots: shareSnapshots(snapshots), currentStep: 0, error: null }),
 
   setCurrentStep: (step) => {
     const { snapshots } = get();
