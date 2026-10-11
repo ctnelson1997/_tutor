@@ -39,6 +39,11 @@ export interface StdlibContext {
    * qualifying library exception classes only.
    */
   binaryName?(className: string): string;
+  /**
+   * A value as String.valueOf renders it, using a user class's own toString()
+   * (for %s and String.valueOf). Without it, the library's rendering is used.
+   */
+  stringify?(value: JavaValue): string;
 }
 
 /**

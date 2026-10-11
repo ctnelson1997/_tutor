@@ -381,7 +381,7 @@ export function rint(x: number): number {
 }
 
 /** Decimal digits d1 d2 … dn (no trailing zeros) and an exponent e: the value d1.d2…dn × 10^e. */
-interface Decimal {
+export interface Decimal {
   digits: string;
   exponent: number;
 }
@@ -406,11 +406,11 @@ function decimalValue(d: Decimal): number {
 
 /**
  * Of the two decimals with `length` significant digits on either side of the
- * exact value, the one that rounds back to the float `f`, or when both do,
- * the closer (on a tie, the one with an even last digit). Undefined when
- * neither rounds back.
+ * exact value, the one that rounds back (`roundsBack`), or when both do, the
+ * closer (on a tie, the one with an even last digit). Undefined when neither
+ * rounds back.
  */
-function closestFloatDecimal(exact: Decimal, length: number, f: number): Decimal | undefined {
+function closestDecimal(exact: Decimal, length: number, roundsBack: (value: number) => boolean): Decimal | undefined {
   if (exact.digits.length <= length) return exact;
   const below = BigInt(exact.digits.slice(0, length));
   const rest = exact.digits.slice(length);
@@ -419,7 +419,7 @@ function closestFloatDecimal(exact: Decimal, length: number, f: number): Decimal
     return { digits: text.replace(/0+$/, ''), exponent: exact.exponent + (text.length > length ? 1 : 0) };
   };
   const down = make(below), up = make(below + 1n);
-  const downOk = Math.fround(decimalValue(down)) === f, upOk = Math.fround(decimalValue(up)) === f;
+  const downOk = roundsBack(decimalValue(down)), upOk = roundsBack(decimalValue(up));
   if (downOk && upOk) {
     // How the exact value's remaining digits compare with half a unit of the last digit kept.
     const half = rest[0] !== '5' ? (rest[0] > '5' ? 1 : -1) : /[1-9]/.test(rest.slice(1)) ? 1 : 0;
@@ -437,11 +437,26 @@ function closestFloatDecimal(exact: Decimal, length: number, f: number): Decimal
  */
 function shortestFloat(f: number): Decimal {
   const exact = exactDecimal(f);
+  const roundsBack = (value: number) => Math.fround(value) === f;
   for (let length = 1; length <= 9; length++) {
-    const best = closestFloatDecimal(exact, length, f);
-    if (best) return length === 1 ? closestFloatDecimal(exact, 2, f) ?? best : best;
+    const best = closestDecimal(exact, length, roundsBack);
+    if (best) return length === 1 ? closestDecimal(exact, 2, roundsBack) ?? best : best;
   }
   return exact; // not reached: 9 significant digits always round-trip a float
+}
+
+/**
+ * The decimal Double.toString chooses for the positive finite double `x`
+ * (JDK 19 and later), by the same rule as shortestFloat. V8's shortest
+ * round-trip digits are already the closest of the shortest, so only a
+ * one-digit result needs work: two-digit decimals compete with it, which is
+ * why Double.MIN_VALUE prints as 4.9E-324 rather than 5.0E-324.
+ */
+export function shortestDouble(x: number): Decimal {
+  const [mantissa, exponent] = x.toExponential().split('e');
+  const shortest = { digits: mantissa.replace('.', ''), exponent: Number(exponent) };
+  if (shortest.digits.length > 1) return shortest;
+  return closestDecimal(exactDecimal(x), 2, value => value === x) ?? shortest;
 }
 
 /**
@@ -455,6 +470,16 @@ export function javaDecimalLayout(digits: string, exponent: number): string {
   if (exponent < 0) return `0.${'0'.repeat(-exponent - 1)}${digits}`;
   const integer = digits.slice(0, exponent + 1).padEnd(exponent + 1, '0');
   return `${integer}.${digits.slice(exponent + 1) || '0'}`;
+}
+
+/** Double.toString: `0.1`, `5.0`, `1.0E7`, `1.23456789E8`, `4.9E-324`, `NaN`. */
+export function doubleToString(d: number): string {
+  if (d !== d) return 'NaN';
+  if (d === Infinity) return 'Infinity';
+  if (d === -Infinity) return '-Infinity';
+  if (d === 0) return Object.is(d, -0) ? '-0.0' : '0.0';
+  const { digits, exponent } = shortestDouble(Math.abs(d));
+  return (d < 0 ? '-' : '') + javaDecimalLayout(digits, exponent);
 }
 
 /** Float.toString: `3.3000002`, `0.3`, `1.0E10`, `NaN`. */

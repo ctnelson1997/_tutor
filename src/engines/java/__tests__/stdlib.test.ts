@@ -84,6 +84,71 @@ describe('javaFormat', () => {
     expect(javaFormat('%d%%%n', [javaInt(50)], H)).toBe('50%\n');
     expect(javaFormat('%s=%d', [javaString('x'), javaInt(7)], H)).toBe('x=7');
   });
+
+  // Expected values below were checked against JDK 21 (#19).
+  it('rounds half up from the digits Double.toString prints', () => {
+    const f = (fmt: string, x: number) => javaFormat(fmt, [javaDouble(x)], H);
+    expect(f('%.1f', 0.15)).toBe('0.2');
+    expect(f('%.2f', 1.005)).toBe('1.01');
+    expect(f('%.2f', 2.675)).toBe('2.68');
+    expect(['%.0f', '%.0f', '%.0f'].map((fmt, i) => f(fmt, [0.5, 1.5, 2.5][i]))).toEqual(['1', '2', '3']);
+    expect(f('%.20f', 0.1)).toBe('0.10000000000000000000');
+    expect(f('%.2f', 1e20)).toBe('100000000000000000000.00');
+    expect(f('%.3f', 1e-7)).toBe('0.000');
+  });
+
+  it('writes %e with two exponent digits, and %g in decimal or scientific notation by magnitude', () => {
+    const f = (fmt: string, x: number) => javaFormat(fmt, [javaDouble(x)], H);
+    expect(f('%e', 12.3456)).toBe('1.234560e+01');
+    expect(f('%.2e', 0.000123456)).toBe('1.23e-04');
+    expect(f('%e', 0)).toBe('0.000000e+00');
+    expect(f('%.0e', 5.5)).toBe('6e+00');
+    expect(f('%.3e', 9.9995)).toBe('1.000e+01');
+    expect(f('%E', 1e100)).toBe('1.000000E+100');
+    expect(f('%g', 0)).toBe('0.00000');
+    expect(f('%g', 123456)).toBe('123456');
+    expect(f('%g', 1234567)).toBe('1.23457e+06');
+    expect(f('%g', 0.0001)).toBe('0.000100000');
+    expect(f('%g', 0.00001234)).toBe('1.23400e-05');
+    expect(f('%.0g', 12.5)).toBe('1e+01');
+    expect(f('%G', 1e-10)).toBe('1.00000E-10');
+  });
+
+  it('applies the sign, grouping, padding and parenthesis flags', () => {
+    const f = (fmt: string, x: number) => javaFormat(fmt, [javaDouble(x)], H);
+    expect(f('%+.2f', 2.5)).toBe('+2.50');
+    expect(f('% .2f', 2.5)).toBe(' 2.50');
+    expect(f('%08.2f', -3.14159)).toBe('-0003.14');
+    expect(f('%,.2f', 1234567.891)).toBe('1,234,567.89');
+    expect(f('%(.2f', -2.5)).toBe('(2.50)');
+    expect(f('%-10.2f|', Math.PI)).toBe('3.14      |');
+    expect(f('%.2f', -0)).toBe('-0.00');
+    expect(f('%f', NaN)).toBe('NaN');
+    expect(f('%8.2f|', Infinity)).toBe('Infinity|');
+    expect(f('%.2f', -Infinity)).toBe('-Infinity');
+    expect(javaFormat('%05d', [javaInt(-42)], H)).toBe('-0042');
+    expect(javaFormat('%,d', [{ kind: 'primitive', javaType: 'long', value: -1234567890123n }], H)).toBe('-1,234,567,890,123');
+  });
+
+  it("throws Java's exceptions for a bad argument or specifier", () => {
+    expect(() => javaFormat('%d', [javaDouble(3.5)], H)).toThrow('IllegalFormatConversionException: d != java.lang.Double');
+    expect(() => javaFormat('%f', [javaInt(3)], H)).toThrow('IllegalFormatConversionException: f != java.lang.Integer');
+    expect(() => javaFormat('%d', [javaChar(99)], H)).toThrow('IllegalFormatConversionException: d != java.lang.Character');
+    expect(() => javaFormat('%c', [javaString('s')], H)).toThrow('IllegalFormatConversionException: c != java.lang.String');
+    expect(() => javaFormat('%d %d', [javaInt(1)], H)).toThrow("MissingFormatArgumentException: Format specifier '%d'");
+    expect(() => javaFormat('%q', [javaInt(1)], H)).toThrow("UnknownFormatConversionException: Conversion = 'q'");
+    expect(() => javaFormat('%5.2d', [javaInt(3)], H)).toThrow('IllegalFormatPrecisionException: 2');
+  });
+
+  it('renders %s with the given stringify, and takes an Object[] as the arguments', () => {
+    expect(javaFormat('p=%s', [javaInt(1)], H, () => '(1, 2)')).toBe('p=(1, 2)');
+    expect(javaFormat('%S|%.2s', [javaString('hi'), javaString('hello')], H)).toBe('HI|he');
+    expect(javaFormat('%h', [javaString('hi')], H)).toBe('d01');
+    const ctx = makeCtx();
+    const objects = arrRef(ctx, [javaString('a'), javaInt(7)]);
+    expect(javaFormat('%s %d %1$s', [objects], ctx.heap)).toBe('a 7 a');
+    expect(javaFormat('%s', [arrRef(ctx, [javaInt(1)], 'int')], ctx.heap)).toMatch(/^\[I@[0-9a-f]{8}$/); // an int[] is one argument
+  });
 });
 
 describe('getStaticField', () => {
@@ -129,9 +194,9 @@ describe('callStaticMethod — Arrays / Objects / Collections', () => {
     const a = arrRef(ctx, [javaInt(3), javaInt(1), javaInt(2)], 'int');
     expect(javaValueToString(callStaticMethod('Arrays', 'toString', [a], ctx)!, ctx.heap)).toBe('[3, 1, 2]');
     callStaticMethod('Arrays', 'sort', [a], ctx);
-    expect(javaValueToString(a, ctx.heap)).toBe('[1, 2, 3]');
+    expect(javaValueToString(callStaticMethod('Arrays', 'toString', [a], ctx)!, ctx.heap)).toBe('[1, 2, 3]');
     const copy = callStaticMethod('Arrays', 'copyOf', [a, javaInt(5)], ctx)!;
-    expect(javaValueToString(copy, ctx.heap)).toBe('[1, 2, 3, 0, 0]');
+    expect(javaValueToString(callStaticMethod('Arrays', 'toString', [copy], ctx)!, ctx.heap)).toBe('[1, 2, 3, 0, 0]');
   });
   it('Objects.equals / hash / requireNonNull', () => {
     const ctx = makeCtx();
@@ -310,7 +375,9 @@ function userObject(ctx: StdlibContext, className: string): JavaValue {
   return { kind: 'objectRef', heapId, className };
 }
 const byLength = (ctx: StdlibContext): JavaValue => userObject(ctx, 'ByLength');
-const strings = (ctx: StdlibContext, v: JavaValue | undefined) => javaValueToString(v!, ctx.heap);
+/** A list's or an array's contents, as Java prints a list (an array itself prints its identity). */
+const strings = (ctx: StdlibContext, v: JavaValue | undefined) =>
+  javaValueToString(v!.kind === 'arrayRef' ? callStaticMethod('Arrays', 'toString', [v!], ctx)! : v!, ctx.heap);
 const list = (ctx: StdlibContext, words: string[]) => newBuiltin('ArrayList', [arrRef(ctx, words.map(javaString))], ctx)!;
 
 describe('comparators', () => {

@@ -130,10 +130,6 @@
       "issues": [15],
       "reason": "array.clone() is unsupported (Unknown method)"
     },
-    "core/array-print-direct": {
-      "issues": [19],
-      "reason": "println(char[]) prints [h, i] instead of the characters"
-    },
     "core/boxed-methods": {
       "issues": [20],
       "reason": "methods on boxed values (Integer.compareTo, Double.intValue) are unsupported"
@@ -145,10 +141,6 @@
     "core/integer-cache": {
       "issues": [13, 20],
       "reason": "Integer == ignores the -128..127 cache; Integer.equals is unsupported"
-    },
-    "core/num-double-printing": {
-      "issues": [19],
-      "reason": "doubles print without Java's scientific notation (1.0E7)"
     },
     "core/num-ternary-promotion": {
       "issues": [13],
@@ -182,14 +174,6 @@
       "issues": [20],
       "reason": "new String(...) is rejected; strings have no identity yet"
     },
-    "core/string-format-rounding": {
-      "issues": [19],
-      "reason": "String.format rounds with JavaScript's toFixed and prints e+1 for %e"
-    },
-    "core/string-format-user-toString": {
-      "issues": [19],
-      "reason": "%s ignores the argument's toString()"
-    },
     "core/string-hashCode": {
       "issues": [20],
       "reason": "String.hashCode() is unsupported"
@@ -205,10 +189,6 @@
     "extra/boxed-identity-eq": {
       "issues": [13],
       "reason": "Integer == compares values, ignoring the -128..127 cache"
-    },
-    "extra/println-int-array": {
-      "issues": [19],
-      "reason": "\"\" + intArray gives [1, 2, 3] instead of an identity string like [I@1b6d3586"
     },
     "extra/string-builder-identity": {
       "issues": [20],

@@ -71,6 +71,44 @@ describe('shipped examples draw user classes as objects with their declared fiel
   });
 });
 
+describe('printing arrays and objects (#19)', () => {
+  it('prints identity strings as Object.toString does, and a char[] as its characters', () => {
+    const result = run(`public class Main {
+  static class Pt { int x; }
+  public static void main(String[] args) {
+    int[] a = {1, 2};
+    char[] cs = {'h', 'i'};
+    System.out.println("" + a);
+    System.out.println(new Pt[1]);
+    System.out.println(new Pt());
+    System.out.println(new String[2][2]);
+    System.out.println(new Object());
+    System.out.println(cs);
+    System.out.println(String.valueOf(cs) + new StringBuilder().append(cs));
+    System.out.println(("" + a).equals("" + a));
+  }
+}`);
+    const [array, pts, pt, grid, object, chars, both, stable] = result.stdout.split('\n');
+    expect(array).toMatch(/^\[I@[0-9a-f]{8}$/);
+    expect(pts).toMatch(/^\[LMain\$Pt;@[0-9a-f]{8}$/);
+    expect(pt).toMatch(/^Main\$Pt@[0-9a-f]{8}$/);
+    expect(grid).toMatch(/^\[\[Ljava\.lang\.String;@[0-9a-f]{8}$/);
+    expect(object).toMatch(/^java\.lang\.Object@[0-9a-f]{8}$/);
+    expect([chars, both, stable]).toEqual(['hi', 'hihi', 'true']);
+  });
+
+  it("formats %s with the object's own toString()", () => {
+    const result = run(`public class Main {
+  static class Pt { public String toString() { return "(1, 2)"; } }
+  public static void main(String[] args) {
+    System.out.printf("p=%s%n", new Pt());
+    System.out.println(String.format("%s", new Pt()) + String.valueOf(new Pt()));
+  }
+}`);
+    expect(result.stdout).toBe('p=(1, 2)\n(1, 2)(1, 2)');
+  });
+});
+
 describe('a user class named after a library class', () => {
   it('is drawn as an object, and its own methods run', () => {
     const source = `public class Main {
@@ -105,7 +143,7 @@ describe('a user class named after a library class', () => {
   }
   public static void main(String[] args) {
     HashMap m = new HashMap();
-    System.out.println(String.valueOf(m).startsWith("HashMap@"));
+    System.out.println(String.valueOf(m).startsWith("Main$HashMap@"));
     StringBuilder sb = new StringBuilder();
     sb.append("a").append("b");
     System.out.println(sb.text);

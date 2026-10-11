@@ -346,9 +346,13 @@ function stringStatic(method: string, args: JavaValue[], ctx: StdlibContext): Ja
   switch (method) {
     case 'format': {
       const fmt = javaValueToString(args[0], ctx.heap);
-      return javaString(javaFormat(fmt, args.slice(1), ctx.heap));
+      return javaString(javaFormat(fmt, args.slice(1), ctx.heap, ctx.stringify));
     }
-    case 'valueOf': return javaString(args.length > 0 ? javaValueToString(args[0], ctx.heap) : 'null');
+    case 'valueOf': case 'copyValueOf': {
+      if (args.length === 0) return javaString('null');
+      const chars = charArrayText(args[0], ctx); // String.valueOf(char[]) is the characters
+      return javaString(chars ?? (ctx.stringify ? ctx.stringify(args[0]) : javaValueToString(args[0], ctx.heap)));
+    }
     case 'join': {
       const delim = javaValueToString(args[0], ctx.heap);
       const rest = args.slice(1);
@@ -365,6 +369,14 @@ function stringStatic(method: string, args: JavaValue[], ctx: StdlibContext): Ja
     }
   }
   return undefined;
+}
+
+/** The characters of a char[], or undefined for any other value. */
+export function charArrayText(value: JavaValue | undefined, ctx: Pick<StdlibContext, 'heap'>): string | undefined {
+  if (value?.kind !== 'arrayRef') return undefined;
+  const arr = ctx.heap.get(value.heapId);
+  if (!arr || !isJavaArray(arr) || arr.elementType !== 'char') return undefined;
+  return arr.elements.map(c => String.fromCharCode(javaValueToNumber(c))).join('');
 }
 
 function systemMethod(method: string, args: JavaValue[], ctx: StdlibContext): JavaValue | undefined {

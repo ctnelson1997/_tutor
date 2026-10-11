@@ -5,7 +5,7 @@
  * objects/arrays are stored on a heap and referenced by ID.
  */
 
-import { floatToString } from './numeric';
+import { floatToString, doubleToString } from './numeric';
 
 export type JavaPrimitiveType = 'int' | 'double' | 'boolean' | 'char' | 'long' | 'float' | 'byte' | 'short';
 export type JavaType = JavaPrimitiveType | 'String' | 'void' | 'null' | string; // string for class names
@@ -108,27 +108,52 @@ export function javaValueToBoolean(val: JavaValue): boolean {
   return true;
 }
 
+/**
+ * A stable stand-in for System.identityHashCode, which Object.toString and an
+ * array's toString print in hex (`[I@1b6d3586`). Java's is arbitrary, so any
+ * value will do; this one depends only on the heap id, so a program prints
+ * the same thing every run.
+ */
+export function identityHash(heapId: string): string {
+  // A positive 31-bit value, as Java's is, with eight hex digits.
+  return (((Math.imul(Number(heapId) + 1, 0x9e3779b1) >>> 1) | 0x10000000) >>> 0).toString(16);
+}
+
+const JAVA_LANG = new Set(['Object', 'String', 'Integer', 'Long', 'Short', 'Byte', 'Double', 'Float', 'Character', 'Boolean', 'Number', 'StringBuilder', 'StringBuffer', 'CharSequence', 'Comparable', 'Iterable']);
+const JAVA_UTIL = new Set(['ArrayList', 'LinkedList', 'Vector', 'Stack', 'ArrayDeque', 'PriorityQueue', 'HashSet', 'LinkedHashSet', 'TreeSet', 'HashMap', 'LinkedHashMap', 'TreeMap', 'List', 'Set', 'Map', 'Queue', 'Deque', 'Collection', 'Scanner', 'Random', 'Iterator', 'Comparator']);
+
+/** A library class's full name, `java.lang.String`; any other name is returned as it is. */
+export function qualifiedLibraryName(name: string): string {
+  return JAVA_LANG.has(name) ? `java.lang.${name}` : JAVA_UTIL.has(name) ? `java.util.${name}` : name;
+}
+
+const DESCRIPTORS: Record<string, string> = { int: 'I', long: 'J', double: 'D', float: 'F', char: 'C', byte: 'B', short: 'S', boolean: 'Z' };
+
+/**
+ * The name Class.getName() gives an array type, which its toString prints:
+ * `[I`, `[[D`, `[Ljava.lang.String;`. `className` names an element class.
+ */
+export function arrayClassName(elementType: string, className: (name: string) => string = qualifiedLibraryName): string {
+  if (elementType.endsWith('[]')) return '[' + arrayClassName(elementType.slice(0, -2), className);
+  return DESCRIPTORS[elementType] ? `[${DESCRIPTORS[elementType]}` : `[L${className(elementType)};`;
+}
+
 export function javaValueToString(val: JavaValue, heap: Map<string, JavaHeapEntry>): string {
   switch (val.kind) {
     case 'primitive':
       if (val.javaType === 'char') return String.fromCharCode(val.value as number);
       if (val.javaType === 'boolean') return val.value ? 'true' : 'false';
       if (val.javaType === 'float') return floatToString(val.value as number);
-      if (val.javaType === 'double') {
-        const n = val.value as number;
-        if (Object.is(n, -0)) return '-0.0';
-        return Number.isInteger(n) ? n + '.0' : String(n);
-      }
+      if (val.javaType === 'double') return doubleToString(val.value as number);
       return String(val.value); // a long's bigint prints without an n
     case 'string':
       return val.value;
     case 'null':
       return 'null';
     case 'arrayRef': {
+      // An array prints its identity, as Object.toString does: [I@1b6d3586.
       const arr = heap.get(val.heapId);
-      if (!arr || !isJavaArray(arr)) return 'null';
-      const elems = arr.elements.map(e => javaValueToString(e, heap));
-      return '[' + elems.join(', ') + ']';
+      return `${arr && isJavaArray(arr) ? arrayClassName(arr.elementType) : '[Ljava.lang.Object;'}@${identityHash(val.heapId)}`;
     }
     case 'objectRef': {
       const obj = heap.get(val.heapId);
@@ -164,7 +189,7 @@ export function javaValueToString(val: JavaValue, heap: Map<string, JavaHeapEntr
           }
         }
       }
-      return val.className + '@' + val.heapId;
+      return `${isBuiltinObject(obj) ? qualifiedLibraryName(val.className) : val.className}@${identityHash(val.heapId)}`;
     }
   }
 }

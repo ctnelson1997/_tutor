@@ -6,7 +6,7 @@
 
 export type { StdlibContext } from './context';
 export { HaltSignal, StdlibError } from './context';
-export { callStaticMethod, getStaticField } from './statics';
+export { callStaticMethod, getStaticField, charArrayText } from './statics';
 export { javaFormat } from './format';
 export {
   newBuiltin,

@@ -21,6 +21,7 @@ import {
   parseIntegerText,
   rint,
   floatToString,
+  doubleToString,
   javaDecimalLayout,
   INT_MIN,
   INT_MAX,
@@ -269,6 +270,16 @@ describe('floating point', () => {
     expect(floatToString(16777216)).toBe('1.6777216E7');
     expect(floatToString(f(-2.5))).toBe('-2.5');
     expect(['NaN', 'Infinity', '-Infinity', '0.0', '-0.0']).toEqual([NaN, Infinity, -Infinity, 0, -0].map(floatToString));
+  });
+
+  it('prints doubles as Double.toString does (JDK 21, #19)', () => {
+    const cases: [number, string][] = [
+      [1e7, '1.0E7'], [123456789, '1.23456789E8'], [0.0001, '1.0E-4'], [1e21, '1.0E21'], [1500000 * 12, '1.8E7'],
+      [5e-324, '4.9E-324'], [1.7976931348623157e308, '1.7976931348623157E308'], [100, '100.0'], [0.001, '0.001'],
+      [9999999, '9999999.0'], [0.1 + 0.2, '0.30000000000000004'], [1e-300, '1.0E-300'], [2e23, '2.0E23'], [-2.5, '-2.5'],
+    ];
+    for (const [d, java] of cases) expect(doubleToString(d), java).toBe(java);
+    expect([NaN, Infinity, -Infinity, 0, -0].map(doubleToString)).toEqual(['NaN', 'Infinity', '-Infinity', '0.0', '-0.0']);
   });
 
   it('picks the closest of the shortest decimals, ties to even, and lets two digits compete with one', () => {

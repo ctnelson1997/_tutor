@@ -55,6 +55,9 @@ import {
   isJavaArray,
   isBuiltinObject,
   isJavaObject,
+  identityHash,
+  arrayClassName,
+  qualifiedLibraryName,
   defaultValue,
   javaValueToNumber,
   javaValueToBoolean,
@@ -77,6 +80,7 @@ import {
   callInstanceMethod,
   getIterableElements,
   scannerRemaining,
+  charArrayText,
   LIST_LIKE,
   SET_LIKE,
   MAP_LIKE,
@@ -392,6 +396,7 @@ export class JavaInterpreter {
       writeStdout: (text) => this.appendStdout(text),
       invokeUserMethod: (ref, name, args) => this.invokeUser(ref, name, args),
       binaryName: (className) => this.binaryName(className),
+      stringify: (value) => this.stringify(value),
     };
   }
 
@@ -422,6 +427,11 @@ export class JavaInterpreter {
     return info.outer ? `${this.binaryName(info.outer)}$${className}` : className;
   }
 
+/** The full name Java gives a class: `Main$Point`, `java.lang.String`, `java.util.ArrayList`. */
+  private javaClassName(className: string): string {
+    return this.classes.has(className) ? this.binaryName(className) : qualifiedLibraryName(className);
+  }
+
   /** Is this value an exception object (a library exception, or a user class extending one)? */
   private isThrowable(value: JavaValue): boolean {
     return value.kind === 'objectRef' && this.isSubclass(value.className, 'Throwable');
@@ -443,8 +453,8 @@ export class JavaInterpreter {
           const exc = formatException(value, this.heap, this.ctx.binaryName);
           if (exc !== undefined) return exc;
         }
-        // A user class named HashMap or Stack prints as HashMap@id, not as a collection.
-        if (!obj.builtin) return javaValueToString(value, this.heap);
+        // A user class without toString() prints as Main$Point@1b6d3586 (a class named HashMap too, not as a map).
+        if (!obj.builtin) return `${this.binaryName(value.className)}@${identityHash(value.heapId)}`;
         // Maps: {k=v, ...} — recurse via stringify so element toString() is honored.
         const keysRef = obj.fields.get('__keys__'), valuesRef = obj.fields.get('__values__');
         if (keysRef?.kind === 'arrayRef' && valuesRef?.kind === 'arrayRef') {
@@ -460,6 +470,11 @@ export class JavaInterpreter {
           if (d && isJavaArray(d)) return '[' + d.elements.map(e => this.stringify(e)).join(', ') + ']';
         }
       }
+    }
+    if (value.kind === 'arrayRef') {
+      // An array prints its identity: [I@1b6d3586, [LMain$Point;@4554617c.
+      const arr = this.heap.get(value.heapId);
+      if (arr && isJavaArray(arr)) return `${arrayClassName(arr.elementType, name => this.javaClassName(name))}@${identityHash(value.heapId)}`;
     }
     return javaValueToString(value, this.heap);
   }
@@ -2911,16 +2926,17 @@ export class JavaInterpreter {
   /** System.out and System.err. Both write to the one console for now (stderr is #22). */
   private printStreamMethod(name: string, args: JavaValue[], receiverText: string, line: number): JavaValue {
     switch (name) {
+      // print(char[]) and println(char[]) print the characters; any other array prints its identity.
       case 'println':
-        this.appendStdout((args.length > 0 ? this.stringify(args[0]) : '') + '\n');
+        this.appendStdout((args.length > 0 ? charArrayText(args[0], this.ctx) ?? this.stringify(args[0]) : '') + '\n');
         return javaNull();
       case 'print':
-        this.appendStdout(args.length > 0 ? this.stringify(args[0]) : '');
+        this.appendStdout(args.length > 0 ? charArrayText(args[0], this.ctx) ?? this.stringify(args[0]) : '');
         return javaNull();
       case 'printf':
       case 'format': {
         const fmt = args.length > 0 ? javaValueToString(args[0], this.heap) : '';
-        this.appendStdout(this.stdlib(line, () => javaFormat(fmt, args.slice(1), this.heap)));
+        this.appendStdout(this.stdlib(line, () => javaFormat(fmt, args.slice(1), this.heap, v => this.stringify(v))));
         return javaNull();
       }
       case 'flush':
@@ -3297,8 +3313,8 @@ export class JavaInterpreter {
     const curStr = cur && cur.kind === 'string' ? cur.value : '';
     switch (method) {
       case 'append': {
-        // String.valueOf(arg): an object's own toString() is used.
-        const next = curStr + (args.length > 0 ? this.stringify(args[0]) : '');
+        // String.valueOf(arg): an object's own toString() is used, and a char[]'s characters.
+        const next = curStr + (args.length > 0 ? charArrayText(args[0], this.ctx) ?? this.stringify(args[0]) : '');
         obj.fields.set('value', javaString(next));
         return ref; // append returns the builder for chaining
       }
