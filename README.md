@@ -151,7 +151,8 @@ src/
 │   │   └── security.ts         # Suspicious code pattern detection
 │   └── java/                   # Java engine (AST-walking interpreter)
 │       ├── index.ts            # LanguageEngine implementation
-│       ├── interpreter.ts      # CST-walking interpreter (~3700 lines, the core engine)
+│       ├── interpreter.ts      # CST-walking interpreter (~3800 lines, the current core engine; being replaced)
+│       ├── ast/                # The new core's Java AST: node types, CST → AST conversion, printer (#12)
 │       ├── references.ts       # Reference model: assignable variables (locals, fields, statics, array elements)
 │       ├── numeric.ts          # Java arithmetic: promotion, conversions, operators, exact long, float, Float.toString
 │       ├── literals.ts         # Literal values: numbers (hex/octal/binary, L/f suffixes), strings, chars, text blocks
