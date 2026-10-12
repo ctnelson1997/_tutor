@@ -153,6 +153,7 @@ src/
 │       ├── index.ts            # LanguageEngine implementation
 │       ├── interpreter.ts      # CST-walking interpreter (~3800 lines, the current core engine; being replaced)
 │       ├── ast/                # The new core's Java AST: node types, CST → AST conversion, printer (#12)
+│       ├── semantic/           # The new core's binder: library stubs, static types, name resolution, overloads (#13)
 │       ├── references.ts       # Reference model: assignable variables (locals, fields, statics, array elements)
 │       ├── numeric.ts          # Java arithmetic: promotion, conversions, operators, exact long, float, Float.toString
 │       ├── literals.ts         # Literal values: numbers (hex/octal/binary, L/f suffixes), strings, chars, text blocks

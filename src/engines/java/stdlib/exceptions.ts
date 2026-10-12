@@ -79,6 +79,11 @@ const EXCEPTION_PACKAGE: Record<string, string> = {
  * The name Throwable.toString() prints for a library exception class, with
  * its package: `java.lang.ArithmeticException`, `java.util.NoSuchElementException`.
  */
+/** The package of a library exception class: java.lang unless listed. */
+export function exceptionPackage(name: string): string {
+  return EXCEPTION_PACKAGE[name] ?? 'java.lang';
+}
+
 export function qualifiedExceptionName(name: string): string {
   return isExceptionClass(name) ? `${EXCEPTION_PACKAGE[name] ?? 'java.lang'}.${name}` : name;
 }
