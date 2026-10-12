@@ -1,0 +1,8 @@
+{
+  "stdout": "NPE caught\nNPE 2\nRTE\njava.lang.NumberFormatException: For input string: \"12abc\"\njava.util.InputMismatchException\njava.lang.IllegalStateException: bad state\nout1\nout2\ndone\n",
+  "stderr": "err1\njava.lang.IllegalArgumentException: boom\n\tat Main.main(Main.java:18)\n",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "c4319bfbb7f057766262e146ee313ab22965ac5c963cc55a855f29a4719641fb"
+}

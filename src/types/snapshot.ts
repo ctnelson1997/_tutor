@@ -77,13 +77,26 @@ export interface ColumnRange {
   endCol: number;    // 0-indexed, exclusive
 }
 
+/** A line of the console, and the stream the program wrote it to. */
+export interface ConsoleLine {
+  text: string;
+  stream: 'stdout' | 'stderr';
+}
+
 export interface ExecutionSnapshot {
   step: number;
   line: number;
   columnRange?: ColumnRange;
   callStack: StackFrame[];
   heap: HeapObject[];
+  /** What the program has written to stdout, by line. */
   stdout: string[];
+  /**
+   * The console in program order, stdout and stderr lines interleaved, once
+   * the program has written to stderr (Java's System.err, printStackTrace).
+   * Without it, the console is `stdout`.
+   */
+  console?: ConsoleLine[];
   condition?: ConditionResult;
 }
 

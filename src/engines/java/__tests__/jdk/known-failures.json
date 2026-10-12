@@ -162,14 +162,6 @@
       "issues": [15],
       "reason": "getClass().getSimpleName() is unsupported"
     },
-    "misc/exc-printStackTrace-stream": {
-      "issues": [22],
-      "reason": "printStackTrace() writes to stdout instead of stderr"
-    },
-    "misc/exc-system-err": {
-      "issues": [22],
-      "reason": "System.err output is mixed into stdout"
-    },
     "misc/misc-string-methods-more": {
       "issues": [16],
       "reason": "String.chars() returns a stream, rejected until #16"

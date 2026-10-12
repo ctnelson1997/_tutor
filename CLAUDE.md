@@ -139,7 +139,7 @@ The **dispatcher** at `src/engine/executor.ts` is a thin layer that reads `langu
 
 `{ type: 'error', message, line? }` is only for failures before anything ran: a parse error, the engine failing to load, or the worker's 10-second timeout. The dispatcher sets the snapshots first and then the error, because `setSnapshots` clears `error`. The UI treats an error that has snapshots as belonging to the last step:
 - `EditorPanel` shows the banner (warning-colored for `limit`) and marks `error.line` with `.cm-error-line`.
-- `ConsolePanel` appends `stderr` in red.
+- `ConsolePanel` shows the step's `console` when the program wrote to stderr (stdout and stderr lines in program order, stderr in red; #22), else `stdout`, and appends the uncaught exception's `stderr` in red.
 - `ControlBar` adds a link ("ends with an exception" / "stopped early") that jumps to the last step.
 The labels live in `src/utils/runError.ts`. The console keeps whitespace (`white-space: pre-wrap`), so `printf` padding and stack traces line up.
 
@@ -191,7 +191,7 @@ The full app — engine included — is bundled into the single viewer HTML, so 
 - **Multi-example merge**: users hand-edit the EXAMPLES array of an exported file to append entries from other exports. `ExamplePicker` shows a navbar dropdown when the array has 2+ entries.
 - **Worker inlining**: the Python and Java executors import their workers via `?worker&inline` (`import PyWorker from './worker.ts?worker&inline'`). This causes Vite to serialize the worker as a base64 blob URL inside the singlefile bundle — required for the standalone HTML to run without external chunks. The same import works in the main builds too (just chunked there).
 - **Engine versioning**: the `tutor-engine-version-marker` plugin in [vite.config.ts](vite.config.ts) tags the inlined module `<script>` with `data-tutor-engine="X.Y.Z"` (read from `package.json` at build time), injects `window.__TUTOR_ENGINE_VERSION__=...` at the very top of that script's body, and prepends a multi-line HTML comment with explicit upgrade instructions (download a fresh `viewer-<lang>.html`, replace just the data-tutor-engine script block, EXAMPLES survives). The version is also shown in the viewer's navbar as `engine vX.Y.Z`. The main app's [AppFooter](src/components/AppFooter.tsx) reads the same value via the `__TUTOR_ENGINE_VERSION__` compile-time constant injected by `define`.
-- **Data schema versioning**: `CURRENT_EXAMPLE_SCHEMA_VERSION` in [src/types/viewer.ts](src/types/viewer.ts) is the contract version of the `ViewerExample` shape (currently `2` — `2` added the optional `stdin` field so exported Java `Scanner` programs re-run with their original input; `ExportModal` reads `stdin` from the store and `viewer-main.tsx` restores it). `buildExportHtml` stamps it into every payload; `viewer-main.tsx` compares each example's `schemaVersion` against the constant and passes a `schemaMismatch` flag down to `ViewerApp`, which renders a dismissible warning alert when an example was produced by a newer engine than what's running. Bump the constant when adding required fields to `ViewerExample` or to `ExecutionSnapshot` so previously-exported files can't masquerade as the new shape. The optional `error` field (how the recorded run ended, #7) was added without a bump, since an older viewer still shows the steps; `ExportModal` writes the store's error, and `viewer-main.tsx` / `ExamplePicker` restore it (and `stdin`). A primitive's optional `display` text (#17) came without a bump too: exported snapshots without it render by type.
+- **Data schema versioning**: `CURRENT_EXAMPLE_SCHEMA_VERSION` in [src/types/viewer.ts](src/types/viewer.ts) is the contract version of the `ViewerExample` shape (currently `2` — `2` added the optional `stdin` field so exported Java `Scanner` programs re-run with their original input; `ExportModal` reads `stdin` from the store and `viewer-main.tsx` restores it). `buildExportHtml` stamps it into every payload; `viewer-main.tsx` compares each example's `schemaVersion` against the constant and passes a `schemaMismatch` flag down to `ViewerApp`, which renders a dismissible warning alert when an example was produced by a newer engine than what's running. Bump the constant when adding required fields to `ViewerExample` or to `ExecutionSnapshot` so previously-exported files can't masquerade as the new shape. The optional `error` field (how the recorded run ended, #7) was added without a bump, since an older viewer still shows the steps; `ExportModal` writes the store's error, and `viewer-main.tsx` / `ExamplePicker` restore it (and `stdin`). A primitive's optional `display` text (#17) came without a bump too: exported snapshots without it render by type. So did a snapshot's optional `console` (#22): without it, the console is `stdout`.
 - **Splice safety**: `buildExportHtml` uses `lastIndexOf` to locate the `tutor-examples` script tag, AND assembles the marker strings from concatenated char fragments in source (`'<' + 'script id="tutor-examples">'`). Both guard against the same `exportHtml.ts` source being bundled into the engine: if the regex source or error messages contained the literal marker text, the splice could false-match inside the engine bundle and corrupt it. The `ignores marker strings that appear inside the bundled engine source` test in [exportHtml.test.ts](src/utils/__tests__/exportHtml.test.ts) covers this regression.
 
 ## TypeScript Constraints
@@ -217,7 +217,7 @@ The full app — engine included — is bundled into the single viewer HTML, so 
 | valueDisplay | `src/utils/__tests__/valueDisplay.test.ts` | `primitiveText()`: an engine's `display` text when given (Java's `'B'`, `5.0`), else the rendering by type the JS and Python engines rely on |
 | Share | `src/utils/__tests__/share.test.ts` | `encodeShareCode`/`decodeShareCode` round-trips + `analyzeCode` suspicious pattern detection |
 | Store | `src/store/__tests__/useStore.test.ts` | Zustand actions: step navigation, clamping, reset, error handling, an error set after snapshots (which `setSnapshots` clears), and stored steps sharing their unchanged parts |
-| Snapshot sharing | `src/utils/__tests__/snapshotSharing.test.ts` | `shareSnapshots()` (#18): unchanged frames, variables, heap objects and stdout are the same objects in consecutive steps; the parts next to a change are shared; an object is shared with its last version even after steps without it; a different display, label or ref is a change; sharing changes nothing but identity and is idempotent |
+| Snapshot sharing | `src/utils/__tests__/snapshotSharing.test.ts` | `shareSnapshots()` (#18): unchanged frames, variables, heap objects, stdout and console lines are the same objects in consecutive steps; the parts next to a change are shared; an object is shared with its last version even after steps without it; a different display, label or ref is a change; sharing changes nothing but identity and is idempotent |
 | Java payload | `src/engines/java/__tests__/payload.test.ts` | Snapshot size as postMessage copies it (`v8.serialize`, #18): the insertion sort of 300 ints (5,000 steps) under 5 MB, 1,000 objects in a list under 15 MB, and an array that never changes is one object across every step |
 | Run error labels | `src/utils/__tests__/runError.test.ts` | The error banner titles and step-bar labels for each `RunError` kind |
 | Registry | `src/engines/__tests__/registry.test.ts` | Engine loading, contract validation, branding-store integration |
@@ -232,241 +232,8 @@ The full app — engine included — is bundled into the single viewer HTML, so 
 | Java state | `src/engines/java/__tests__/state.test.ts` | What each step shows of the program's state (#9). Static fields in a first "Static fields" frame at every step (`Main.moves`), pointing at their objects, appearing for another class at its first use with its initializers' values, and no frame without statics. Only reachable objects: the #9 repro ends with one `int[]` and the map, an object disappears once nothing refers to it, objects reached through fields, collections and callers stay in creation order, backing arrays aren't drawn, a constructor's object shows through `this`, a caught exception through its catch parameter. No block variables left after `continue`, `break`, `return` or a caught exception. The step where an exception starts shows its try block, switch block or field initializer. A local without an initializer is hidden until assigned (in any branch), and reading it first is javac's "might not have been initialized"; `var x;` is an error. Blocks labeled `try`/`catch`/`finally`; `this` in `thisArg`. Library objects: a `Scanner`'s remaining input with visible `\n`, an `Iterator`'s collection and cursor, a `Random`'s seed, a library `Comparator`'s order. |
 | Java syntax | `src/engines/java/__tests__/syntax.test.ts` | Syntax coverage (#6). Every construct JavaTutor rejects stops the program with its exact "… isn't supported in JavaTutor yet" message and line: lambdas, method and constructor references, class literals, anonymous classes, nested, top-level and local enums and records, interface default methods, inheritance, local classes and interfaces, annotation types, library classes it lacks, hex float literals, duplicate nested class names, for-each over a user Iterable, and inner classes using their enclosing object. It also checks when a rejection happens (declarations before any step, expressions when reached, finally blocks skipped). And it checks what the steps show: an `instanceof` pattern variable scoped to its `if` (and kept after `if (!(o instanceof T t)) return;`), switch-block scope, `<clinit>` frames for static initializers (lazily for non-entry classes), instance initializers in the constructor's frame without its parameters, `this(…)` as its own frame, `args` bound only when main uses it, no loop scopes left after a labeled break, try-with-resources variables only in the try block, and `assert` taking a step without evaluating. Class initialization order is checked against JDK output. |
 | Java literals | `src/engines/java/__tests__/literals.test.ts` | `literals.ts`: integer literals (decimal, hex, octal, binary, underscores, `L`; every bit for hex, the decimal minimum, too-large values) and floating-point literals (suffixes, out-of-range values), single-pass escapes (octal, Unicode escapes and the even-backslash rule, `\s`, line continuation), string and char literal values, and text block indentation stripping, trailing whitespace and escapes. Expected values from JDK 21. Also `escapeJava`, which `unescapeJava` undoes. |
-| Java strings | `src/engines/java/__tests__/strings.test.ts` | String, StringBuilder and wrapper methods, string identity and Java regexes (#20), checked against JDK 21: `split` as `Pattern.split` (trailing empties, limits, zero-width matches), regex translation and the constructs it rejects, `# CLAUDE.md — Project Instructions for Tutor
-
-## Documentation Policy
-
-When making codebase changes (new engines, scripts, store fields, utilities, architecture, dependencies, etc.), update **README.md** and **CLAUDE.md** in the same commit to keep documentation current. Do not let docs fall out of date.
-
-## What This Is
-
-A **client-side-only** React app that visualizes code execution step-by-step. Students write code in a CodeMirror editor and see call stack, variables, heap objects, and console output at every line. No backend — everything runs in the browser.
-
-The architecture supports **multi-language builds**: each language has a `LanguageEngine` under `src/engines/`, and the Vite build system produces a standalone single-language site per target. Each target deploys to its own domain (e.g. jstutor.org, pytutor.org).
-
-## Commands
-
-```bash
-npm run dev               # JS dev server (localhost:3000), alias for dev:js
-npm run dev:js            # JS dev server
-npm run dev:py            # Python dev server
-npm run dev:java          # Java dev server
-npm run dev:viewer:js     # Live viewer template (no examples baked in) — for renderer development
-npm run dev:viewer:py     # Same, Python
-npm run dev:viewer:java   # Same, Java
-npm run build             # JS production build (tsc + vite, outputs to docs/) + viewer-js.html
-npm run build:js          # Same as above (main + viewer)
-npm run build:py          # Python build + viewer-py.html
-npm run build:java        # Java build + viewer-java.html
-npm run build:viewer:js   # Just the viewer template (docs/viewer-js.html); skips main build + tsc
-npm run build:viewer:py   # Just the Python viewer template
-npm run build:viewer:java # Just the Java viewer template
-npm run build:viewer:all  # All three viewer templates
-npm run build:all         # Build all language targets (js, py, java) — each emits both main + viewer
-npm run test              # vitest run
-npm run test:watch        # vitest in watch mode
-npm run test:java:golden  # Regenerate the JDK differential goldens (needs JDK 21); `-- <filter>` limits, `-- --check` only verifies
-npm run lint              # ESLint
-
-npx tsx scripts/java-diff.ts [filter]                  # Every Java case's differences from real Java, tagged with its known-failure issue (no JDK needed)
-npx tsx scripts/java-viz.ts <case id | file.java | example:slug> [--final] [--steps=a-b] [--stdin=...]  # Print each snapshot's frames + heap
-npx tsx scripts/java-payload.ts [--quick]             # Snapshot size (JSON and postMessage) and time for heavy programs, the corpus, and JS/Python equivalents (#18)
-```
-
-`tsx` is a devDependency; the `scripts/` tools and `test:java:golden` run through it.
-
-Build targets use Vite's `--mode` flag. Modes are either a language id (`js`/`py`/`java`) or `viewer-<lang>` for the standalone viewer build. `vite.config.ts` derives the language from either form and explicitly calls `loadEnv(lang, …)` so both modes pull from the same `.env.<lang>` file — there is no `.env.viewer-<lang>` file.
-
-### Quick Instrumenter Testing
-
-To inspect instrumented output without running the full test suite, use `npx tsx -e` with a direct import. This is the fastest way to verify instrumentation changes:
-
-```bash
-npx tsx -e "import { instrument } from './src/engines/js/instrumenter'; console.log(instrument('let x = 1;\nconsole.log(x);'));"
-```
-
-- **Import path**: `'./src/engines/js/instrumenter'` (no `.ts` extension, relative from project root)
-- **Use single quotes** inside the JS source string passed to `instrument()`, or escape double quotes
-- **The output is the full instrumented JS source** — look for `__capture__`, `__pushFrame__`, `__popFrame__`, `__condition__`, and `__loopCount` calls
-- To check specific details, filter the output:
-  ```bash
-  npx tsx -e "import { instrument } from './src/engines/js/instrumenter'; const out = instrument('function foo() { return 1; }\nlet x = foo();'); const match = out.match(/__capture__\((\d+)/); console.log('first capture line:', match[1]);"
-  ```
-
-## Architecture
-
-```
-User code
-  -> LanguageEngine.execute(source)
-    -> [language-specific pipeline]
-    -> ExecutionSnapshot[]
-  -> Zustand store
-  -> React UI (language-agnostic)
-```
-
-### Build-Time Language Targeting
-
-Each build bundles **only one language engine**. Controlled by:
-
-- **`.env.js` / `.env.py` / `.env.java`** — per-language env vars (name, color, domain, tagline)
-- **`src/config/branding.ts`** — reads `import.meta.env.VITE_*`, single source of truth for all UI branding
-- **`src/engines/registry.ts`** — conditionally registers only the target engine based on `import.meta.env.VITE_LANGUAGE`; Vite tree-shakes the unused engine's code out of the bundle
-- **`vite.config.ts`** — function form; detects `js`/`py`/`java` and `viewer-<lang>` modes, manually loads the matching `.env.<lang>` via `loadEnv`, exposes those values through `define`, and conditionally enables `vite-plugin-singlefile` + a `rename-viewer-output` hook for viewer builds
-
-All hardcoded branding references and `#DD030B` colors have been replaced with `branding.*` imports. To add a new language target, create a new `.env.<lang>` file and add corresponding `dev:<lang>` / `build:<lang>` / `build:viewer:<lang>` scripts.
-
-### Engine Layer (`src/engines/`)
-
-Each language is a `LanguageEngine` (defined in `src/types/engine.ts`):
-
-```
-src/engines/
-  registry.ts              # getEngine(), getEngineSync(), SUPPORTED_LANGUAGES, isLanguageId()
-  js/
-    index.ts               # jsEngine: LanguageEngine
-    instrumenter.ts        # Acorn AST transform (938 lines, the core engine)
-    runtime.ts             # getRuntimeCode() — JS string prepended to instrumented code
-    executor.ts            # execute(source) -> Promise<WorkerMessage> (no store coupling)
-    examples.ts            # 11 JS examples with language:'js' field
-    security.ts            # analyzeCode() — regex-based suspicious pattern detection
-  py/
-    index.ts               # pyEngine: LanguageEngine (real Pyodide-based engine)
-    tracer.ts              # getTracerCode() — Python sys.settrace() script as a string
-    worker.ts              # Persistent module Web Worker — loads Pyodide from CDN, runs traced code
-    executor.ts            # execute(source) -> Promise<WorkerMessage> — manages persistent worker lifecycle
-    examples.ts            # 11 Python examples with language:'py' field
-    security.ts            # analyzeCode() — regex-based suspicious pattern detection for Python
-  java/
-    index.ts               # javaEngine: LanguageEngine
-    interpreter.ts         # AST-walking interpreter using java-parser CST (~3700 lines)
-    references.ts          # Reference model: every assignable variable (local/static slot, field, array element) as get/set/declaredType, with null + bounds checks and assignment conversion; VariableSlot.unassigned marks a local with no value yet
-    numeric.ts             # Java's primitive arithmetic (#10): promotion, conversions and casts, operators, ++/--, parseInt/parseLong, Math.rint, Float.toString
-    literals.ts            # Literal values: integer (hex/octal/binary, L suffix) and floating-point (f/d suffix) literals, and string/char/text-block literals (single-pass escapes, text block indentation stripping); escapeJava(), stringLiteral() and charLiteral() write values back as literals
-    errors.ts              # InterpreterError, JavaRuntimeError (Java exceptions the runtime raises, e.g. NullPointerException), nullPointer(), UnsupportedFeatureError ("X isn't supported in JavaTutor yet")
-    parser.ts              # Wrapper around java-parser: parseJava(), CST navigation helpers
-    types.ts               # Java runtime type system (primitives, strings, arrays, objects, refs)
-    executor.ts            # Ephemeral Web Worker executor (same pattern as JS engine); passes stdin through
-    worker.ts              # Web Worker: posts runJava()'s reply
-    run.ts                 # runJava(source, stdin): parse + interpret, building the worker's WorkerMessage (readable parse errors via describeParseError)
-    examples.ts            # 18 Java examples with language:'java' field, including visualization-friendly data structures
-    security.ts            # analyzeCode() — suspicious pattern detection for Java
-    stdlib/                # Standard-library subset (pure fns over a small StdlibContext)
-      context.ts           #   StdlibContext interface + HaltSignal (System.exit) + StdlibError
-      format.ts            #   javaFormat() — String.format / printf (java.util.Formatter): half-up rounding from Double.toString's digits, %e/%g, flags, Java's format exceptions
-      statics.ts           #   callStaticMethod/getStaticField: Math, wrappers, Character, Arrays, Objects, System, String, Collections, Comparator, List/Set/Map.of
-      collections.ts       #   newBuiltin/callInstanceMethod/getIterableElements: List/Set/Map/Deque/Stack/Queue, Scanner, Random, Iterator, Map.Entry, library comparators
-      exceptions.ts        #   exception class hierarchy (EXCEPTION_SUPER), exception objects, getMessage/getCause/toString, qualifiedExceptionName (java.lang.X)
-      hierarchy.ts         #   supertypes of the emulated library classes, strings and boxed primitives, for instanceof / casts / catch
-      strings.ts           #   String methods, StringBuilder/StringBuffer, boxed values' instance methods, new String(…), String/boxed hashCode (#20)
-      regex.ts             #   Java regex → JS RegExp (javaRegex), Java replacement strings (javaReplacement), Pattern.split (javaSplit)
-      util.ts              #   compareJava, compareValues, compareWith (Comparator objects), javaEquals, charArrayText, backing-array helpers, class-name sets
-      index.ts             #   barrel exports
-```
-
-The **dispatcher** at `src/engine/executor.ts` is a thin layer that reads `language` from the store, calls `getEngine(language)`, delegates to `engine.execute()`, and updates the store. All UI components import `runCode` from here.
-
-**The result contract (`WorkerMessage` in `src/types/snapshot.ts`, #7).** Every engine replies `{ type: 'result', snapshots, error? }` once the program has run, even if it ended early. `error` is a `RunError` with these fields:
-- `message`;
-- `line`: where it happened, which the editor marks;
-- `kind`: `'exception'` (an uncaught exception), `'limit'` (the step cap or time budget) or `'error'` (the engine stopped it: an unsupported construct, a problem javac would reject, an internal failure);
-- `stderr`: what the program's stderr would show, such as Java's stack trace or Python's traceback, shown in the console at the last step.
-
-`{ type: 'error', message, line? }` is only for failures before anything ran: a parse error, the engine failing to load, or the worker's 10-second timeout. The dispatcher sets the snapshots first and then the error, because `setSnapshots` clears `error`. The UI treats an error that has snapshots as belonging to the last step:
-- `EditorPanel` shows the banner (warning-colored for `limit`) and marks `error.line` with `.cm-error-line`.
-- `ConsolePanel` appends `stderr` in red.
-- `ControlBar` adds a link ("ends with an exception" / "stopped early") that jumps to the last step.
-The labels live in `src/utils/runError.ts`. The console keeps whitespace (`white-space: pre-wrap`), so `printf` padding and stack traces line up.
-
-### Adding a New Language
-
-1. Create `src/engines/<lang>/` with an `index.ts` exporting a `LanguageEngine` object
-2. Add a conditional registration block in `src/engines/registry.ts`
-3. Expand `LanguageId` type in `src/types/engine.ts`
-4. Create `.env.<lang>` with branding vars (`VITE_LANGUAGE`, `VITE_APP_NAME`, `VITE_BRAND_COLOR`, etc.)
-5. Add `dev:<lang>`, `build:<lang>`, `dev:viewer:<lang>`, and `build:viewer:<lang>` scripts to `package.json`
-6. Add the new language to the `LANGS` array in `vite.config.ts`
-
-### Branding (`src/config/branding.ts`)
-
-All UI branding (app name, colors, tagline, domain) flows from `import.meta.env.VITE_*` variables through a single `branding` object. Components import `branding` instead of using hardcoded strings. The env vars are set per build target via `.env.js` / `.env.py` / `.env.java` files loaded by Vite's `--mode` flag.
-
-### Store (`src/store/useStore.ts`)
-
-Zustand store with: `language`, `code`, `stdin`, `snapshots`, `currentStep`, `isRunning`, `error`, `hideFunctions`, `showReferences`. The `language` field defaults to `branding.languageId` and drives which engine is used and which editor extension / examples / sandbox code are shown. The `showReferences` flag enables Python's "everything is an object" visualization mode, where primitives are promoted to heap objects via `src/utils/promoteToHeap.ts`. The `stdin` field holds the preset console input consumed by Java's `Scanner` — it is edited via the `StdinPanel` (shown in the editor column for Java builds), passed to `engine.execute(source, { stdin })` by the dispatcher, and threaded into the interpreter constructor. `error` is a `RunError` (see the result contract above); alongside snapshots it describes how the run ended, at the last step. `setSnapshots` stores the steps through `shareSnapshots` (see the snapshot sharing note), so consecutive steps share their unchanged parts whatever engine made them.
-
-### Routing (`src/main.tsx`)
-
-HashRouter with routes:
-
-```
-/                           Main editor
-/examples/:slug             Example
-/share/:encoded             Shared code (legacy, defaults to build target)
-/share/:lang/:encoded       Language-specific shared code
-/embed/:encoded             Embed (legacy)
-/embed/:lang/:encoded       Language-specific embed
-```
-
-Legacy share/embed routes (without `:lang`) default to `branding.languageId` — the build target language.
-
-### Standalone Viewer (`viewer.html` + `src/viewer-main.tsx`)
-
-The export feature ships a parallel entry point that runs without React Router. `viewer.html` (at the project root) is the HTML input for the `viewer-<lang>` build mode; `src/viewer-main.tsx` reads `window.__EXAMPLES__` (an array baked into the HTML by the export feature) and mounts `<ViewerApp />`. `ViewerApp` renders its own minimal navbar (brand + `ExamplePicker` when 2+ examples are present), then delegates to the existing `<App embed viewer />` for the rest of the layout.
-
-`App` accepts a `viewer` prop in addition to `embed`. `ControlBar` treats `embed || viewer` as the condition for hiding Share/Embed/Export; the "Open in `<AppName>`" link points to `https://<branding.domain>` in viewer mode (rather than the share URL it would generate in embed mode).
-
-The full app — engine included — is bundled into the single viewer HTML, so users opening an exported file can edit code and re-run the visualization with `runCode()` like in the live app.
-
-### Export Feature
-
-- **Trigger**: Export button in `ControlBar`, next to Share/Embed (hidden in `embed`/`viewer` modes). Opens `src/components/ExportModal.tsx`.
-- **Pipeline**: `ExportModal` → `runCode` (if no snapshots yet) → `fetchViewerTemplate('./viewer-<lang>.html')` → `buildExportHtml(template, example)` → `downloadHtml(...)`. All splicing logic lives in `src/utils/exportHtml.ts`.
-- **Template placeholder**: `viewer.html` contains `/* EXPORT_PLACEHOLDER_START */ window.__EXAMPLES__ = []; /* EXPORT_PLACEHOLDER_END */` inside a `<script id="tutor-examples">` block. `buildExportHtml` replaces the assignment between those markers with a single-example array (the markers themselves are preserved so future appends remain easy).
-- **Multi-example merge**: users hand-edit the EXAMPLES array of an exported file to append entries from other exports. `ExamplePicker` shows a navbar dropdown when the array has 2+ entries.
-- **Worker inlining**: the Python and Java executors import their workers via `?worker&inline` (`import PyWorker from './worker.ts?worker&inline'`). This causes Vite to serialize the worker as a base64 blob URL inside the singlefile bundle — required for the standalone HTML to run without external chunks. The same import works in the main builds too (just chunked there).
-- **Engine versioning**: the `tutor-engine-version-marker` plugin in [vite.config.ts](vite.config.ts) tags the inlined module `<script>` with `data-tutor-engine="X.Y.Z"` (read from `package.json` at build time), injects `window.__TUTOR_ENGINE_VERSION__=...` at the very top of that script's body, and prepends a multi-line HTML comment with explicit upgrade instructions (download a fresh `viewer-<lang>.html`, replace just the data-tutor-engine script block, EXAMPLES survives). The version is also shown in the viewer's navbar as `engine vX.Y.Z`. The main app's [AppFooter](src/components/AppFooter.tsx) reads the same value via the `__TUTOR_ENGINE_VERSION__` compile-time constant injected by `define`.
-- **Data schema versioning**: `CURRENT_EXAMPLE_SCHEMA_VERSION` in [src/types/viewer.ts](src/types/viewer.ts) is the contract version of the `ViewerExample` shape (currently `2` — `2` added the optional `stdin` field so exported Java `Scanner` programs re-run with their original input; `ExportModal` reads `stdin` from the store and `viewer-main.tsx` restores it). `buildExportHtml` stamps it into every payload; `viewer-main.tsx` compares each example's `schemaVersion` against the constant and passes a `schemaMismatch` flag down to `ViewerApp`, which renders a dismissible warning alert when an example was produced by a newer engine than what's running. Bump the constant when adding required fields to `ViewerExample` or to `ExecutionSnapshot` so previously-exported files can't masquerade as the new shape. The optional `error` field (how the recorded run ended, #7) was added without a bump, since an older viewer still shows the steps; `ExportModal` writes the store's error, and `viewer-main.tsx` / `ExamplePicker` restore it (and `stdin`). A primitive's optional `display` text (#17) came without a bump too: exported snapshots without it render by type.
-- **Splice safety**: `buildExportHtml` uses `lastIndexOf` to locate the `tutor-examples` script tag, AND assembles the marker strings from concatenated char fragments in source (`'<' + 'script id="tutor-examples">'`). Both guard against the same `exportHtml.ts` source being bundled into the engine: if the regex source or error messages contained the literal marker text, the splice could false-match inside the engine bundle and corrupt it. The `ignores marker strings that appear inside the bundled engine source` test in [exportHtml.test.ts](src/utils/__tests__/exportHtml.test.ts) covers this regression.
-
-## TypeScript Constraints
-
-- **`erasableSyntaxOnly: true`** — No `enum`, no parameter properties (`constructor(readonly x)`), no `namespace`. Use `type` unions and plain class fields instead.
-- **`verbatimModuleSyntax: true`** — Use `import type` for type-only imports.
-- **`noUnusedLocals` / `noUnusedParameters`** — Prefix unused params with `_` if needed.
-- Test files (`__tests__/`) are excluded from `tsconfig.app.json` via the `exclude` array — they use Node APIs (`node:vm`) that aren't in the app's type scope.
-
-## Testing
-
-**Framework**: Vitest 4.x (reads `vite.config.ts` automatically, no separate config needed).
-
-**Test suites**:
-
-| Suite | Location | What it tests |
-|---|---|---|
-| Instrumenter | `src/engine/__tests__/instrumenter.test.ts` | `instrument()` output: capture injection, loop guards, condition wrapping, destructuring, closures, classes, all examples |
-| Pipeline | `src/engine/__tests__/pipeline.test.ts` | Full instrument -> runtime -> eval -> snapshots pipeline using `node:vm` sandboxed contexts. `runPipelineResult` builds the reply as the worker does (`__runResult__`), so runs that end early are tested: an uncaught throw keeps its steps (the last one is the throw), a runtime `TypeError` or thrown non-Error value becomes an `exception` error, and an endless loop or 5000+ steps stops with a `limit` notice |
-| Dispatcher | `src/engine/__tests__/executor.test.ts` | `runCode` against a mocked registry: a finished run, a run that stopped early (steps and error both kept), an error before the first step, no steps and no error, a pre-run `{ type: 'error' }`, and an engine that throws |
-| Behavior comparison | `src/engine/__tests__/behavior-comparison.test.ts` | Runs each snippet as plain JS AND through the full instrumented pipeline, then asserts identical `console.log` output (and, for control-flow cases, a clean final call stack). Add new cases here when fixing engine bugs found via real-world code — it catches semantic regressions across instrumenter + runtime in one place. |
-| diffSnapshots | `src/utils/__tests__/diffSnapshots.test.ts` | `getChangedKeys()`: variable changes, heap property changes, closure vars, this context, and a change that shows only in `display` |
-| valueDisplay | `src/utils/__tests__/valueDisplay.test.ts` | `primitiveText()`: an engine's `display` text when given (Java's `'B'`, `5.0`), else the rendering by type the JS and Python engines rely on |
-| Share | `src/utils/__tests__/share.test.ts` | `encodeShareCode`/`decodeShareCode` round-trips + `analyzeCode` suspicious pattern detection |
-| Store | `src/store/__tests__/useStore.test.ts` | Zustand actions: step navigation, clamping, reset, error handling, an error set after snapshots (which `setSnapshots` clears), and stored steps sharing their unchanged parts |
-| Snapshot sharing | `src/utils/__tests__/snapshotSharing.test.ts` | `shareSnapshots()` (#18): unchanged frames, variables, heap objects and stdout are the same objects in consecutive steps; the parts next to a change are shared; an object is shared with its last version even after steps without it; a different display, label or ref is a change; sharing changes nothing but identity and is idempotent |
-| Java payload | `src/engines/java/__tests__/payload.test.ts` | Snapshot size as postMessage copies it (`v8.serialize`, #18): the insertion sort of 300 ints (5,000 steps) under 5 MB, 1,000 objects in a list under 15 MB, and an array that never changes is one object across every step |
-| Run error labels | `src/utils/__tests__/runError.test.ts` | The error banner titles and step-bar labels for each `RunError` kind |
-| Registry | `src/engines/__tests__/registry.test.ts` | Engine loading, contract validation, branding-store integration |
-| Branding | `src/config/__tests__/branding.test.ts` | Branding field shape, types, defaults, hex color validation |
-| Python Engine | `src/engines/py/__tests__/engine.test.ts` | Engine contract, heapTypeConfig shape, example validation, analyzeCode integration |
-| Python Tracer | `src/engines/py/__tests__/tracer.test.ts` | Tracer script structure: settrace events, serialization, limits, security sandbox, baseline filtering |
-| Python Security | `src/engines/py/__tests__/security.test.ts` | All suspicious patterns, false positive avoidance, edge cases |
-| Java Interpreter | `src/engines/java/__tests__/interpreter.test.ts` | Variables, arithmetic, control flow, methods, arrays, strings, snapshots, block scopes |
-| Java references | `src/engines/java/__tests__/references.test.ts` | Assignment targets and the reference model (#5). Covers every target shape: local, parameter, static (unqualified, qualified, another class's), field of a local, explicit/implicit `this` field, `this` chain, array element (incl. 2D), field of an array element, element of a field, three-part chain, method-result chains, a side-effecting index, and a parenthesized variable. Each shape is tried with `=`, `+=`, prefix `++` and postfix `--`, plus witness values (nothing else written) and call counts (subexpressions run once). Also covers JLS §15.26 evaluation order, narrowing and assignment conversion, NPE/AIOOBE, name-resolution order, loud failures for unsupported constructs, and direct tests of `references.ts`. Expected outputs were verified against JDK 21. |
-| Java failures | `src/engines/java/__tests__/failures.test.ts` | Runs that end early (#7), through `runJava`. An uncaught exception keeps every step, ending at the throw site, and is reported as `java` reports it, stack trace included (checked against JDK 21), for nested exception classes, constructors (`<init>`), a user `toString()`, library errors (with the call's line) and a trimmed `StackOverflowError` trace. A caught runtime exception shows the throwing frame, then the catch. Limits: 5000 steps with a notice, lowered limits, endless work inside `toString()` (`maxWork`), the time budget, and no finally after a limit. Engine errors: a line even when the error has none, unsupported declarations before any step, and internal failures with no JavaScript text for students. No error for normal ends, `return` or `System.exit`. Parse errors: a missing `;` on javac's line, and code that ends too early. |
-| Java rendering | `src/engines/java/__tests__/rendering.test.ts` | User classes named after library classes (#8). Every shipped example's final step draws user classes as objects with their declared fields, and the Linked List example's `head`/`tail` point at its nodes. A user `Stack` draws as an object and runs its own methods. A user `HashMap`, `ArrayList` or `StringBuilder` isn't printed, iterated or type-checked as the library class. `__`-prefixed user fields are shown, and library collections still draw as collections. Also printing (#19): identity strings for arrays and objects without `toString()` (`[I@…`, `[LMain$Pt;@…`, `Main$Pt@…`, `java.lang.Object@…`, eight hex digits, the same each run), a `char[]` printed as its characters by `println`, `String.valueOf` and `StringBuilder.append`, and `%s`/`String.valueOf` using a user `toString()`. |
-| Java state | `src/engines/java/__tests__/state.test.ts` | What each step shows of the program's state (#9). Static fields in a first "Static fields" frame at every step (`Main.moves`), pointing at their objects, appearing for another class at its first use with its initializers' values, and no frame without statics. Only reachable objects: the #9 repro ends with one `int[]` and the map, an object disappears once nothing refers to it, objects reached through fields, collections and callers stay in creation order, backing arrays aren't drawn, a constructor's object shows through `this`, a caught exception through its catch parameter. No block variables left after `continue`, `break`, `return` or a caught exception. The step where an exception starts shows its try block, switch block or field initializer. A local without an initializer is hidden until assigned (in any branch), and reading it first is javac's "might not have been initialized"; `var x;` is an error. Blocks labeled `try`/`catch`/`finally`; `this` in `thisArg`. Library objects: a `Scanner`'s remaining input with visible `\n`, an `Iterator`'s collection and cursor, a `Random`'s seed, a library `Comparator`'s order. |
-| Java syntax | `src/engines/java/__tests__/syntax.test.ts` | Syntax coverage (#6). Every construct JavaTutor rejects stops the program with its exact "… isn't supported in JavaTutor yet" message and line: lambdas, method and constructor references, class literals, anonymous classes, nested, top-level and local enums and records, interface default methods, inheritance, local classes and interfaces, annotation types, library classes it lacks, hex float literals, duplicate nested class names, for-each over a user Iterable, and inner classes using their enclosing object. It also checks when a rejection happens (declarations before any step, expressions when reached, finally blocks skipped). And it checks what the steps show: an `instanceof` pattern variable scoped to its `if` (and kept after `if (!(o instanceof T t)) return;`), switch-block scope, `<clinit>` frames for static initializers (lazily for non-entry classes), instance initializers in the constructor's frame without its parameters, `this(…)` as its own frame, `args` bound only when main uses it, no loop scopes left after a labeled break, try-with-resources variables only in the try block, and `assert` taking a step without evaluating. Class initialization order is checked against JDK output. |
-| Java literals | `src/engines/java/__tests__/literals.test.ts` | `literals.ts`: integer literals (decimal, hex, octal, binary, underscores, `L`; every bit for hex, the decimal minimum, too-large values) and floating-point literals (suffixes, out-of-range values), single-pass escapes (octal, Unicode escapes and the even-backslash rule, `\s`, line continuation), string and char literal values, and text block indentation stripping, trailing whitespace and escapes. Expected values from JDK 21. Also `escapeJava`, which `unescapeJava` undoes. |
-/`\\` replacement rules, `compareTo`/`compareToIgnoreCase`/`hashCode`, bounds errors with Java's messages, `new String(…)`, `chars()` rejected as a stream, `==` on literals, constant expressions, concatenation, `new String`, Scanner input, `intern()`, `trim()`/`toLowerCase()` returning the same string, switch and HashSet still by characters; StringBuilder editing and bounds; boxed `compareTo`/`equals`/`xxxValue`/`hashCode` and the wrapper `hashCode` statics. |
+| Java output | `src/engines/java/__tests__/output.test.ts` | The two output streams (#22): `System.err` (println, print, printf) kept out of `stdout` and shown in order on the step's `console`, no `console` without stderr, finished console lines shared between steps; `printStackTrace()` to stderr with the frames an exception was created in, a runtime exception's frames from where it was raised, and causes with shared frames shortened to `... n more` (checked against JDK 21). |
+| Java strings | `src/engines/java/__tests__/strings.test.ts` | String, StringBuilder and wrapper methods, string identity and Java regexes (#20), checked against JDK 21: `split` as `Pattern.split` (trailing empties, limits, zero-width matches), regex translation and the constructs it rejects, `$`/`\` replacement rules, `compareTo`/`compareToIgnoreCase`/`hashCode`, bounds errors with Java's messages, `new String(…)`, `chars()` rejected as a stream, `==` on literals, constant expressions, concatenation, `new String`, Scanner input, `intern()`, `trim()`/`toLowerCase()` returning the same string, switch and HashSet still by characters; StringBuilder editing and bounds; boxed `compareTo`/`equals`/`xxxValue`/`hashCode` and the wrapper `hashCode` statics. |
 | Java numeric | `src/engines/java/__tests__/numeric.test.ts` | `numeric.ts` (#10) at the boundaries of each type: promotion; conversions (saturating double→int/long, NaN→0, low bits for byte/short/char, long→float rounded once); int and long overflow, truncating division, ArithmeticException for integer `/` and `%` by zero only; float rounding; shift distances masked to 5 or 6 bits; comparisons with NaN and -0.0; negating the minimum; operators on Java values (char + int is an int, booleans for `&` `\|` `^`, errors javac would give); `++`/`--` within the type; casts; `parseInt`-family messages; `Math.rint`; `Float.toString` (ties to even, lopsided intervals at powers of two, two digits competing with one, e.g. `1.4E-45`) and `Double.toString` (`1.0E7`, `4.9E-324`, #19), all checked against JDK 21. Also literal errors, unboxing null, and return-value conversion in programs. |
 | Java stdlib | `src/engines/java/__tests__/stdlib.test.ts` | Unit tests for `src/engines/java/stdlib` driven through a lightweight Map-backed `StdlibContext` (no full interpreter): `javaFormat` specifiers (and, from JDK 21, #19: half-up rounding from the shortest digits, `%e` exponents, `%g`, the flags, NaN/Infinity/-0.0, the format exceptions and their messages, `%s` through `stringify`, an `Object[]` spread as the arguments), `callStaticMethod`/`getStaticField` (Math/wrappers/Character/Arrays/Objects/Collections), collection instance methods (list/set/map/stack/deque), `Scanner` tokenization, and `Random` determinism/bounds. Also comparators: a user comparator (through `invokeUserMethod`) in `Collections.sort`/`List.sort`/`Arrays.sort`/`max`/`min`; `naturalOrder`/`reverseOrder`/`reversed()`/`CASE_INSENSITIVE_ORDER`; `PriorityQueue`/`TreeSet`/`TreeMap` keeping their comparator (and `TreeSet` treating compare == 0 as equal); ClassCastException for objects with no natural order. Plus map copy constructors, the library type hierarchy (`isLibrarySubtype`, boxed and string types) and `qualifiedExceptionName`. |
 | JDK differential | `src/engines/java/__tests__/jdk/jdk-differential.test.ts` | Runs every Java corpus case (`jdk/cases/`, plus every shipped example read live from `examples.ts`) through `JavaInterpreter` and compares it with a committed golden recorded from real JDK 21 `java`: stdout, and whether (and which class of) exception escaped; for `compile-errors/` cases, that the interpreter errors before any step runs. Also asserts snapshot invariants on every case, and that a known failure waiting on a rejected construct (#6, #15, #16) fails with an error rather than wrong output. Known failures run as `it.fails` (see "JDK differential suite" below). Needs no JDK. |
@@ -495,7 +262,7 @@ The Java engine re-implements Java, so it's tested against real `java`. This is 
 - **Summary.** The suite prints pass / wrong output with no error / error counts. Vitest's agent reporter (auto-selected when run by an AI agent) hides console output from passing tests, so pass `--reporter=default` to see it: `npx vitest run src/engines/java/__tests__/jdk --reporter=default`.
 - **Workflow for fixing a roadmap issue.** Run `npx tsx scripts/java-diff.ts`, find the cases tagged with the issue, fix them (`scripts/java-viz.ts <case id>` shows every step), run the suite, and delete the entries that now pass. Add a regression case to `cases/` for anything the corpus didn't cover.
 
-Baseline at 90ac603, matching the analysis in #3: 115 of 252 programs pass (all 19 examples, 96 of 233 new programs), 77 print wrong output with no error, 60 fail with an error, and 1 of 8 compile-error cases is rejected before running. After #5 (the reference model): 147 of 255 programs pass (the corpus gained three `core/assign-*` cases), 63 print wrong output with no error, and 45 fail with an error. After #6 (syntax coverage): 194 of 278 programs pass (171 of the 255 above, plus 23 new cases), 42 print wrong output with no error, and 42 fail with an error. No wrong-output case waits on #6, #15 or #16. After #7 (runs that end early): 195 pass (`core/stack-overflow` catches its StackOverflowError), 42 wrong output with no error, 41 error. #8 changed only drawing. After #9 (program state): 198 of 281 pass (three new `extra/` cases), 42 wrong output with no error, 41 error, and `reachable` and `statics` hold for every case. After #10 (numbers): 216 of 283 pass (two new `extra/num-*` cases), 28 wrong output with no error, 39 error; two #22 cases (`parseInt("12abc")`, `nextInt()` on "abc") pass as a side effect. After #19 (printing): 222 of 284 pass (one new `extra/format-and-printing` case), 23 wrong output with no error, 39 error. After #20 (strings): 234 of 285 pass (one new `extra/string-methods` case), 20 wrong output with no error, 31 error.
+Baseline at 90ac603, matching the analysis in #3: 115 of 252 programs pass (all 19 examples, 96 of 233 new programs), 77 print wrong output with no error, 60 fail with an error, and 1 of 8 compile-error cases is rejected before running. After #5 (the reference model): 147 of 255 programs pass (the corpus gained three `core/assign-*` cases), 63 print wrong output with no error, and 45 fail with an error. After #6 (syntax coverage): 194 of 278 programs pass (171 of the 255 above, plus 23 new cases), 42 print wrong output with no error, and 42 fail with an error. No wrong-output case waits on #6, #15 or #16. After #7 (runs that end early): 195 pass (`core/stack-overflow` catches its StackOverflowError), 42 wrong output with no error, 41 error. #8 changed only drawing. After #9 (program state): 198 of 281 pass (three new `extra/` cases), 42 wrong output with no error, 41 error, and `reachable` and `statics` hold for every case. After #10 (numbers): 216 of 283 pass (two new `extra/num-*` cases), 28 wrong output with no error, 39 error; two #22 cases (`parseInt("12abc")`, `nextInt()` on "abc") pass as a side effect. After #19 (printing): 222 of 284 pass (one new `extra/format-and-printing` case), 23 wrong output with no error, 39 error. After #20 (strings): 234 of 285 pass (one new `extra/string-methods` case), 20 wrong output with no error, 31 error. After #22 (stderr): 237 of 286 pass (one new `extra/exceptions-and-stderr` case), 18 wrong output with no error, 31 error.
 
 ## Key Design Notes
 
@@ -520,7 +287,7 @@ Baseline at 90ac603, matching the analysis in #3: 115 of 252 programs pass (all 
   - **Regexes.** `javaRegex` translates a Java regex to a `RegExp`: leading `(?i)`/`(?s)`/`(?m)`, `\Q…\E`, `\A`/`\Z`/`\z`, `\h`, and POSIX `\p{Alpha}`-style classes. It rejects possessive quantifiers, atomic groups, class intersections, inner inline flags and other `\p{…}` with `UnsupportedFeatureError`; an invalid pattern is a `PatternSyntaxException`. `javaSplit` is `Pattern.split` step for step. `javaReplacement` applies Java's `$n`/`${name}`/`\x` rules (and its "Illegal group reference").
   - **StringBuilder**: `append` (a `char[]`'s chars, anything else through `stringify`, plus the 3-argument forms), `insert`, `delete`, `deleteCharAt`, `replace`, `setCharAt`, `indexOf`, `lastIndexOf`, `reverse`, `setLength`, `substring`, `charAt`, `length`, `isEmpty`, `compareTo`, and `equals`/`hashCode` by identity, with bounds checks.
   - **Boxed values** are their primitives, so `boxedMethod` gives them the wrappers' `xxxValue()`, `compareTo` (Integer/Long -1/0/1; Character/Short/Byte the difference; Double/Float via `compareFloating`), `equals` (only the same wrapper class: `Integer.equals(5L)` is false), `hashCode` (`boxedHashCode`, also for the static `Double.hashCode` and friends) and `toString`. The `Integer` cache (`==` on boxed values) needs boxing, which waits on #13.
-- **Java stdout model**: the interpreter accumulates a single `stdoutBuffer` string (`print`/`println`/`printf` all append; `println` adds `\n`); `snapshotStdout()` splits it into display lines, dropping one trailing newline. This fixes the older array-based model where a `print`/`printf` after a `println` glued onto the previous line.
+- **Java output model**: the interpreter accumulates a single `stdoutBuffer` string (`print`/`println`/`printf` all append; `println` adds `\n`); `snapshotStdout()` splits it into display lines, dropping one trailing newline. This fixes the older array-based model where a `print`/`printf` after a `println` glued onto the previous line. **stderr (#22):** `System.err` and `printStackTrace()` write through `appendStderr`, never into `stdoutBuffer`, so `snapshot.stdout` (and the JDK comparison) holds only stdout. Both streams also go to `consoleLines` (`writeConsole`: a line belongs to the stream that wrote its first characters), and once stderr has been used each step carries `console` (`snapshotConsole`: finished lines shared between steps, the open one copied). `printStackTrace()` (`stackTraceText`) prints the exception, the frames recorded in `exceptionTraces` (by heap id) when it was created (`new` of a Throwable, or `toExceptionValue` with the runtime's failure site), and its causes as `Caused by: …` with frames shared with the enclosing trace shortened to `... n more`, as Java does.
 - **Java assignments go through the reference model (`references.ts`, #5)** — `resolveReference` evaluates everything except the last selector with the normal read path. The last selector (or a bare name) becomes a `Reference` { `get`, `set`, `declaredType` }: a local or static slot (`slotReference`), an instance field (`fieldReference`) or an array element (`arrayElementReference`). `=`, every compound operator and prefix/postfix `++`/`--` all use it, so `a.next.next = v`, `this.data[this.size] = v`, `people[1].age = 31` and `counts[i]++` write exactly the variable named in the source.
   - An undeclared name is an error; there are no implicit locals.
   - Null and bounds checks run when a reference is *accessed*, which gives JLS order. `a[i] = e` evaluates `a`, `i`, then `e`, then checks, so the right-hand side runs before an `ArrayIndexOutOfBoundsException`. Compound assignment reads the variable first (JLS §15.26.2), so it checks before evaluating the right-hand side, and `x += (x = 5)` uses the old `x`.

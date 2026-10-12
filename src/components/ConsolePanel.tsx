@@ -1,5 +1,6 @@
 import { memo, useEffect, useMemo, useRef, useCallback, useState } from 'react';
 import { useStore } from '../store/useStore';
+import type { ConsoleLine } from '../types/snapshot';
 
 export default memo(function ConsolePanel() {
   const snapshots = useStore((s) => s.snapshots);
@@ -11,10 +12,13 @@ export default memo(function ConsolePanel() {
 
   // Memoize so the empty-array fallback isn't a new reference each render
   // (which would re-fire the scroll effect below).
-  const stdout = useMemo(
-    () => (snapshots.length > 0 && snapshots[currentStep] ? snapshots[currentStep].stdout : []),
-    [snapshots, currentStep],
-  );
+  // The console in program order: stdout lines, and once the program wrote to
+  // stderr (System.err, printStackTrace), its stderr lines among them.
+  const lines = useMemo((): ConsoleLine[] => {
+    const snapshot = snapshots.length > 0 ? snapshots[currentStep] : undefined;
+    if (!snapshot) return [];
+    return snapshot.console ?? snapshot.stdout.map(text => ({ text, stream: 'stdout' as const }));
+  }, [snapshots, currentStep]);
   // What an uncaught exception prints to stderr (Java's stack trace, Python's
   // traceback) appears after the output at the last step, as in a terminal.
   const atEnd = snapshots.length === 0 || currentStep === snapshots.length - 1;
@@ -25,7 +29,7 @@ export default memo(function ConsolePanel() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [stdout, stderr]);
+  }, [lines, stderr]);
 
   // Drag-to-resize logic (pointer events work on both mouse and touch)
   const onPointerDown = useCallback((e: React.PointerEvent) => {
@@ -79,12 +83,12 @@ export default memo(function ConsolePanel() {
         <div style={{ fontSize: '0.7rem', color: '#aaa', marginBottom: '0.25rem' }}>
           Console Output
         </div>
-        {stdout.length === 0 && stderr.length === 0 ? (
+        {lines.length === 0 && stderr.length === 0 ? (
           <div style={{ color: '#999', fontStyle: 'italic' }}>No output yet</div>
         ) : (
           <>
-            {stdout.map((line, i) => (
-              <div key={i}>{line}</div>
+            {lines.map((line, i) => (
+              <div key={i} className={line.stream === 'stderr' ? 'log-error' : undefined}>{line.text}</div>
             ))}
             {stderr.map((line, i) => (
               <div key={`stderr-${i}`} className="log-error">{line}</div>

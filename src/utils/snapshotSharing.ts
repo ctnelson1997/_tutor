@@ -1,4 +1,4 @@
-import type { ExecutionSnapshot, HeapObject, Property, RuntimeValue, StackFrame, Variable } from '../types/snapshot';
+import type { ConsoleLine, ExecutionSnapshot, HeapObject, Property, RuntimeValue, StackFrame, Variable } from '../types/snapshot';
 
 function sameValue(a: RuntimeValue | undefined, b: RuntimeValue | undefined): boolean {
   if (a === b) return true;
@@ -43,6 +43,10 @@ function shareProperty(old: Property | undefined, next: Property): Property {
   return old && old.key === next.key && sameValue(old.value, next.value) ? old : next;
 }
 
+function shareConsoleLine(old: ConsoleLine | undefined, next: ConsoleLine): ConsoleLine {
+  return old && old.text === next.text && old.stream === next.stream ? old : next;
+}
+
 function shareHeapObject(old: HeapObject | undefined, next: HeapObject): HeapObject {
   if (old === next) return old;
   if (!old || old.objectType !== next.objectType || old.label !== next.label || !sameValue(old.proto, next.proto)) return next;
@@ -74,7 +78,10 @@ export class SnapshotSharer {
     });
     const stdout = previous && previous.stdout.length === next.stdout.length && previous.stdout.every((line, i) => line === next.stdout[i])
       ? previous.stdout : next.stdout;
-    const shared = callStack === next.callStack && heap === next.heap && stdout === next.stdout ? next : { ...next, callStack, heap, stdout };
+    const console = next.console && shareArray(previous?.console, next.console, shareConsoleLine);
+    const shared = callStack === next.callStack && heap === next.heap && stdout === next.stdout && console === next.console
+      ? next
+      : { ...next, callStack, heap, stdout, ...(console ? { console } : {}) };
     this.previous = shared;
     return shared;
   }

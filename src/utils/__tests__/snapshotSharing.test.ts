@@ -73,6 +73,17 @@ describe('shareSnapshots', () => {
     expect(f.heap[0]).not.toBe(e.heap[0]);
   });
 
+  it('shares console lines (stdout and stderr) between steps', () => {
+    const withConsole = (step: number, lines: string[]): ExecutionSnapshot => ({
+      ...snap(step, 1, []),
+      console: lines.map((text, i) => ({ text, stream: i % 2 ? 'stderr' : 'stdout' })),
+    });
+    const [a, b, c] = shareSnapshots([withConsole(0, ['out']), withConsole(1, ['out']), withConsole(2, ['out', 'err'])]);
+    expect(b.console).toBe(a.console);
+    expect(c.console![0]).toBe(a.console![0]);
+    expect(c.console![1]).toEqual({ text: 'err', stream: 'stderr' });
+  });
+
   it('changes nothing but identity, and is idempotent', () => {
     const snaps = [snap(0, 1, [array('1', [3])], ['a']), snap(1, 2, [array('1', [4])], ['a', 'b'])];
     const shared = shareSnapshots(snaps);

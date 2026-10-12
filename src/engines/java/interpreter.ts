@@ -9,6 +9,7 @@
  */
 
 import type {
+  ConsoleLine,
   ExecutionSnapshot,
   StackFrame,
   Variable,
@@ -357,6 +358,11 @@ export interface ExecuteResult {
 export class JavaInterpreter {
   private snapshots: ExecutionSnapshot[] = [];
   private stdoutBuffer = '';
+  /** The console in program order (stdout and stderr), the last line still open; kept once stderr is used. */
+  private consoleLines: ConsoleLine[] = [{ text: '', stream: 'stdout' }];
+  private stderrUsed = false;
+  /** The stack trace each exception object was created with, by heap id, as Throwable records it (for printStackTrace). */
+  private exceptionTraces = new Map<string, string[]>();
   private heap: Map<string, JavaHeapEntry> = new Map();
   private nextHeapId = 1;
   private callStack: Frame[] = [];
@@ -490,6 +496,61 @@ export class JavaInterpreter {
   /** Append raw text to the stdout buffer (used by print / printf). */
   private appendStdout(text: string): void {
     this.stdoutBuffer += text;
+    this.writeConsole(text, 'stdout');
+  }
+
+  /** Append raw text to stderr (System.err, printStackTrace). */
+  private appendStderr(text: string): void {
+    this.stderrUsed = true;
+    this.writeConsole(text, 'stderr');
+  }
+
+  /** Add text to the console in program order. A line belongs to the stream that wrote its first characters. */
+  private writeConsole(text: string, stream: ConsoleLine['stream']): void {
+    const parts = text.split('\n');
+    for (let i = 0; i < parts.length; i++) {
+      if (i > 0) this.consoleLines.push({ text: '', stream });
+      const open = this.consoleLines[this.consoleLines.length - 1];
+      if (open.text === '' && parts[i] !== '') open.stream = stream;
+      open.text += parts[i];
+    }
+  }
+
+  /**
+   * The console for a step, once the program has written to stderr. Finished
+   * lines are shared between steps; the open last line is copied, and dropped
+   * when empty (like stdout's final newline).
+   */
+  private snapshotConsole(): ConsoleLine[] | undefined {
+    if (!this.stderrUsed) return undefined;
+    const lines = this.consoleLines.slice(0, -1);
+    const open = this.consoleLines[this.consoleLines.length - 1];
+    if (open.text !== '') lines.push({ ...open });
+    return lines;
+  }
+
+  /**
+   * What printStackTrace() prints: the exception, the frames it was created
+   * in, and its causes, each with the frames it shares with the exception
+   * before it shortened to "... n more", as Java does.
+   */
+  private stackTraceText(exception: JavaValue): string {
+    const out: string[] = [];
+    let current: JavaValue | undefined = exception;
+    let enclosing: string[] = [];
+    for (let depth = 0; current?.kind === 'objectRef' && depth < 20; depth++) {
+      const trace = this.exceptionTraces.get(current.heapId) ?? [];
+      let shared = 0;
+      while (shared < trace.length && shared < enclosing.length && trace[trace.length - 1 - shared] === enclosing[enclosing.length - 1 - shared]) shared++;
+      out.push((depth > 0 ? 'Caused by: ' : '') + this.stringify(current));
+      for (const frame of trace.slice(0, trace.length - shared)) out.push(`\tat ${frame}`);
+      if (shared > 0) out.push(`\t... ${shared} more`);
+      const obj = this.heap.get(current.heapId);
+      const cause = obj && isJavaObject(obj) ? obj.fields.get('cause') : undefined;
+      enclosing = trace;
+      current = cause && cause.kind === 'objectRef' && cause.heapId !== current.heapId ? cause : undefined;
+    }
+    return out.join('\n') + '\n';
   }
 
   /**
@@ -1098,6 +1159,7 @@ export class JavaInterpreter {
       callStack,
       heap: this.reachableHeap(callStack),
       stdout: this.snapshotStdout(),
+      ...(this.stderrUsed ? { console: this.snapshotConsole() } : {}),
     }));
   }
 
@@ -1692,7 +1754,13 @@ export class JavaInterpreter {
     if (e instanceof JavaThrow) return e.value;
     if (e instanceof InterpreterError || e instanceof StdlibError) {
       const parsed = parseRuntimeException(e.message);
-      if (parsed) return newException(parsed.className, parsed.detail ? [javaString(parsed.detail)] : [], this.ctx);
+      if (parsed) {
+        const value = newException(parsed.className, parsed.detail ? [javaString(parsed.detail)] : [], this.ctx);
+        // The trace from where the runtime raised it.
+        const trace = this.failureSites.get(e)?.trace;
+        if (trace && value.kind === 'objectRef') this.exceptionTraces.set(value.heapId, trace);
+        return value;
+      }
     }
     return null;
   }
@@ -2881,11 +2949,15 @@ export class JavaInterpreter {
     if (target.kind === 'arrayRef' && name === 'toString') return javaString(this.stringify(target));
     if (target.kind === 'objectRef') {
       if (target.heapId === SYSTEM_OUT_ID || target.heapId === SYSTEM_ERR_ID) {
-        return this.printStreamMethod(name, args, receiverText, line);
+        return this.printStreamMethod(name, args, receiverText, line, target.heapId === SYSTEM_ERR_ID);
       }
       // A library object runs the library's methods; a user class's object, its own
       // (even for a user class named StringBuilder or Stack).
       if (isBuiltinObject(this.heap.get(target.heapId))) {
+        if (name === 'printStackTrace' && args.length === 0 && this.isThrowable(target)) {
+          this.appendStderr(this.stackTraceText(target));
+          return javaNull();
+        }
         if (target.className === 'StringBuilder' || target.className === 'StringBuffer') {
           const result = this.stdlib(line, () => stringBuilderMethod(target, name, args, this.ctx));
           if (result !== undefined) return result;
@@ -2976,20 +3048,21 @@ export class JavaInterpreter {
     return known ? wrongArgumentCount(name, argCount, line) : new InterpreterError(`Unknown method: ${name}()`, line);
   }
 
-  /** System.out and System.err. Both write to the one console for now (stderr is #22). */
-  private printStreamMethod(name: string, args: JavaValue[], receiverText: string, line: number): JavaValue {
+  /** System.out, or with `err` System.err. */
+  private printStreamMethod(name: string, args: JavaValue[], receiverText: string, line: number, err = false): JavaValue {
+    const write = (text: string) => (err ? this.appendStderr(text) : this.appendStdout(text));
     switch (name) {
       // print(char[]) and println(char[]) print the characters; any other array prints its identity.
       case 'println':
-        this.appendStdout((args.length > 0 ? charArrayText(args[0], this.ctx) ?? this.stringify(args[0]) : '') + '\n');
+        write((args.length > 0 ? charArrayText(args[0], this.ctx) ?? this.stringify(args[0]) : '') + '\n');
         return javaNull();
       case 'print':
-        this.appendStdout(args.length > 0 ? charArrayText(args[0], this.ctx) ?? this.stringify(args[0]) : '');
+        write(args.length > 0 ? charArrayText(args[0], this.ctx) ?? this.stringify(args[0]) : '');
         return javaNull();
       case 'printf':
       case 'format': {
         const fmt = args.length > 0 ? javaValueToString(args[0], this.heap) : '';
-        this.appendStdout(this.stdlib(line, () => javaFormat(fmt, args.slice(1), this.heap, v => this.stringify(v))));
+        write(this.stdlib(line, () => javaFormat(fmt, args.slice(1), this.heap, v => this.stringify(v))));
         return javaNull();
       }
       case 'flush':
@@ -3019,6 +3092,10 @@ export class JavaInterpreter {
    */
   private exceptionFallback(target: JavaValue, methodName: string): JavaValue | undefined {
     if (!this.isThrowable(target)) return undefined;
+    if (methodName === 'printStackTrace') {
+      this.appendStderr(this.stackTraceText(target));
+      return javaNull();
+    }
     if (['getMessage', 'getLocalizedMessage', 'printStackTrace', 'toString', 'getCause'].includes(methodName)) {
       return exceptionMethod(target, methodName, this.ctx);
     }
@@ -3278,6 +3355,7 @@ export class JavaInterpreter {
       }
       // Collections, Scanner, Random and exceptions come from the stdlib.
       const builtin = this.stdlib(line, () => newBuiltin(className, args, this.ctx));
+      if (builtin?.kind === 'objectRef' && this.isThrowable(builtin)) this.exceptionTraces.set(builtin.heapId, this.stackTrace(line));
       if (builtin) return builtin;
       throw new UnsupportedFeatureError(`The ${className} class`, line, true);
     }
@@ -3287,6 +3365,8 @@ export class JavaInterpreter {
 
     const heapId = this.allocObject(className, this.defaultInstanceFields(className));
     const self: JavaObjectRef = { kind: 'objectRef', heapId, className };
+    // A Throwable records where it was created (Throwable.fillInStackTrace).
+    if (this.isThrowable(self)) this.exceptionTraces.set(heapId, this.stackTrace(line));
     this.construct(className, self, args, line);
     return self;
   }
