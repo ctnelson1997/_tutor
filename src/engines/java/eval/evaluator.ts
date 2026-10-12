@@ -200,8 +200,10 @@ interface Scope {
 type Gen<T> = Generator<Frame, T, JavaValue | undefined>;
 
 interface Frame {
-  /** As shown: the method's name, a constructor's class name, or `<clinit>`. */
+  /** As shown: the method's name (`Animal.describe` for one a subclass inherited), a constructor's class name, or `<clinit>`. */
   name: string;
+  /** The method's own name, for stack traces. */
+  method: string;
   kind: 'method' | 'constructor' | 'clinit';
   cls: ClassSymbol;
   slots: Map<LocalSymbol, VariableSlot>;
@@ -282,6 +284,12 @@ export class Evaluator {
   /** Boxes of small values, shared as Integer.valueOf shares them. */
   private readonly boxCache = new Map<string, JavaPrimitive>();
   private readonly pureCache = new WeakMap<B.BExpr, boolean>();
+  /** Each class's instance fields and their keys (see layout). */
+  private readonly layouts = new Map<ClassSymbol, Map<FieldSymbol, string>>();
+  /** Does any class declare a field its superclass has too (so keys can differ from names)? */
+  private readonly hidesFields: boolean;
+  /** One Class object per class, for getClass(). */
+  private readonly classObjects = new Map<string, JavaObjectRef>();
   /** Virtual dispatch: the method each class runs for a method it may override. */
   private readonly overrides = new Map<MethodSymbol, Map<ClassSymbol, MethodSymbol | undefined>>();
   private readonly constCache = new WeakMap<B.BConst, JavaValue>();
@@ -302,6 +310,10 @@ export class Evaluator {
       for (const m of [...bc.methods, ...bc.constructors]) this.methods.set(m.symbol, m);
     }
     this.hasStatics = [...this.classes.values()].some(c => c.statics.size > 0);
+    this.hidesFields = program.classes.some(({ symbol }) => [...symbol.fields.values()].some(f => {
+      for (let c = symbol.superclass?.symbol; c && !c.isLibrary; c = c.superclass?.symbol) if (c.fields.get(f.name)?.isStatic === false && !f.isStatic) return true;
+      return false;
+    }));
     this.ctx = {
       heap: this.heap,
       allocArray: (elementType, elements) => this.allocArray(elementType, elements),
@@ -395,9 +407,9 @@ export class Evaluator {
     return this.frames[this.frames.length - 1];
   }
 
-  private newFrame(name: string, kind: Frame['kind'], cls: ClassSymbol, thisValue?: JavaValue): Frame {
+  private newFrame(name: string, kind: Frame['kind'], cls: ClassSymbol, thisValue?: JavaValue, method = name): Frame {
     const scope: Scope = { vars: new Map(), parent: null };
-    return { name, kind, cls, slots: new Map(), scope, current: scope, thisValue, line: 0 };
+    return { name, method, kind, cls, slots: new Map(), scope, current: scope, thisValue, line: 0 };
   }
 
   /**
@@ -659,7 +671,7 @@ export class Evaluator {
     const innermost = this.frames.length - 1;
     for (let i = innermost; i >= 0 && trace.length < MAX_TRACE_FRAMES; i--) {
       const frame = this.frames[i];
-      const method = frame.kind === 'constructor' ? '<init>' : frame.kind === 'clinit' ? '<clinit>' : frame.name;
+      const method = frame.kind === 'constructor' ? '<init>' : frame.kind === 'clinit' ? '<clinit>' : frame.method;
       trace.push(`${frame.cls.binaryName}.${method}(${this.fileName}:${i === innermost ? line : frame.line})`);
     }
     if (innermost + 1 > MAX_TRACE_FRAMES) trace.push(`... ${innermost + 1 - MAX_TRACE_FRAMES} more`);
@@ -781,7 +793,8 @@ export class Evaluator {
 
   private javaClassName(className: string): string {
     const sym = this.byName.get(className);
-    return sym ? sym.binaryName : qualifiedLibraryName(className);
+    if (sym) return sym.binaryName;
+    return isExceptionClass(className) ? qualifiedExceptionName(className) : qualifiedLibraryName(className);
   }
 
   // ── Heap ──
@@ -1484,7 +1497,39 @@ export class Evaluator {
   }
 
   private fieldRef(target: JavaValue, e: B.BField): Reference {
-    return fieldReference(this.heap, target, e.field.name, runtimeTypeName(e.field.type), this.text(e.target), this.line(e));
+    return fieldReference(this.heap, target, this.fieldKey(target, e.field), runtimeTypeName(e.field.type), this.text(e.target), this.line(e));
+  }
+
+  /** Where an object keeps a field: under its name, unless a subclass of the field's class declares the same name. */
+  private fieldKey(target: JavaValue, field: FieldSymbol): string {
+    if (!this.hidesFields || target.kind !== 'objectRef') return field.name;
+    const cls = this.byName.get(target.className);
+    return (cls && this.layout(cls).get(field)) ?? field.name;
+  }
+
+  /**
+   * The instance fields of a class's objects (JLS §8.3), its superclasses'
+   * first, each with its key: its name, or `Owner.name` for one hidden by a
+   * field of the same name in a subclass, so both are kept (and drawn).
+   */
+  private layout(cls: ClassSymbol): Map<FieldSymbol, string> {
+    let keys = this.layouts.get(cls);
+    if (keys) return keys;
+    const chain: ClassSymbol[] = [];
+    for (let c: ClassSymbol | undefined = cls; c && !c.isLibrary; c = c.superclass?.symbol) chain.push(c);
+    const taken = new Set<string>();
+    const named = new Map<FieldSymbol, string>();
+    for (const c of chain) {
+      for (const f of c.fields.values()) {
+        if (f.isStatic) continue;
+        named.set(f, taken.has(f.name) ? `${c.name}.${f.name}` : f.name);
+        taken.add(f.name);
+      }
+    }
+    keys = new Map();
+    for (const c of chain.reverse()) for (const f of c.fields.values()) if (!f.isStatic) keys.set(f, named.get(f)!);
+    this.layouts.set(cls, keys);
+    return keys;
   }
 
   private elementRef(array: JavaValue, index: JavaValue, e: B.BArrayElement): Reference {
@@ -1709,12 +1754,22 @@ export class Evaluator {
     if (!byClass) this.overrides.set(method, (byClass = new Map()));
     if (byClass.has(cls)) return byClass.get(cls);
     let found: MethodSymbol | undefined;
-    for (let c: ClassSymbol | undefined = cls; c && !c.isLibrary && !found; c = c.superclass?.symbol) {
+    const implementation = (c: ClassSymbol) => {
       const view = asSuper(classType(c, c.typeParams), method.owner);
       const map = view ? typeArgMap(view) : new Map<number, JType>();
       const wanted = method.params.map(p => runtimeTypeName(erasure(substitute(p.type, map))));
-      found = (c.methods.get(method.name) ?? []).find(m => !m.isStatic && m.arity === method.arity && this.methods.get(m)?.body
+      return (c.methods.get(method.name) ?? []).find(m => !m.isStatic && m.arity === method.arity && this.methods.get(m)?.body
         && m.params.every((p, i) => runtimeTypeName(erasure(p.type)) === wanted[i]));
+    };
+    for (let c: ClassSymbol | undefined = cls; c && !c.isLibrary && !found; c = c.superclass?.symbol) found = implementation(c);
+    // No class implements it: a default method of an interface the class implements.
+    const interfaces: ClassSymbol[] = [];
+    for (let c: ClassSymbol | undefined = cls; c && !c.isLibrary; c = c.superclass?.symbol) interfaces.push(...c.interfaces.map(i => i.symbol));
+    for (let i = 0; i < interfaces.length && !found; i++) {
+      const iface = interfaces[i];
+      if (iface.isLibrary) continue;
+      found = implementation(iface);
+      for (const s of iface.interfaces) if (!interfaces.includes(s.symbol)) interfaces.push(s.symbol);
     }
     byClass.set(cls, found);
     return found;
@@ -1737,7 +1792,10 @@ export class Evaluator {
   private methodFrame(method: MethodSymbol, receiver: JavaValue | undefined, args: JavaValue[], line: number): Frame {
     const bm = this.methods.get(method);
     if (!bm?.body) throw new InterpreterError(`${method.name}() is abstract, so it has no code to run`, line);
-    const frame = this.newFrame(method.name, 'method', method.owner, method.isStatic ? undefined : receiver);
+    // A method the receiver's class inherited is shown with its class: Animal.describe.
+    const inherited = !method.isStatic && receiver?.kind === 'objectRef' && receiver.className !== method.owner.name;
+    const frame = this.newFrame(inherited ? `${method.owner.name}.${method.name}` : method.name, 'method', method.owner,
+      method.isStatic ? undefined : receiver, method.name);
     bm.params.forEach((p, i) => this.declare(frame, frame.scope, p, args[i] ?? javaNull()));
     const decl = method.decl;
     frame.gen = this.runBody(frame, bm.body, decl?.range.line);
@@ -1777,7 +1835,7 @@ export class Evaluator {
 
   /** A call of a library method from the generator: one a program class implements (compareTo, toString, …) runs as a frame. */
   private *callLibrary(e: B.BCall, target: JavaValue | undefined, args: JavaValue[]): Gen<JavaValue> {
-    if (target && !e.method.isStatic) {
+    if (target && !e.method.isStatic && e.dispatch !== 'special') {
       const own = this.userMethod(target, e.method.name, args.length);
       if (own) {
         const frame = this.methodFrame(own, target, args, this.line(e));
@@ -1795,9 +1853,26 @@ export class Evaluator {
     if (!target || target.kind === 'null') {
       throw nullPointer(`Cannot invoke "${this.methodText(m, e.target)}" because "${e.target ? this.text(e.target) : 'this'}" is null`, line);
     }
+    // super.toString() and the like run Object's (or Throwable's) own method, whatever the class overrides.
+    if (e.dispatch === 'special' && target.kind === 'objectRef') return this.toStatic(this.objectMethod(target, m.name, args, line), e.type);
     const own = this.userMethod(target, m.name, args.length);
     if (own) return this.callNow(own, target, args, false);
     return this.toStatic(this.instanceCall(target, m.name, args, e.target ? this.text(e.target) : '', line), e.type);
+  }
+
+  /** A library class's own implementation of an instance method on a program's object: Object's and Throwable's. */
+  private objectMethod(target: JavaObjectRef, name: string, args: JavaValue[], line: number): JavaValue {
+    switch (name) {
+      case 'toString': return javaString(this.ownString(target));
+      case 'equals': return javaBool(args[0]?.kind === 'objectRef' && args[0].heapId === target.heapId);
+      case 'hashCode': return javaInt(identityHashCode(target.heapId));
+      case 'clone': {
+        if (!this.isSubclass(target.className, 'Cloneable')) throw new JavaRuntimeError('CloneNotSupportedException', this.binaryName(target.className), line);
+        const obj = this.heap.get(target.heapId) as JavaObject;
+        return { kind: 'objectRef', heapId: this.allocObject(target.className, new Map(obj.fields)), className: target.className };
+      }
+    }
+    return this.instanceCall(target, name, args, 'super', line);
   }
 
   /**
@@ -1838,6 +1913,7 @@ export class Evaluator {
 
   /** A library instance method on a value: strings, boxes, System.out, StringBuilder, collections, exceptions, Object's methods. */
   private instanceCall(target: JavaValue, name: string, args: JavaValue[], text: string, line: number): JavaValue {
+    if (name === 'getClass' && args.length === 0) return this.classObject(target);
     if (target.kind === 'string') {
       const r = this.stdlib(line, () => stringMethod(target, name, args, this.ctx));
       if (r !== undefined) return r;
@@ -1845,12 +1921,21 @@ export class Evaluator {
       const r = this.stdlib(line, () => boxedMethod(target, name, args, this.ctx));
       if (r !== undefined) return r;
     } else if (target.kind === 'arrayRef') {
+      if (name === 'clone') {
+        // A new array with the same elements (a shallow copy), JLS §10.7.
+        const arr = this.heap.get(target.heapId);
+        if (arr && isJavaArray(arr)) return { kind: 'arrayRef', heapId: this.allocArray(arr.elementType, [...arr.elements]) };
+      }
       if (name === 'toString') return javaString(this.stringify(target));
       if (name === 'equals') return javaBool(args[0]?.kind === 'arrayRef' && args[0].heapId === target.heapId);
       if (name === 'hashCode') return javaInt(identityHashCode(target.heapId));
     } else if (target.kind === 'objectRef') {
       if (target.heapId === SYSTEM_OUT_ID || target.heapId === SYSTEM_ERR_ID) return this.printStream(name, args, text, line, target.heapId === SYSTEM_ERR_ID);
       const obj = this.heap.get(target.heapId);
+      if (isBuiltinObject(obj) && target.className === 'Class') {
+        const r = this.classMethod(target, name);
+        if (r) return r;
+      }
       if (isBuiltinObject(obj)) {
         if (name === 'printStackTrace' && args.length === 0 && this.isThrowable(target)) {
           this.appendStderr(this.stackTraceText(target));
@@ -1876,6 +1961,46 @@ export class Evaluator {
       if (name === 'toString' && args.length === 0) return javaString(this.stringify(target));
     }
     throw new InterpreterError(`Unknown method: ${text || 'value'}.${name}()`, line);
+  }
+
+  /**
+   * `value.getClass()`: the value's Class object, one per class (so
+   * `getClass() == o.getClass()` compares classes), showing its name.
+   */
+  private classObject(value: JavaValue): JavaValue {
+    const name = this.runtimeClassName(value);
+    let ref = this.classObjects.get(name);
+    if (!ref) {
+      const fields = new Map<string, JavaValue>([['name', javaString(name)], ['__simpleName__', javaString(this.simpleClassName(value))]]);
+      ref = { kind: 'objectRef', heapId: this.allocObject('Class', fields, true), className: 'Class' };
+      this.classObjects.set(name, ref);
+    }
+    return ref;
+  }
+
+  /** The methods of a Class object JavaTutor has: getName, getSimpleName, toString. */
+  private classMethod(cls: JavaObjectRef, name: string): JavaValue | undefined {
+    const fields = (this.heap.get(cls.heapId) as JavaObject).fields;
+    switch (name) {
+      case 'getName': case 'getTypeName': return fields.get('name');
+      case 'getSimpleName': return fields.get('__simpleName__');
+      case 'toString': return javaString(`class ${javaValueToString(fields.get('name')!, this.heap)}`);
+    }
+    return undefined;
+  }
+
+  /** Class.getSimpleName(): `Dog` for Main$Dog, `String`, `int[]`. */
+  private simpleClassName(value: JavaValue): string {
+    switch (value.kind) {
+      case 'string': return 'String';
+      case 'primitive': return BOXES[value.javaType];
+      case 'arrayRef': {
+        const arr = this.heap.get(value.heapId);
+        return `${arr && isJavaArray(arr) ? arr.elementType : 'Object'}[]`;
+      }
+      case 'objectRef': return value.className;
+      case 'null': return 'null';
+    }
   }
 
   /** System.out, or with `err` System.err. */
@@ -1924,11 +2049,11 @@ export class Evaluator {
     return built;
   }
 
-  /** `new C(…)` for a program class: the object with its fields' defaults, then its constructor. */
+  /** `new C(…)` for a program class: the object with the default value of every field of its class chain, then its constructor. */
   private *newUser(e: B.BNew, args: JavaValue[]): Gen<JavaValue> {
     const cls = e.cls;
     const fields = new Map<string, JavaValue>();
-    for (const f of cls.fields.values()) if (!f.isStatic) fields.set(f.name, defaultValue(runtimeTypeName(f.type)));
+    for (const [f, key] of this.layout(cls)) fields.set(key, defaultValue(runtimeTypeName(f.type)));
     const heapId = this.allocObject(cls.name, fields);
     const self: JavaObjectRef = { kind: 'objectRef', heapId, className: cls.name };
     if (this.isThrowable(self)) this.exceptionTraces.set(heapId, this.stackTrace(this.line(e)));
@@ -1938,16 +2063,22 @@ export class Evaluator {
 
   /**
    * One constructor call (JLS §12.5): parameters bound, then `this(…)`, or
-   * the superclass constructor and the instance initializers, then the body.
-   * A class's default constructor gets a frame only if it has initializers.
+   * the superclass constructor (a frame of its own for a program's class)
+   * and the instance initializers, then the body. A class's default
+   * constructor gets a frame only if it runs something: a program's
+   * superclass constructor or initializers.
    */
   private *construct(cls: ClassSymbol, ctor: MethodSymbol | undefined, self: JavaObjectRef, args: JavaValue[]): Gen<void> {
     const rt = this.classes.get(cls)!;
     const bm = ctor ? this.methods.get(ctor) : undefined;
     if (!bm?.body) {
-      if (rt.bound.instanceInit.length === 0) return;
+      const call = bm?.explicitCall;
+      if (rt.bound.instanceInit.length === 0 && !(call?.ctor && !call.ctor.owner.isLibrary)) {
+        if (call) this.superConstructor(cls, self, []);
+        return;
+      }
       const frame = this.newFrame(cls.name, 'constructor', cls, self);
-      frame.gen = this.runDefaultConstructor(frame, rt);
+      frame.gen = this.runDefaultConstructor(frame, rt, call, self);
       yield frame;
       return;
     }
@@ -1957,7 +2088,8 @@ export class Evaluator {
     yield frame;
   }
 
-  private *runDefaultConstructor(frame: Frame, rt: ClassRuntime): Gen<undefined> {
+  private *runDefaultConstructor(frame: Frame, rt: ClassRuntime, call: B.BMethod['explicitCall'], self: JavaObjectRef): Gen<undefined> {
+    if (call) yield* this.superCall(call, rt, self, []);
     yield* this.instanceInit(frame, rt);
     return undefined;
   }
@@ -1966,21 +2098,29 @@ export class Evaluator {
     const decl = bm.symbol.decl!;
     this.stepAt(decl.range.line);
     const call = bm.explicitCall;
-    if (call) {
+    if (call && !call.implicit) {
       this.stepAt(call.range.line);
       const args: JavaValue[] = [];
       for (const a of call.args) args.push(this.isPure(a) ? this.pv(a) : yield* this.gv(a));
       if (call.target === 'this') {
         yield* this.construct(rt.bound.symbol, call.ctor, self, args);
       } else {
-        this.superConstructor(rt.bound.symbol, self, args);
+        yield* this.superCall(call, rt, self, args);
         yield* this.instanceInit(frame, rt);
       }
     } else {
+      if (call) yield* this.superCall(call, rt, self, []);
       yield* this.instanceInit(frame, rt);
     }
     yield* this.runBody(frame, bm.body!, undefined);
     return undefined;
+  }
+
+  /** `super(…)`: a program's superclass runs its constructor; a library exception records the message and cause. */
+  private *superCall(call: NonNullable<B.BMethod['explicitCall']>, rt: ClassRuntime, self: JavaObjectRef, args: JavaValue[]): Gen<void> {
+    const sup = call.ctor?.owner;
+    if (sup && !sup.isLibrary) yield* this.construct(sup, call.ctor, self, args);
+    else this.superConstructor(rt.bound.symbol, self, args);
   }
 
   /** The superclass constructor: Object's does nothing; a library exception's records the message and cause. */
@@ -2011,7 +2151,7 @@ export class Evaluator {
         if (item.kind === 'field') {
           this.stepAt(item.range.line);
           const v = this.isPure(item.value) ? this.pv(item.value) : yield* this.gv(item.value);
-          fieldReference(this.heap, frame.thisValue!, item.field.name, runtimeTypeName(item.field.type), 'this', item.range.line).set(v);
+          fieldReference(this.heap, frame.thisValue!, this.fieldKey(frame.thisValue!, item.field), runtimeTypeName(item.field.type), 'this', item.range.line).set(v);
         } else {
           yield* this.blockIn(item.body, initScope, undefined);
         }
@@ -2031,6 +2171,13 @@ export class Evaluator {
     if (value.kind === 'objectRef') {
       const user = this.invokeUser(value, 'toString', []);
       if (user !== undefined && user.kind === 'string') return user.value;
+    }
+    return this.ownString(value);
+  }
+
+  /** A value as the library's own toString() prints it: Object's `Main$Pt@hash` for a program's object, without its class's toString(). */
+  private ownString(value: JavaValue): string {
+    if (value.kind === 'objectRef') {
       const obj = this.heap.get(value.heapId);
       if (obj && isJavaObject(obj)) {
         if (this.isThrowable(value)) {

@@ -363,7 +363,7 @@ function checkScopes(snapshots: ExecutionSnapshot[], source: string): string[] {
     let m = s.callStack.length - 1;
     while (m >= 0 && s.callStack[m].isBlockScope) m--;
     if (m < 0 || m === s.callStack.length - 1) continue;
-    const method = s.callStack[m].name;
+    const method = s.callStack[m].name.replace(/^.*\./, ''); // Animal.describe, an inherited method, is describe
     const decls = table.get(method);
     if (!decls) continue; // not a method in the source (e.g. a library callback)
     for (const frame of s.callStack.slice(m + 1)) {

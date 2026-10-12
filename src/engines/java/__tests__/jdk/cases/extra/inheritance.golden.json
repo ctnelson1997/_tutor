@@ -1,0 +1,8 @@
+{
+  "stdout": "{Shape.id}[Shape init][Shape(Circle)]{Circle.id}[Circle]{Shape.id}[Shape init][Shape(Square)][Square]{Shape.id}[Shape init][Shape(Square)][Square]\nCircle with area 12.57 id=1\n[Square with area 9.00] id=3\n[Square with area 1.00] id=4\n[[Square with area 1.00], [Square with area 9.00], Circle with area 12.57]\n2 1 Circle\nHELLO, ANN! | (quietly) Good day, Bob. | Good day, Bob.\npolite\nPuppy says Woof (not ...) / ... / Woof\ntrue\ntrue\nfalse\nClassCastException\n1 9 true false 2\nMain$Point Point3 true\njava.lang.String Integer int[] java.util.ArrayList\n[[99, 2], [3, 4]] [[99, 2], [7, 7]]\nfalse true true true\nNotFound: key not found true\njava.lang.ClassCastException\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "9196ed2ecc896fbca6f5fdee7c068c159e7021130158e88dda6da0fb9aa354b7"
+}

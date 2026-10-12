@@ -38,21 +38,9 @@
       "issues": [23],
       "reason": "reports the read of a never-assigned local when that line runs, not before the program starts"
     },
-    "core/array-clone": {
-      "issues": [15],
-      "reason": "array.clone() is unsupported (Unknown method)"
-    },
-    "misc/exc-multi-catch": {
-      "issues": [15],
-      "reason": "getClass().getSimpleName() is unsupported"
-    },
     "misc/misc-string-methods-more": {
       "issues": [16],
       "reason": "String.chars() returns a stream, rejected until #16"
-    },
-    "oop/oop-abstract-class": {
-      "issues": [15],
-      "reason": "inheritance (extends) is rejected until #15"
     },
     "oop/oop-anonymous-comparator": {
       "issues": [16],
@@ -70,37 +58,13 @@
       "issues": [16],
       "reason": "enums are rejected until #16"
     },
-    "oop/oop-inheritance-basic": {
-      "issues": [15],
-      "reason": "inheritance (extends) is rejected until #15"
-    },
-    "oop/oop-inherited-field-access": {
-      "issues": [15],
-      "reason": "inheritance (extends) is rejected until #15"
-    },
     "oop/oop-inner-class-outer-field": {
       "issues": [16],
       "reason": "creating an inner class through an object (m.new Walker()) is rejected until #16"
     },
-    "oop/oop-instanceof-subclass": {
-      "issues": [15],
-      "reason": "inheritance (extends) is rejected until #15"
-    },
-    "oop/oop-interface-default-method": {
-      "issues": [15],
-      "reason": "interface default methods are rejected until #15"
-    },
     "oop/oop-record": {
       "issues": [16],
       "reason": "records are rejected until #16"
-    },
-    "oop/oop-super-method-call": {
-      "issues": [15],
-      "reason": "inheritance (extends) and super.method() are rejected until #15"
-    },
-    "realistic/real-shape-hierarchy": {
-      "issues": [15],
-      "reason": "inheritance (extends) is rejected until #15"
     }
   },
   "invariants": {}

@@ -244,7 +244,8 @@ describe('constructs JavaTutor can\'t run yet', () => {
   it('rejects unsupported declarations before anything runs, with the old messages', () => {
     const messages = (s: string) => bind(s).diagnostics.filter(d => d.kind === 'unsupported').map(d => d.message);
     expect(messages('enum E { A } class M { public static void main(String[] a) {} }')).toEqual(["Enums aren't supported in JavaTutor yet"]);
-    expect(messages('class A {} class B extends A { public static void main(String[] a) {} }')).toEqual(["Inheritance (class B extends A) isn't supported in JavaTutor yet"]);
+    expect(messages('class A {} class B extends A { public static void main(String[] a) {} }')).toEqual([]);
+    expect(messages('class N extends java.util.ArrayList<String> { public static void main(String[] a) {} }')).toEqual(["Inheritance (class N extends ArrayList) isn't supported in JavaTutor yet"]);
     expect(messages('class E extends RuntimeException { public static void main(String[] a) {} }')).toEqual([]);
   });
 

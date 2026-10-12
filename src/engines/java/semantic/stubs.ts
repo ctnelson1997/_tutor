@@ -142,6 +142,13 @@ public class Object {
   public boolean equals(Object o);
   public int hashCode();
   public String toString();
+  public final Class<?> getClass();
+  protected Object clone();
+}
+public final class Class<T> {
+  public String getName();
+  public String getSimpleName();
+  public String toString();
 }
 public interface Comparable<T> { int compareTo(T o); }
 public interface CharSequence {
@@ -149,7 +156,7 @@ public interface CharSequence {
   char charAt(int index);
   CharSequence subSequence(int start, int end);
   String toString();
-  boolean isEmpty();
+  default boolean isEmpty() {}
 }
 public interface Iterable<T> { java.util.Iterator<T> iterator(); }
 public interface AutoCloseable { void close(); }
@@ -288,11 +295,11 @@ const JAVA_UTIL = `
 public interface Iterator<E> {
   boolean hasNext();
   E next();
-  void remove();
+  default void remove() {}
 }
 public interface Comparator<T> {
   int compare(T a, T b);
-  Comparator<T> reversed();
+  default Comparator<T> reversed() {}
   static <T extends Comparable<? super T>> Comparator<T> naturalOrder();
   static <T extends Comparable<? super T>> Comparator<T> reverseOrder();
 }

@@ -174,18 +174,27 @@ class Declarer {
           this.unsupported(`Inheritance (class ${decl.name} extends ${decl.superclass.parts[decl.superclass.parts.length - 1].name})`, decl.superclass.range, true);
           sym.superclass = classType(object);
         } else if (sup.tag === 'class') {
-          // A class may extend a library exception class; extending anything else is #15.
-          if (!this.isLibrary && !(sup.symbol.isLibrary && isThrowableClass(sup.symbol)) && sup.symbol !== object) {
-            this.unsupported(`Inheritance (class ${decl.name} extends ${decl.superclass.parts[decl.superclass.parts.length - 1].name})`, decl.superclass.range, true);
+          const name = decl.superclass.parts[decl.superclass.parts.length - 1].name;
+          if (sup.symbol.isInterface) {
+            this.error('no interface expected here', decl.superclass.range);
+            sym.superclass = classType(object);
+          } else if (!this.isLibrary && sup.symbol.isFinal) {
+            this.error(`cannot inherit from final ${name}`, decl.superclass.range);
+            sym.superclass = classType(object);
+          } else if (!this.isLibrary && sup.symbol.isLibrary && !isThrowableClass(sup.symbol) && sup.symbol !== object) {
+            // A program's class may extend its own classes, Object and the exceptions; the stdlib's objects can't be extended.
+            this.unsupported(`Inheritance (class ${decl.name} extends ${name})`, decl.superclass.range, true);
+            sym.superclass = classType(object);
+          } else {
+            sym.superclass = sup;
           }
-          sym.superclass = sup;
         }
       } else if (sym !== object) {
         sym.superclass = classType(object);
       }
-      sym.interfaces = this.classTypes(decl.interfaces, ctx);
+      sym.interfaces = this.interfaceTypes(decl.interfaces, ctx);
     } else if (decl.kind === 'InterfaceDecl') {
-      sym.interfaces = this.classTypes(decl.extends, ctx);
+      sym.interfaces = this.interfaceTypes(decl.extends, ctx);
     } else if (!this.isLibrary) {
       if (decl.kind === 'EnumDecl') this.unsupported('Enums', decl.range);
       else if (decl.kind === 'RecordDecl') this.unsupported('Records', decl.range);
@@ -195,8 +204,39 @@ class Declarer {
     for (const m of sym.memberTypes.values()) this.resolveHeaders(m, where);
   }
 
-  private classTypes(list: A.ClassType[], ctx: TypeContext): ClassT[] {
-    return list.map(t => this.resolveType(t, ctx)).filter((t): t is ClassT => t.tag === 'class');
+  /** The interfaces a class implements (or an interface extends); a class there is javac's error. */
+  private interfaceTypes(list: A.ClassType[], ctx: TypeContext): ClassT[] {
+    const out: ClassT[] = [];
+    for (const node of list) {
+      const t = this.resolveType(node, ctx);
+      if (t.tag !== 'class') continue;
+      if (!t.symbol.isInterface) this.error('interface expected here', node.range);
+      else out.push(t);
+    }
+    return out;
+  }
+
+  /**
+   * A class that is (indirectly) its own superclass, or its own superinterface,
+   * is javac's "cyclic inheritance" error; the cycle is cut so binding can go on.
+   */
+  checkCycles(classes: Iterable<ClassSymbol>): void {
+    const object = this.lib.builtins.object;
+    for (const sym of classes) {
+      const seen = new Set<ClassSymbol>([sym]);
+      for (let c = sym.superclass?.symbol; c && !c.isLibrary; c = c.superclass?.symbol) {
+        if (!seen.has(c)) { seen.add(c); continue; }
+        this.error(`cyclic inheritance involving ${c.name}`, sym.decl!.range);
+        sym.superclass = classType(object);
+        break;
+      }
+      const reaches = (from: ClassSymbol, visited: Set<ClassSymbol>): boolean =>
+        from.interfaces.some(i => i.symbol === sym || (!visited.has(i.symbol) && (visited.add(i.symbol), reaches(i.symbol, visited))));
+      if (sym.isInterface && reaches(sym, new Set())) {
+        this.error(`cyclic inheritance involving ${sym.name}`, sym.decl!.range);
+        sym.interfaces = [];
+      }
+    }
   }
 
   declareTypeParams(params: A.TypeParam[], ctx: TypeContext): TypeVarT[] {
@@ -249,7 +289,6 @@ class Declarer {
     }
     for (const mod of m.modifiers) if (typeof mod === 'string') method.modifiers.add(mod);
     if (sym.isInterface && !method.modifiers.has('static') && !method.modifiers.has('private') && !method.modifiers.has('default')) method.modifiers.add('abstract');
-    if (sym.isInterface && !this.isLibrary && method.modifiers.has('default')) this.unsupported('Default methods in interfaces', m.range);
     const mctx: TypeContext = { ...ctx, method };
     method.typeParams = this.declareTypeParams(m.typeParams, mctx);
     let result = this.resolveType(m.result, mctx);
@@ -456,12 +495,15 @@ class Binder {
     }
     const where: TypeContext = { imports: this.imports };
     for (const c of classes) this.declarer.resolveHeaders(c, where);
+    this.declarer.checkCycles(this.declarer.allUserClasses.values());
     for (const c of classes) this.declarer.resolveMembers(c, where);
     const program: B.BProgram = { classes: [] };
     if (this.diagnostics.some(d => d.kind === 'unsupported')) return { program, diagnostics: this.diagnostics };
     const all: ClassSymbol[] = [];
     const collect = (c: ClassSymbol) => { all.push(c); for (const m of c.memberTypes.values()) collect(m); };
     classes.forEach(collect);
+    for (const c of all) this.checkOverrides(c);
+    for (const c of all) this.checkImplemented(c);
     for (const c of all) program.classes.push(this.bindClass(c));
     for (const c of classes) {
       const main = (c.methods.get('main') ?? []).find(m => m.isStatic && (m.arity === 0 || (m.arity === 1 && m.params[0].type.tag === 'array')));
@@ -575,6 +617,87 @@ class Binder {
     return result;
   }
 
+  /**
+   * A class that isn't abstract must implement every abstract method it
+   * inherits or declares (JLS §8.1.1.1), else javac's "is not abstract and
+   * does not override abstract method" error. An implementation is a
+   * non-abstract method of the class or a superclass, or a default method,
+   * with the abstract method's parameter types as seen from the class.
+   */
+  private checkImplemented(cls: ClassSymbol): void {
+    if (cls.kind !== 'class' || cls.isAbstract) return;
+    const self = this.thisType(cls);
+    const supertypes: ClassSymbol[] = [];
+    const visit = (c: ClassSymbol) => {
+      if (supertypes.includes(c)) return;
+      supertypes.push(c);
+      if (c.superclass) visit(c.superclass.symbol);
+      for (const i of c.interfaces) visit(i.symbol);
+    };
+    visit(cls);
+    const paramsSeen = (m: MethodSymbol) => {
+      const view = asSuper(self, m.owner);
+      const map = view ? typeArgMap(view) : new Map<number, JType>();
+      return m.params.map(p => substitute(p.type, map));
+    };
+    const sameParams = (a: JType[], b: JType[]) => a.length === b.length && a.every((t, i) => sameType(erasure(t), erasure(b[i])));
+    for (const owner of supertypes) {
+      for (const list of owner.methods.values()) {
+        for (const m of list) {
+          if (!m.isAbstract || m.isStatic) continue;
+          const wanted = paramsSeen(m);
+          if (wanted.some(t => t.tag === 'dynamic')) continue; // a stub's $any parameter
+          const implemented = supertypes.some(c => (c.methods.get(m.name) ?? []).some(x =>
+            x !== m && !x.isAbstract && !x.isStatic && (!c.isInterface || x.modifiers.has('default')) && sameParams(paramsSeen(x), wanted)));
+          if (implemented) continue;
+          this.error(`${cls.name} is not abstract and does not override abstract method ${m.name}(${wanted.map(typeName).join(',')}) in ${owner.name}`, cls.decl!.range);
+          return;
+        }
+      }
+    }
+  }
+
+  /**
+   * A method that overrides another (same name, same parameter types as seen
+   * from its class) must return a compatible type (JLS §8.4.8.3): the same
+   * primitive or void, or a subtype of the overridden method's reference
+   * type. Else javac's "cannot override" error.
+   */
+  private checkOverrides(cls: ClassSymbol): void {
+    const self = this.thisType(cls);
+    const seen = (m: MethodSymbol, t: JType) => {
+      const view = asSuper(self, m.owner);
+      return view ? substitute(t, typeArgMap(view)) : t;
+    };
+    const supertypes: ClassSymbol[] = [];
+    const visit = (c: ClassSymbol) => {
+      for (const s of [c.superclass?.symbol, ...c.interfaces.map(i => i.symbol)]) {
+        if (s && !supertypes.includes(s)) { supertypes.push(s); visit(s); }
+      }
+    };
+    visit(cls);
+    for (const list of cls.methods.values()) {
+      for (const m of list) {
+        if (m.isStatic) continue;
+        for (const s of supertypes) {
+          const over = (s.methods.get(m.name) ?? []).find(x => !x.isStatic && !x.modifiers.has('private') && x.arity === m.arity
+            && x.params.every((p, i) => sameType(erasure(seen(x, p.type)), erasure(m.params[i].type))));
+          if (!over) continue;
+          const want = seen(over, over.returnType);
+          const got = m.returnType;
+          const ok = want.tag === 'void' || want.tag === 'primitive' || got.tag === 'void' || got.tag === 'primitive'
+            ? sameType(got, want)
+            : isLoose(want) || isLoose(got) || isSubtype(got, want, this.b) || isSubtype(erasure(got), erasure(want), this.b);
+          if (!ok) {
+            this.error(`${m.signature} in ${cls.name} cannot override ${over.signature} in ${s.name}\n  return type ${typeName(got)} is not compatible with ${typeName(want)}`, m.decl?.range ?? cls.decl!.range);
+            return;
+          }
+          break;
+        }
+      }
+    }
+  }
+
   private enterCode(cls: ClassSymbol, method: MethodSymbol | undefined, isStatic: boolean, returnType: JType): void {
     this.ctx = { cls, method, isStatic, returnType, locals: method?.locals ?? [] };
     this.scope = new Scope();
@@ -585,14 +708,26 @@ class Binder {
     const decl = method.decl;
     const params = method.params.map((p, i) => this.declareLocal(p.name, p.type, 'param', decl?.params[i]?.modifiers.includes('final') ?? false, decl?.params[i]?.range ?? method.owner.decl!.range));
     const result: B.BMethod = { symbol: method, params };
+    if (method.isConstructor && decl?.kind !== 'MethodDecl') {
+      if (decl?.explicitCall) result.explicitCall = this.explicitCall(decl.explicitCall);
+      else result.explicitCall = this.implicitSuper(method, decl?.range ?? method.owner.decl!.range);
+    }
     if (!decl) return result;
     if (decl.kind === 'ConstructorDecl') {
-      if (decl.explicitCall) result.explicitCall = this.explicitCall(decl.explicitCall);
       result.body = this.block(decl.body);
     } else if (decl.body) {
       result.body = this.block(decl.body);
     }
     return result;
+  }
+
+  /** The `super()` a constructor without `this(…)` or `super(…)` begins with; none when the superclass is Object. */
+  private implicitSuper(ctor: MethodSymbol, range: A.Range): B.BMethod['explicitCall'] {
+    const sup = ctor.owner.superclass;
+    if (!sup || sup.symbol === this.b.object || ctor.owner.isInterface) return undefined;
+    const chosen = this.chooseMethod(sup.symbol.constructors, [], range, `constructor ${sup.symbol.name}`, sup);
+    if (!chosen) return undefined;
+    return { target: 'super', ctor: chosen.method, args: [], range, implicit: true };
   }
 
   private explicitCall(c: A.ExplicitConstructorCall): B.BMethod['explicitCall'] {
@@ -1081,7 +1216,10 @@ class Binder {
   }
 
   private fieldAccess(e: A.FieldAccess): B.BExpr {
-    if (e.target.kind === 'Super') return this.unsupportedExpr("Members reached through 'super' (super.name)", e.range);
+    if (e.target.kind === 'Super') {
+      const self = this.superReceiver(e.target);
+      return self.kind === 'This' ? this.fieldOfValue(self, e.name, e.range, e.nameRange) : self;
+    }
     if (e.target.kind === 'This' && e.target.qualifier) return this.unsupportedExpr('Qualified this (Outer.this)', e.target.range, true);
     return this.fieldOfValue(this.expr(e.target), e.name, e.range, e.nameRange);
   }
@@ -1091,8 +1229,26 @@ class Binder {
   private call(e: A.MethodCall, expected?: JType): B.BExpr {
     const range = e.range;
     const options: CallOptions = { typeArgs: e.typeArgs?.map(t => this.resolveType(t)) };
-    if (e.target?.kind === 'Super') return this.unsupportedExpr("Members reached through 'super' (super.name)", e.target.range);
     if (e.target?.kind === 'This' && e.target.qualifier) return this.unsupportedExpr('Qualified this (Outer.this)', e.target.range, true);
+    if (e.target?.kind === 'Super') {
+      const self = this.superReceiver(e.target);
+      if (self.kind !== 'This') return self;
+      const args = e.args.map(a => this.expr(a));
+      const candidates = methodsNamed((self.type as ClassT).symbol, e.name);
+      if (!candidates.length) {
+        this.error(`cannot find symbol\n  symbol: method ${e.name}(${args.map(a => typeName(a.type)).join(',')})`, e.nameRange);
+        return this.errorExpr(range);
+      }
+      const chosen = this.chooseMethod(candidates, args, e.nameRange, e.name, self.type, expected, options);
+      if (!chosen) return this.errorExpr(range);
+      if (chosen.method.isAbstract) {
+        this.error(`abstract method ${chosen.method.signature} in ${chosen.method.owner.name} cannot be accessed directly`, e.nameRange);
+        return this.errorExpr(range);
+      }
+      // super.m() runs the superclass's method itself: no virtual dispatch.
+      if (chosen.method.isStatic) return this.callNode(chosen.method, undefined, chosen, range);
+      return { kind: 'Call', method: chosen.method, dispatch: 'special', target: self, args: chosen.args, type: chosen.returnType, range };
+    }
     const args = e.args.map(a => this.expr(a));
 
     // Unqualified: the innermost class (this one, then enclosing ones) with a method of that name.
@@ -1156,6 +1312,11 @@ class Binder {
       this.error(`${typeName(receiverType)} cannot be dereferenced`, e.target.range);
       return this.errorExpr(range);
     }
+    // An array's clone() returns its own type (JLS §10.7), and can't fail.
+    if (receiverType.tag === 'array' && e.name === 'clone' && args.length === 0) {
+      const clone = methodsNamed(this.b.object, 'clone')[0];
+      return { kind: 'Call', method: clone, dispatch: 'virtual', target: receiver, args: [], type: receiverType, range };
+    }
     const candidates = methodsNamed(cls, e.name, receiverType.tag === 'array' ? this.b.object : undefined);
     if (!candidates.length) {
       if (cls.isLibrary) return { kind: 'DynamicCall', owner: cls, name: e.name, target: receiver, args, type: DYNAMIC, range };
@@ -1169,6 +1330,17 @@ class Binder {
       return this.errorExpr(range);
     }
     return this.callNode(chosen.method, chosen.method.isStatic ? undefined : receiver, chosen, range);
+  }
+
+  /** `super` as a receiver: `this`, typed as the superclass. */
+  private superReceiver(s: A.Super): B.BExpr {
+    if (s.qualifier) return this.unsupportedExpr('Qualified super (X.super.name)', s.range, true);
+    const sup = this.ctx.cls.superclass;
+    if (this.ctx.isStatic || !sup) {
+      this.error('non-static variable super cannot be referenced from a static context', s.range);
+      return this.errorExpr(s.range);
+    }
+    return { kind: 'This', cls: this.ctx.cls, type: sup, range: s.range };
   }
 
   private callNode(method: MethodSymbol, target: B.BExpr | undefined, chosen: Chosen, range: A.Range): B.BCall {

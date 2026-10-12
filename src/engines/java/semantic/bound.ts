@@ -390,8 +390,12 @@ export type BInitializer =
 export interface BMethod {
   symbol: MethodSymbol;
   params: LocalSymbol[];
-  /** A constructor's `this(…)` or `super(…)` (an implicit `super()` has no node). */
-  explicitCall?: { target: 'this' | 'super'; ctor?: MethodSymbol; args: BExpr[]; range: A.Range };
+  /**
+   * A constructor's `this(…)` or `super(…)`. A constructor without one calls
+   * its superclass's no-argument constructor (`implicit`, at the
+   * constructor's own line), except when the superclass is Object.
+   */
+  explicitCall?: { target: 'this' | 'super'; ctor?: MethodSymbol; args: BExpr[]; range: A.Range; implicit?: boolean };
   body?: BBlock;
 }
 
