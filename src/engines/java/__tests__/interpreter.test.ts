@@ -366,7 +366,7 @@ describe('Java Interpreter', () => {
   });
 
   describe('Snapshots', () => {
-    it('generates snapshots for each statement', () => {
+    it('takes a step before each statement, and one as main returns', () => {
       const result = run(`public class Main {
         public static void main(String[] args) {
           int x = 1;
@@ -375,10 +375,8 @@ describe('Java Interpreter', () => {
         }
       }`);
       expect(result.error).toBeUndefined();
-      expect(result.snapshots.length).toBe(3);
-      expect(result.snapshots[0].step).toBe(0);
-      expect(result.snapshots[1].step).toBe(1);
-      expect(result.snapshots[2].step).toBe(2);
+      expect(result.snapshots.map(s => s.step)).toEqual([0, 1, 2, 3]);
+      expect(result.snapshots.map(s => s.line)).toEqual([3, 4, 5, 6]);
     });
 
     it('includes heap objects for arrays', () => {
@@ -388,8 +386,9 @@ describe('Java Interpreter', () => {
         }
       }`);
       expect(result.error).toBeUndefined();
-      expect(result.snapshots[0].heap.length).toBeGreaterThan(0);
-      expect(result.snapshots[0].heap[0].objectType).toBe('array');
+      expect(result.snapshots[0].heap).toEqual([]); // before the line runs
+      expect(result.snapshots[1].heap.length).toBeGreaterThan(0);
+      expect(result.snapshots[1].heap[0].objectType).toBe('array');
     });
   });
 
@@ -1450,7 +1449,7 @@ describe('Java Interpreter', () => {
       expect(last.stdout).toEqual(['a', 'b', 'c']);
     });
 
-    it('shows variables appearing incrementally', () => {
+    it('shows variables appearing incrementally, each after its line runs', () => {
       const result = run(`public class Main {
         public static void main(String[] args) {
           int a = 1;
@@ -1458,12 +1457,8 @@ describe('Java Interpreter', () => {
         }
       }`);
       expect(result.error).toBeUndefined();
-      const frame0 = result.snapshots[0].callStack[0];
-      const frame1 = result.snapshots[1].callStack[0];
-      expect(frame0.variables.length).toBe(1);
-      expect(frame0.variables[0].name).toBe('a');
-      expect(frame1.variables.length).toBe(2);
-      expect(frame1.variables[1].name).toBe('b');
+      const names = result.snapshots.map(s => s.callStack[0].variables.map(v => v.name));
+      expect(names).toEqual([[], ['a'], ['a', 'b']]);
     });
 
     it('includes array properties in heap', () => {
@@ -1473,7 +1468,7 @@ describe('Java Interpreter', () => {
         }
       }`);
       expect(result.error).toBeUndefined();
-      const heap = result.snapshots[0].heap;
+      const heap = result.snapshots[result.snapshots.length - 1].heap;
       expect(heap.length).toBe(1);
       expect(heap[0].objectType).toBe('array');
       expect(heap[0].properties.length).toBe(3);
@@ -1500,8 +1495,8 @@ describe('Java Interpreter', () => {
           int x = undefinedVar;
         }
       }`);
-      expect(result.error).toBeDefined();
-      expect(result.error).toContain('not defined');
+      expect(result.snapshots).toEqual([]); // javac rejects it
+      expect(result.error).toBe('Line 3: cannot find symbol\n  symbol:   variable undefinedVar');
     });
 
     it('reports unknown method errors', () => {
@@ -1510,8 +1505,8 @@ describe('Java Interpreter', () => {
           unknownMethod();
         }
       }`);
-      expect(result.error).toBeDefined();
-      expect(result.error).toContain('Unknown method: unknownMethod()');
+      expect(result.snapshots).toEqual([]);
+      expect(result.error).toBe('Line 3: cannot find symbol\n  symbol:   method unknownMethod()\n  location: class Main');
     });
 
     it('enforces snapshot limit', () => {

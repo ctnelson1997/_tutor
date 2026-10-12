@@ -233,7 +233,8 @@ public class Main {
     s.length();
   }
 }`);
-    expect(result.error).toBe('Exception in thread "main" java.lang.NullPointerException: Cannot invoke "length()" because "s" is null');
+    // The JDK names the method by its class and erased parameter types, String and Object without their package.
+    expect(result.error).toBe('Exception in thread "main" java.lang.NullPointerException: Cannot invoke "String.length()" because "s" is null');
     expect(result.line).toBe(4);
   });
 });
@@ -297,7 +298,7 @@ public class Main {
     System.out.println(y);
   }
 }`);
-    expect(result.error).toBe("Line 3: Variable 'y' is not defined");
+    expect(result.error).toBe('Line 3: cannot find symbol\n  symbol:   variable y'); // javac's error, before any step
     expect(result.stdout).toBe('');
   });
 

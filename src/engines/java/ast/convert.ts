@@ -164,7 +164,7 @@ class Converter {
       const iface = node(t, 'interfaceDeclaration');
       if (cls) types.push(this.classDeclaration(cls));
       else if (iface) types.push(this.interfaceDeclaration(iface));
-      else if (!has(t, 'Semicolon')) types.push(this.unsupported('a field or method outside a class (an implicitly declared class)', t));
+      else if (!has(t, 'Semicolon')) types.push(this.unsupported('Methods and fields outside a class', t));
     }
     return {
       kind: 'CompilationUnit',

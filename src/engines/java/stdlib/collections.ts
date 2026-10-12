@@ -498,9 +498,13 @@ function indexError(c: Coll, i: number, n: number, adding: boolean): StdlibError
   return failure(direct ? 'ArrayIndexOutOfBoundsException' : 'IndexOutOfBoundsException', `Index ${i} out of bounds for length ${n}`);
 }
 
-/** remove(int) or remove(Object)? An int, short, byte or char argument is an index (char widens to int); anything else, an element. */
+/**
+ * remove(int) or remove(Object)? An int, short, byte or char argument is an
+ * index (char widens to int); a boxed value (remove(Integer.valueOf(40))) or
+ * anything else, an element.
+ */
 const isIndexArgument = (v: JavaValue | undefined) =>
-  v?.kind === 'primitive' && (v.javaType === 'int' || v.javaType === 'short' || v.javaType === 'byte' || v.javaType === 'char');
+  v?.kind === 'primitive' && !v.boxed && (v.javaType === 'int' || v.javaType === 'short' || v.javaType === 'byte' || v.javaType === 'char');
 
 function newSubList(parent: Coll, from: number, to: number): JavaValue {
   const { ctx } = parent;

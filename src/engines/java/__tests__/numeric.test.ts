@@ -310,10 +310,12 @@ describe('in programs', () => {
   };
   const stdout = (body: string) => run(body).snapshots.at(-1)?.stdout.join('\n');
 
-  it('stops at a literal javac rejects as too large', () => {
-    expect(run('int x = 2147483649;').error).toBe('Line 3: Integer number too large: 2147483649');
-    expect(run('long x = 0x1_0000_0000_0000_0000L;').error).toBe('Line 3: Integer number too large: 0x1_0000_0000_0000_0000L');
-    expect(run('float f = 1e40f;').error).toBe('Line 3: Floating-point number out of range: 1e40f');
+  it("rejects a literal out of range before running, with javac's error", () => {
+    expect(run('int x = 2147483649;').error).toBe('Line 3: integer number too large');
+    expect(run('long x = 0x1_0000_0000_0000_0000L;').error).toBe('Line 3: integer number too large');
+    expect(run('float f = 1e40f;').error).toBe('Line 3: floating-point number too large');
+    expect(run('float f = 1e-50f;').error).toBe('Line 3: floating-point number too small');
+    expect(run('int x = 2147483649;').snapshots).toEqual([]);
   });
 
   it('allows the minimum int and long, written with a minus sign', () => {
@@ -322,7 +324,8 @@ describe('in programs', () => {
 
   it('throws NullPointerException for arithmetic on a null Integer', () => {
     const result = run('Integer n = null;\n    int m = n + 1;');
-    expect(result.error).toBe('Exception in thread "main" java.lang.NullPointerException: Cannot use null as a number with the operator +');
+    // As the JDK words it (with -g, which names the local).
+    expect(result.error).toBe('Exception in thread "main" java.lang.NullPointerException: Cannot invoke "java.lang.Integer.intValue()" because "n" is null');
   });
 
   it('converts a returned value to the return type', () => {

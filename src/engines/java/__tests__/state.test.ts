@@ -3,6 +3,8 @@
  * objects still reachable, no block variables left over from a block that has
  * ended, no value for a local that hasn't been assigned, frames labeled by
  * the construct they belong to, and library objects drawn with their state.
+ * A step shows the state before its line runs (#24), so the state after line
+ * L is the next step's.
  */
 import { describe, it, expect } from 'vitest';
 import { parseJava } from '../parser';
@@ -86,12 +88,15 @@ describe('static fields', () => {
     static int created = 10;
     Counter() { created++; }
   }`));
-    expect(frames(stepsAt(snapshots, 9)[0])).toBe('Static fields(Main.LIMIT) main(before)');
+    expect(frames(stepsAt(snapshots, 10)[0])).toBe('Static fields(Main.LIMIT) main(before)');
     expect(variable(snapshots.at(-1)!, 'Counter.created')).toEqual({ type: 'number', value: 11 });
-    // Counter is initialized before its constructor runs: its field shows at the call.
-    const call = stepsAt(snapshots, 10)[0];
-    expect(frames(call)).toBe('Static fields(Main.LIMIT,Counter.created) main(before)');
-    expect(variable(call, 'Counter.created')).toEqual({ type: 'number', value: 10 });
+    // new Counter() initializes Counter (in a <clinit> frame), then runs its constructor.
+    const clinit = stepsAt(snapshots, 5)[0];
+    expect(frames(clinit)).toBe('Static fields(Main.LIMIT,Counter.created) main(before) <clinit>()');
+    expect(variable(clinit, 'Counter.created')).toEqual({ type: 'number', value: 0 });
+    const ctor = stepsAt(snapshots, 6)[0];
+    expect(frames(ctor)).toBe('Static fields(Main.LIMIT,Counter.created) main(before) Counter(this)');
+    expect(variable(ctor, 'Counter.created')).toEqual({ type: 'number', value: 10 });
   });
 
   it("aren't shown in a program that has none", () => {
@@ -117,9 +122,9 @@ describe('only objects the program can still reach are drawn', () => {
   it('drops an object once nothing refers to it', () => {
     const snapshots = runClean(program('Node n = new Node();\n    n.next = new Node();\n    n.next = null;\n    n = null;',
       '  static class Node { Node next; }'));
-    expect(labels(stepsAt(snapshots, 6)[0])).toEqual(['Node', 'Node']);
-    expect(labels(stepsAt(snapshots, 7)[0])).toEqual(['Node']);
-    expect(stepsAt(snapshots, 8)[0].heap).toEqual([]);
+    expect(labels(stepsAt(snapshots, 7)[0])).toEqual(['Node', 'Node']);
+    expect(labels(stepsAt(snapshots, 8)[0])).toEqual(['Node']);
+    expect(stepsAt(snapshots, 9)[0].heap).toEqual([]);
   });
 
   it('keeps objects reached through fields, collections and callers, in the order they were made', () => {
@@ -193,18 +198,21 @@ describe('no block variables are left behind', () => {
   const snapshots = runClean(source);
 
   it('after continue: the next iteration shows only its own loop variable', () => {
-    expect(stepsAt(snapshots, 13).map(frames)).toEqual(['main(xs) for(x)', 'main(xs) for(x)', 'main(xs) for(x)']);
+    // The loop's first step comes before x exists; each later one shows only x (no sq or flag).
+    expect(stepsAt(snapshots, 13).map(frames)).toEqual(['main(xs)', 'main(xs) for(x)', 'main(xs) for(x)', 'main(xs) for(x)']);
   });
 
   it('after break and return', () => {
-    expect(frames(stepsAt(snapshots, 20)[0])).toBe('main(xs)');
-    expect(frames(stepsAt(snapshots, 24).at(-1)!)).toBe('main(xs,at)');
+    expect(frames(stepsAt(snapshots, 24)[0])).toBe('main(xs)'); // after the while loop's break
+    expect(frames(stepsAt(snapshots, 26)[0])).toBe('main(xs,at)'); // after find() returned from inside its loop
+    const returning = stepsAt(snapshots, 6).find(s => s.callStack.at(-1)!.name === 'find')!;
+    expect(frames(returning)).toBe('main(xs) find(xs,target,return ↵)');
   });
 
   it('after a caught exception, which shows the try block where it happened', () => {
     const [assign] = stepsAt(snapshots, 27);
     expect(frames(assign)).toBe('main(xs,at) try(small)');
-    expect(frames(stepsAt(snapshots, 29)[0])).toBe('main(xs,at) catch(e,handled)');
+    expect(frames(stepsAt(snapshots, 29)[0])).toBe('main(xs,at) catch(e)');
     expect(frames(stepsAt(snapshots, 31)[0])).toBe('main(xs,at)');
   });
 });
@@ -234,10 +242,10 @@ describe('the step where an exception starts shows the block it started in', () 
 describe('a local declared without a value', () => {
   it("isn't shown until it is assigned", () => {
     const snapshots = runClean(program('String label;\n    int count;\n    count = 2;\n    label = "x" + count;'));
-    expect(frames(stepsAt(snapshots, 5)[0])).toBe('main()');
     expect(frames(stepsAt(snapshots, 6)[0])).toBe('main()');
-    expect(frames(stepsAt(snapshots, 7)[0])).toBe('main(count)');
-    expect(frames(stepsAt(snapshots, 8)[0])).toBe('main(label,count)'); // in declaration order
+    expect(frames(stepsAt(snapshots, 7)[0])).toBe('main()');
+    expect(frames(stepsAt(snapshots, 8)[0])).toBe('main(count)');
+    expect(frames(stepsAt(snapshots, 9)[0])).toBe('main(label,count)'); // in declaration order
   });
 
   it('is shown once any branch assigns it', () => {
@@ -254,7 +262,7 @@ describe('a local declared without a value', () => {
   });
 
   it("can't be declared with var", () => {
-    expect(run(program('var x;')).error).toBe("Line 5: Can't infer the type of 'x': 'var' needs an initializer");
+    expect(run(program('var x;')).error).toBe("Line 5: cannot infer type for local variable x\n  (cannot use 'var' on variable without initializer)");
   });
 });
 
@@ -265,12 +273,14 @@ describe('frames', () => {
       throw new RuntimeException();
     } catch (RuntimeException e) {
       int b = 2;
+      b++;
     } finally {
       int c = 3;
+      c++;
     }`));
-    expect(frames(stepsAt(snapshots, 6)[0])).toBe('main() try(a)');
-    expect(frames(stepsAt(snapshots, 9)[0])).toBe('main() catch(e,b)');
-    expect(frames(stepsAt(snapshots, 11)[0])).toBe('main() finally(c)');
+    expect(frames(stepsAt(snapshots, 7)[0])).toBe('main() try(a)');
+    expect(frames(stepsAt(snapshots, 10)[0])).toBe('main() catch(e,b)');
+    expect(frames(stepsAt(snapshots, 13)[0])).toBe('main() finally(c)');
   });
 
   it('show this apart from the variables', () => {
@@ -286,9 +296,9 @@ describe('library objects are drawn with their state', () => {
   it('a Scanner shows the input it has left, with line breaks visible', () => {
     const snapshots = runClean(program('Scanner in = new Scanner("5\\nhello\\n");\n    int n = in.nextInt();\n    String rest = in.nextLine();'));
     const remaining = (s: ExecutionSnapshot) => target(s, variable(s, 'in'))!.properties;
-    expect(remaining(stepsAt(snapshots, 5)[0])).toEqual([{ key: 'remaining', value: { type: 'string', value: '5\nhello\n', display: '"5\\nhello\\n"' } }]);
-    expect(remaining(stepsAt(snapshots, 6)[0])[0].value).toMatchObject({ display: '"\\nhello\\n"' });
-    expect(remaining(stepsAt(snapshots, 7)[0])[0].value).toMatchObject({ display: '"hello\\n"' });
+    expect(remaining(stepsAt(snapshots, 6)[0])).toEqual([{ key: 'remaining', value: { type: 'string', value: '5\nhello\n', display: '"5\\nhello\\n"' } }]);
+    expect(remaining(stepsAt(snapshots, 7)[0])[0].value).toMatchObject({ display: '"\\nhello\\n"' });
+    expect(remaining(stepsAt(snapshots, 8)[0])[0].value).toMatchObject({ display: '"hello\\n"' });
   });
 
   it('an Iterator shows its collection and its cursor', () => {
@@ -305,8 +315,8 @@ describe('library objects are drawn with their state', () => {
   it('a Random shows its seed, which each call advances', () => {
     const snapshots = runClean(program('Random rng = new Random(42);\n    int r = rng.nextInt(10);\n    System.out.println(r);'));
     const seed = (s: ExecutionSnapshot) => target(s, variable(s, 'rng'))!.properties;
-    expect(seed(stepsAt(snapshots, 5)[0])).toEqual([{ key: 'seed', value: { type: 'bigint', value: String(42n ^ 0x5DEECE66Dn) } }]);
-    expect(seed(stepsAt(snapshots, 6)[0])[0].value).not.toEqual(seed(stepsAt(snapshots, 5)[0])[0].value);
+    expect(seed(stepsAt(snapshots, 6)[0])).toEqual([{ key: 'seed', value: { type: 'bigint', value: String(42n ^ 0x5DEECE66Dn) } }]);
+    expect(seed(stepsAt(snapshots, 7)[0])[0].value).not.toEqual(seed(stepsAt(snapshots, 6)[0])[0].value);
     expect(snapshots.at(-1)!.stdout).toEqual(['0']); // new Random(42).nextInt(10) is 0 in Java too
   });
 

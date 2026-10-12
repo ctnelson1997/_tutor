@@ -49,9 +49,12 @@ describe('stderr', () => {
     System.out.println("b");
   }
 }`));
-    const [first, second, third] = result.snapshots.map(s => s.console!);
+    // Steps show the state before their line: none before the first write, then the same line objects.
+    const [none, first, second, third] = result.snapshots.map(s => s.console);
+    expect(none).toBeUndefined();
     expect(second).toBe(first);
-    expect(third[0]).toBe(first[0]);
+    expect(third![0]).toBe(first![0]);
+    expect(third).toEqual([{ text: 'a', stream: 'stderr' }, { text: 'b', stream: 'stdout' }]);
   });
 });
 

@@ -149,12 +149,14 @@ describe('a user class named after a library class', () => {
     System.out.println(sb.text);
     Object list = new ArrayList();
     System.out.println(list instanceof java.util.List);
-    for (Object x : new ArrayList()) { }
   }
 }`;
     const result = run(source);
     expect(result.stdout).toBe('true\n<a><b>\nfalse');
-    expect(result.error).toBe("Line 16: For-each loops over your own Iterable classes aren't supported in JavaTutor yet");
+    expect(result.error).toBeUndefined();
+    // Iterating over it is javac's error, since the class isn't Iterable.
+    const loop = run(source.replace('System.out.println(list instanceof java.util.List);', 'for (Object x : new ArrayList()) { }'));
+    expect(loop.error).toBe('Line 15: for-each not applicable to expression type\n  required: array or java.lang.Iterable\n  found:    ArrayList');
   });
 
   it('shows every declared field, including ones that start with __', () => {

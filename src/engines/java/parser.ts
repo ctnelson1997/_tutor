@@ -65,23 +65,18 @@ export function has(node: CstNode, key: string): boolean {
   return !!node.children[key] && node.children[key].length > 0;
 }
 
-/** Get the line number from any node/token (first token found) */
-export function getLine(node: CstNode | CstToken): number {
-  if (isCstToken(node)) return node.startLine;
-  // Walk the tree to find the first token
-  for (const items of Object.values(node.children)) {
-    for (const item of items) {
-      const line = getLine(item);
-      if (line > 0) return line;
-    }
-  }
-  return 0;
+const sources = new WeakMap<CstNode, string>();
+
+/** Parse Java source code, returns the CST root (which remembers its source, for sourceOf). */
+export function parseJava(source: string): CstNode {
+  const cst = javaParse(source) as unknown as CstNode;
+  sources.set(cst, source);
+  return cst;
 }
 
-/** Parse Java source code, returns the CST root */
-export function parseJava(source: string): CstNode {
-  const cst = javaParse(source);
-  return cst as unknown as CstNode;
+/** The source a CST root from parseJava was parsed from. */
+export function sourceOf(cst: CstNode): string | undefined {
+  return sources.get(cst);
 }
 
 /**

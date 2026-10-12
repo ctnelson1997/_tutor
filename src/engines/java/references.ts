@@ -117,18 +117,23 @@ export function fieldReference(
   };
 }
 
-/** Element `index` of the array that `target` evaluated to. */
+/**
+ * Element `index` of the array that `target` evaluated to. `elementType`, the
+ * static element type, names the array in a NullPointerException as the JVM
+ * does: `Cannot store to int array`, `object array`, `byte/boolean array`.
+ */
 export function arrayElementReference(
   heap: Map<string, JavaHeapEntry>,
   target: JavaValue,
   index: number,
   targetText: string,
   line: number,
+  elementType?: string,
 ): Reference {
   const entry = target.kind === 'arrayRef' ? heap.get(target.heapId) : undefined;
   const elements = (access: 'load from' | 'store to') => {
     if (target.kind === 'null') {
-      throw nullPointer(`Cannot ${access} array because "${targetText}" is null`, line);
+      throw nullPointer(`Cannot ${access} ${arrayKind(elementType)}array because "${targetText}" is null`, line);
     }
     if (!entry || !isJavaArray(entry)) throw new InterpreterError(`'${targetText}' is not an array`, line);
     const length = entry.elements.length;
@@ -147,6 +152,13 @@ export function arrayElementReference(
       return stored;
     },
   };
+}
+
+/** How the JVM's NullPointerException messages name an array of this element type (with a trailing space). */
+function arrayKind(elementType: string | undefined): string {
+  if (elementType === undefined) return '';
+  if (elementType === 'byte' || elementType === 'boolean') return 'byte/boolean ';
+  return ['int', 'long', 'short', 'char', 'float', 'double'].includes(elementType) ? `${elementType} ` : 'object ';
 }
 
 /** `target.length` for an array value. */

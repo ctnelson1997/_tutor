@@ -194,12 +194,12 @@ describe('drawing collections', () => {
     it.remove();
     int done = 1;`));
     const cursorAt = (line: number) => {
-      const step = snapshots.find(s => s.line === line)!; // a line's step shows the state after it ran
+      const step = snapshots.find(s => s.line === line)!; // a line's step shows the state before it runs
       const iterator = target(step, variable(step, 'it'))!;
       return iterator.properties.map(p => (p.key === 'cursor' ? `cursor=${(p.value as { value: number }).value}` : p.key));
     };
-    expect(cursorAt(8)).toEqual(['collection', 'cursor=2']); // the second next()
-    expect(cursorAt(9)).toEqual(['collection', 'cursor=1']); // remove()
+    expect(cursorAt(9)).toEqual(['collection', 'cursor=2']); // after the second next()
+    expect(cursorAt(10)).toEqual(['collection', 'cursor=1']); // after remove()
   });
 });
 

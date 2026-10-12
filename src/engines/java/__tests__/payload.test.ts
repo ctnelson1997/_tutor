@@ -13,15 +13,17 @@ import { HEAVY_PROGRAMS } from '../../../../scripts/java-payload';
 
 const run = (source: string) => new JavaInterpreter().execute(parseJava(source)).snapshots;
 const MB = 1e6;
+/** The heavy programs take a second or two alone, longer while other suites run. */
+const HEAVY = { timeout: 30_000 };
 
 describe('snapshot payload', () => {
-  it('keeps an insertion sort of 300 ints (5,000 steps) under 5 MB', () => {
+  it('keeps an insertion sort of 300 ints (5,000 steps) under 5 MB', HEAVY, () => {
     const snapshots = run(HEAVY_PROGRAMS['insertion sort of 300 ints']);
     expect(snapshots).toHaveLength(5000);
     expect(serialize(snapshots).length).toBeLessThan(5 * MB);
   });
 
-  it('keeps 1,000 small objects in a list under 15 MB', () => {
+  it('keeps 1,000 small objects in a list under 15 MB', HEAVY, () => {
     expect(serialize(run(HEAVY_PROGRAMS['1,000 small objects in an ArrayList'])).length).toBeLessThan(15 * MB);
   });
 
@@ -34,8 +36,8 @@ describe('snapshot payload', () => {
   }
 }`);
     const fixedIn = (s: (typeof snapshots)[number]) => s.heap.find(h => h.properties[0]?.value.type === 'number' && h.properties[0].value.value === 1)!;
-    const first = fixedIn(snapshots[0]);
-    for (const s of snapshots) expect(fixedIn(s)).toBe(first);
+    const first = fixedIn(snapshots[1]); // the first step is before fixed exists
+    for (const s of snapshots.slice(1)) expect(fixedIn(s)).toBe(first);
     const moving = snapshots.map(s => s.heap.find(h => h !== fixedIn(s))).filter(h => h !== undefined);
     expect(new Set(moving).size).toBe(4); // [0,0,0], then one version per write
   });

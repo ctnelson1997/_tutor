@@ -4,10 +4,11 @@
  * to that point, and report the reason with a line. Stack traces and messages
  * were checked against real `java` (JDK 21).
  */
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { runJava } from '../run';
 import { parseJava, describeParseError } from '../parser';
 import { JavaInterpreter } from '../interpreter';
+import { Evaluator } from '../eval/evaluator';
 import type { ExecutionSnapshot, RunError, WorkerMessage } from '../../../types/snapshot';
 
 function result(message: WorkerMessage): { snapshots: ExecutionSnapshot[]; error?: RunError } {
@@ -225,11 +226,17 @@ describe('errors from the engine', () => {
   });
 
   it('hide the JavaScript text of an internal failure from the student, keeping it for tests', () => {
-    const interpreter = new JavaInterpreter();
-    (interpreter as unknown as { stdlib: () => never }).stdlib = () => {
+    // An engine bug: the evaluator's library dispatch throws a JavaScript error.
+    const spy = vi.spyOn(Evaluator.prototype as unknown as { stdlib: () => never }, 'stdlib').mockImplementation(() => {
       throw new TypeError("Cannot read properties of undefined (reading 'x')");
-    };
-    const outcome = interpreter.execute(parseJava('public class Main {\n  public static void main(String[] args) {\n    "a".length();\n  }\n}'));
+    });
+    const outcome = (() => {
+      try {
+        return new JavaInterpreter().execute(parseJava('public class Main {\n  public static void main(String[] args) {\n    "a".length();\n  }\n}'));
+      } finally {
+        spy.mockRestore();
+      }
+    })();
     expect(outcome.failure).toEqual({ kind: 'error', message: 'Internal JavaTutor error (please report it)', line: 3 });
     expect(outcome.error).toContain('Cannot read properties of undefined');
   });

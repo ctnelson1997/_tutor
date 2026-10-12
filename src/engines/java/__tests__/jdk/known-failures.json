@@ -10,10 +10,6 @@
       "issues": [16],
       "reason": "List.forEach needs a lambda, and lambdas are rejected until #16"
     },
-    "collections/coll-list-remove-object-vs-index": {
-      "issues": [13],
-      "reason": "list.remove(Integer.valueOf(40)) removes by index instead of by value: Integer.valueOf returns an int here, so remove(int) is chosen"
-    },
     "collections/coll-map-computeIfAbsent": {
       "issues": [16],
       "reason": "Map.computeIfAbsent needs a lambda, and lambdas are rejected until #16"
@@ -34,25 +30,9 @@
       "issues": [16],
       "reason": "streams are unsupported (Unknown method: nums.stream())"
     },
-    "compile-errors/ce-lossy-conversion": {
-      "issues": [23],
-      "reason": "runs int n = <double>, which javac rejects (possible lossy conversion)"
-    },
     "compile-errors/ce-missing-return": {
       "issues": [23],
       "reason": "runs a method with a missing return statement"
-    },
-    "compile-errors/ce-string-minus": {
-      "issues": [23],
-      "reason": "reports \"5\" - 1 (bad operand types) when that line runs, not before the program starts"
-    },
-    "compile-errors/ce-type-mismatch": {
-      "issues": [23],
-      "reason": "runs int x = \"hello\", which javac rejects (incompatible types)"
-    },
-    "compile-errors/ce-undeclared-var-late": {
-      "issues": [23],
-      "reason": "runs until it reaches an undeclared variable javac reports before running"
     },
     "compile-errors/ce-uninitialized-local": {
       "issues": [23],
@@ -61,30 +41,6 @@
     "core/array-clone": {
       "issues": [15],
       "reason": "array.clone() is unsupported (Unknown method)"
-    },
-    "core/deep-recursion": {
-      "issues": [14],
-      "reason": "recursion 900 deep overflows the JavaScript stack"
-    },
-    "core/integer-cache": {
-      "issues": [13],
-      "reason": "Integer == ignores the -128..127 cache: boxed values have no identity until static types (#13) know where boxing happens"
-    },
-    "core/num-ternary-promotion": {
-      "issues": [13],
-      "reason": "a conditional with int and double branches doesn't promote to double"
-    },
-    "core/overload-by-type": {
-      "issues": [13],
-      "reason": "overloads are chosen by argument count, not type"
-    },
-    "core/overload-ctor-by-type": {
-      "issues": [13],
-      "reason": "constructor overloads are chosen by argument count, not type"
-    },
-    "extra/boxed-identity-eq": {
-      "issues": [13],
-      "reason": "Integer == compares values, ignoring the -128..127 cache"
     },
     "misc/exc-multi-catch": {
       "issues": [15],

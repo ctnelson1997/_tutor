@@ -89,7 +89,7 @@ describe('unsupported constructs stop the program with a clear message', () => {
   });
 
   it('rejects methods outside a class, which Java 21 only allows as a preview feature', () => {
-    expect(execute('void main() { System.out.println("x"); }').error).toBe('Line 1: Methods and fields must be declared inside a class');
+    expect(execute('void main() { System.out.println("x"); }').error).toBe("Line 1: Methods and fields outside a class aren't supported in JavaTutor yet");
   });
 
   it('rejects a declaration before running anything, and a lambda only when it is reached', () => {
@@ -160,7 +160,8 @@ describe('what the steps show', () => {
 }`;
     const result = execute(source);
     expect(result.stdout).toBe('4\n7');
-    expect(frames(result.snapshots[0])).toBe('Static fields(Main.squares) <clinit>() for(i)');
+    expect(frames(result.snapshots[0])).toBe('Static fields(Main.squares) <clinit>()');
+    expect(frames(stepsAt(result, 3)[0])).toBe('Static fields(Main.squares) <clinit>() for(i)');
     // Later's static field appears once Later is initialized, at its first use.
     expect(frames(stepsAt(result, 6)[0])).toBe('Static fields(Main.squares,Later.value) main() <clinit>()');
   });

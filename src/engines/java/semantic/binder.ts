@@ -170,7 +170,10 @@ class Declarer {
     if (decl.kind === 'ClassDecl') {
       if (decl.superclass) {
         const sup = this.resolveType(decl.superclass, ctx);
-        if (sup.tag === 'class') {
+        if (sup.tag === 'dynamic') {
+          this.unsupported(`Inheritance (class ${decl.name} extends ${decl.superclass.parts[decl.superclass.parts.length - 1].name})`, decl.superclass.range, true);
+          sym.superclass = classType(object);
+        } else if (sup.tag === 'class') {
           // A class may extend a library exception class; extending anything else is #15.
           if (!this.isLibrary && !(sup.symbol.isLibrary && isThrowableClass(sup.symbol)) && sup.symbol !== object) {
             this.unsupported(`Inheritance (class ${decl.name} extends ${decl.superclass.parts[decl.superclass.parts.length - 1].name})`, decl.superclass.range, true);
@@ -291,6 +294,8 @@ class Declarer {
       case 'ClassType': {
         const resolved = this.resolveClassType(t, ctx, extraVars);
         if (resolved) return resolved;
+        // A library class JavaTutor knows of but lacks (Thread, BinaryOperator, …): what uses it is reported when it runs.
+        if (UNSUPPORTED_LIBRARY.has(t.parts[t.parts.length - 1].name)) return DYNAMIC;
         this.error(`cannot find symbol\n  symbol:   class ${t.parts.map(p => p.name).join('.')}`, t.range);
         return ERROR;
       }
@@ -955,7 +960,9 @@ class Binder {
         if (/^0[xX]/.test(e.text)) return this.unsupportedExpr('Hexadecimal floating-point literals', range);
         const parsed = floatingLiteralValue(e.text);
         if (!parsed) {
-          this.error('floating-point number too large', range);
+          // Out of range: infinite as a float or double, or a nonzero literal that rounds to zero.
+          const large = Math.abs(Number(e.text.replace(/_/g, '').replace(/[fFdD]$/, ''))) >= 1;
+          this.error(`floating-point number too ${large ? 'large' : 'small'}`, range);
           return this.errorExpr(range);
         }
         return { kind: 'Const', value: parsed.value, type: primitive(parsed.type), range };
@@ -1371,8 +1378,8 @@ class Binder {
     const resolved = this.declarer.resolveType(e.type, this.typeContext());
     if (resolved.tag !== 'class') {
       // A class JavaTutor's library doesn't have.
-      if (resolved.tag === 'error') {
-        this.diagnostics.pop();
+      if (resolved.tag === 'error' || resolved.tag === 'dynamic') {
+        if (resolved.tag === 'error') this.diagnostics.pop();
         return this.unsupportedExpr(`The ${e.type.parts[e.type.parts.length - 1].name} class`, range, true);
       }
       return this.errorExpr(range);

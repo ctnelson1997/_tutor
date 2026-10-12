@@ -19,6 +19,11 @@ export interface JavaPrimitive {
   kind: 'primitive';
   javaType: JavaPrimitiveType;
   value: number | boolean | bigint;
+  /**
+   * A boxed value (an Integer, a Double, …): an object, so `==` on two boxes
+   * compares identity. Integer.valueOf's cache makes small values shared.
+   */
+  boxed?: boolean;
 }
 
 export interface JavaString {
@@ -281,18 +286,6 @@ export function javaValueToString(val: JavaValue, heap: Map<string, JavaHeapEntr
   }
 }
 
-export function javaValuesEqual(a: JavaValue, b: JavaValue): boolean {
-  if (a.kind === 'null' && b.kind === 'null') return true;
-  if (a.kind === 'null' || b.kind === 'null') return false;
-  if (a.kind === 'primitive' && b.kind === 'primitive') {
-    // A long (bigint) against another type compares by value.
-    return typeof a.value === typeof b.value ? a.value === b.value : Number(a.value) === Number(b.value);
-  }
-  if (a.kind === 'string' && b.kind === 'string') return a.value === b.value;
-  if (a.kind === 'arrayRef' && b.kind === 'arrayRef') return a.heapId === b.heapId;
-  if (a.kind === 'objectRef' && b.kind === 'objectRef') return a.heapId === b.heapId;
-  return false;
-}
 
 /** Create a JavaValue for an int literal */
 export function javaInt(n: number): JavaPrimitive {
