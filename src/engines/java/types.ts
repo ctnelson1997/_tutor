@@ -58,6 +58,65 @@ export interface JavaObject {
    * LinkedList or Stack too.
    */
   builtin?: boolean;
+  /** A library collection's or iterator's state that isn't drawn (#21). */
+  state?: LibraryState;
+}
+
+/**
+ * What a library collection or iterator keeps besides its contents (#21). The
+ * contents are fields (`__data__`, or `__keys__` and `__values__`) so they
+ * can be drawn; this is what the drawing leaves out.
+ */
+export interface LibraryState {
+  /**
+   * Structural changes so far (adds and removes, as Java's modCount counts
+   * them). An iterator remembers the count it expects, and a for-each loop
+   * whose collection changed under it throws ConcurrentModificationException.
+   */
+  modCount?: number;
+  /** A HashMap's or HashSet's table (and the linked variants'), see stdlib/hashing.ts. */
+  table?: HashTable;
+  /** List.of, Collections.unmodifiableList, …: no change is allowed. Arrays.asList: no change of size. */
+  restriction?: 'immutable' | 'fixedSize';
+  /** new LinkedHashMap<>(n, f, true): get() and put() move the entry to the end. */
+  accessOrder?: boolean;
+  /**
+   * A copy that stands in for a view (`headSet()`, `descendingMap()`, …):
+   * changing it is an error, since the change wouldn't reach the original.
+   */
+  snapshotOf?: string;
+  /** An Iterator's position, see stdlib/iteration.ts. */
+  iteration?: IterationState;
+}
+
+/**
+ * A hash table as java.util.HashMap keeps it: `capacity` buckets (0 until
+ * the first put, when it becomes `initialCapacity`, or 16), and each key's
+ * spread hash, parallel to the keys.
+ */
+export interface HashTable {
+  capacity: number;
+  initialCapacity: number;
+  hashes: number[];
+}
+
+/**
+ * Where an iterator is. `cursor` (also a drawn field) is the index next()
+ * returns; `lastRet` the index it last returned (-1 after remove()).
+ * `expectedModCount` is the collection's count when the iterator last
+ * changed it. A HashMap, LinkedHashMap or TreeMap iterator decides hasNext()
+ * when it moves (`nextExists`), the others from the size at the time.
+ * `descending` walks from the end; `forgetMeNot` holds what a
+ * PriorityQueue iterator's remove() moved behind the cursor.
+ */
+export interface IterationState {
+  cursor: number;
+  lastRet: number;
+  expectedModCount: number;
+  nextExists?: boolean;
+  descending?: boolean;
+  forgetMeNot?: JavaValue[];
+  lastRetElement?: JavaValue;
 }
 
 /** Is this heap entry a standard-library object (see JavaObject.builtin)? */
@@ -73,6 +132,47 @@ export function isJavaArray(entry: JavaHeapEntry): entry is JavaArray {
 
 export function isJavaObject(entry: JavaHeapEntry): entry is JavaObject {
   return 'className' in entry && 'fields' in entry;
+}
+
+/** The collection an unmodifiable view (Collections.unmodifiableList, …) shows. */
+function unmodifiableTarget(obj: JavaObject, heap: Map<string, JavaHeapEntry>): JavaObject | undefined {
+  const target = obj.fields.get('__unmodifiable__');
+  const entry = target?.kind === 'objectRef' ? heap.get(target.heapId) : undefined;
+  return entry && isJavaObject(entry) ? entry : undefined;
+}
+
+/**
+ * The elements of a library list, set or queue, in iteration order: its
+ * `__data__` array, an unmodifiable view's collection's, or for a subList()
+ * view, its range of the parent list (a copy). Undefined for anything else.
+ */
+export function collectionElements(obj: JavaObject, heap: Map<string, JavaHeapEntry>): JavaValue[] | undefined {
+  const data = obj.fields.get('__data__');
+  if (data?.kind === 'arrayRef') {
+    const arr = heap.get(data.heapId);
+    return arr && isJavaArray(arr) ? arr.elements : undefined;
+  }
+  const target = unmodifiableTarget(obj, heap);
+  if (target) return collectionElements(target, heap);
+  const parent = obj.fields.get('__target__');
+  if (obj.className === 'SubList' && parent?.kind === 'objectRef') {
+    const p = heap.get(parent.heapId);
+    const all = p && isJavaObject(p) ? collectionElements(p, heap) : undefined;
+    const offset = Number((obj.fields.get('__offset__') as JavaPrimitive).value);
+    return all?.slice(offset, offset + Number((obj.fields.get('__size__') as JavaPrimitive).value));
+  }
+  return undefined;
+}
+
+/** A library map's keys and values, in iteration order (its `__keys__` and `__values__` arrays, or an unmodifiable view's map's). */
+export function mapContents(obj: JavaObject, heap: Map<string, JavaHeapEntry>): { keys: JavaValue[]; values: JavaValue[] } | undefined {
+  const k = obj.fields.get('__keys__'), v = obj.fields.get('__values__');
+  if (k?.kind !== 'arrayRef' || v?.kind !== 'arrayRef') {
+    const target = unmodifiableTarget(obj, heap);
+    return target ? mapContents(target, heap) : undefined;
+  }
+  const keys = heap.get(k.heapId), values = heap.get(v.heapId);
+  return keys && isJavaArray(keys) && values && isJavaArray(values) ? { keys: keys.elements, values: values.elements } : undefined;
 }
 
 export function defaultValue(type: JavaType): JavaValue {
@@ -170,24 +270,11 @@ export function javaValueToString(val: JavaValue, heap: Map<string, JavaHeapEntr
           if (k && v) return javaValueToString(k, heap) + '=' + javaValueToString(v, heap);
         }
         // Maps -> {k=v, ...}
-        const keysRef = obj.fields.get('__keys__');
-        const valuesRef = obj.fields.get('__values__');
-        if (keysRef?.kind === 'arrayRef' && valuesRef?.kind === 'arrayRef') {
-          const ks = heap.get(keysRef.heapId), vs = heap.get(valuesRef.heapId);
-          if (ks && isJavaArray(ks) && vs && isJavaArray(vs)) {
-            return '{' + ks.elements
-              .map((k, i) => javaValueToString(k, heap) + '=' + javaValueToString(vs.elements[i], heap))
-              .join(', ') + '}';
-          }
-        }
+        const map = mapContents(obj, heap);
+        if (map) return '{' + map.keys.map((k, i) => javaValueToString(k, heap) + '=' + javaValueToString(map.values[i], heap)).join(', ') + '}';
         // Lists / sets / queues / stacks -> [a, b, c]
-        const dataRef = obj.fields.get('__data__');
-        if (dataRef?.kind === 'arrayRef') {
-          const d = heap.get(dataRef.heapId);
-          if (d && isJavaArray(d)) {
-            return '[' + d.elements.map(e => javaValueToString(e, heap)).join(', ') + ']';
-          }
-        }
+        const elements = collectionElements(obj, heap);
+        if (elements) return '[' + elements.map(e => javaValueToString(e, heap)).join(', ') + ']';
       }
       return `${isBuiltinObject(obj) ? qualifiedLibraryName(val.className) : val.className}@${identityHash(val.heapId)}`;
     }

@@ -71,6 +71,8 @@ import {
   internedString,
   sameString,
   javaNull,
+  collectionElements,
+  mapContents,
 } from './types';
 import {
   type StdlibContext,
@@ -81,16 +83,15 @@ import {
   javaFormat,
   newBuiltin,
   callInstanceMethod,
-  getIterableElements,
+  forEachIterator,
   scannerRemaining,
   charArrayText,
   stringMethod,
   stringBuilderMethod,
   boxedMethod,
   newString,
-  LIST_LIKE,
   SET_LIKE,
-  MAP_LIKE,
+  identityHashCode,
   isExceptionClass,
   newException,
   exceptionMethod,
@@ -469,20 +470,13 @@ export class JavaInterpreter {
         }
         // A user class without toString() prints as Main$Point@1b6d3586 (a class named HashMap too, not as a map).
         if (!obj.builtin) return `${this.binaryName(value.className)}@${identityHash(value.heapId)}`;
-        // Maps: {k=v, ...} — recurse via stringify so element toString() is honored.
-        const keysRef = obj.fields.get('__keys__'), valuesRef = obj.fields.get('__values__');
-        if (keysRef?.kind === 'arrayRef' && valuesRef?.kind === 'arrayRef') {
-          const ks = this.heap.get(keysRef.heapId), vs = this.heap.get(valuesRef.heapId);
-          if (ks && isJavaArray(ks) && vs && isJavaArray(vs)) {
-            return '{' + ks.elements.map((k, i) => this.stringify(k) + '=' + this.stringify(vs.elements[i])).join(', ') + '}';
-          }
-        }
-        // Lists / sets / queues: [a, b, c]
-        const dataRef = obj.fields.get('__data__');
-        if (dataRef?.kind === 'arrayRef') {
-          const d = this.heap.get(dataRef.heapId);
-          if (d && isJavaArray(d)) return '[' + d.elements.map(e => this.stringify(e)).join(', ') + ']';
-        }
+        // Collections print their elements with their own toString(); one that holds itself prints "(this Collection)".
+        const element = (e: JavaValue, self: string) => (e.kind === 'objectRef' && e.heapId === value.heapId ? self : this.stringify(e));
+        const map = mapContents(obj, this.heap);
+        if (map) return '{' + map.keys.map((k, i) => element(k, '(this Map)') + '=' + element(map.values[i], '(this Map)')).join(', ') + '}';
+        const elements = collectionElements(obj, this.heap);
+        if (elements) return '[' + elements.map(e => element(e, '(this Collection)')).join(', ') + ']';
+        if (value.className === 'MapEntry') return this.stringify(obj.fields.get('key')!) + '=' + this.stringify(obj.fields.get('value')!);
       }
     }
     if (value.kind === 'arrayRef') {
@@ -1277,22 +1271,22 @@ export class JavaInterpreter {
         properties: Array.from(entry.fields.entries()).map(([k, v]) => ({ key: k, value: this.javaToRuntime(v) })),
       };
     }
-    if (MAP_LIKE.has(cls)) {
-      const keys = this.getBackingElements(entry, '__keys__');
-      const values = this.getBackingElements(entry, '__values__');
+    const map = mapContents(entry, this.heap);
+    if (map) {
       return {
         id, objectType: 'map', label: cls,
-        properties: keys.map((k, i) => ({
+        properties: map.keys.map((k, i) => ({
           key: javaValueToString(k, this.heap),
-          value: this.javaToRuntime(values[i] ?? javaNull()),
+          value: this.javaToRuntime(map.values[i] ?? javaNull()),
         })),
       };
     }
-    if (LIST_LIKE.has(cls) || SET_LIKE.has(cls)) {
-      const elems = this.getBackingElements(entry, '__data__');
+    // Lists, sets, queues, and the views keySet(), values(), entrySet(), subList()
+    const elements = collectionElements(entry, this.heap);
+    if (elements) {
       return {
-        id, objectType: SET_LIKE.has(cls) ? 'set' : 'list', label: cls,
-        properties: elems.map((e, i) => ({ key: String(i), value: this.javaToRuntime(e) })),
+        id, objectType: SET_LIKE.has(cls) || cls === 'KeySet' || cls === 'EntrySet' ? 'set' : 'list', label: cls,
+        properties: elements.map((e, i) => ({ key: String(i), value: this.javaToRuntime(e) })),
       };
     }
     if (cls === 'StringBuilder' || cls === 'StringBuffer') {
@@ -1315,15 +1309,6 @@ export class JavaInterpreter {
         .filter(([k]) => !k.startsWith('__'))
         .map(([k, v]) => ({ key: k, value: this.javaToRuntime(v) })),
     };
-  }
-
-  private getBackingElements(entry: JavaObject, field: string): JavaValue[] {
-    const ref = entry.fields.get(field);
-    if (ref && ref.kind === 'arrayRef') {
-      const arr = this.heap.get(ref.heapId);
-      if (arr && isJavaArray(arr)) return arr.elements;
-    }
-    return [];
   }
 
   // ── Heap management ──
@@ -1942,34 +1927,37 @@ export class JavaInterpreter {
     const iterExpr = child(enhanced, 'expression')!;
     const iterValue = this.evalExpression(iterExpr, scope);
 
-    let iterElements: JavaValue[];
+    // The next element, or undefined after the last.
+    let nextElement: () => JavaValue | undefined;
     if (iterValue.kind === 'arrayRef') {
       const arr = this.heap.get(iterValue.heapId);
       if (!arr || !isJavaArray(arr)) {
         throw new InterpreterError('Enhanced for loop target is not an array', line);
       }
-      iterElements = arr.elements;
+      let i = 0;
+      nextElement = () => (i < arr.elements.length ? arr.elements[i++] : undefined);
       if (type === 'var') type = arr.elementType;
     } else if (iterValue.kind === 'null') {
       throw nullPointer(`Cannot iterate over "${sourceText(iterExpr)}" because it is null`, line);
     } else {
-      // Collections (ArrayList, HashSet, keySet()/values()/entrySet() results, …)
-      const collected = iterValue.kind === 'objectRef' && isBuiltinObject(this.heap.get(iterValue.heapId))
-        ? this.stdlib(line, () => getIterableElements(iterValue, this.ctx))
+      // A collection (ArrayList, HashSet, keySet()/values()/entrySet(), …) through its iterator, so
+      // changing it inside the loop throws ConcurrentModificationException, as in Java (#21).
+      const iterator = iterValue.kind === 'objectRef' && isBuiltinObject(this.heap.get(iterValue.heapId))
+        ? this.stdlib(line, () => forEachIterator(iterValue, this.ctx))
         : undefined;
-      if (!collected) {
+      if (!iterator) {
         if (iterValue.kind === 'objectRef' && this.classes.has(iterValue.className)) {
           throw new UnsupportedFeatureError('For-each loops over your own Iterable classes', line);
         }
         throw new InterpreterError('Enhanced for loop requires an array or collection', line);
       }
-      iterElements = collected;
+      nextElement = () => this.stdlib(line, () => (iterator.hasNext() ? iterator.next() : undefined));
       if (type === 'var') type = 'Object';
     }
 
     setVariable(forScope, varName, defaultValue(type), type);
 
-    for (const element of iterElements) {
+    for (let element = nextElement(); element !== undefined; element = nextElement()) {
       this.tick(line); // a loop can run without recording steps (in a toString() call, or `for (;;);`)
       this.atLine(line);
 
@@ -2972,6 +2960,8 @@ export class JavaInterpreter {
       const excResult = this.exceptionFallback(target, name);
       if (excResult !== undefined) return excResult;
       if (table?.has(name)) throw wrongArgumentCount(`${receiverText}.${name}`, args.length, line);
+      const objectResult = this.objectMethod(target, name, args);
+      if (objectResult !== undefined) return objectResult;
     }
     throw new InterpreterError(`Unknown method: ${receiverText}.${name}()`, line);
   }
@@ -3083,6 +3073,18 @@ export class JavaInterpreter {
 
   private evalArguments(args: CstNode[], scope: Scope): JavaValue[] {
     return args.map(arg => this.evalExpression(arg, scope));
+  }
+
+  /**
+   * java.lang.Object's equals (identity), hashCode (the identity hash) and
+   * toString (Main$Point@1b6d3586), for an object whose class doesn't
+   * define them.
+   */
+  private objectMethod(target: JavaObjectRef, name: string, args: JavaValue[]): JavaValue | undefined {
+    if (name === 'equals' && args.length === 1) return javaBool(args[0].kind === 'objectRef' && args[0].heapId === target.heapId);
+    if (name === 'hashCode' && args.length === 0) return javaInt(identityHashCode(target.heapId));
+    if (name === 'toString' && args.length === 0) return javaString(this.stringify(target));
+    return undefined;
   }
 
   /**

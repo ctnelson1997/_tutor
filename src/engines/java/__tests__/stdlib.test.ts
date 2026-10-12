@@ -378,7 +378,8 @@ const byLength = (ctx: StdlibContext): JavaValue => userObject(ctx, 'ByLength');
 /** A list's or an array's contents, as Java prints a list (an array itself prints its identity). */
 const strings = (ctx: StdlibContext, v: JavaValue | undefined) =>
   javaValueToString(v!.kind === 'arrayRef' ? callStaticMethod('Arrays', 'toString', [v!], ctx)! : v!, ctx.heap);
-const list = (ctx: StdlibContext, words: string[]) => newBuiltin('ArrayList', [arrRef(ctx, words.map(javaString))], ctx)!;
+const list = (ctx: StdlibContext, words: string[]) =>
+  newBuiltin('ArrayList', [callStaticMethod('Arrays', 'asList', [arrRef(ctx, words.map(javaString), 'String')], ctx)!], ctx)!;
 
 describe('comparators', () => {
   it('Collections.sort, List.sort and Arrays.sort use a user comparator', () => {
@@ -452,7 +453,8 @@ describe('collection copy constructors', () => {
     const source = newBuiltin('LinkedHashMap', [], ctx)!;
     callInstanceMethod(source, 'put', [javaString('b'), javaInt(1)], ctx);
     callInstanceMethod(source, 'put', [javaString('a'), javaInt(2)], ctx);
-    expect(javaValueToString(newBuiltin('HashMap', [source], ctx)!, ctx.heap)).toBe('{b=1, a=2}');
+    expect(javaValueToString(newBuiltin('HashMap', [source], ctx)!, ctx.heap)).toBe('{a=2, b=1}'); // Java's hash order
+    expect(javaValueToString(newBuiltin('LinkedHashMap', [source], ctx)!, ctx.heap)).toBe('{b=1, a=2}');
     expect(javaValueToString(newBuiltin('TreeMap', [source], ctx)!, ctx.heap)).toBe('{a=2, b=1}');
     expect(javaValueToString(newBuiltin('HashMap', [javaInt(16)], ctx)!, ctx.heap)).toBe('{}');
   });

@@ -6,57 +6,13 @@
     "See the details of any case with: npx tsx scripts/java-diff.ts <case id>"
   ],
   "output": {
-    "collections/coll-arrays-aslist-fixed": {
-      "issues": [21],
-      "reason": "Arrays.asList(...).add() succeeds instead of throwing UnsupportedOperationException"
-    },
-    "collections/coll-arrays-tostring-objects": {
-      "issues": [21],
-      "reason": "Arrays.toString ignores the elements' toString() (prints P@1)"
-    },
-    "collections/coll-char-keys": {
-      "issues": [21],
-      "reason": "HashMap<Character, Integer> prints in insertion order, not Java's hash order"
-    },
-    "collections/coll-concurrent-mod": {
-      "issues": [21],
-      "reason": "removing from a list inside its for-each throws no ConcurrentModificationException"
-    },
     "collections/coll-foreach-lambda": {
       "issues": [16],
       "reason": "List.forEach needs a lambda, and lambdas are rejected until #16"
     },
-    "collections/coll-hashmap-order-strings": {
-      "issues": [21],
-      "reason": "HashMap iterates in insertion order, not Java's hash order"
-    },
-    "collections/coll-hashset-order-ints": {
-      "issues": [21],
-      "reason": "HashSet iterates in insertion order, not Java's hash order"
-    },
-    "collections/coll-iterator-remove": {
-      "issues": [21],
-      "reason": "Iterator.remove() is unsupported (Unknown method)"
-    },
-    "collections/coll-list-equals": {
-      "issues": [21],
-      "reason": "List.equals compares identity instead of elements"
-    },
-    "collections/coll-list-of-immutable": {
-      "issues": [21],
-      "reason": "List.of(...).add() succeeds instead of throwing UnsupportedOperationException"
-    },
-    "collections/coll-list-of-user-objects-print": {
-      "issues": [21],
-      "reason": "an explicit list.toString() ignores the elements' toString()"
-    },
     "collections/coll-list-remove-object-vs-index": {
-      "issues": [21, 13],
-      "reason": "list.remove(Integer.valueOf(40)) removes by index instead of by value"
-    },
-    "collections/coll-list-set-index": {
-      "issues": [21],
-      "reason": "list.set() past the end grows the list instead of throwing IndexOutOfBoundsException"
+      "issues": [13],
+      "reason": "list.remove(Integer.valueOf(40)) removes by index instead of by value: Integer.valueOf returns an int here, so remove(int) is chosen"
     },
     "collections/coll-map-computeIfAbsent": {
       "issues": [16],
@@ -70,37 +26,13 @@
       "issues": [16],
       "reason": "the PriorityQueue comparator is a lambda, rejected until #16"
     },
-    "collections/coll-priorityqueue-print-order": {
-      "issues": [21],
-      "reason": "PriorityQueue prints fully sorted instead of in Java's heap-array order"
-    },
-    "collections/coll-queue-remove-noarg": {
-      "issues": [21],
-      "reason": "queue.remove() with no argument crashes with a JavaScript TypeError"
-    },
     "collections/coll-sort-comparator-lambda": {
       "issues": [16],
       "reason": "the List.sort comparator is a lambda, rejected until #16"
     },
-    "collections/coll-stack-empty": {
-      "issues": [21],
-      "reason": "Stack.empty() is unsupported (Unknown method)"
-    },
     "collections/coll-stream-basic": {
       "issues": [16],
       "reason": "streams are unsupported (Unknown method: nums.stream())"
-    },
-    "collections/coll-treemap": {
-      "issues": [21],
-      "reason": "TreeMap.floorKey / ceilingKey are unsupported"
-    },
-    "collections/coll-treeset-nav": {
-      "issues": [21],
-      "reason": "TreeSet.floor / ceiling / higher are unsupported"
-    },
-    "collections/coll-word-count": {
-      "issues": [21],
-      "reason": "HashMap prints in insertion order, not Java's hash order"
     },
     "compile-errors/ce-lossy-conversion": {
       "issues": [23],
@@ -141,10 +73,6 @@
     "core/num-ternary-promotion": {
       "issues": [13],
       "reason": "a conditional with int and double branches doesn't promote to double"
-    },
-    "core/object-default-methods": {
-      "issues": [15],
-      "reason": "Object.equals is missing when a class doesn't override it"
     },
     "core/overload-by-type": {
       "issues": [13],
@@ -206,10 +134,6 @@
       "issues": [15],
       "reason": "interface default methods are rejected until #15"
     },
-    "oop/oop-object-toString-default-call": {
-      "issues": [15],
-      "reason": "Object.toString is missing when a class doesn't override it"
-    },
     "oop/oop-record": {
       "issues": [16],
       "reason": "records are rejected until #16"
@@ -218,27 +142,10 @@
       "issues": [15],
       "reason": "inheritance (extends) and super.method() are rejected until #15"
     },
-    "realistic/real-arrays-sort-comparable": {
-      "issues": [21],
-      "reason": "Arrays.toString ignores the elements' toString()"
-    },
     "realistic/real-shape-hierarchy": {
       "issues": [15],
       "reason": "inheritance (extends) is rejected until #15"
     }
   },
-  "invariants": {
-    "collections/coll-list-set-index": {
-      "refs": {
-        "issues": [21],
-        "reason": "list.set() past the end leaves holes in the list's backing array"
-      }
-    },
-    "collections/coll-queue-remove-noarg": {
-      "js-errors": {
-        "issues": [21],
-        "reason": "queue.remove() crashes the engine; students see \"Internal JavaTutor error\", but the summary keeps the JavaScript text"
-      }
-    }
-  }
+  "invariants": {}
 }

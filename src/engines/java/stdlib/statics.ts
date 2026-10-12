@@ -46,19 +46,26 @@ import { JavaRuntimeError } from '../errors';
 import { assignmentConversion } from '../references';
 import { type StdlibContext, HaltSignal, StdlibError } from './context';
 import {
-  compareValues,
   compareWith,
   isComparator,
   libraryComparator,
   valuesEqual,
-  javaEquals,
-  backingArray,
+  elementsOf,
   charArrayText,
-  allocCollection,
-  allocMap,
 } from './util';
 import { javaFormat } from './format';
 import { boxedHashCode } from './strings';
+import { hashCodeOf } from './hashing';
+import {
+  callInstanceMethod,
+  immutableList,
+  immutableSet,
+  immutableMap,
+  immutableEntry,
+  fixedSizeList,
+  unmodifiableView,
+  rewriteList,
+} from './collections';
 
 /** A numeric argument's type, or int for anything else (javac rejects that). */
 function numericTypeOf(v: JavaValue | undefined): NumericType {
@@ -68,23 +75,6 @@ function numericTypeOf(v: JavaValue | undefined): NumericType {
 /** A numeric argument converted to `type`. */
 function numberAs(v: JavaValue | undefined, type: NumericType): NumericValue {
   return v?.kind === 'primitive' && typeof v.value !== 'boolean' ? convertNumber(v.value, type) : convertNumber(javaValueToNumber(v ?? javaNull()), type);
-}
-
-function hashOf(v: JavaValue, heap: StdlibContext['heap']): number {
-  if (v.kind === 'null') return 0;
-  if (v.kind === 'primitive') {
-    if (typeof v.value === 'boolean') return v.value ? 1231 : 1237;
-    if (typeof v.value === 'bigint') {
-      // Long.hashCode: the two halves of the long, xor'ed.
-      const bits = BigInt.asUintN(64, v.value);
-      return Number(BigInt.asIntN(32, bits ^ (bits >> 32n)));
-    }
-    return Math.trunc(v.value) | 0;
-  }
-  const s = javaValueToString(v, heap);
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
-  return h;
 }
 
 export function getStaticField(className: string, field: string, ctx?: StdlibContext): JavaValue | undefined {
@@ -263,7 +253,7 @@ function integerWrapper(cls: string, method: string, args: JavaValue[], ctx: Std
     case 'min': return result(x < y ? x : y);
     case 'sum': return result(typeof x === 'bigint' ? BigInt.asIntN(64, x + (y as bigint)) : ((x as number) + (y as number)) | 0);
     case 'signum': return javaInt(x > 0 ? 1 : x < 0 ? -1 : 0);
-    case 'hashCode': return javaInt(hashOf(numericValue(work, x), ctx.heap));
+    case 'hashCode': return javaInt(boxedHashCode(numericValue(work, x)));
     case 'bitCount': {
       let bits = typeof x === 'bigint' ? BigInt.asUintN(64, x) : BigInt((x as number) >>> 0);
       let count = 0;
@@ -361,8 +351,7 @@ function stringStatic(method: string, args: JavaValue[], ctx: StdlibContext): Ja
         const arr = ctx.heap.get(rest[0].heapId);
         if (arr && isJavaArray(arr)) parts = arr.elements;
       } else if (rest.length === 1 && rest[0].kind === 'objectRef') {
-        const data = backingArray(rest[0], ctx);
-        if (data) parts = data.elements;
+        parts = elementsOf(rest[0], ctx) ?? parts;
       }
       return javaString(parts.map(p => javaValueToString(p, ctx.heap)).join(delim));
     }
@@ -397,9 +386,10 @@ function arraysMethod(method: string, args: JavaValue[], ctx: StdlibContext): Ja
   const arrOf = (v: JavaValue) => (v?.kind === 'arrayRef' ? ctx.heap.get(v.heapId) : undefined);
   switch (method) {
     case 'toString': {
+      // Elements print with their own toString() (#21).
       const arr = arrOf(args[0]);
       if (!arr || !isJavaArray(arr)) return javaString(args[0]?.kind === 'null' ? 'null' : '[]');
-      return javaString('[' + arr.elements.map(e => javaValueToString(e, ctx.heap)).join(', ') + ']');
+      return javaString('[' + arr.elements.map(e => text(e, ctx)).join(', ') + ']');
     }
     case 'deepToString': {
       const deep = (v: JavaValue): string => {
@@ -407,9 +397,14 @@ function arraysMethod(method: string, args: JavaValue[], ctx: StdlibContext): Ja
           const a = ctx.heap.get(v.heapId);
           if (a && isJavaArray(a)) return '[' + a.elements.map(deep).join(', ') + ']';
         }
-        return javaValueToString(v, ctx.heap);
+        return text(v, ctx);
       };
       return javaString(deep(args[0]));
+    }
+    case 'hashCode': {
+      const arr = arrOf(args[0]);
+      if (!arr || !isJavaArray(arr)) return javaInt(0);
+      return javaInt(arr.elements.reduce((h, e) => (Math.imul(31, h) + hashCodeOf(e, ctx)) | 0, 1));
     }
     case 'sort': {
       // Arrays.sort(a), (a, cmp), (a, from, to) and (a, from, to, cmp).
@@ -458,32 +453,33 @@ function arraysMethod(method: string, args: JavaValue[], ctx: StdlibContext): Ja
       return { kind: 'arrayRef', heapId: ctx.allocArray(arr.elementType, out) };
     }
     case 'equals': case 'deepEquals': {
-      const x = arrOf(args[0]), y = arrOf(args[1]);
-      if (!x || !isJavaArray(x) || !y || !isJavaArray(y)) return javaBool(args[0] === args[1]);
-      if (x.elements.length !== y.elements.length) return javaBool(false);
-      return javaBool(x.elements.every((e, i) => valuesEqual(e, y.elements[i], ctx)));
+      // equals compares elements with equals(); deepEquals compares nested arrays by their elements too.
+      const same = (a: JavaValue, b: JavaValue): boolean => {
+        const x = arrOf(a), y = arrOf(b);
+        if (!x || !isJavaArray(x) || !y || !isJavaArray(y)) return a.kind === 'null' && b.kind === 'null';
+        if (x.elements.length !== y.elements.length) return false;
+        return x.elements.every((e, i) => (method === 'deepEquals' && e.kind === 'arrayRef' && y.elements[i].kind === 'arrayRef'
+          ? same(e, y.elements[i])
+          : e.kind === 'null' ? y.elements[i].kind === 'null' : valuesEqual(e, y.elements[i], ctx)));
+      };
+      return javaBool(same(args[0], args[1]));
     }
     case 'binarySearch': {
+      // (a, key), (a, key, cmp), (a, from, to, key) and (a, from, to, key, cmp)
       const arr = arrOf(args[0]);
-      if (!arr || !isJavaArray(arr)) return javaInt(-1);
-      const key = args[1];
-      let lo = 0, hi = arr.elements.length - 1;
-      while (lo <= hi) {
-        const mid = (lo + hi) >>> 1;
-        const c = compareValues(arr.elements[mid], key, ctx);
-        if (c < 0) lo = mid + 1;
-        else if (c > 0) hi = mid - 1;
-        else return javaInt(mid);
-      }
-      return javaInt(-(lo + 1));
+      if (!arr || !isJavaArray(arr)) throw new StdlibError('NullPointerException');
+      const ranged = args.length >= 4;
+      const from = ranged ? javaValueToNumber(args[1]) | 0 : 0;
+      const to = ranged ? javaValueToNumber(args[2]) | 0 : arr.elements.length;
+      const found = javaValueToNumber(binarySearch(arr.elements.slice(from, to), args[ranged ? 3 : 1], args[ranged ? 4 : 2], ctx));
+      return javaInt(found >= 0 ? found + from : found - from);
     }
     case 'asList': {
-      let elems = args;
-      if (args.length === 1 && args[0].kind === 'arrayRef') {
-        const a = ctx.heap.get(args[0].heapId);
-        if (a && isJavaArray(a)) elems = a.elements.slice();
-      }
-      return allocCollection('ArrayList', elems.slice(), 'Object', ctx);
+      // A fixed-size list backed by the array (#21): Arrays.asList(array) writes through to it.
+      // An int[] isn't an array of objects, so Arrays.asList(ints) is a list holding the one array.
+      const a = args.length === 1 ? arrOf(args[0]) : undefined;
+      if (a && isJavaArray(a) && !isPrimitiveType(a.elementType)) return fixedSizeList(args[0], ctx);
+      return fixedSizeList({ kind: 'arrayRef', heapId: ctx.allocArray('Object', args.slice()) }, ctx);
     }
   }
   return undefined;
@@ -492,111 +488,171 @@ function arraysMethod(method: string, args: JavaValue[], ctx: StdlibContext): Ja
 function objectsMethod(method: string, args: JavaValue[], ctx: StdlibContext): JavaValue | undefined {
   switch (method) {
     case 'equals': return javaBool(valuesEqual(args[0], args[1], ctx));
-    case 'hashCode': return javaInt(hashOf(args[0], ctx.heap));
+    case 'hashCode': return javaInt(hashCodeOf(args[0], ctx));
     case 'hash': {
       let h = 1;
-      for (const a of args) h = (Math.imul(31, h) + hashOf(a, ctx.heap)) | 0;
+      for (const a of args) h = (Math.imul(31, h) + hashCodeOf(a, ctx)) | 0;
       return javaInt(h);
     }
     case 'isNull': return javaBool(args[0]?.kind === 'null');
     case 'nonNull': return javaBool(args[0]?.kind !== 'null');
     case 'requireNonNull':
       if (args[0]?.kind === 'null') {
-        throw new StdlibError(args.length > 1 ? javaValueToString(args[1], ctx.heap) : 'NullPointerException');
+        throw new StdlibError(args.length > 1 ? `NullPointerException: ${javaValueToString(args[1], ctx.heap)}` : 'NullPointerException');
       }
       return args[0];
     case 'toString':
       return javaString(args[0]?.kind === 'null'
         ? (args.length > 1 ? javaValueToString(args[1], ctx.heap) : 'null')
-        : javaValueToString(args[0], ctx.heap));
+        : text(args[0], ctx));
   }
   return undefined;
 }
 
+/** A value as String.valueOf prints it, with a user class's own toString(). */
+const text = (value: JavaValue, ctx: StdlibContext) => (ctx.stringify ? ctx.stringify(value) : javaValueToString(value, ctx.heap));
+
+const isPrimitiveType = (type: string) => ['int', 'long', 'short', 'byte', 'char', 'double', 'float', 'boolean'].includes(type);
+
+/** A collection's elements, for the methods that only read it; null is a NullPointerException. */
+function listArg(value: JavaValue | undefined, ctx: StdlibContext): JavaValue[] {
+  const els = elementsOf(value, ctx);
+  if (!els) throw new StdlibError('NullPointerException');
+  return els;
+}
+
+/** Collections.binarySearch and Arrays.binarySearch: the index, or -(insertion point) - 1. */
+function binarySearch(els: JavaValue[], key: JavaValue, cmp: JavaValue | undefined, ctx: StdlibContext): JavaValue {
+  let lo = 0, hi = els.length - 1;
+  while (lo <= hi) {
+    const mid = (lo + hi) >>> 1;
+    const c = compareWith(cmp, els[mid], key, ctx);
+    if (c < 0) lo = mid + 1;
+    else if (c > 0) hi = mid - 1;
+    else return javaInt(mid);
+  }
+  return javaInt(-(lo + 1));
+}
+
+/** `c.contains(e)`, through the collection's own contains(). */
+const contains = (c: JavaValue, e: JavaValue, ctx: StdlibContext) => javaValueToBoolean(callInstanceMethod(c, 'contains', [e], ctx) ?? javaBool(false));
+
 function collectionsMethod(method: string, args: JavaValue[], ctx: StdlibContext): JavaValue | undefined {
-  const data = args.length > 0 ? backingArray(args[0], ctx) : undefined;
+  const index = (v: JavaValue) => javaValueToNumber(v) | 0;
   switch (method) {
     case 'sort':
-      if (data) data.elements.sort((a, b) => compareWith(args[1], a, b, ctx));
+      // list.sort(cmp): an immutable list refuses it, and ArrayList counts it as a change.
+      if (args[0]?.kind !== 'objectRef') throw new StdlibError('NullPointerException');
+      callInstanceMethod(args[0], 'sort', [args[1] ?? javaNull()], ctx);
       return javaNull();
     case 'reverseOrder':
       return libraryComparator('reverse', args[0], ctx);
     case 'reverse':
-      if (data) data.elements.reverse();
+      rewriteList(args[0], ctx, els => els.reverse());
       return javaNull();
     case 'shuffle':
-      if (data) {
-        for (let i = data.elements.length - 1; i > 0; i--) {
+      rewriteList(args[0], ctx, els => {
+        for (let i = els.length - 1; i > 0; i--) {
           const j = Math.floor(ctx.random() * (i + 1));
-          [data.elements[i], data.elements[j]] = [data.elements[j], data.elements[i]];
+          [els[i], els[j]] = [els[j], els[i]];
         }
-      }
+        return els;
+      });
       return javaNull();
-    case 'max':
-      if (data && data.elements.length) return data.elements.reduce((m, e) => (compareWith(args[1], e, m, ctx) > 0 ? e : m));
-      if (data) throw new StdlibError('NoSuchElementException');
-      return javaNull();
-    case 'min':
-      if (data && data.elements.length) return data.elements.reduce((m, e) => (compareWith(args[1], e, m, ctx) < 0 ? e : m));
-      if (data) throw new StdlibError('NoSuchElementException');
-      return javaNull();
-    case 'frequency': {
-      if (!data) return javaInt(0);
-      return javaInt(data.elements.filter(e => valuesEqual(e, args[1], ctx)).length);
-    }
     case 'swap':
-      if (data) {
-        const i = javaValueToNumber(args[1]) | 0, j = javaValueToNumber(args[2]) | 0;
-        [data.elements[i], data.elements[j]] = [data.elements[j], data.elements[i]];
-      }
+      rewriteList(args[0], ctx, els => {
+        const i = index(args[1]), j = index(args[2]);
+        for (const k of [i, j]) {
+          if (k < 0 || k >= els.length) throw new StdlibError(`IndexOutOfBoundsException: Index ${k} out of bounds for length ${els.length}`);
+        }
+        [els[i], els[j]] = [els[j], els[i]];
+        return els;
+      });
       return javaNull();
     case 'fill':
-      if (data) for (let i = 0; i < data.elements.length; i++) data.elements[i] = args[1];
+      rewriteList(args[0], ctx, els => els.map(() => args[1]));
       return javaNull();
+    case 'rotate':
+      rewriteList(args[0], ctx, els => {
+        const n = els.length;
+        if (n === 0) return els;
+        const d = ((index(args[1]) % n) + n) % n;
+        return [...els.slice(n - d), ...els.slice(0, n - d)];
+      });
+      return javaNull();
+    case 'max': case 'min': {
+      const els = listArg(args[0], ctx);
+      if (!els.length) throw new StdlibError('NoSuchElementException');
+      const sign = method === 'max' ? 1 : -1;
+      return els.reduce((m, e) => (sign * compareWith(args[1], e, m, ctx) > 0 ? e : m));
+    }
+    case 'frequency': {
+      const o = args[1];
+      return javaInt(listArg(args[0], ctx).filter(e => (o.kind === 'null' ? e.kind === 'null' : valuesEqual(o, e, ctx))).length);
+    }
+    case 'disjoint':
+      return javaBool(!listArg(args[0], ctx).some(e => contains(args[1], e, ctx)));
     case 'nCopies': {
-      const n = javaValueToNumber(args[0]) | 0;
-      return allocCollection('ArrayList', Array.from({ length: n }, () => args[1]), 'Object', ctx);
+      const n = index(args[0]);
+      if (n < 0) throw new StdlibError(`IllegalArgumentException: List length = ${n}`);
+      return immutableList(Array.from({ length: n }, () => args[1]), ctx);
     }
-    case 'emptyList': return allocCollection('ArrayList', [], 'Object', ctx);
-    case 'singletonList': return allocCollection('ArrayList', [args[0]], 'Object', ctx);
-    case 'binarySearch': {
-      if (!data) return javaInt(-1);
-      const key = args[1];
-      let lo = 0, hi = data.elements.length - 1;
-      while (lo <= hi) {
-        const mid = (lo + hi) >>> 1;
-        const c = compareValues(data.elements[mid], key, ctx);
-        if (c < 0) lo = mid + 1;
-        else if (c > 0) hi = mid - 1;
-        else return javaInt(mid);
-      }
-      return javaInt(-(lo + 1));
-    }
-    case 'unmodifiableList': case 'unmodifiableSet': case 'unmodifiableMap':
-    case 'synchronizedList':
-      return args[0]; // no-op wrapper for teaching purposes
+    case 'emptyList': return immutableList([], ctx);
+    case 'emptySet': return immutableSet([], false, ctx);
+    case 'emptyMap': return immutableMap([], [], false, ctx);
+    case 'singletonList': return immutableList([args[0]], ctx);
+    case 'singleton': return immutableSet([args[0]], false, ctx);
+    case 'singletonMap': return immutableMap([args[0]], [args[1]], false, ctx);
+    case 'binarySearch': return binarySearch(listArg(args[0], ctx), args[1], args[2], ctx);
+    case 'unmodifiableList': case 'unmodifiableSet': case 'unmodifiableMap': case 'unmodifiableCollection':
+    case 'unmodifiableSortedSet': case 'unmodifiableSortedMap': case 'unmodifiableNavigableSet': case 'unmodifiableNavigableMap':
+      return unmodifiableView(args[0], ctx);
+    case 'synchronizedList': case 'synchronizedSet': case 'synchronizedMap':
+      return args[0]; // one thread, so the collection itself
     case 'addAll': {
-      if (data) for (let i = 1; i < args.length; i++) data.elements.push(args[i]);
-      return javaBool(true);
+      // Collections.addAll(c, elements...): each through c.add().
+      if (args[0]?.kind !== 'objectRef') throw new StdlibError('NullPointerException');
+      let changed = false;
+      for (const e of args.slice(1)) changed = javaValueToBoolean(callInstanceMethod(args[0], 'add', [e], ctx) ?? javaBool(false)) || changed;
+      return javaBool(changed);
     }
   }
   return undefined;
 }
 
+/**
+ * List.of, Set.of, Map.of, their copyOf, and Map.entry: immutable (#21).
+ * They refuse null, and Set.of and Map.of refuse duplicates.
+ */
 function factoryOf(className: string, method: string, args: JavaValue[], ctx: StdlibContext): JavaValue | undefined {
-  if (method !== 'of' && method !== 'copyOf') return undefined;
-  if (className === 'List') return allocCollection('ArrayList', args.slice(), 'Object', ctx);
-  if (className === 'Set') return allocCollection('LinkedHashSet', dedupe(args), 'Object', ctx);
+  const requireNonNull = (values: JavaValue[]) => {
+    if (values.some(v => v.kind === 'null')) throw new StdlibError('NullPointerException');
+    return values;
+  };
+  if (className === 'Map' && method === 'entry') {
+    const [key, value] = requireNonNull(args.slice(0, 2));
+    return immutableEntry(key, value, ctx);
+  }
+  if (method === 'copyOf') {
+    if (className === 'Map') {
+      if (args[0]?.kind !== 'objectRef') throw new StdlibError('NullPointerException');
+      const keys = (elementsOf(callInstanceMethod(args[0], 'keySet', [], ctx), ctx) ?? []).slice();
+      const values = keys.map(k => callInstanceMethod(args[0], 'get', [k], ctx)!);
+      return immutableMap(requireNonNull(keys), requireNonNull(values), false, ctx);
+    }
+    const items = requireNonNull(listArg(args[0], ctx).slice());
+    return className === 'List' ? immutableList(items, ctx) : className === 'Set' ? immutableSet(items, false, ctx) : undefined;
+  }
+  if (method !== 'of') return undefined;
   if (className === 'Map') {
     const keys: JavaValue[] = [], values: JavaValue[] = [];
     for (let i = 0; i + 1 < args.length; i += 2) { keys.push(args[i]); values.push(args[i + 1]); }
-    return allocMap('LinkedHashMap', keys, values, ctx);
+    return immutableMap(requireNonNull(keys), requireNonNull(values), true, ctx);
   }
+  // List.of(array) has the array's elements (its varargs parameter).
+  const arr = args.length === 1 && args[0].kind === 'arrayRef' ? ctx.heap.get(args[0].heapId) : undefined;
+  const items = arr && isJavaArray(arr) && !isPrimitiveType(arr.elementType) ? arr.elements.slice() : args.slice();
+  if (className === 'List') return immutableList(requireNonNull(items), ctx);
+  if (className === 'Set') return immutableSet(requireNonNull(items), true, ctx);
   return undefined;
-}
-
-function dedupe(args: JavaValue[]): JavaValue[] {
-  const out: JavaValue[] = [];
-  for (const a of args) if (!out.some(e => javaEquals(e, a))) out.push(a);
-  return out;
 }

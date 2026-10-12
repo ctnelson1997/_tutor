@@ -41,6 +41,11 @@ const LIBRARY_SUPERTYPES: Record<string, readonly string[]> = {
   HashMap: ['AbstractMap', 'Cloneable', 'Serializable'],
   LinkedHashMap: ['HashMap', 'SequencedMap'],
   TreeMap: ['AbstractMap', 'NavigableMap', 'Cloneable', 'Serializable'],
+  // The views (#21): a map's keySet(), values() and entrySet(), and a list's subList().
+  KeySet: ['AbstractSet'],
+  Values: ['AbstractCollection'],
+  EntrySet: ['AbstractSet'],
+  SubList: ['AbstractList', 'RandomAccess'],
   MapEntry: ['Entry'], // Map.Entry
   Iterator: [],
   Comparator: [],
