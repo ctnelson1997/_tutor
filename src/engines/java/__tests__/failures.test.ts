@@ -211,7 +211,7 @@ describe('errors from the engine', () => {
   }
 }`;
     const { snapshots, error } = result(runJava(source));
-    expect(error).toEqual({ kind: 'error', message: 'Unknown String method: chars()', line: 4 });
+    expect(error).toEqual({ kind: 'error', message: "Streams (String.chars()) aren't supported in JavaTutor yet", line: 4 });
     expect(snapshots[snapshots.length - 1].stdout).toEqual(['ok']);
   });
 
@@ -226,7 +226,7 @@ describe('errors from the engine', () => {
 
   it('hide the JavaScript text of an internal failure from the student, keeping it for tests', () => {
     const interpreter = new JavaInterpreter();
-    (interpreter as unknown as { evalStringMethod: () => never }).evalStringMethod = () => {
+    (interpreter as unknown as { stdlib: () => never }).stdlib = () => {
       throw new TypeError("Cannot read properties of undefined (reading 'x')");
     };
     const outcome = interpreter.execute(parseJava('public class Main {\n  public static void main(String[] args) {\n    "a".length();\n  }\n}'));

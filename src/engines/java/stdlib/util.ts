@@ -65,6 +65,14 @@ export function javaEquals(a: JavaValue, b: JavaValue): boolean {
   return false;
 }
 
+/** The characters of a char[], or undefined for any other value. */
+export function charArrayText(value: JavaValue | undefined, ctx: Pick<StdlibContext, 'heap'>): string | undefined {
+  if (value?.kind !== 'arrayRef') return undefined;
+  const arr = ctx.heap.get(value.heapId);
+  if (!arr || !isJavaArray(arr) || arr.elementType !== 'char') return undefined;
+  return arr.elements.map(c => String.fromCharCode(javaValueToNumber(c))).join('');
+}
+
 /** Resolve the backing `__data__` array of a list/set object. */
 export function backingArray(ref: JavaValue, ctx: StdlibContext): JavaArray | undefined {
   if (ref.kind !== 'objectRef') return undefined;

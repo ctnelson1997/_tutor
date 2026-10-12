@@ -85,7 +85,8 @@ export function qualifiedExceptionName(name: string): string {
 export function newException(className: string, args: JavaValue[], ctx: StdlibContext): JavaValue {
   const hasMsg = args.length > 0 && args[0].kind !== 'null';
   const fields = new Map<string, JavaValue>([
-    ['message', hasMsg ? javaString(javaValueToString(args[0], ctx.heap)) : javaNull()],
+    // A String message is kept as it is, so getMessage() returns the same object.
+    ['message', hasMsg ? (args[0].kind === 'string' ? args[0] : javaString(javaValueToString(args[0], ctx.heap))) : javaNull()],
   ]);
   const heapId = ctx.allocObject(className, fields);
   return { kind: 'objectRef', heapId, className };

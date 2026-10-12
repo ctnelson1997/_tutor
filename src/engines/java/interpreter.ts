@@ -67,6 +67,8 @@ import {
   javaBool,
   javaChar,
   javaString,
+  internedString,
+  sameString,
   javaNull,
 } from './types';
 import {
@@ -81,6 +83,10 @@ import {
   getIterableElements,
   scannerRemaining,
   charArrayText,
+  stringMethod,
+  stringBuilderMethod,
+  boxedMethod,
+  newString,
   LIST_LIKE,
   SET_LIKE,
   MAP_LIKE,
@@ -380,6 +386,8 @@ export class JavaInterpreter {
   private suppressSnapshots = 0;
   /** Parsed primary-expression chains, per CST node. */
   private chainCache = new WeakMap<CstNode, PrimaryChain>();
+  /** Which operands of a binary expression are constant, per CST node (see constantOperands). */
+  private constantCache = new WeakMap<CstNode, boolean[]>();
   /** Makes each step share what didn't change with the steps before it (#18). */
   private sharer = new SnapshotSharer();
 
@@ -2162,7 +2170,30 @@ export class JavaInterpreter {
     if (chainOps.length === 0) return operandThunks[0]();
 
     // Evaluate left to right with precedence (short-circuits && / ||)
-    return this.evalOperatorChain(operandThunks, chainOps);
+    // The chain is built first and run after, so the builder's frame isn't on the
+    // JavaScript stack while the operands run (Java calls still run there, #14).
+    return this.operatorChain(operandThunks, chainOps, this.constantOperands(binExpr, allChildren))();
+  }
+
+  /**
+   * For each operand of a binary expression, in order, whether it is a
+   * literal (or a parenthesized expression of literals). javac folds a
+   * compile-time constant expression (JLS §15.29), such as `"h" + "i"`, and
+   * the string it makes is interned, so it is == to the literal "hi". Named
+   * constants aren't considered, which only matters for comparing strings
+   * with ==.
+   */
+  private constantOperands(binExpr: CstNode, items: (CstNode | CstToken)[]): boolean[] {
+    let flags = this.constantCache.get(binExpr);
+    if (!flags) {
+      flags = [];
+      for (const item of items) {
+        if (isCstNode(item) && (item.name === 'unaryExpression' || item.name === 'expression')) flags.push(item.name === 'unaryExpression' && isLiteralOperand(item));
+        else if (isCstNode(item) && (item.name === 'referenceType' || item.name === 'pattern')) flags[flags.length - 1] = false;
+      }
+      this.constantCache.set(binExpr, flags);
+    }
+    return flags;
   }
 
   private evalAssignment(binExpr: CstNode, op: string, scope: Scope): JavaValue {
@@ -2383,7 +2414,8 @@ export class JavaInterpreter {
     return castPrimitive(value, type as JavaPrimitiveType);
   }
 
-  private evalOperatorChain(operandThunks: Array<() => JavaValue>, operators: string[]): JavaValue {
+  /** The operands and operators of a chain combined by precedence into one thunk (which short-circuits && and ||). */
+  private operatorChain(operandThunks: Array<() => JavaValue>, operators: string[], constant: boolean[]): () => JavaValue {
     // Handle operator precedence by grouping
     // Order: * / % -> + - -> << >> >>> -> < > <= >= -> == != -> & -> ^ -> | -> && -> ||
     const precGroups = [
@@ -2401,17 +2433,21 @@ export class JavaInterpreter {
 
     let vals: Array<() => JavaValue> = [...operandThunks];
     let ops = [...operators];
+    let consts = [...constant];
     const heap = this.heap;
     const stringify = (v: JavaValue) => this.stringify(v);
 
     for (const group of precGroups) {
       const newVals: Array<() => JavaValue> = [vals[0]];
+      const newConsts = [consts[0]];
       const newOps: string[] = [];
       for (let i = 0; i < ops.length; i++) {
         const op = ops[i];
         if (group.includes(op)) {
           const left = newVals.pop()!;
           const right = vals[i + 1];
+          const folded = newConsts.pop()! && consts[i + 1];
+          newConsts.push(folded);
           if (op === '&&') {
             newVals.push(() => {
               const l = left();
@@ -2422,19 +2458,23 @@ export class JavaInterpreter {
               const l = left();
               return javaValueToBoolean(l) ? javaBool(true) : right();
             });
+          } else if (folded) {
+            newVals.push(() => interned(applyBinaryOp(op, left(), right(), heap, stringify)));
           } else {
             newVals.push(() => applyBinaryOp(op, left(), right(), heap, stringify));
           }
         } else {
           newVals.push(vals[i + 1]);
+          newConsts.push(consts[i + 1]);
           newOps.push(op);
         }
       }
       vals = newVals;
+      consts = newConsts;
       ops = newOps;
     }
 
-    return vals[0]();
+    return vals[0];
   }
 
   private evalUnaryExpression(unary: CstNode, scope: Scope): JavaValue {
@@ -2647,10 +2687,11 @@ export class JavaInterpreter {
       return javaBool(has(boolLit, 'True'));
     }
 
+    // String literals are interned: equal literals are the same object for ==.
     const strTok = token(literal, 'StringLiteral');
-    if (strTok) return javaString(stringLiteralValue(strTok.image));
+    if (strTok) return internedString(stringLiteralValue(strTok.image));
     const textBlock = token(literal, 'TextBlock');
-    if (textBlock) return javaString(textBlockValue(textBlock.image));
+    if (textBlock) return internedString(textBlockValue(textBlock.image));
     const charTok = token(literal, 'CharLiteral');
     if (charTok) return javaChar(charLiteralValue(charTok.image));
     if (has(literal, 'Null')) return javaNull();
@@ -2826,8 +2867,18 @@ export class JavaInterpreter {
     if (target.kind === 'null') {
       throw nullPointer(`Cannot invoke "${name}()" because "${receiverText}" is null`, line);
     }
-    if (target.kind === 'string') return this.evalStringMethod(target.value, name, args);
-    if (target.kind === 'arrayRef' && name === 'toString') return javaString(javaValueToString(target, this.heap));
+    if (target.kind === 'string') {
+      const result = this.stdlib(line, () => stringMethod(target, name, args, this.ctx));
+      if (result !== undefined) return result;
+      throw new InterpreterError(`Unknown method: ${receiverText}.${name}()`, line);
+    }
+    // A boxed value (Integer, Double, …) is its primitive: intValue(), compareTo, equals, hashCode, toString.
+    if (target.kind === 'primitive') {
+      const result = this.stdlib(line, () => boxedMethod(target, name, args, this.ctx));
+      if (result !== undefined) return result;
+      throw new InterpreterError(`Unknown method: ${receiverText}.${name}()`, line);
+    }
+    if (target.kind === 'arrayRef' && name === 'toString') return javaString(this.stringify(target));
     if (target.kind === 'objectRef') {
       if (target.heapId === SYSTEM_OUT_ID || target.heapId === SYSTEM_ERR_ID) {
         return this.printStreamMethod(name, args, receiverText, line);
@@ -2836,7 +2887,9 @@ export class JavaInterpreter {
       // (even for a user class named StringBuilder or Stack).
       if (isBuiltinObject(this.heap.get(target.heapId))) {
         if (target.className === 'StringBuilder' || target.className === 'StringBuffer') {
-          return this.evalStringBuilderMethod(target, name, args);
+          const result = this.stdlib(line, () => stringBuilderMethod(target, name, args, this.ctx));
+          if (result !== undefined) return result;
+          throw new InterpreterError(`Unknown method: ${receiverText}.${name}()`, line);
         }
         const builtin = this.stdlib(line, () => callInstanceMethod(target, name, args, this.ctx));
         if (builtin !== undefined) return builtin;
@@ -3215,6 +3268,7 @@ export class JavaInterpreter {
     if (!info) {
       // A plain Object, e.g. one used only as a lock.
       if (className === 'Object') return { kind: 'objectRef', heapId: this.allocObject('Object', new Map(), true), className };
+      if (className === 'String') return this.stdlib(line, () => newString(args, this.ctx));
       if (className === 'StringBuilder' || className === 'StringBuffer') {
         const initial = args.length > 0 && args[0].kind !== 'primitive' ? javaValueToString(args[0], this.heap) : '';
         const heapId = this.allocObject(className, new Map([
@@ -3235,115 +3289,6 @@ export class JavaInterpreter {
     const self: JavaObjectRef = { kind: 'objectRef', heapId, className };
     this.construct(className, self, args, line);
     return self;
-  }
-
-  // ── Built-in methods ──
-
-  private evalStringMethod(str: string, method: string, args: JavaValue[]): JavaValue {
-    switch (method) {
-      case 'length': return javaInt(str.length);
-      case 'charAt': return javaChar(str.charCodeAt(javaValueToNumber(args[0]) | 0));
-      case 'substring': {
-        const start = javaValueToNumber(args[0]) | 0;
-        const end = args.length > 1 ? javaValueToNumber(args[1]) | 0 : str.length;
-        return javaString(str.substring(start, end));
-      }
-      case 'indexOf': {
-        const search = javaValueToString(args[0], this.heap);
-        const from = args.length > 1 ? javaValueToNumber(args[1]) | 0 : 0;
-        return javaInt(str.indexOf(search, from));
-      }
-      case 'lastIndexOf': {
-        const search = javaValueToString(args[0], this.heap);
-        return javaInt(str.lastIndexOf(search));
-      }
-      case 'toUpperCase': return javaString(str.toUpperCase());
-      case 'toLowerCase': return javaString(str.toLowerCase());
-      case 'trim': return javaString(str.trim());
-      case 'contains': return javaBool(str.includes(javaValueToString(args[0], this.heap)));
-      case 'startsWith': return javaBool(str.startsWith(javaValueToString(args[0], this.heap)));
-      case 'endsWith': return javaBool(str.endsWith(javaValueToString(args[0], this.heap)));
-      case 'equals': return javaBool(str === javaValueToString(args[0], this.heap));
-      case 'equalsIgnoreCase': return javaBool(str.toLowerCase() === javaValueToString(args[0], this.heap).toLowerCase());
-      case 'isEmpty': return javaBool(str.length === 0);
-      case 'replace': {
-        const target = javaValueToString(args[0], this.heap);
-        const replacement = javaValueToString(args[1], this.heap);
-        return javaString(str.split(target).join(replacement));
-      }
-      case 'split': {
-        const delimiter = javaValueToString(args[0], this.heap);
-        const parts = str.split(delimiter);
-        const elements = parts.map(p => javaString(p));
-        const heapId = this.allocArray('String', elements);
-        return { kind: 'arrayRef', heapId };
-      }
-      case 'toCharArray': {
-        const chars = Array.from(str).map(c => javaChar(c.charCodeAt(0)));
-        const heapId = this.allocArray('char', chars);
-        return { kind: 'arrayRef', heapId };
-      }
-      case 'compareTo': return javaInt(str < javaValueToString(args[0], this.heap) ? -1 : str > javaValueToString(args[0], this.heap) ? 1 : 0);
-      case 'compareToIgnoreCase': {
-        const o = javaValueToString(args[0], this.heap).toLowerCase();
-        const s = str.toLowerCase();
-        return javaInt(s < o ? -1 : s > o ? 1 : 0);
-      }
-      case 'concat': return javaString(str + javaValueToString(args[0], this.heap));
-      case 'repeat': return javaString(str.repeat(Math.max(0, javaValueToNumber(args[0]) | 0)));
-      case 'isBlank': return javaBool(str.trim().length === 0);
-      case 'strip': return javaString(str.replace(/^\s+|\s+$/g, ''));
-      case 'stripLeading': return javaString(str.replace(/^\s+/, ''));
-      case 'stripTrailing': return javaString(str.replace(/\s+$/, ''));
-      case 'matches': return javaBool(new RegExp('^(?:' + javaValueToString(args[0], this.heap) + ')$').test(str));
-      case 'replaceAll':
-        return javaString(str.replace(new RegExp(javaValueToString(args[0], this.heap), 'g'), javaValueToString(args[1], this.heap)));
-      case 'replaceFirst':
-        return javaString(str.replace(new RegExp(javaValueToString(args[0], this.heap)), javaValueToString(args[1], this.heap)));
-      default:
-        throw new InterpreterError(`Unknown String method: ${method}()`, 0);
-    }
-  }
-
-  private evalStringBuilderMethod(ref: JavaValue, method: string, args: JavaValue[]): JavaValue {
-    if (ref.kind !== 'objectRef') return javaNull();
-    const obj = this.heap.get(ref.heapId);
-    if (!obj || !isJavaObject(obj)) return javaNull();
-    const cur = obj.fields.get('value');
-    const curStr = cur && cur.kind === 'string' ? cur.value : '';
-    switch (method) {
-      case 'append': {
-        // String.valueOf(arg): an object's own toString() is used, and a char[]'s characters.
-        const next = curStr + (args.length > 0 ? charArrayText(args[0], this.ctx) ?? this.stringify(args[0]) : '');
-        obj.fields.set('value', javaString(next));
-        return ref; // append returns the builder for chaining
-      }
-      case 'toString': return javaString(curStr);
-      case 'length': return javaInt(curStr.length);
-      case 'charAt': return javaChar(curStr.charCodeAt(javaValueToNumber(args[0]) | 0));
-      case 'reverse': {
-        obj.fields.set('value', javaString([...curStr].reverse().join('')));
-        return ref;
-      }
-      case 'setLength': {
-        const n = javaValueToNumber(args[0]) | 0;
-        const next = n <= curStr.length ? curStr.slice(0, n) : curStr + '\0'.repeat(n - curStr.length);
-        obj.fields.set('value', javaString(next));
-        return javaNull();
-      }
-      case 'deleteCharAt': {
-        const idx = javaValueToNumber(args[0]) | 0;
-        obj.fields.set('value', javaString(curStr.slice(0, idx) + curStr.slice(idx + 1)));
-        return ref;
-      }
-      case 'insert': {
-        const idx = javaValueToNumber(args[0]) | 0;
-        const ins = this.stringify(args[1]);
-        obj.fields.set('value', javaString(curStr.slice(0, idx) + ins + curStr.slice(idx)));
-        return ref;
-      }
-    }
-    throw new InterpreterError(`Unknown StringBuilder method: ${method}()`, 0);
   }
 }
 
@@ -3662,6 +3607,25 @@ function sourceText(node: CstNode): string {
   return text;
 }
 
+/** A string from a constant expression, interned (see constantOperands); any other value as it is. */
+function interned(value: JavaValue): JavaValue {
+  return value.kind === 'string' ? internedString(value.value) : value;
+}
+
+/** A unary expression that is a literal, or a parenthesized expression of literals, for constant folding. */
+function isLiteralOperand(unary: CstNode): boolean {
+  if (has(unary, 'UnarySuffixOperator')) return false;
+  const primary = child(unary, 'primary');
+  if (!primary || has(primary, 'primarySuffix')) return false;
+  const prefix = child(primary, 'primaryPrefix');
+  if (prefix && has(prefix, 'literal')) return true;
+  const paren = prefix ? child(prefix, 'parenthesisExpression') : undefined;
+  const cond = paren ? child(child(paren, 'expression') ?? paren, 'conditionalExpression') : undefined;
+  const bin = cond && !has(cond, 'QuestionMark') ? child(cond, 'binaryExpression') : undefined;
+  return !!bin && Object.entries(bin.children).every(([key, items]) =>
+    key === 'unaryExpression' ? items.every(u => isCstNode(u) && isLiteralOperand(u)) : key === 'BinaryOperator');
+}
+
 /** The primary of a unary expression with no operators, e.g. the left side of an assignment. */
 function bareOperand(unary: CstNode): CstNode | undefined {
   if (has(unary, 'UnaryPrefixOperator') || has(unary, 'UnarySuffixOperator')) return undefined;
@@ -3696,9 +3660,12 @@ function applyBinaryOp(
 
   // Two primitives: Java's arithmetic, with numeric promotion (numeric.ts).
   if (left.kind === 'primitive' && right.kind === 'primitive') return binaryOperation(op, left, right);
-  // References: == and != compare identity (strings by value, #20).
-  if (op === '==') return javaBool(javaValuesEqual(left, right));
-  if (op === '!=') return javaBool(!javaValuesEqual(left, right));
+  // References: == and != compare identity. Two strings are the same object
+  // only if they are, or are both interned with the same characters (#20).
+  if (op === '==' || op === '!=') {
+    const same = left.kind === 'string' && right.kind === 'string' ? sameString(left, right) : javaValuesEqual(left, right);
+    return javaBool(op === '==' ? same : !same);
+  }
   if (left.kind === 'null' || right.kind === 'null') {
     // Unboxing null, as `Integer n = null; n + 1` does.
     throw nullPointer(`Cannot use null as a number with the operator ${op}`, 0);

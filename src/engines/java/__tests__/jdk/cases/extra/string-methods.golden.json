@@ -1,0 +1,8 @@
+{
+  "stdout": "-2 -2 1 0 -1\noellh oellh ell 0 x sb\n[the, quick, brown, fox] 2 [a, b, , ] [a, b,c,d] [] [, a, b] [a, b, c] [a, b, c] [x, y, z] [a, b]\njava.lang.StringIndexOutOfBoundsException: Index 5 out of bounds for length 3\njava.lang.StringIndexOutOfBoundsException: Range [2, 1) out of bounds for length 3\njava.lang.StringIndexOutOfBoundsException: Range [5, 3) out of bounds for length 3\njava.lang.StringIndexOutOfBoundsException: Index -1 out of bounds for length 3\ntrue false false true false true true false true true true false true true true false\n99162322 0 -923734105\n42 HEY! 4 6 7 2\njava.lang.StringIndexOutOfBoundsException: Index 99 out of bounds for length 7\njava.lang.StringIndexOutOfBoundsException: Index 99 out of bounds for length 7\njava.lang.StringIndexOutOfBoundsException: Range [99, 7) out of bounds for length 7\n-1 true false 2 5.0 3 q true 5 1932787712 3 5 -1 16 1 9 1073217536 1231 97\na#b#c Smith, John pric$ baa true false Jello a\\b tab_here\n1 2 4 5 true x|ababab true\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "0338e6ae03c5dfb9730b8f1795e17956b144270c4eeb9dba69f10fc5c0e52c52"
+}

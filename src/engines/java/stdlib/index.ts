@@ -6,7 +6,7 @@
 
 export type { StdlibContext } from './context';
 export { HaltSignal, StdlibError } from './context';
-export { callStaticMethod, getStaticField, charArrayText } from './statics';
+export { callStaticMethod, getStaticField } from './statics';
 export { javaFormat } from './format';
 export {
   newBuiltin,
@@ -15,7 +15,7 @@ export {
   isBuiltinCollection,
   scannerRemaining,
 } from './collections';
-export { LIST_LIKE, SET_LIKE, MAP_LIKE } from './util';
+export { LIST_LIKE, SET_LIKE, MAP_LIKE, charArrayText } from './util';
 export {
   isExceptionClass,
   newException,
@@ -24,4 +24,5 @@ export {
   formatException,
   qualifiedExceptionName,
 } from './exceptions';
+export { stringMethod, stringBuilderMethod, boxedMethod, newString, stringHashCode, boxedHashCode } from './strings';
 export { isLibrarySubtype, isStringType, isBoxedInstanceOf, isKnownLibraryType } from './hierarchy';

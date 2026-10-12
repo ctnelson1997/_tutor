@@ -36,6 +36,7 @@ import {
   parseIntegerText,
   rint,
   floatToString,
+  compareFloating,
   INT_MIN,
   INT_MAX,
   LONG_MIN,
@@ -52,10 +53,12 @@ import {
   valuesEqual,
   javaEquals,
   backingArray,
+  charArrayText,
   allocCollection,
   allocMap,
 } from './util';
 import { javaFormat } from './format';
+import { boxedHashCode } from './strings';
 
 /** A numeric argument's type, or int for anything else (javac rejects that). */
 function numericTypeOf(v: JavaValue | undefined): NumericType {
@@ -272,15 +275,7 @@ function integerWrapper(cls: string, method: string, args: JavaValue[], ctx: Std
   return undefined;
 }
 
-/** Double.compare and Float.compare: NaN above everything (and equal to itself), -0.0 below 0.0. */
-function compareFloating(a: number, b: number): number {
-  if (a < b) return -1;
-  if (a > b) return 1;
-  const aNaN = a !== a, bNaN = b !== b;
-  if (aNaN || bNaN) return aNaN === bNaN ? 0 : aNaN ? 1 : -1;
-  const aNegativeZero = Object.is(a, -0), bNegativeZero = Object.is(b, -0);
-  return aNegativeZero === bNegativeZero ? 0 : aNegativeZero ? -1 : 1;
-}
+
 
 /** Double and Float statics; Float's work on floats. */
 function floatWrapper(cls: string, method: string, args: JavaValue[], ctx: StdlibContext): JavaValue | undefined {
@@ -296,6 +291,7 @@ function floatWrapper(cls: string, method: string, args: JavaValue[], ctx: Stdli
     case 'isNaN': return javaBool(Number.isNaN(a));
     case 'isInfinite': return javaBool(!Number.isFinite(a) && !Number.isNaN(a));
     case 'isFinite': return javaBool(Number.isFinite(a));
+    case 'hashCode': return javaInt(boxedHashCode(numericValue(type, a)));
     case 'compare': return javaInt(compareFloating(a, b));
     case 'max': return result(Math.max(a, b));
     case 'min': return result(Math.min(a, b));
@@ -314,6 +310,7 @@ function booleanWrapper(method: string, args: JavaValue[], ctx: StdlibContext): 
     case 'parseBoolean': return javaBool(str.toLowerCase() === 'true');
     case 'valueOf': return javaBool(args[0]?.kind === 'string' ? str.toLowerCase() === 'true' : a);
     case 'toString': return javaString(a ? 'true' : 'false');
+    case 'hashCode': return javaInt(a ? 1231 : 1237);
     case 'compare': return javaInt(a === b ? 0 : a ? 1 : -1);
     case 'logicalAnd': return javaBool(a && b);
     case 'logicalOr': return javaBool(a || b);
@@ -337,6 +334,7 @@ function characterWrapper(method: string, args: JavaValue[]): JavaValue | undefi
     case 'toLowerCase': return javaChar(ch.toLowerCase().charCodeAt(0));
     case 'getNumericValue': return javaInt(/[0-9]/.test(ch) ? code - 48 : /[a-z]/.test(ch) ? code - 87 : /[A-Z]/.test(ch) ? code - 55 : -1);
     case 'toString': return javaString(ch);
+    case 'hashCode': return javaInt(code);
     case 'compare': return javaInt(code - Math.trunc(javaValueToNumber(args[1])));
   }
   return undefined;
@@ -350,6 +348,7 @@ function stringStatic(method: string, args: JavaValue[], ctx: StdlibContext): Ja
     }
     case 'valueOf': case 'copyValueOf': {
       if (args.length === 0) return javaString('null');
+      if (args[0].kind === 'string') return args[0]; // String.valueOf(s) is s itself
       const chars = charArrayText(args[0], ctx); // String.valueOf(char[]) is the characters
       return javaString(chars ?? (ctx.stringify ? ctx.stringify(args[0]) : javaValueToString(args[0], ctx.heap)));
     }
@@ -369,14 +368,6 @@ function stringStatic(method: string, args: JavaValue[], ctx: StdlibContext): Ja
     }
   }
   return undefined;
-}
-
-/** The characters of a char[], or undefined for any other value. */
-export function charArrayText(value: JavaValue | undefined, ctx: Pick<StdlibContext, 'heap'>): string | undefined {
-  if (value?.kind !== 'arrayRef') return undefined;
-  const arr = ctx.heap.get(value.heapId);
-  if (!arr || !isJavaArray(arr) || arr.elementType !== 'char') return undefined;
-  return arr.elements.map(c => String.fromCharCode(javaValueToNumber(c))).join('');
 }
 
 function systemMethod(method: string, args: JavaValue[], ctx: StdlibContext): JavaValue | undefined {

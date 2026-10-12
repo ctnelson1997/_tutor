@@ -233,8 +233,29 @@ export function javaChar(c: number): JavaPrimitive {
   return { kind: 'primitive', javaType: 'char', value: c };
 }
 
+/**
+ * Strings the program creates while it runs. Each is a distinct object for
+ * `==`, as in Java, where `new String("hi") == "hi"` and
+ * `scanner.next() == "yes"` are false. Literals and constant expressions are
+ * interned (not in this set): equal ones are the same object.
+ */
+const runtimeStrings = new WeakSet<JavaString>();
+
+/** A string created at run time: a new object for `==` (see runtimeStrings). */
 export function javaString(s: string): JavaString {
+  const str: JavaString = { kind: 'string', value: s };
+  runtimeStrings.add(str);
+  return str;
+}
+
+/** An interned string: a literal, a constant expression, or String.intern()'s result. */
+export function internedString(s: string): JavaString {
   return { kind: 'string', value: s };
+}
+
+/** `a == b` on two strings: the same object, or two interned strings with the same characters. */
+export function sameString(a: JavaString, b: JavaString): boolean {
+  return a === b || (a.value === b.value && !runtimeStrings.has(a) && !runtimeStrings.has(b));
 }
 
 export function javaNull(): JavaNull {

@@ -371,6 +371,16 @@ export function parseIntegerText(text: string, radix: number, type: 'int' | 'lon
 
 // ── Floating point ──
 
+/** Double.compare and Float.compare: NaN above everything (and equal to itself), -0.0 below 0.0. */
+export function compareFloating(a: number, b: number): number {
+  if (a < b) return -1;
+  if (a > b) return 1;
+  const aNaN = a !== a, bNaN = b !== b;
+  if (aNaN || bNaN) return aNaN === bNaN ? 0 : aNaN ? 1 : -1;
+  const aNegativeZero = Object.is(a, -0), bNegativeZero = Object.is(b, -0);
+  return aNegativeZero === bNegativeZero ? 0 : aNegativeZero ? -1 : 1;
+}
+
 /** Math.rint: the closest integer to x, ties to the even one. */
 export function rint(x: number): number {
   if (!Number.isFinite(x) || Number.isInteger(x)) return x;

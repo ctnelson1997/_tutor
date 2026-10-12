@@ -130,17 +130,13 @@
       "issues": [15],
       "reason": "array.clone() is unsupported (Unknown method)"
     },
-    "core/boxed-methods": {
-      "issues": [20],
-      "reason": "methods on boxed values (Integer.compareTo, Double.intValue) are unsupported"
-    },
     "core/deep-recursion": {
       "issues": [14],
       "reason": "recursion 900 deep overflows the JavaScript stack"
     },
     "core/integer-cache": {
-      "issues": [13, 20],
-      "reason": "Integer == ignores the -128..127 cache; Integer.equals is unsupported"
+      "issues": [13],
+      "reason": "Integer == ignores the -128..127 cache: boxed values have no identity until static types (#13) know where boxing happens"
     },
     "core/num-ternary-promotion": {
       "issues": [13],
@@ -158,41 +154,9 @@
       "issues": [13],
       "reason": "constructor overloads are chosen by argument count, not type"
     },
-    "core/sb-methods": {
-      "issues": [20],
-      "reason": "StringBuilder.setCharAt / delete / replace / indexOf are unsupported"
-    },
-    "core/string-charAt-oob": {
-      "issues": [20],
-      "reason": "charAt past the end returns \\u0000 instead of throwing StringIndexOutOfBoundsException"
-    },
-    "core/string-compareTo": {
-      "issues": [20],
-      "reason": "String.compareTo returns -1/0/1 instead of the character or length difference"
-    },
-    "core/string-equality-ref": {
-      "issues": [20],
-      "reason": "new String(...) is rejected; strings have no identity yet"
-    },
-    "core/string-hashCode": {
-      "issues": [20],
-      "reason": "String.hashCode() is unsupported"
-    },
-    "core/string-new-from-chars": {
-      "issues": [20],
-      "reason": "new String(char[]) is rejected, and String.valueOf(char[]) doesn't build a string"
-    },
-    "core/string-split-regex": {
-      "issues": [20],
-      "reason": "split() isn't regex-based and keeps trailing empty strings"
-    },
     "extra/boxed-identity-eq": {
       "issues": [13],
       "reason": "Integer == compares values, ignoring the -128..127 cache"
-    },
-    "extra/string-builder-identity": {
-      "issues": [20],
-      "reason": "strings have no identity, so == on distinct equal strings is true"
     },
     "misc/exc-multi-catch": {
       "issues": [15],
@@ -207,8 +171,8 @@
       "reason": "System.err output is mixed into stdout"
     },
     "misc/misc-string-methods-more": {
-      "issues": [20, 16],
-      "reason": "String.chars() (and the stream after it) is unsupported"
+      "issues": [16],
+      "reason": "String.chars() returns a stream, rejected until #16"
     },
     "oop/oop-abstract-class": {
       "issues": [15],
@@ -265,14 +229,6 @@
     "realistic/real-arrays-sort-comparable": {
       "issues": [21],
       "reason": "Arrays.toString ignores the elements' toString()"
-    },
-    "realistic/real-flood-fill": {
-      "issues": [20],
-      "reason": "new String(char[]) is rejected"
-    },
-    "realistic/real-hash-table-chaining": {
-      "issues": [20],
-      "reason": "String.hashCode() is unsupported"
     },
     "realistic/real-shape-hierarchy": {
       "issues": [15],
