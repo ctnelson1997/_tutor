@@ -1,0 +1,8 @@
+{
+  "stdout": "0: zero\n1: one default three\n2: default three\n3: three\n28 30 31\ngood\nweekend 14\n15\ncode 1\nint 5\nbig int 500\nempty string\nstring of 5\nnull\nother\nv=100\nv=200\ntwo\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "784ce2010e7a39152d0d4c59ceea7c7d826478f3876767c41297558078259409"
+}

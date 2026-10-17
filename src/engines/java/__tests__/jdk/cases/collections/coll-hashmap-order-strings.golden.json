@@ -1,0 +1,8 @@
+{
+  "stdout": "{banana=3, date=2, apple=1, cherry=7}\nbanana date apple cherry \n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "0724b258b604fa56ec9ac6d8fc0a21e58adcb4d59656595ef26ee5858f73fe9e"
+}

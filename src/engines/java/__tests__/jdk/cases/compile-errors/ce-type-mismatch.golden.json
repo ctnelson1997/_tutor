@@ -1,0 +1,8 @@
+{
+  "stdout": "",
+  "stderr": "Main.java:3: error: incompatible types: String cannot be converted to int\n    int x = \"hello\";\n            ^\n1 error\nerror: compilation failed\n",
+  "exitCode": 1,
+  "exception": null,
+  "compileError": "Main.java:3: error: incompatible types: String cannot be converted to int\n    int x = \"hello\";\n            ^\n1 error",
+  "sourceSha256": "5d69e58a6aab2db83453bb6dcabc03e58a35cf9b83c1fcacadbb1ec6b03615a3"
+}

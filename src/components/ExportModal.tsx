@@ -72,6 +72,7 @@ export default function ExportModal({ show, onHide }: Props) {
       }
 
       const template = await fetchViewerTemplate(language);
+      const runError = useStore.getState().error;
       const html = buildExportHtml(template, {
         title: title.trim() || 'Visualization',
         slug: slugifyFilename(title),
@@ -79,6 +80,7 @@ export default function ExportModal({ show, onHide }: Props) {
         code,
         snapshots: snaps,
         stdin,
+        ...(runError ? { error: runError } : {}),
       });
       downloadHtml(html, filename.trim() || 'visualization');
       setActualSizeBytes(new Blob([html]).size);

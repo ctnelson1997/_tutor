@@ -1,0 +1,8 @@
+{
+  "stdout": "2 3 4 9\ntrue\n[[0], [0, 1], [0, 0, 2]]\nnull\nfalse 0\n2x2 calls 2\n3.0\n12\n5\nnegative size -1\n7\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "eb928f04815ddda623c8a49031777c8127f76ef9a7f082f5eda80bce40da9350"
+}

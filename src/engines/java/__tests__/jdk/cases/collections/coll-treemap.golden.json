@@ -1,0 +1,8 @@
+{
+  "stdout": "{c=2, m=1, x=3} c x\nm m\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "fc782cb3985a1df0a776522243e91bb91c952ac00fa2d2d29d0063c2304b5fb3"
+}

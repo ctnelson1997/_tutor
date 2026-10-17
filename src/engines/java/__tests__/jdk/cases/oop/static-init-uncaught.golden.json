@@ -1,0 +1,11 @@
+{
+  "stdout": "building\n",
+  "stderr": "Exception in thread \"main\" java.lang.ExceptionInInitializerError\n\tat java.base/java.lang.Class.forName0(Native Method)\n\tat java.base/java.lang.Class.forName(Class.java:534)\n\tat java.base/java.lang.Class.forName(Class.java:513)\nCaused by: java.lang.ArrayIndexOutOfBoundsException: Index 3 out of bounds for length 3\n\tat Main.build(Main.java:7)\n\tat Main.<clinit>(Main.java:2)\n\t... 6 more\n",
+  "exitCode": 1,
+  "exception": {
+    "class": "java.lang.ExceptionInInitializerError",
+    "message": null
+  },
+  "compileError": null,
+  "sourceSha256": "59b4268b610d02694a7259676d04803ef51f0d57363a989529059922b598135e"
+}

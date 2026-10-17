@@ -44,6 +44,18 @@ describe('buildExportHtml', () => {
     });
   });
 
+  it('keeps why the recorded run stopped early, and adds nothing for a run that finished', () => {
+    const error = { kind: 'exception' as const, message: 'java.lang.ArithmeticException: / by zero', line: 3, stderr: 'Exception in thread "main" …' };
+    const withError = evalExamples(buildExportHtml(SAMPLE_TEMPLATE, {
+      title: 'crash', language: 'java', code: 'x', snapshots: SAMPLE_SNAPSHOTS, error,
+    })) as Array<{ error?: unknown }>;
+    expect(withError[0].error).toEqual(error);
+    const finished = evalExamples(buildExportHtml(SAMPLE_TEMPLATE, {
+      title: 'fine', language: 'java', code: 'x', snapshots: SAMPLE_SNAPSHOTS,
+    })) as Array<Record<string, unknown>>;
+    expect('error' in finished[0]).toBe(false);
+  });
+
   it('stamps schemaVersion on every payload it writes', async () => {
     const { CURRENT_EXAMPLE_SCHEMA_VERSION } = await import('../../types/viewer');
     const html = buildExportHtml(SAMPLE_TEMPLATE, {

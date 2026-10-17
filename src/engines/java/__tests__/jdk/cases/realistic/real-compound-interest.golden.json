@@ -1,0 +1,8 @@
+{
+  "stdout": "Year 1: $1050.0\nYear 2: $1102.5\nYear 3: $1157.63\nYear 4: $1215.51\nYear 5: $1276.28\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "a0f4c574d71bc5c4da5c3c2c69285b5191c85df9d105a81023abf99a54b4e0a2"
+}

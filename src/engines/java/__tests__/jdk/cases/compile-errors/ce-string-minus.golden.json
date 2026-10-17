@@ -1,0 +1,8 @@
+{
+  "stdout": "",
+  "stderr": "Main.java:4: error: bad operand types for binary operator '-'\n    int n = s - 1;\n              ^\n  first type:  String\n  second type: int\n1 error\nerror: compilation failed\n",
+  "exitCode": 1,
+  "exception": null,
+  "compileError": "Main.java:4: error: bad operand types for binary operator '-'\n    int n = s - 1;\n              ^\n  first type:  String\n  second type: int\n1 error",
+  "sourceSha256": "eb13027ec76ef6a7994b7df6a7860998ab92c30e759908813d59eddc240fe67f"
+}

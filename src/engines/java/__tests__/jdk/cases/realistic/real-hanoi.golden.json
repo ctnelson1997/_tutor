@@ -1,0 +1,8 @@
+{
+  "stdout": "Move disk 1 from A to C\nMove disk 2 from A to B\nMove disk 1 from C to B\nMove disk 3 from A to C\nMove disk 1 from B to A\nMove disk 2 from B to C\nMove disk 1 from A to C\nTotal moves: 7\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "17e758df99e50a02a00d0df4767af0293b4aceb134ae2219543d1eba1d84be17"
+}

@@ -1,0 +1,8 @@
+{
+  "stdout": "Minute 1: served Ann, waiting 2\nMinute 2: served Ben, waiting 2\nMinute 3: served Cat, waiting 1\nMinute 4: served Dan, waiting 0\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "ca88281cf103ac50313737f4616d5d7a0d2e9096969e84384f8b2148a5d3578c"
+}

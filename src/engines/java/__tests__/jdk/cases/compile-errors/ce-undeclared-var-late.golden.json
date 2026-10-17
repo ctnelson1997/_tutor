@@ -1,0 +1,8 @@
+{
+  "stdout": "",
+  "stderr": "Main.java:5: error: cannot find symbol\n    System.out.println(y + z);\n                           ^\n  symbol:   variable z\n  location: class Main\n1 error\nerror: compilation failed\n",
+  "exitCode": 1,
+  "exception": null,
+  "compileError": "Main.java:5: error: cannot find symbol\n    System.out.println(y + z);\n                           ^\n  symbol:   variable z\n  location: class Main\n1 error",
+  "sourceSha256": "eb5b99e18b09f9e361cd694f8cdbc49bddce9ee27554125938ac739c117b3676"
+}

@@ -1,0 +1,8 @@
+{
+  "stdout": "",
+  "stderr": "Main.java:4: error: incompatible types: possible lossy conversion from double to int\n    int n = d;\n            ^\n1 error\nerror: compilation failed\n",
+  "exitCode": 1,
+  "exception": null,
+  "compileError": "Main.java:4: error: incompatible types: possible lossy conversion from double to int\n    int n = d;\n            ^\n1 error",
+  "sourceSha256": "b6fb57ff267acc886e1fb1934e49af664c1b3d55e626f30ea1fe3869179d4de0"
+}

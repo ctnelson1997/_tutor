@@ -1,0 +1,8 @@
+{
+  "stdout": "computing default size\nfield a\nblock 1, a=7, b=0\nfield b\nblock 2, parts=7\nint constructor body, size=22, b=7\nno-arg constructor body\n7 7 7\n---\nfield a\nblock 1, a=7, b=0\nfield b\nblock 2, parts=7\nint constructor body, size=3, b=7\nplain 0\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "e556f5a6e402414ffbdafa09d28f6f026b9eb6c28a97e86122f9bd73ca45df19"
+}

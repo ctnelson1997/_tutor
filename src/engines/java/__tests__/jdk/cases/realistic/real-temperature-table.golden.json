@@ -1,0 +1,8 @@
+{
+  "stdout": "Celsius  Fahrenheit\n    -10        14.0\n      0        32.0\n     10        50.0\n     20        68.0\n     30        86.0\n     40       104.0\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "e23616abf247c2175efd8237697638b7a435f8e71cda5575d528dcfe8b1a5fda"
+}

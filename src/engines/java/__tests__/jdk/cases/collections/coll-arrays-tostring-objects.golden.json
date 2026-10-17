@@ -1,0 +1,8 @@
+{
+  "stdout": "[P1, P2]\n[1.0, 2.5]\n[x, null]\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "5ccf904d81b784a334ff9cdf23cc221723dc60162716e031425493155ed809bf"
+}

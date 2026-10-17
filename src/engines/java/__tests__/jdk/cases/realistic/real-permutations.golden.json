@@ -1,0 +1,8 @@
+{
+  "stdout": "[abc, acb, bac, bca, cab, cba]\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "0f048a791a5df7dd94e9cb8474b07dec586697f71793abfd648e446f22568704"
+}

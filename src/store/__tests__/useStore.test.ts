@@ -13,6 +13,21 @@ function makeSnapshot(step: number, line: number): ExecutionSnapshot {
 }
 
 describe('useStore', () => {
+  it('stores snapshots that share their unchanged parts (#18)', () => {
+    const step = (x: number): ExecutionSnapshot => ({
+      step: x, line: 1,
+      callStack: [{ name: 'main', variables: [{ name: 'x', value: { type: 'number', value: x } }] }],
+      heap: [{ id: '1', objectType: 'array', properties: [{ key: '0', value: { type: 'number', value: 7 } }] }],
+      stdout: ['hi'],
+    });
+    useStore.getState().setSnapshots([step(1), step(2)]);
+    const [first, second] = useStore.getState().snapshots;
+    expect(second.heap[0]).toBe(first.heap[0]);
+    expect(second.stdout).toBe(first.stdout);
+    expect(second.callStack[0]).not.toBe(first.callStack[0]); // x changed
+    expect(second.callStack[0].variables[0].value).toEqual({ type: 'number', value: 2 });
+  });
+
   beforeEach(() => {
     // Reset store to initial state
     useStore.getState().reset();
@@ -32,7 +47,7 @@ describe('useStore', () => {
     const snaps = [makeSnapshot(0, 1), makeSnapshot(1, 2), makeSnapshot(2, 3)];
     useStore.getState().setSnapshots(snaps);
 
-    expect(useStore.getState().snapshots).toBe(snaps);
+    expect(useStore.getState().snapshots).toEqual(snaps);
     expect(useStore.getState().currentStep).toBe(0);
     expect(useStore.getState().error).toBeNull();
   });
@@ -172,5 +187,19 @@ describe('useStore', () => {
 
     useStore.getState().setHideFunctions(false);
     expect(useStore.getState().hideFunctions).toBe(false);
+  });
+});
+
+describe('useStore: a run that stopped early', () => {
+  beforeEach(() => useStore.getState().reset());
+
+  it('keeps an error set after the snapshots, and setSnapshots clears it', () => {
+    const snaps = [makeSnapshot(0, 1), makeSnapshot(1, 2)];
+    useStore.getState().setSnapshots(snaps);
+    useStore.getState().setError({ kind: 'limit', message: 'Stopped after 5000 steps', line: 2 });
+    expect(useStore.getState().snapshots).toEqual(snaps);
+    expect(useStore.getState().error).toEqual({ kind: 'limit', message: 'Stopped after 5000 steps', line: 2 });
+    useStore.getState().setSnapshots(snaps);
+    expect(useStore.getState().error).toBeNull();
   });
 });

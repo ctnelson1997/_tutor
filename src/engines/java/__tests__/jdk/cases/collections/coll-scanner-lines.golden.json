@@ -1,0 +1,8 @@
+{
+  "stdout": "ann scored 90\nbob scored 72\ncy scored 85\nTotal: 247\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "dd7927df27a20c3149fd59ef84e43239685c4e4c27c491498ea510250bc1e72b"
+}

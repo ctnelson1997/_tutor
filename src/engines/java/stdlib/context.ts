@@ -32,6 +32,25 @@ export interface StdlibContext {
    * suppressed during the call so it stays atomic in the visualization.
    */
   invokeUserMethod(ref: JavaValue, name: string, args: JavaValue[]): JavaValue | undefined;
+  /**
+   * The name Java prints for a class, used when an exception is shown:
+   * `Main$MyException` for a user class nested in Main, or
+   * `java.lang.ArithmeticException` for a library class. Defaults to
+   * qualifying library exception classes only.
+   */
+  binaryName?(className: string): string;
+  /**
+   * A value as String.valueOf renders it, using a user class's own toString()
+   * (for %s and String.valueOf). Without it, the library's rendering is used.
+   */
+  stringify?(value: JavaValue): string;
+  /**
+   * Which functional interface's method a program's function value has
+   * (#16): its name and arity (a lambda's interface method, or the one a
+   * class implements), so library overloads such as thenComparing(Comparator)
+   * and thenComparing(Function) can be told apart when the program runs.
+   */
+  functionShape?(value: JavaValue): { name: string; arity: number } | undefined;
 }
 
 /**

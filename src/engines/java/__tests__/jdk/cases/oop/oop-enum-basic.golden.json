@@ -1,0 +1,8 @@
+{
+  "stdout": "GREEN\n1\ngo\nRED GREEN BLUE \n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "1ed08d00ce6957597335a1d046820549a50f4a7663b2d940c7ee2e4ae9051a57"
+}

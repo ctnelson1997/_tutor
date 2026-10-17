@@ -1,0 +1,8 @@
+{
+  "stdout": "{the=3, bat=1, and=2, cat=1, hat=1}\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "9720674309bffffe1064a2dce0d18d844cf7e387f4a074de3e306119038ef3a3"
+}

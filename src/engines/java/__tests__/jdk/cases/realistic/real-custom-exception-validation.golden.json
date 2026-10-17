@@ -1,0 +1,8 @@
+{
+  "stdout": "Age 25 is valid\nCaught: Invalid age: -3\nCaught: Invalid age: 200\nAge 40 is valid\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "860bde00f6791f38f3c14c2d2c8a59b0e55a00a6dbce0ea5723e443fce3afeaa"
+}

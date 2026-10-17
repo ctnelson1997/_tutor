@@ -1,0 +1,8 @@
+{
+  "stdout": "[a, b]\n{x=2, y=1}\n[1, 2, 3]\ncaught / by zero\ntrue\nba\n1\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "0629e2c8b8944c0f2b7fd7e97f0656fb4fa4eff2ec79f92d6fa5d067f6865622"
+}

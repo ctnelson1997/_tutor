@@ -1,0 +1,8 @@
+{
+  "stdout": "[5, 10, 20, 30] size=4\n[5, 10, 30] size=3\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "c4ed4ea4de42245f5a927f562146925c1ff68ce4d707dd0b2bbd9efc88c0e500"
+}

@@ -1,0 +1,8 @@
+{
+  "stdout": "|   ab|cd   |00042|1,234,567|\ntrue z ff 10\n   3.142|2.50    |\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "0faa0b0ad91a520d14a6e7805ac39401db6417f3b6bcc49ea4bbe44431de84fb"
+}

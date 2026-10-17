@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { createContext, runInContext } from 'node:vm';
 import { instrument } from '../../engines/js/instrumenter';
 import { getRuntimeCode } from '../../engines/js/runtime';
-import type { ExecutionSnapshot } from '../../types/snapshot';
+import type { ExecutionSnapshot, WorkerMessage } from '../../types/snapshot';
 
 /**
  * Helper: run instrumented code through the full pipeline (without a Web Worker).
@@ -13,6 +13,16 @@ import type { ExecutionSnapshot } from '../../types/snapshot';
  * between tests.
  */
 function runPipeline(source: string): ExecutionSnapshot[] {
+  const result = runPipelineResult(source);
+  if (result.type !== 'result') throw new Error(result.message);
+  return result.snapshots;
+}
+
+/**
+ * Helper: run code as the worker does and return its reply: the steps, and
+ * why the run stopped early (an uncaught exception, the step cap), if it did.
+ */
+function runPipelineResult(source: string): WorkerMessage {
   const instrumented = instrument(source);
   const fullCode = getRuntimeCode() + '\n' + instrumented;
 
@@ -57,10 +67,15 @@ function runPipeline(source: string): ExecutionSnapshot[] {
   sandbox.self = sandbox;
 
   const ctx = createContext(sandbox);
-  runInContext(fullCode, ctx);
-
-  const snapshots = ctx.__snapshots__ as ExecutionSnapshot[];
-  return JSON.parse(JSON.stringify(snapshots));
+  const runResult = ctx as unknown as { __runResult__: (err?: unknown) => WorkerMessage };
+  let reply: WorkerMessage;
+  try {
+    runInContext(fullCode, ctx);
+    reply = runResult.__runResult__();
+  } catch (err) {
+    reply = runResult.__runResult__(err);
+  }
+  return JSON.parse(JSON.stringify(reply));
 }
 
 /** Helper to find a variable in a snapshot's callstack */
@@ -372,20 +387,68 @@ console.log("second");`);
 
   // ── Infinite loop guard ──
 
-  it('throws on infinite loop', () => {
-    expect(() => runPipeline('while (true) { }')).toThrow(/Infinite loop|exceeded/);
+  it('stops an infinite loop, keeping its steps and saying why', () => {
+    const result = runPipelineResult('let n = 0;\nwhile (true) { n++; }');
+    expect(result.type).toBe('result');
+    if (result.type !== 'result') return;
+    expect(result.snapshots.length).toBeGreaterThan(0);
+    expect(result.error?.kind).toBe('limit');
+    expect(result.error?.message).toMatch(/Infinite loop|Stopped after 5000 steps/);
   });
 
   // ── Snapshot limit ──
 
-  it('caps snapshots at 5000', () => {
+  it('caps snapshots at 5000, then stops the program with a notice', () => {
     // A loop that generates many snapshots
-    const snaps = runPipeline(`let x = 0;
+    const result = runPipelineResult(`let x = 0;
 for (let i = 0; i < 5000; i++) {
   x++;
 }`);
+    if (result.type !== 'result') throw new Error('expected a result');
+    expect(result.snapshots.length).toBe(5000);
+    expect(result.error).toEqual({
+      kind: 'limit',
+      message: 'Stopped after 5000 steps, the most that can be shown. Your code may contain an infinite loop.',
+    });
+  });
 
-    expect(snaps.length).toBeLessThanOrEqual(5000);
+  // ── Runs that end early keep their steps (#7) ──
+
+  it('keeps the steps before an uncaught exception, including the throw', () => {
+    const result = runPipelineResult(`let a = 1;
+function fail(x) {
+  if (x > 0) throw new RangeError('too big: ' + x);
+  return x;
+}
+let b = 2;
+fail(a + b);
+let c = 3;`);
+    if (result.type !== 'result') throw new Error('expected a result');
+    expect(result.error).toEqual({ kind: 'exception', message: 'RangeError: too big: 3', stderr: 'Uncaught RangeError: too big: 3' });
+    const last = result.snapshots[result.snapshots.length - 1];
+    expect(last.line).toBe(3); // the throw statement
+    expect(last.callStack.map(f => f.name)).toContain('fail');
+    expect(result.snapshots.some(s => s.line === 8)).toBe(false);
+  });
+
+  it('reports a runtime TypeError with the steps before it', () => {
+    const result = runPipelineResult('let o = null;\nlet x = 1;\nlet y = o.field;');
+    if (result.type !== 'result') throw new Error('expected a result');
+    expect(result.error?.kind).toBe('exception');
+    expect(result.error?.message).toMatch(/^TypeError: /);
+    expect(result.snapshots.length).toBeGreaterThan(0);
+  });
+
+  it('reports a thrown non-Error value as it is', () => {
+    const result = runPipelineResult('let x = 1;\nthrow "plain string";');
+    if (result.type !== 'result') throw new Error('expected a result');
+    expect(result.error).toEqual({ kind: 'exception', message: 'plain string', stderr: 'Uncaught plain string' });
+  });
+
+  it('adds no error to a run that finishes normally', () => {
+    const result = runPipelineResult('let x = 1;');
+    expect(result).toMatchObject({ type: 'result' });
+    expect((result as { error?: unknown }).error).toBeUndefined();
   });
 
   // ── Snapshot structure ──
@@ -670,5 +733,96 @@ console.log(dog.speak());`);
     const last = lastSnap(snaps);
     expect(last.stdout.some(s => s.includes("Cat says meow"))).toBe(true);
     expect(last.stdout.some(s => s.includes("Dog says woof"))).toBe(true);
+  });
+});
+
+/**
+ * Steps follow pythontutor.com (#24): a step shows the state before its line
+ * runs. Each step is written as its line, then each frame with its variables
+ * (`return ↵` as `ret`), and `?` for a condition's result.
+ */
+describe('steps as pythontutor.com takes them (#24)', () => {
+  const show = (v: { type: string; value?: unknown }) => (v.type === 'undefined' ? 'undefined' : v.type === 'ref' ? 'ref' : String(v.value));
+  const steps = (source: string) => runPipeline(source).map(s =>
+    `${s.line}${s.condition ? `?${s.condition.result}` : ''} ` + s.callStack.map(f =>
+      `${f.name}(${f.variables.map(v => `${v.name === 'return ↵' ? 'ret' : v.name}=${show(v.value as { type: string; value?: unknown })}`).join(',')})`).join(' > '));
+
+  it('shows the state before each line runs, and the final state last', () => {
+    const snaps = runPipeline('let x = 1;\nlet y = x + 1;\nconsole.log(y);');
+    expect(steps('let x = 1;\nlet y = x + 1;\nconsole.log(y);')).toEqual([
+      '1 Global()',
+      '2 Global(x=1)',
+      '3 Global(x=1,y=2)',
+      '3 Global(x=1,y=2)',
+    ]);
+    expect(snaps.map(s => s.stdout)).toEqual([[], [], [], ['2']]);
+  });
+
+  it('enters a function with its parameters bound, and returns with its value, or undefined at its closing brace', () => {
+    expect(steps(`function add(a, b) {
+  let s = a + b;
+  return s;
+}
+function hello() {
+  console.log("hi");
+}
+let r = add(1, 2);
+hello();`).map(s => s.replace(/add=ref,hello=ref,?/, ''))).toEqual([
+      '8 Global()',
+      '2 Global() > add(a=1,b=2)',
+      '3 Global() > add(a=1,b=2,s=3)',
+      '3 Global() > add(a=1,b=2,s=3,ret=3)',
+      '9 Global(r=3)',
+      '6 Global(r=3) > hello()',
+      '7 Global(r=3) > hello(ret=undefined)',
+      '9 Global(r=3)',
+    ]);
+  });
+
+  it('steps at each loop test with the loop variable as it is then, and takes no step without a line', () => {
+    const lines = steps('let sum = 0;\nfor (let i = 0; i < 2; i++) {\n  sum += i;\n}');
+    expect(lines).toEqual([
+      '1 Global()',
+      '2?true Global(sum=0) > for(i=0)',
+      '3 Global(sum=0) > for(i=0)',
+      '2?true Global(sum=0) > for(i=1)',
+      '3 Global(sum=0) > for(i=1)',
+      '2?false Global(sum=1) > for(i=2)',
+      '2 Global(sum=1)',
+    ]);
+    expect(runPipeline('let n = 0;\nwhile (n < 2) {\n  let sq = n * n;\n  n++;\n}').every(s => s.line > 0)).toBe(true);
+  });
+
+  it('takes one step for statements sharing a line, except a call or the next iteration', () => {
+    expect(steps('let a = 1; let b = 2;\nwhile (a < 3) a++;')).toEqual([
+      '1 Global()',
+      '2?true Global(a=1,b=2)',
+      '2?true Global(a=2,b=2)',
+      '2?false Global(a=3,b=2)',
+      '2 Global(a=3,b=2)',
+    ]);
+    expect(steps('[1, 2].forEach(x => console.log(x));')).toEqual([
+      '1 Global()',
+      '1 Global() > <anonymous>(x=1)',
+      '1 Global() > <anonymous>(x=1,ret=undefined)',
+      '1 Global() > <anonymous>(x=2)',
+      '1 Global() > <anonymous>(x=2,ret=undefined)',
+      '1 Global()',
+    ]);
+    expect(steps('for (const v of [10, 20]) {\n  console.log(v);\n}').slice(1, 3)).toEqual([
+      '2 Global() > for...of(v=10)',
+      '2 Global() > for...of(v=20)',
+    ]);
+  });
+
+  it('ends at the line that ran last', () => {
+    const snaps = runPipeline('let k = 2;\nswitch (k) {\n  case 2:\n    console.log("two");\n    break;\n  default:\n    console.log("other");\n}');
+    expect(snaps.map(s => s.line)).toEqual([1, 2, 4, 5, 5]);
+    expect(lastSnap(snaps).stdout).toEqual(['two']);
+  });
+
+  it('names a frame as JavaScript names the function: a class member, a constructor by its class, a variable', () => {
+    expect(steps('class Box {\n  constructor(v) { this.v = v; }\n  get() { return this.v; }\n}\nconst twice = n => n * 2;\nconst b = new Box(3);\ntwice(b.get());')
+      .map(s => s.split(' > ').slice(1).map(f => f.replace(/\(.*/, '')).join(' > ')).filter(Boolean)).toEqual(['Box', 'Box', 'get', 'get', 'twice', 'twice']);
   });
 });

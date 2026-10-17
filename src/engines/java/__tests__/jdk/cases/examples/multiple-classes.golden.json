@@ -1,0 +1,8 @@
+{
+  "stdout": "=== COFFEE SHOP TESTER ===\ntestPriceOf: PASS\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "b2b80e46bb395a1342c357c47ed683ec088ec964dc9100d8f1e4e0870e00dd26"
+}

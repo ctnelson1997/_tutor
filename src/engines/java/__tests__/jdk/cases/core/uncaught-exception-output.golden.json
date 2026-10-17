@@ -1,0 +1,11 @@
+{
+  "stdout": "before\n",
+  "stderr": "Exception in thread \"main\" java.lang.ArrayIndexOutOfBoundsException: Index 2 out of bounds for length 2\n\tat Main.main(Main.java:5)\n",
+  "exitCode": 1,
+  "exception": {
+    "class": "java.lang.ArrayIndexOutOfBoundsException",
+    "message": "Index 2 out of bounds for length 2"
+  },
+  "compileError": null,
+  "sourceSha256": "9f68e04c8faccf6228c821f0ac514ee818d5f56a5ae650d4b1c3c9dd3f43dabc"
+}

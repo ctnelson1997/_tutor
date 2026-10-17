@@ -1,0 +1,10 @@
+{
+  "$comment": [
+    "Checks in jdk-differential.test.ts that fail today, each tied to the roadmap issue (#3) that should fix it.",
+    "Listed checks run as it.fails(): the suite stays green, and turns red when a fix makes one pass. Delete the entry then.",
+    "\"issues\": what the failure is waiting on, main issue first. \"reason\": the symptom, in a few words.",
+    "See the details of any case with: npx tsx scripts/java-diff.ts <case id>"
+  ],
+  "output": {},
+  "invariants": {}
+}

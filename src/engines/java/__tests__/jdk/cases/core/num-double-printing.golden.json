@@ -1,0 +1,8 @@
+{
+  "stdout": "1.0E7\n1.23456789E8\n1.0E-4\n0.3333333333333333\n0.30000000000000004\n100.0\n1.0E21\n1.8E7\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "42fd905cdb182e3fddfe632eb9aaf14a713b7ff68b0cf912d487e5da968511f6"
+}

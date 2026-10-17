@@ -1,0 +1,8 @@
+{
+  "stdout": "apples=7 [OK]\nkiwis=0 [OUT]\npears=4 [LOW]\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "19bcb341228df6bc0c52b7afa8db22efa84ad0b0d1b7f51595a5343788e2eba4"
+}

@@ -104,6 +104,9 @@ html, body, #root {
   flex: 1;
   overflow-y: auto;
   min-height: 0;
+  /* Keep output's spaces and tabs, as a terminal does (printf padding, stack traces). */
+  white-space: pre-wrap;
+  tab-size: 4;
 }
 
 .console-panel .log-warn {
@@ -204,6 +207,28 @@ html, body, #root {
 /* About to execute line highlight (light green) */
 .cm-current-step-line {
   background-color: rgba(34, 139, 34, 0.12) !important;
+}
+
+/* The line an error or uncaught exception happened on, at the last step */
+.cm-error-line {
+  background-color: rgba(220, 53, 69, 0.15) !important;
+  box-shadow: inset 3px 0 0 rgba(220, 53, 69, 0.8);
+}
+
+/* Step-bar link to the step where the run ended early */
+.run-end-link {
+  font-size: 0.8rem;
+  padding: 0 0.25rem;
+  text-decoration: none;
+}
+
+.run-end-link.run-end-limit {
+  color: #997404;
+}
+
+.run-end-link.run-end-exception,
+.run-end-link.run-end-error {
+  color: #b02a37;
 }
 
 /* Sub-line highlight for specific expressions (e.g. for-loop parts) */

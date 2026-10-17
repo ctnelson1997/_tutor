@@ -6,6 +6,7 @@ import type { HeapObject, RuntimeValue, StackFrame } from '../types/snapshot';
 import type { HeapTypeDisplay } from '../types/engine';
 import { getChangedKeys } from '../utils/diffSnapshots';
 import { promoteToHeap } from '../utils/promoteToHeap';
+import { primitiveText } from '../utils/valueDisplay';
 import DraggableCard from './DraggableCard';
 
 function ValueDisplay({ value }: { value: RuntimeValue }) {
@@ -19,18 +20,9 @@ function ValueDisplay({ value }: { value: RuntimeValue }) {
     );
   }
 
-  const display =
-    value.type === 'string'
-      ? `"${value.value}"`
-      : value.type === 'null'
-        ? 'null'
-        : value.type === 'undefined'
-          ? 'undefined'
-          : String(value.value);
-
   return (
     <span style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
-      {display}
+      {primitiveText(value)}
     </span>
   );
 }
@@ -88,10 +80,13 @@ function ObjectDisplay({ obj, changedKeys, step }: { obj: HeapObject; changedKey
 }
 
 function FunctionDisplay({ obj }: { obj: HeapObject }) {
+  const name = obj.label || 'anonymous';
+  // A Java lambda or method reference is labeled with its source, a JS or Python function with its name.
+  const shown = /->|::/.test(name) ? name : `${name}()`;
   return (
     <div style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
       <span style={{ color: '#6f42c1' }}>ƒ</span>{' '}
-      {obj.label || 'anonymous'}()
+      {shown}
     </div>
   );
 }
@@ -150,7 +145,11 @@ function HeapCard({ obj, changedKeys, step, typeConfig }: { obj: HeapObject; cha
         ) : obj.objectType === 'array' || obj.objectType === 'list' || obj.objectType === 'tuple' ? (
           <ArrayDisplay obj={obj} changedKeys={changedKeys} step={step} />
         ) : obj.objectType === 'function' ? (
-          <FunctionDisplay obj={obj} />
+          <>
+            <FunctionDisplay obj={obj} />
+            {/* What a Java lambda captured. */}
+            {obj.properties.length > 0 && <ObjectDisplay obj={obj} changedKeys={changedKeys} step={step} />}
+          </>
         ) : (
           <ObjectDisplay obj={obj} changedKeys={changedKeys} step={step} />
         )}

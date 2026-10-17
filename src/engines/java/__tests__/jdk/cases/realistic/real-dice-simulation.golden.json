@@ -1,0 +1,8 @@
+{
+  "stdout": "2: 6\n3: 14\n4: 16\n5: 35\n6: 25\n7: 32\n8: 18\n9: 24\n10: 10\n11: 12\n12: 8\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "4622e8023666abef60efd0762d950e13d3bcddec41dd669e1ef986bacda2367f"
+}

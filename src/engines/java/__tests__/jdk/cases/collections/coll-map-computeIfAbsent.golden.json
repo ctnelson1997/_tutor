@@ -1,0 +1,8 @@
+{
+  "stdout": "{2=[hi, yo], 3=[hey]}\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "6a0341f74d8b77b5158e48c936cd8ef61d7a2779f1636ea8f05cd5d038ed9a6b"
+}

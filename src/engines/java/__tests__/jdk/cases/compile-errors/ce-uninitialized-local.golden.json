@@ -1,0 +1,8 @@
+{
+  "stdout": "",
+  "stderr": "Main.java:4: error: variable count might not have been initialized\n    count++;\n    ^\n1 error\nerror: compilation failed\n",
+  "exitCode": 1,
+  "exception": null,
+  "compileError": "Main.java:4: error: variable count might not have been initialized\n    count++;\n    ^\n1 error",
+  "sourceSha256": "d8694070016827988c518f34b68299293c97b4e30067ba0611c61f3936481e64"
+}

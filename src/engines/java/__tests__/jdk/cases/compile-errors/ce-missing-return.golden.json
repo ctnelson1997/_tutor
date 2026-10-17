@@ -1,0 +1,8 @@
+{
+  "stdout": "",
+  "stderr": "Main.java:4: error: missing return statement\n  }\n  ^\n1 error\nerror: compilation failed\n",
+  "exitCode": 1,
+  "exception": null,
+  "compileError": "Main.java:4: error: missing return statement\n  }\n  ^\n1 error",
+  "sourceSha256": "eb6b176b1fd69c2bdcfc29198e2ca7f6d1976a23c07e07ed436610183c20ba5c"
+}

@@ -7,6 +7,8 @@ import { useStore } from '../store/useStore';
 import { useEngine } from '../engines/useEngine';
 import StdinPanel from './StdinPanel';
 import type { ColumnRange, ConditionResult } from '../types/snapshot';
+import { errorTitle, errorLines, moreErrorsNote } from '../utils/runError';
+import { stepMarkers } from '../utils/stepMarkers';
 
 // ── Line highlight via CodeMirror state effect ──
 
@@ -63,6 +65,27 @@ const prevHighlightField = StateField.define<DecorationSet>({
         const lineObj = tr.state.doc.line(line);
         const deco = Decoration.line({ class: 'cm-previous-step-line' });
         return Decoration.set([deco.range(lineObj.from)]);
+      }
+    }
+    return decos;
+  },
+  provide: (f) => EditorView.decorations.from(f),
+});
+
+// ── Error lines: where an error or uncaught exception happened (every compile error's line) ──
+
+const setErrorLines = StateEffect.define<number[]>();
+
+const errorLineField = StateField.define<DecorationSet>({
+  create() {
+    return Decoration.none;
+  },
+  update(decos, tr) {
+    for (const effect of tr.effects) {
+      if (effect.is(setErrorLines)) {
+        const deco = Decoration.line({ class: 'cm-error-line' });
+        const lines = effect.value.filter(line => line >= 1 && line <= tr.state.doc.lines).sort((a, b) => a - b);
+        return Decoration.set(lines.map(line => deco.range(tr.state.doc.line(line).from)));
       }
     }
     return decos;
@@ -193,6 +216,7 @@ const staticExtensions = [
   keymap.of([indentWithTab]),
   highlightField,
   prevHighlightField,
+  errorLineField,
   conditionField,
   gutterMarkerField,
   stepGutter,
@@ -272,14 +296,11 @@ export default function EditorPanel() {
   }, [code]);
 
   // ── Highlight & condition badge sync ──
+  // ▶ the step's line, about to run; ✓ the line that just ran (#24).
   const snapshot = snapshots.length > 0 ? snapshots[currentStep] : null;
-  const prevSnapshot = currentStep > 0 ? snapshots[currentStep - 1] : null;
-  const highlightInfo: HighlightInfo | null = snapshot
-    ? { line: snapshot.line, columnRange: snapshot.columnRange }
-    : null;
-  const prevHighlightInfo: HighlightInfo | null = prevSnapshot
-    ? { line: prevSnapshot.line }
-    : null;
+  const markers = stepMarkers(snapshots, currentStep, error);
+  const highlightInfo: HighlightInfo | null = markers.current;
+  const prevHighlightInfo: HighlightInfo | null = markers.previous !== null ? { line: markers.previous } : null;
   const condition = snapshot?.condition ?? null;
 
   const conditionKey = condition
@@ -305,12 +326,28 @@ export default function EditorPanel() {
     conditionKey,
   ]);
 
+  // A run that stopped early keeps its steps; its error belongs to the last one.
+  const atEnd = snapshots.length === 0 || currentStep === snapshots.length - 1;
+  const errorLineKey = error && atEnd ? errorLines(error).join(',') : '';
+  useEffect(() => {
+    const lines = errorLineKey ? errorLineKey.split(',').map(Number) : [];
+    viewRef.current?.dispatch({ effects: setErrorLines.of(lines) });
+  }, [errorLineKey]);
+  const moreErrors = error ? moreErrorsNote(error) : '';
+
   return (
     <div className="d-flex flex-column h-100">
       {/* Error display */}
-      {error && (
-        <div className="alert alert-danger m-2 py-1 px-2 mb-0" role="alert" style={{ fontSize: '0.85rem' }}>
-          <strong>Error{error.line ? ` (line ${error.line})` : ''}:</strong> {error.message}
+      {error && atEnd && (
+        <div
+          className={`alert ${error.kind === 'limit' ? 'alert-warning' : 'alert-danger'} m-2 py-1 px-2 mb-0`}
+          role="alert"
+          style={{ fontSize: '0.85rem' }}
+        >
+          <strong>{errorTitle(error.kind)}{error.line ? ` (line ${error.line})` : ''}:</strong>{' '}
+          {/* A compile error's details (`symbol:   variable z`) keep javac's line breaks. */}
+          <span style={{ whiteSpace: 'pre-wrap' }}>{error.message}</span>
+          {moreErrors && <span className="ms-1 fst-italic">({moreErrors})</span>}
         </div>
       )}
 

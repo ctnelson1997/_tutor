@@ -1,0 +1,8 @@
+{
+  "stdout": "[Amy, bob, carl]\n[[1, 2], [3, 4]]\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "95065dd47597b2cc83563ef17f6aff20f147cc141f57f892c74a30c766f08d4d"
+}

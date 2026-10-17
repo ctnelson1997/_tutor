@@ -1,0 +1,8 @@
+{
+  "stdout": "calls 0\nn 1\nNPE\ndone\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "ae161cc70f18951692b943db832bf2225f7409e119adc6aae07f9190e381d748"
+}

@@ -1,0 +1,8 @@
+{
+  "stdout": "computing\ninit failed: java.lang.ArrayIndexOutOfBoundsException: Index 5 out of bounds for length 2\nsecond use: Could not initialize class Main$Fragile\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "a3f85c6d64bd4f5dc1792d7b3f14b19bd7cf1a62c2372d55d9efc4101e74f194"
+}

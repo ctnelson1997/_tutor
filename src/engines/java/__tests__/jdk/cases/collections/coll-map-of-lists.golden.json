@@ -1,0 +1,8 @@
+{
+  "stdout": "{a=[ann, amy], b=[bob, ben], c=[cal]}\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "38dcc41ba833a062218eefb184ff111c82359ca0058a7c8cb61e8058ef76fb0c"
+}

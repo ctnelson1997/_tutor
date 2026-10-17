@@ -1,0 +1,8 @@
+{
+  "stdout": "after\n",
+  "stderr": "java.lang.RuntimeException: oops\n\tat Main.main(Main.java:4)\n",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "dedc454fedaf176600f53b354c9f940c15c35036a58d3fa73b5cf7a186ea24ff"
+}

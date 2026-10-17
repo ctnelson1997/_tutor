@@ -20,7 +20,7 @@ export const javaEngine: LanguageEngine = {
   heapTypeConfig: {
     array: { label: 'Array', variant: 'info' },
     object: { label: 'Object', variant: 'warning' },
-    function: { label: 'Method', variant: 'dark' },
+    function: { label: 'Lambda', variant: 'dark' },
     list: { label: 'List', variant: 'info' },
     set: { label: 'Set', variant: 'info' },
     map: { label: 'Map', variant: 'info' },

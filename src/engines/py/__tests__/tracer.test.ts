@@ -44,7 +44,7 @@ describe('getTracerCode', () => {
   });
 
   it('returns JSON from run_traced', () => {
-    expect(code).toContain('return json.dumps({"type": "result", "snapshots": _snapshots})');
+    expect(code).toContain('result = {"type": "result", "snapshots": _snapshots}');
     expect(code).toContain('return json.dumps(result)');
   });
 
@@ -606,7 +606,7 @@ describe('getTracerCode', () => {
 
   it('extracts line numbers from traceback', () => {
     expect(code).toContain("tb.tb_frame.f_code.co_filename == '<user_code>'");
-    expect(code).toContain('err_line = tb.tb_lineno');
+    expect(code).toContain('line = tb.tb_lineno');
   });
 
   it('returns error type with class name and message', () => {

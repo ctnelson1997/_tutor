@@ -1,0 +1,8 @@
+{
+  "stdout": "Average: 83.8\nRounded: 83.8\nGrade: B\nHighest: 95\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "10a6b7015eb13b38b38fd141c0f058a359a08be5d8d30474e07a8fb386e92f4a"
+}

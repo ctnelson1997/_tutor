@@ -12,6 +12,7 @@ export function getTracerCode(): string {
 import sys
 import json
 import math
+import time
 import ast as _ast
 
 # ══════════════════════════════════════
@@ -27,6 +28,23 @@ _step_counter = 0
 _MAX_SNAPSHOTS = 5000
 _MAX_SEQ_PROPS = 100
 _MAX_DICT_PROPS = 50
+
+# A run that is too long to show is stopped, keeping its steps: at the step
+# cap, or shortly before the worker is killed at 10 seconds.
+_TIME_BUDGET = 8.5
+_stop_reason = None   # "steps" or "time" once the tracer has stopped the run
+_start_time = 0.0
+_events = 0
+_unwinding = set()    # frames an exception is propagating out of
+
+class _TutorStop(BaseException):
+    """Ends a run from the tracer. A BaseException, so the program's own 'except Exception' doesn't catch it."""
+
+def _stop(reason):
+    global _stop_reason
+    _stop_reason = reason
+    sys.settrace(None)
+    raise _TutorStop()
 
 # Set of namespace keys present BEFORE user code runs.
 # Populated in run_traced(); used to filter out builtins and tracer internals.
@@ -449,7 +467,10 @@ def _pop_comp_frame(frame):
     _active_comp = None
 
 def _tracer(frame, event, arg):
-    global _active_comp
+    global _active_comp, _events
+
+    if _stop_reason is not None:
+        return None
 
     # Only trace user code
     if frame.f_code.co_filename != '<user_code>':
@@ -459,8 +480,13 @@ def _tracer(frame, event, arg):
     if fname in _SKIP_FRAME_NAMES:
         return None
 
+    # Stop the program at the step cap or the time budget, instead of letting
+    # it run on unrecorded until the worker is killed.
     if _step_counter >= _MAX_SNAPSHOTS:
-        return None
+        _stop("steps")
+    _events += 1
+    if _events % 1024 == 0 and time.time() - _start_time > _TIME_BUDGET:
+        _stop("time")
 
     if event == 'call':
         if fname == '<module>':
@@ -473,7 +499,14 @@ def _tracer(frame, event, arg):
             _capture_snapshot(frame.f_lineno, frame.f_locals)
         return _tracer
 
+    elif event == 'exception':
+        # An exception is passing through this frame. If the frame doesn't
+        # handle it, its 'return' event is the frame unwinding, not a return.
+        _unwinding.add(frame)
+        return _tracer
+
     elif event == 'line':
+        _unwinding.discard(frame)  # the frame handled the exception and goes on
         line = frame.f_lineno
         comp = _comp_info.get(line)
 
@@ -571,6 +604,14 @@ def _tracer(frame, event, arg):
         if _active_comp:
             _pop_comp_frame(frame)
 
+        if frame in _unwinding:
+            # Leaving because of an exception: no "return ↵ None" step. The
+            # last step stays where the exception was raised.
+            _unwinding.discard(frame)
+            if _call_stack:
+                _call_stack.pop()
+            return _tracer
+
         if _call_stack:
             if fname == '<module>':
                 # Capture final state so stdout from the last line is visible
@@ -592,8 +633,42 @@ def _safe_import(name, *args, **kwargs):
 
 # ── Entry point ──
 
+def _exception_text(e):
+    text = str(e)
+    return f"{type(e).__name__}: {text}" if text else type(e).__name__
+
+def _user_line(e):
+    """The line of the innermost frame of the user's code in an exception's traceback."""
+    tb = e.__traceback__
+    line = None
+    while tb is not None:
+        if tb.tb_frame.f_code.co_filename == '<user_code>':
+            line = tb.tb_lineno
+        tb = tb.tb_next
+    return line
+
+def _traceback_text(e, source_code):
+    """What Python prints for an uncaught exception, limited to the user's own code."""
+    lines = source_code.splitlines()
+    out = ["Traceback (most recent call last):"]
+    tb = e.__traceback__
+    while tb is not None:
+        code = tb.tb_frame.f_code
+        if code.co_filename == '<user_code>':
+            out.append(f'  File "main.py", line {tb.tb_lineno}, in {code.co_name}')
+            if 1 <= tb.tb_lineno <= len(lines):
+                out.append("    " + lines[tb.tb_lineno - 1].strip())
+        tb = tb.tb_next
+    out.append(_exception_text(e))
+    return chr(10).join(out)
+
 def run_traced(source_code):
     global _snapshots, _stdout_lines, _call_stack, _heap_map, _heap_counter, _step_counter, _baseline_keys, _active_comp, _continuation_lines
+    global _stop_reason, _start_time, _events, _unwinding
+    _stop_reason = None
+    _start_time = time.time()
+    _events = 0
+    _unwinding = set()
     _snapshots = []
     _stdout_lines = []
     _call_stack = []
@@ -620,28 +695,41 @@ def run_traced(source_code):
     # filter them out of the module-level variable display later.
     _baseline_keys = set(namespace.keys())
 
-    code = compile(source_code, '<user_code>', 'exec')
+    try:
+        code = compile(source_code, '<user_code>', 'exec')
+    except (SyntaxError, ValueError) as e:
+        # Nothing ran: report the syntax error and its line.
+        result = {"type": "error", "message": f"{type(e).__name__}: {getattr(e, 'msg', None) or e}"}
+        if getattr(e, 'lineno', None):
+            result["line"] = e.lineno
+        return json.dumps(result)
 
+    # A run that ends early (an uncaught exception, the step or time limit)
+    # still returns its steps, with the reason in "error".
+    error = None
     sys.settrace(_tracer)
     try:
         exec(code, namespace)
+    except _TutorStop:
+        pass
+    except SystemExit:
+        pass  # raise SystemExit ends the program
     except Exception as e:
         sys.settrace(None)
-        # Extract line number from traceback
-        import traceback
-        tb = e.__traceback__
-        err_line = None
-        while tb is not None:
-            if tb.tb_frame.f_code.co_filename == '<user_code>':
-                err_line = tb.tb_lineno
-            tb = tb.tb_next
-        result = {"type": "error", "message": f"{type(e).__name__}: {str(e)}"}
-        if err_line is not None:
-            result["line"] = err_line
-        return json.dumps(result)
+        error = {"kind": "exception", "message": _exception_text(e), "stderr": _traceback_text(e, source_code)}
+        line = _user_line(e)
+        if line is not None:
+            error["line"] = line
     finally:
         sys.settrace(None)
 
-    return json.dumps({"type": "result", "snapshots": _snapshots})
+    if _stop_reason == "steps":
+        error = {"kind": "limit", "message": f"Stopped after {_MAX_SNAPSHOTS} steps, the most that can be shown. Your code may contain an infinite loop."}
+    elif _stop_reason == "time":
+        error = {"kind": "limit", "message": f"Stopped after {_TIME_BUDGET:g} seconds, the longest a program can run here."}
+    result = {"type": "result", "snapshots": _snapshots}
+    if error is not None:
+        result["error"] = error
+    return json.dumps(result)
 `;
 }

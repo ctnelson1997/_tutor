@@ -1,0 +1,8 @@
+{
+  "stdout": "Caught: Stack full\n3\n2\n1\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "fbe484f46a13fcb661e233ddca1a6e882e585ea75cdafae4ee7a60b509b6279f"
+}

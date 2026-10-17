@@ -1,0 +1,8 @@
+{
+  "stdout": "p=(1, 2)\n(1, 2)\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "9b20a035d865fbd56c2eb60e94994292fd3dcf94a2466b89f623639e18032969"
+}

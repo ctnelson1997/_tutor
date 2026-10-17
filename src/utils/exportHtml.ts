@@ -1,4 +1,4 @@
-import type { ExecutionSnapshot } from '../types/snapshot';
+import type { ExecutionSnapshot, RunError } from '../types/snapshot';
 import type { LanguageId } from '../types/engine';
 import type { ViewerExample } from '../types/viewer';
 import { CURRENT_EXAMPLE_SCHEMA_VERSION } from '../types/viewer';
@@ -38,6 +38,8 @@ export interface ExportInput {
   code: string;
   snapshots: ExecutionSnapshot[];
   stdin?: string;
+  /** Why the run stopped early, if it did. */
+  error?: RunError;
 }
 
 /**
@@ -72,6 +74,7 @@ export function buildExportHtml(template: string, example: ExportInput): string 
     code: example.code,
     snapshots: example.snapshots,
     ...(example.stdin ? { stdin: example.stdin } : {}),
+    ...(example.error ? { error: example.error } : {}),
   };
 
   const json = JSON.stringify(payload);

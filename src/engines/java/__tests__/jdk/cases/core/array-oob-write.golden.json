@@ -1,0 +1,11 @@
+{
+  "stdout": "",
+  "stderr": "Exception in thread \"main\" java.lang.ArrayIndexOutOfBoundsException: Index 3 out of bounds for length 3\n\tat Main.main(Main.java:4)\n",
+  "exitCode": 1,
+  "exception": {
+    "class": "java.lang.ArrayIndexOutOfBoundsException",
+    "message": "Index 3 out of bounds for length 3"
+  },
+  "compileError": null,
+  "sourceSha256": "40912e2a553b9b3a40ac33bd39687d777da83cb0397bb0bfd28526dcc641a276"
+}
