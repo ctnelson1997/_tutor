@@ -8,6 +8,7 @@ import { useEngine } from '../engines/useEngine';
 import StdinPanel from './StdinPanel';
 import type { ColumnRange, ConditionResult } from '../types/snapshot';
 import { errorTitle, errorLines, moreErrorsNote } from '../utils/runError';
+import { stepMarkers } from '../utils/stepMarkers';
 
 // ── Line highlight via CodeMirror state effect ──
 
@@ -295,14 +296,11 @@ export default function EditorPanel() {
   }, [code]);
 
   // ── Highlight & condition badge sync ──
+  // ▶ the step's line, about to run; ✓ the line that just ran (#24).
   const snapshot = snapshots.length > 0 ? snapshots[currentStep] : null;
-  const prevSnapshot = currentStep > 0 ? snapshots[currentStep - 1] : null;
-  const highlightInfo: HighlightInfo | null = snapshot
-    ? { line: snapshot.line, columnRange: snapshot.columnRange }
-    : null;
-  const prevHighlightInfo: HighlightInfo | null = prevSnapshot
-    ? { line: prevSnapshot.line }
-    : null;
+  const markers = stepMarkers(snapshots, currentStep, error);
+  const highlightInfo: HighlightInfo | null = markers.current;
+  const prevHighlightInfo: HighlightInfo | null = markers.previous !== null ? { line: markers.previous } : null;
   const condition = snapshot?.condition ?? null;
 
   const conditionKey = condition

@@ -22,7 +22,7 @@ At each step the visualizer shows:
 - **Condition badges** — `true`/`false` pills annotated directly in the editor for `if`/`else if` and loop conditions
 - **Value change detection** — variables that changed between steps flash yellow so you can spot what just updated
 - **Sub-line highlighting** — for-loop init, condition, and update clauses are individually highlighted as they execute
-- **Function call preview** — the line indicator pauses on the call site before stepping into the function body, so you can see the flow from caller to callee
+- **Steps as on pythontutor.com** — each step shows the state before its line runs (▶ "About to execute", ✓ the line that just ran), entering a function shows its parameters, returning shows the value, and the last step is the final state, in every language
 - **Share & embed** — compress your code into a URL to share, or generate an embeddable `<iframe>` snippet (view options like "hide functions" are preserved in the link)
 - **Export to standalone HTML** — bake the current code + pre-computed snapshots into a single self-contained HTML file you can drop onto your own website. Recipients can step through, edit, and re-run the visualization without any backend
 
@@ -224,7 +224,7 @@ scripts/                        # Dev tools, run with tsx: java-golden.ts (JDK g
 
 **Branding via env vars** — app name, colors, domain, and tagline are defined in `.env.js` / `.env.py` / `.env.java` and flow through `src/config/branding.ts` to all components. No hardcoded "JSTutor" strings exist in the UI code.
 
-**JS engine: Native JS in disposable Web Workers** — code runs as real JavaScript in blob-URL workers, so the full Web API surface is available. A fresh worker is created for each run; no shared state can leak between executions.
+**JS engine: Native JS in disposable Web Workers** — code runs as real JavaScript in blob-URL workers, so the full Web API surface is available. A fresh worker is created for each run; no shared state can leak between executions. Its steps follow pythontutor.com, as the Python and Java engines' do: a capture before each statement, a step at each condition with the variables it sees, a step entering each function call and one returning (with the value, or `undefined` at the closing brace), and the final state last.
 
 **Python engine: Pyodide + sys.settrace** — CPython compiled to WebAssembly runs in a persistent module Web Worker. Python's built-in `sys.settrace()` intercepts call/line/return events to build snapshots without needing an AST transformer. Pyodide is loaded eagerly from CDN at page load to minimize wait time on first run.
 

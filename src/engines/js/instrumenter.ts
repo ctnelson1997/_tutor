@@ -2,9 +2,12 @@
  * AST Instrumenter
  *
  * Parses user JavaScript with Acorn, then walks the AST and injects:
- *  - __capture__(line, { ...vars }) after each statement
+ *  - __capture__(line, { ...vars }) before each statement, and once at the
+ *    end of the program (steps as pythontutor.com takes them, #24)
+ *  - __condition__(test, line, text, { ...vars }) around if and loop tests
  *  - __pushFrame__(name, { ...params }) at function entry
- *  - __popFrame__() at function exit
+ *  - __popFrame__(value, line) at a return or the function's closing brace,
+ *    a step showing the returned value
  *  - Loop guards to prevent infinite loops
  *  - Rewrites console.log/warn/error to __logOutput__
  *  - Blocks eval() and new Function()
@@ -127,23 +130,25 @@ function extractPatternNames(pattern: AnyNode, names: string[]): void {
  */
 function buildCaptureExpression(varNames: string[], line: number, columnRange?: { start: { column: number }; end: { column: number } }): AnyNode {
   // __capture__(line, { var1: var1, var2: var2, ... })
-  const properties = varNames.map((name) => ({
-    type: 'Property',
-    key: { type: 'Identifier', name },
-    value: { type: 'Identifier', name },
-    kind: 'init',
-    shorthand: true,
-    computed: false,
-    method: false,
-  }));
+  return {
+    type: 'ExpressionStatement',
+    expression: {
+      type: 'CallExpression',
+      callee: { type: 'Identifier', name: '__capture__' },
+      arguments: [buildLineArg(line, columnRange), ...buildVarArgs(varNames)],
+      optional: false,
+    },
+  };
+}
 
-  const args: AnyNode[] = [
-    buildLineArg(line, columnRange),
-    { type: 'ObjectExpression', properties },
-  ];
-
-  // If inside a block scope, pass parent var names as third argument
-  // so the runtime can distribute vars to the correct frames.
+/**
+ * The variables a capture (or condition) refreshes: `{ a, b }`; inside a block
+ * scope, the names that belong to the parent frame, so the runtime can
+ * distribute them; inside a closure, the closed-over variables, which the
+ * runtime shows separately on the frame.
+ */
+function buildVarArgs(varNames: string[]): AnyNode[] {
+  const args: AnyNode[] = [buildVarsObject(varNames)];
   if (_parentVarNames) {
     args.push({
       type: 'ArrayExpression',
@@ -153,15 +158,21 @@ function buildCaptureExpression(varNames: string[], line: number, columnRange?: 
       })),
     });
   }
-
-  // If inside a closure, pass closed-over variables as fourth argument
-  // so the runtime can display them separately on the frame.
   if (_closureVarNames && _closureVarNames.length > 0) {
-    // Ensure third arg exists (null placeholder if no block scope)
+    // Ensure the parent names argument exists (null placeholder if no block scope)
     if (!_parentVarNames) {
       args.push({ type: 'Literal', value: null, raw: 'null' });
     }
-    const closureProps = _closureVarNames.map((name) => ({
+    args.push(buildVarsObject(_closureVarNames));
+  }
+  return args;
+}
+
+/** `{ a, b }`: each variable by its name. */
+function buildVarsObject(names: string[]): AnyNode {
+  return {
+    type: 'ObjectExpression',
+    properties: names.map((name) => ({
       type: 'Property',
       key: { type: 'Identifier', name },
       value: { type: 'Identifier', name },
@@ -169,18 +180,7 @@ function buildCaptureExpression(varNames: string[], line: number, columnRange?: 
       shorthand: true,
       computed: false,
       method: false,
-    }));
-    args.push({ type: 'ObjectExpression', properties: closureProps });
-  }
-
-  return {
-    type: 'ExpressionStatement',
-    expression: {
-      type: 'CallExpression',
-      callee: { type: 'Identifier', name: '__capture__' },
-      arguments: args,
-      optional: false,
-    },
+    })),
   };
 }
 
@@ -243,13 +243,14 @@ function buildPushFrame(name: string, paramNames: string[], isBlockScope = false
   };
 }
 
-function buildPopFrame(): AnyNode {
+/** `__popFrame__()`; with the line of a function's closing brace, a return step there showing `undefined`. */
+function buildPopFrame(endLine?: number): AnyNode {
   return {
     type: 'ExpressionStatement',
     expression: {
       type: 'CallExpression',
       callee: { type: 'Identifier', name: '__popFrame__' },
-      arguments: [],
+      arguments: endLine ? [{ type: 'Identifier', name: 'undefined' }, { type: 'Literal', value: endLine }] : [],
       optional: false,
     },
   };
@@ -269,17 +270,41 @@ function buildLineArg(line: number, loc?: { start: { column: number }; end: { co
   return { type: 'Literal', value: line };
 }
 
-function buildConditionWrapper(testExpr: AnyNode, columnRange?: { start: { column: number }; end: { column: number } }): AnyNode {
+/**
+ * `__condition__(test, line, text, vars…)`: a step at the test with its result.
+ * It refreshes the variables visible there (`varNames`), as a capture does, so
+ * the step shows the state the test sees. `blockFrame` is a for loop's
+ * let/const variables, whose frame is pushed in the loop body: the step shows
+ * them in a frame of their own.
+ */
+function buildConditionWrapper(
+  testExpr: AnyNode,
+  columnRange: { start: { column: number }; end: { column: number } } | undefined,
+  varNames: string[],
+  blockFrame?: { name: string; vars: string[] },
+): AnyNode {
   const line = testExpr.loc?.start?.line ?? 0;
   const exprText = generate(testExpr);
+  const args: AnyNode[] = [
+    testExpr,
+    buildLineArg(line, columnRange),
+    { type: 'Literal', value: exprText },
+    ...buildVarArgs(varNames),
+  ];
+  if (blockFrame) {
+    while (args.length < 6) args.push({ type: 'Literal', value: null, raw: 'null' });
+    args.push({
+      type: 'ObjectExpression',
+      properties: [
+        { type: 'Property', key: { type: 'Identifier', name: 'name' }, value: { type: 'Literal', value: blockFrame.name }, kind: 'init', shorthand: false, computed: false, method: false },
+        { type: 'Property', key: { type: 'Identifier', name: 'vars' }, value: buildVarsObject(blockFrame.vars), kind: 'init', shorthand: false, computed: false, method: false },
+      ],
+    });
+  }
   return {
     type: 'CallExpression',
     callee: { type: 'Identifier', name: '__condition__' },
-    arguments: [
-      testExpr,
-      buildLineArg(line, columnRange),
-      { type: 'Literal', value: exprText },
-    ],
+    arguments: args,
     optional: false,
   };
 }
@@ -328,6 +353,11 @@ function buildLoopGuard(): AnyNode {
  * Recursively instrument a block (array of statements).
  * `scopeVars` is the accumulated list of variable names visible in this scope.
  * `isTopLevel` indicates whether this is the program body.
+ *
+ * Steps follow pythontutor.com (#24): a capture comes before each statement,
+ * showing the state before it runs (a condition's step comes from
+ * __condition__, a return's value from __popFrame__), and the program body
+ * ends with one more capture, its final state.
  */
 function instrumentBlock(
   body: AnyNode[],
@@ -346,26 +376,25 @@ function instrumentBlock(
       declaredSoFar.push(name);
     }
   }
+  // The let/const/class names this block declares are in their temporal dead
+  // zone until their declaration runs, and so is an outer variable they shadow:
+  // a capture before then leaves them out.
+  const pending = new Set(collectLexicalNames(body));
+  const visible = () => declaredSoFar.filter(name => !pending.has(name));
 
-  // If top-level, add an initial capture with only the inherited scope vars.
-  // Use the first non-FunctionDeclaration line so the indicator starts at real execution.
-  if (isTopLevel && body.length > 0) {
-    const firstExec = body.find(s => s.type !== 'FunctionDeclaration');
-    const firstLine = (firstExec ?? body[0])?.loc?.start?.line ?? 1;
-    body.unshift(buildCaptureExpression(declaredSoFar, firstLine));
-  }
+  // The program's final step is at its last statement that runs (not a function declared after the code).
+  const lastExec = [...body].reverse().find(s => s.type !== 'FunctionDeclaration') ?? body[body.length - 1];
+  const finalLine = lastExec?.loc?.start?.line ?? 0;
 
   // We iterate and insert new statements. Use index tracking.
-  let i = isTopLevel ? 1 : 0; // skip the initial capture we just inserted
-  let isFirstStmt = isTopLevel; // skip redundant pre-call capture for first stmt (initial capture covers it)
+  let i = 0;
   while (i < body.length) {
     const stmt = body[i];
     const line = stmt.loc?.start?.line ?? 0;
 
     // Extract for-loop init so it gets its own capture step.
     // var and expression inits are hoisted/function-scoped, so extracting
-    // them before the for statement is safe. let/const inits are also extracted
-    // so that the block-scope frame can be pushed before the condition check.
+    // them before the for statement is safe.
     if (stmt.type === 'ForStatement' && stmt.init) {
       // Stash test/update column ranges on the for-statement for instrumentLoop
       if (stmt.test?.loc) stmt._testColRange = stmt.test.loc;
@@ -400,25 +429,11 @@ function instrumentBlock(
       }
     }
 
-    // Pre-call capture: if the statement contains a function call,
-    // emit a snapshot on this line BEFORE the call executes so the
-    // user sees the current line move to the call site before entering
-    // the function body. Skip return/throw (they already get pre-captures)
-    // and skip the first statement in a top-level block (the initial capture
-    // already covers it).
-    const wasFirstStmt = isFirstStmt;
-    if (!isFirstStmt
-        && stmt.type !== 'ReturnStatement' && stmt.type !== 'ThrowStatement'
-        && !stmt._isBlockScopeInit
-        && containsCallExpression(stmt)) {
-      body.splice(i, 0, buildCaptureExpression(declaredSoFar, line));
+    // The step before the statement runs. Synthetic statements (loop guards,
+    // frame pushes and pops) have no line and take no step.
+    if (line > 0 && takesStepBefore(stmt) && (!stmt._isBlockScopeInit || stmt._forColumnRange)) {
+      body.splice(i, 0, buildCaptureExpression(visible(), line, stmt._forColumnRange ?? undefined));
       i += 1;
-    }
-    // Don't consume isFirstStmt for top-level FunctionDeclarations — they
-    // produce no snapshots, so the initial capture still covers the first
-    // executable statement and its pre-call capture would be redundant.
-    if (!(isTopLevel && stmt.type === 'FunctionDeclaration')) {
-      isFirstStmt = false;
     }
 
     // Save block-scoped loop vars before instrumentStatement deletes them.
@@ -436,23 +451,24 @@ function instrumentBlock(
     // try to read `x` (still in TDZ) when the function executes during RHS
     // evaluation. var/function names are already in declaredSoFar via the
     // hoisted pass at the top of instrumentBlock.
-    instrumentStatement(stmt, declaredSoFar);
+    instrumentStatement(stmt, visible());
 
     // After instrumenting, register this statement's declared names so that
-    // subsequent statements (and the post-capture below) see them.
+    // subsequent statements see them.
     // Skip block-scope-init declarations (extracted for-loop let/const vars) —
     // those belong only to the loop's block frame, not the parent scope.
     if (!stmt._isBlockScopeInit) {
       const newNames = collectDeclaredNamesFromStmt(stmt);
       for (const name of newNames) {
+        pending.delete(name);
         if (!declaredSoFar.includes(name)) {
           declaredSoFar.push(name);
         }
       }
     }
 
-    // If instrumentLoop flagged a block-scope wrap (for let/const for-loops),
-    // replace body[i] with: { __pushFrame__('for',{i},true); for(...){...}; __popFrame__(); }
+    // If instrumentLoop flagged a block-scope wrap (for while loops),
+    // replace body[i] with: { __pushFrame__('while',{},true); while(...){...}; __popFrame__(); }
     // This keeps the block-scope frame alive during every condition check.
     if (stmt._blockWrap) {
       const { push, pop } = stmt._blockWrap as { push: AnyNode; pop: AnyNode };
@@ -469,109 +485,56 @@ function instrumentBlock(
       }
     }
 
-    // For return/throw, insert capture BEFORE (capture after is dead code).
-    // Skip if this is the first statement in a top-level block — the initial
-    // capture already covers it (same logic as pre-call capture above).
-    if ((stmt.type === 'ReturnStatement' || stmt.type === 'ThrowStatement') && !wasFirstStmt) {
-      const capture = buildCaptureExpression(declaredSoFar, line);
-      body.splice(i, 0, capture);
-      i += 2; // skip past inserted capture + the statement
-    } else if (shouldCaptureAfter(stmt) && (!stmt._isBlockScopeInit || stmt._forColumnRange)
-      && !(isTopLevel && stmt.type === 'FunctionDeclaration')) {
-      const colRange = stmt._forColumnRange ?? undefined;
-      const capture = buildCaptureExpression(declaredSoFar, line, colRange);
-      body.splice(i + 1, 0, capture);
-      i += 2; // skip past the original statement + inserted capture
-    } else {
-      i += 1;
-    }
+    i += 1;
+  }
+
+  // The program's last step: the final state, after its last statement ran.
+  if (isTopLevel && finalLine > 0) {
+    const final = buildCaptureExpression(visible(), finalLine);
+    // A final capture is a step even on the line the program last stepped at.
+    const args = final.expression.arguments;
+    while (args.length < 4) args.push({ type: 'Literal', value: null, raw: 'null' });
+    args.push({ type: 'Literal', value: true });
+    body.push(final);
   }
 }
 
 /**
- * Check if a statement or expression contains a function call.
- * Used to insert a pre-call capture so the user sees the current line
- * on the call site before stepping into the function body.
- * Does NOT recurse into nested function definitions (they define calls,
- * not execute them).
+ * Does a step come before this statement? pythontutor.com takes one before
+ * each line that runs. A function declaration doesn't run, a block, `try` or
+ * label only leads to the statements inside it, and the step of an `if` or a
+ * loop with a test is its condition's (__condition__); a do-while's is at its
+ * `while`.
  */
-function containsCallExpression(node: AnyNode): boolean {
-  if (!node) return false;
-  switch (node.type) {
-    case 'CallExpression':
-    case 'NewExpression':
-    case 'TaggedTemplateExpression':
-      return true;
-    case 'VariableDeclaration':
-      return node.declarations.some((d: AnyNode) => d.init && containsCallExpression(d.init));
-    case 'ExpressionStatement':
-      return containsCallExpression(node.expression);
-    case 'AssignmentExpression':
-      return containsCallExpression(node.right);
-    case 'BinaryExpression':
-    case 'LogicalExpression':
-      return containsCallExpression(node.left) || containsCallExpression(node.right);
-    case 'UnaryExpression':
-    case 'UpdateExpression':
-    case 'SpreadElement':
-      return containsCallExpression(node.argument);
-    case 'ConditionalExpression':
-      return containsCallExpression(node.test) ||
-             containsCallExpression(node.consequent) ||
-             containsCallExpression(node.alternate);
-    case 'MemberExpression':
-      return containsCallExpression(node.object) ||
-             (node.computed && containsCallExpression(node.property));
-    case 'SequenceExpression':
-      return node.expressions.some((e: AnyNode) => containsCallExpression(e));
-    case 'TemplateLiteral':
-      return node.expressions.some((e: AnyNode) => containsCallExpression(e));
-    case 'ArrayExpression':
-      return node.elements.some((e: AnyNode) => e && containsCallExpression(e));
-    case 'ObjectExpression':
-      return node.properties.some((p: AnyNode) =>
-        p.type === 'SpreadElement' ? containsCallExpression(p.argument) : containsCallExpression(p.value));
-    // Don't recurse into function bodies — they define, not execute
-    case 'FunctionExpression':
-    case 'ArrowFunctionExpression':
-    case 'FunctionDeclaration':
-      return false;
-    default:
-      return false;
-  }
-}
-
-/**
- * Determines if a capture call should be inserted after this statement.
- */
-function shouldCaptureAfter(stmt: AnyNode): boolean {
+function takesStepBefore(stmt: AnyNode): boolean {
   switch (stmt.type) {
-    case 'VariableDeclaration':
-    case 'ExpressionStatement':
-    case 'AssignmentExpression':
-      return true;
-    case 'ReturnStatement':
-    case 'ThrowStatement':
-      // Handled separately — capture is inserted BEFORE these (not after)
-      return false;
+    case 'FunctionDeclaration':
+    case 'EmptyStatement':
+    case 'BlockStatement':
+    case 'TryStatement':
+    case 'LabeledStatement':
     case 'IfStatement':
-    case 'ForStatement':
-    case 'ForInStatement':
-    case 'ForOfStatement':
     case 'WhileStatement':
     case 'DoWhileStatement':
-    case 'SwitchStatement':
-    case 'TryStatement':
-      // These have their own block instrumentation
       return false;
-    case 'FunctionDeclaration':
-      // Capture that the function was declared
-      return true;
-    case 'ClassDeclaration':
-      return true;
+    case 'ForStatement':
+      return !stmt.test;
     default:
-      return false;
+      return true;
   }
+}
+
+/** The names a block's own let, const and class declarations introduce. */
+function collectLexicalNames(body: AnyNode[]): string[] {
+  const names: string[] = [];
+  for (const stmt of body) {
+    if (stmt.type === 'VariableDeclaration' && stmt.kind !== 'var') {
+      for (const decl of stmt.declarations) extractPatternNames(decl.id, names);
+    } else if (stmt.type === 'ClassDeclaration' && stmt.id) {
+      names.push(stmt.id.name);
+    }
+  }
+  return names;
 }
 
 /**
@@ -589,7 +552,7 @@ function instrumentStatement(stmt: AnyNode, scopeVars: string[]): void {
       // Wrap the test expression with __condition__ to track the decision
       // (skip synthetic loop guard nodes)
       if (!stmt._isLoopGuard) {
-        stmt.test = buildConditionWrapper(stmt.test);
+        stmt.test = buildConditionWrapper(stmt.test, undefined, scopeVars);
       }
       // Wrap bare (non-block) branches so captures and popFrames work inside them
       if (stmt.consequent.type !== 'BlockStatement') {
@@ -651,6 +614,9 @@ function instrumentStatement(stmt: AnyNode, scopeVars: string[]): void {
       // Check if any init is a function expression, instrument it
       for (const decl of stmt.declarations) {
         if (decl.init) {
+          if ((decl.init.type === 'ArrowFunctionExpression' || decl.init.type === 'FunctionExpression') && !decl.init.id && decl.id.type === 'Identifier') {
+            decl.init._inferredName = decl.id.name;
+          }
           instrumentExpression(decl.init, scopeVars);
         }
       }
@@ -757,13 +723,15 @@ function instrumentFunction(fn: AnyNode, _parentVars: string[]): void {
   }
   _closureVarNames = outerClosureVars;
 
-  const name = fn.id?.name || '<anonymous>';
+  // A function is named as JavaScript names it: its own name, else the variable or class member it is defined as.
+  const name = fn.id?.name || fn._inferredName || '<anonymous>';
   const paramNames: string[] = [];
   for (const param of fn.params) {
     extractPatternNames(param, paramNames);
   }
 
   // Get the function body
+  const fnEndLine: number | undefined = fn.body.type === 'BlockStatement' ? fn.body.loc?.end?.line : undefined;
   let body: AnyNode[];
   if (fn.body.type === 'BlockStatement') {
     body = fn.body.body;
@@ -785,10 +753,10 @@ function instrumentFunction(fn: AnyNode, _parentVars: string[]): void {
   // discovered incrementally by instrumentBlock to avoid TDZ errors.
   const fnScopeVars = [...paramNames];
 
-  // Instrument body statements (pass isTopLevel=true so an initial capture
-  // is emitted — instrumentFunction then prepends __pushFrame__ before it,
-  // giving us a snapshot on function entry)
-  instrumentBlock(body, fnScopeVars, true);
+  // Instrument body statements. The capture before the first one is the
+  // step entering the function, with its parameters bound (instrumentFunction
+  // prepends __pushFrame__ before it).
+  instrumentBlock(body, fnScopeVars, false);
 
   // Wrap return values so the frame pops AFTER the expression evaluates.
   // Do this BEFORE wrapping the body in try/catch — otherwise the recursion
@@ -800,7 +768,9 @@ function instrumentFunction(fn: AnyNode, _parentVars: string[]): void {
   // Without this, a `throw` skips the trailing __popFrame__ at the bottom of
   // the body and the frame leaks onto every subsequent visualization.
   const userBody = body.splice(0, body.length);
-  userBody.push(buildPopFrame()); // fall-through pop sits inside the try
+  // The fall-through pop sits inside the try; reaching the closing brace is a
+  // return step there (an arrow function's expression body returns before it).
+  userBody.push(buildPopFrame(fnEndLine));
 
   const tryStmt: AnyNode = {
     type: 'TryStatement',
@@ -933,14 +903,6 @@ function wrapReturnsInBranches(stmt: AnyNode): void {
  * Instrument a loop statement (for, while, do-while, for-in, for-of).
  */
 function instrumentLoop(stmt: AnyNode, scopeVars: string[]): void {
-  // Wrap loop test expressions with __condition__ (like if statements)
-  if (stmt.test && (stmt.type === 'WhileStatement' || stmt.type === 'DoWhileStatement' || stmt.type === 'ForStatement')) {
-    // For for-loops, pass the test's column range (stashed by instrumentBlock)
-    const testColRange = stmt._testColRange ?? undefined;
-    delete stmt._testColRange;
-    stmt.test = buildConditionWrapper(stmt.test, testColRange);
-  }
-
   // Collect loop-specific variable declarations
   const loopVars = [...scopeVars];
   const blockScopedVars: string[] = [];
@@ -992,6 +954,29 @@ function instrumentLoop(stmt: AnyNode, scopeVars: string[]): void {
           }
         }
       }
+    }
+  }
+
+  // Wrap loop test expressions with __condition__ (like if statements)
+  if (stmt.test && (stmt.type === 'WhileStatement' || stmt.type === 'DoWhileStatement' || stmt.type === 'ForStatement')) {
+    // For for-loops, pass the test's column range (stashed by instrumentBlock)
+    const testColRange = stmt._testColRange ?? undefined;
+    delete stmt._testColRange;
+    const isWhileLoop = stmt.type === 'WhileStatement' || stmt.type === 'DoWhileStatement';
+    if (blockScopedVars.length > 0 && (isWhileLoop || stmt.init === null)) {
+      // The loop's frame is pushed around the loop, so it is alive at the
+      // test: the test's variables go there and to its parent frame.
+      const savedParentVarNames = _parentVarNames;
+      const ancestorVars = savedParentVarNames || [];
+      _parentVarNames = scopeVars.filter((n: string) => !blockScopedVars.includes(n) && !ancestorVars.includes(n));
+      stmt.test = buildConditionWrapper(stmt.test, testColRange, scopeVars.filter((n: string) => !ancestorVars.includes(n)));
+      _parentVarNames = savedParentVarNames;
+    } else if (blockScopedVars.length > 0) {
+      // A for loop's let/const variables live in a frame pushed in its body
+      // (per-iteration bindings): the test's step shows them in a frame of its own.
+      stmt.test = buildConditionWrapper(stmt.test, testColRange, scopeVars, { name: 'for', vars: blockScopedVars });
+    } else {
+      stmt.test = buildConditionWrapper(stmt.test, testColRange, loopVars);
     }
   }
 
@@ -1089,6 +1074,10 @@ function instrumentClass(cls: AnyNode, scopeVars: string[]): void {
         if (isDerived && method.kind === 'constructor') {
           method.value._skipThisCapture = true;
         }
+        const key = method.key;
+        method.value._inferredName = method.kind === 'constructor' ? cls.id?.name
+          : method.computed ? undefined
+            : key.type === 'Identifier' ? key.name : key.type === 'PrivateIdentifier' ? '#' + key.name : key.type === 'Literal' ? String(key.value) : undefined;
         instrumentFunction(method.value, scopeVars);
       }
     }

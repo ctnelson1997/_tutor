@@ -198,12 +198,12 @@ describe('instrument', () => {
     expect(capturesBetween.length).toBeLessThanOrEqual(1);
   });
 
-  it('sets initial capture line to first non-function-declaration line', () => {
+  it('takes the program\'s first step at its first statement that runs, not a function declaration', () => {
     const out = instrument('function foo() { return 1; }\nfunction bar() { return 2; }\nlet x = 1;');
-    // The initial capture (first __capture__ call) should use line 3 (the let statement)
-    const match = out.match(/__capture__\((\d+)/);
-    expect(match).not.toBeNull();
-    expect(match![1]).toBe('3');
+    // The capture before `let x = 1;` (line 3) is the first one the program body runs.
+    const top = out.slice(out.lastIndexOf('function bar'));
+    expect(top).toMatch(/__capture__\(3, \{[\s\S]*?\}\);\s*let x = 1;/);
+    expect(out).not.toMatch(/__capture__\([12],[\s\S]*?\);\s*function/);
   });
 
   // ── Block scope ──

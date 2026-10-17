@@ -29,6 +29,12 @@ var __callStack__ = [{ name: "Global", variables: {} }];
 var __heapMap__ = new Map();  // object identity → heap ID
 var __heapRegistry__ = {};   // heapId → most recent serialized HeapObject
 var __heapCounter__ = 0;
+// Since the last step: was a frame pushed (a call, a loop's block), and how
+// many loop iterations had begun. Either makes the next capture a step even
+// on the line the frame last stepped at, as a call or a loop's backward jump
+// is in CPython.
+var __framePushed__ = false;
+var __stepLoopCount__ = 0;
 var __MAX_SNAPSHOTS = 5000;
 // Thrown at the step cap, so the program stops instead of running on unrecorded.
 var __STOP__ = { __tutorStop__: true };
@@ -233,7 +239,11 @@ function __collectHeap__(stackSnapshot) {
 
 // ── Condition tracking ──
 
-function __condition__(value, line, expression) {
+// A test's step (#24): it refreshes the variables the test sees, as a capture
+// does, so the step shows the current state with the test's result.
+// blockFrame ({ name, vars }) is a for loop's let/const variables, whose frame
+// is pushed in the loop body: the step shows them in a frame of their own.
+function __condition__(value, line, expression, vars, parentVarNames, closureVars, blockFrame) {
   if (__snapshots__.length >= __MAX_SNAPSHOTS) throw __STOP__;
 
   var columnRange = null;
@@ -245,6 +255,7 @@ function __condition__(value, line, expression) {
   // Re-serialize this context from live references
   var heapObjects = [];
   var visited = new Set();
+  if (vars) __updateFrames__(vars, parentVarNames, closureVars, heapObjects, visited);
   for (var ti = 0; ti < __callStack__.length; ti++) {
     if (__callStack__[ti].__rawThis !== undefined) {
       try {
@@ -266,6 +277,9 @@ function __condition__(value, line, expression) {
     if (fr.thisArg) ent.thisArg = fr.thisArg;
     stackSnapshot.push(ent);
   }
+  if (blockFrame) {
+    stackSnapshot.push({ name: blockFrame.name, variables: __serializeVars__(blockFrame.vars, heapObjects, visited), isBlockScope: true });
+  }
 
   var snap = {
     step: __snapshots__.length,
@@ -283,7 +297,28 @@ function __condition__(value, line, expression) {
 
 // ── Capture ──
 
-function __capture__(line, vars, parentVarNames, closureVars) {
+// Each variable of a { name: value } object, serialized, except the runtime's own (__x__).
+function __serializeVars__(vars, heapObjects, visited) {
+  var entries = [];
+  var keys = Object.keys(vars);
+  for (var i = 0; i < keys.length; i++) {
+    var name = keys[i];
+    if (name.startsWith("__") && name.endsWith("__")) continue;
+    try {
+      entries.push({ name: name, value: __serializeValue__(vars[name], heapObjects, visited) });
+    } catch(e) {
+      entries.push({ name: name, value: { type: "string", value: "[error]" } });
+    }
+  }
+  return entries;
+}
+
+// The step before a statement runs (#24). As CPython reports a line once while
+// a frame stays on it, a statement on the line its frame last stepped at
+// (\`a(); b();\`, \`if (n < 2) return n;\`) takes no step of its own; its
+// variables still refresh the frames for the next step. The program's final
+// capture (isFinal) is always a step.
+function __capture__(line, vars, parentVarNames, closureVars, isFinal) {
   if (__snapshots__.length >= __MAX_SNAPSHOTS) throw __STOP__;
 
   var columnRange = null;
@@ -294,7 +329,59 @@ function __capture__(line, vars, parentVarNames, closureVars) {
 
   var heapObjects = [];
   var visited = new Set();
+  __updateFrames__(vars, parentVarNames, closureVars, heapObjects, visited);
 
+  var last = __snapshots__[__snapshots__.length - 1];
+  var loops = typeof __loopCount === "number" ? __loopCount : 0;
+  var sameDepth = last && last.callStack.length === __callStack__.length;
+  if (isFinal) {
+    // The final state marks the line that ran last, if the program's frame took that step.
+    if (sameDepth) line = last.line;
+  } else if (sameDepth && last.line === line && (last.condition || (!__framePushed__ && loops === __stepLoopCount__))) {
+    // (A statement on its test's line, as in \`while (a < 3) a++;\`, is part of the test's step.)
+    return;
+  }
+  __framePushed__ = false;
+  __stepLoopCount__ = loops;
+
+  // Re-serialize this context from live references so mutations are visible
+  for (var ti = 0; ti < __callStack__.length; ti++) {
+    if (__callStack__[ti].__rawThis !== undefined) {
+      try {
+        __callStack__[ti].thisArg = __serializeValue__(__callStack__[ti].__rawThis, heapObjects, visited);
+      } catch(e) {}
+    }
+  }
+
+  // Build snapshot of the full call stack
+  var stackSnapshot = [];
+  for (var j = 0; j < __callStack__.length; j++) {
+    var frame = __callStack__[j];
+    var entry = {
+      name: frame.name,
+      variables: frame.variables || []
+    };
+    if (frame.isBlockScope) entry.isBlockScope = true;
+    if (frame.closureVars && frame.closureVars.length > 0) entry.closureVars = frame.closureVars;
+    if (frame.thisArg) entry.thisArg = frame.thisArg;
+    stackSnapshot.push(entry);
+  }
+
+  var snap = {
+    step: __snapshots__.length,
+    line: line,
+    callStack: stackSnapshot,
+    heap: __collectHeap__(stackSnapshot),
+    stdout: __stdout__.slice()
+  };
+  if (columnRange) snap.columnRange = columnRange;
+  __snapshots__.push(snap);
+}
+
+// Set the frames' variables from a capture's: the top frame's, or, inside a
+// block scope, the block frame's and its parent's (parentVarNames), and the
+// closed-over variables of the nearest function frame.
+function __updateFrames__(vars, parentVarNames, closureVars, heapObjects, visited) {
   // Update closure vars on the nearest function (non-block-scope) frame
   if (closureVars) {
     var funcFrame = null;
@@ -376,39 +463,6 @@ function __capture__(line, vars, parentVarNames, closureVars) {
       topFrame.variables = serializedVars;
     }
   }
-
-  // Re-serialize this context from live references so mutations are visible
-  for (var ti = 0; ti < __callStack__.length; ti++) {
-    if (__callStack__[ti].__rawThis !== undefined) {
-      try {
-        __callStack__[ti].thisArg = __serializeValue__(__callStack__[ti].__rawThis, heapObjects, visited);
-      } catch(e) {}
-    }
-  }
-
-  // Build snapshot of the full call stack
-  var stackSnapshot = [];
-  for (var j = 0; j < __callStack__.length; j++) {
-    var frame = __callStack__[j];
-    var entry = {
-      name: frame.name,
-      variables: frame.variables || []
-    };
-    if (frame.isBlockScope) entry.isBlockScope = true;
-    if (frame.closureVars && frame.closureVars.length > 0) entry.closureVars = frame.closureVars;
-    if (frame.thisArg) entry.thisArg = frame.thisArg;
-    stackSnapshot.push(entry);
-  }
-
-  var snap = {
-    step: __snapshots__.length,
-    line: line,
-    callStack: stackSnapshot,
-    heap: __collectHeap__(stackSnapshot),
-    stdout: __stdout__.slice()
-  };
-  if (columnRange) snap.columnRange = columnRange;
-  __snapshots__.push(snap);
 }
 
 // ── Frame management ──
@@ -459,6 +513,7 @@ function __pushFrame__(name, params, isBlockScope, closureVars, thisVal) {
     } catch(e) {}
   }
   __callStack__.push(frame);
+  __framePushed__ = true;
 }
 
 // Pop a function frame plus any block-scope frames above it WITHOUT
