@@ -80,10 +80,13 @@ function ObjectDisplay({ obj, changedKeys, step }: { obj: HeapObject; changedKey
 }
 
 function FunctionDisplay({ obj }: { obj: HeapObject }) {
+  const name = obj.label || 'anonymous';
+  // A Java lambda or method reference is labeled with its source, a JS or Python function with its name.
+  const shown = /->|::/.test(name) ? name : `${name}()`;
   return (
     <div style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
       <span style={{ color: '#6f42c1' }}>ƒ</span>{' '}
-      {obj.label || 'anonymous'}()
+      {shown}
     </div>
   );
 }
@@ -142,7 +145,11 @@ function HeapCard({ obj, changedKeys, step, typeConfig }: { obj: HeapObject; cha
         ) : obj.objectType === 'array' || obj.objectType === 'list' || obj.objectType === 'tuple' ? (
           <ArrayDisplay obj={obj} changedKeys={changedKeys} step={step} />
         ) : obj.objectType === 'function' ? (
-          <FunctionDisplay obj={obj} />
+          <>
+            <FunctionDisplay obj={obj} />
+            {/* What a Java lambda captured. */}
+            {obj.properties.length > 0 && <ObjectDisplay obj={obj} changedKeys={changedKeys} step={step} />}
+          </>
         ) : (
           <ObjectDisplay obj={obj} changedKeys={changedKeys} step={step} />
         )}

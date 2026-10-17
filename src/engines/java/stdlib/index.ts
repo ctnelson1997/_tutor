@@ -16,7 +16,7 @@ export {
   isBuiltinCollection,
   scannerRemaining,
 } from './collections';
-export { LIST_LIKE, SET_LIKE, MAP_LIKE, VIEW_CLASSES, charArrayText } from './util';
+export { LIST_LIKE, SET_LIKE, MAP_LIKE, VIEW_CLASSES, charArrayText, valuesEqual } from './util';
 export { hashCodeOf, identityHashCode } from './hashing';
 export {
   isExceptionClass,

@@ -26,11 +26,11 @@ import {
   identityHash,
 } from '../types';
 import { convertNumber, isNumericType, numericValue, compareFloating, type NumericType } from '../numeric';
-import { UnsupportedFeatureError } from '../errors';
 import { type StdlibContext, StdlibError } from './context';
 import { charArrayText } from './util';
 import { javaRegex, javaReplacement, javaSplit, groupCount } from './regex';
 import { javaFormat } from './format';
+import { charsStream, streamOf } from './streams';
 
 // ── Shared ──
 
@@ -70,10 +70,6 @@ function indexError(index: number, length: number): StdlibError {
 
 function rangeError(begin: number, end: number, length: number): StdlibError {
   return new StdlibError(`StringIndexOutOfBoundsException: Range [${begin}, ${end}) out of bounds for length ${length}`);
-}
-
-function streams(method: string): never {
-  throw new UnsupportedFeatureError(`Streams (${method}())`, 0);
 }
 
 /** The text of a CharSequence argument (a String or a StringBuilder), or of any value. */
@@ -183,7 +179,8 @@ export function stringMethod(s: JavaString, method: string, args: JavaValue[], c
     case 'intern': return internedString(str);
     case 'toString': return s;
     case 'formatted': return javaString(javaFormat(str, args, ctx.heap, ctx.stringify));
-    case 'chars': case 'codePoints': case 'lines': return streams(`String.${method}`);
+    case 'chars': case 'codePoints': return charsStream(str, ctx);
+    case 'lines': return streamOf('ref', () => str.split(/\r\n|\r|\n/).filter((l, i, all) => i < all.length - 1 || l !== '').map(l => javaString(l)), 'lines()', undefined, ctx);
   }
   return undefined;
 }
@@ -271,7 +268,7 @@ export function stringBuilderMethod(ref: JavaObjectRef, method: string, args: Ja
     case 'equals': return javaBool(args[0]?.kind === 'objectRef' && args[0].heapId === ref.heapId); // identity, as Object.equals
     case 'hashCode': return javaInt(parseInt(identityHash(ref.heapId), 16) | 0);
     case 'compareTo': return javaInt(compareStrings(text, textOf(args[0], ctx)));
-    case 'chars': return streams('StringBuilder.chars');
+    case 'chars': return charsStream(text, ctx);
   }
   return undefined;
 }

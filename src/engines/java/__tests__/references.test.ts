@@ -304,8 +304,7 @@ public class Main {
 
   it.each([
     ['qualified super', 'interface G { default String hi() { return "hi"; } }\nclass C implements G { public String hi() { return G.super.hi(); } }', 'System.out.println(new C().hi());', "Line 7: Qualified super (X.super.name) isn't supported in JavaTutor yet"],
-    ['method references', '', 'java.util.function.BinaryOperator<Integer> f = Integer::sum;', "Line 3: Method references (::) aren't supported in JavaTutor yet"],
-    ['class literals', '', 'System.out.println(String.class);', "Line 3: Class literals (.class) aren't supported in JavaTutor yet"],
+
   ])('fails loudly on %s', (_name, classes, statement, message) => {
     const result = run(`public class Main {
   public static void main(String[] args) {

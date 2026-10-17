@@ -32,7 +32,7 @@ export class JavaInterpreter {
     if (source === undefined) throw new Error('JavaInterpreter.execute needs the source the CST was parsed from');
     let bound;
     try {
-      bound = bindProgram(toAst(cst as unknown as AstCstNode, source));
+      bound = bindProgram(toAst(cst as unknown as AstCstNode, source), source);
     } catch (e) {
       const raw = e instanceof Error ? e.message : String(e);
       const internal = 'Internal JavaTutor error (please report it)';

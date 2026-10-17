@@ -21,6 +21,7 @@ import {
   javaString,
 } from '../types';
 import { type StdlibContext, StdlibError } from './context';
+import { applyFunction } from './functional';
 
 /** Class names that store their contents in a `__data__` backing array. */
 export const LIST_LIKE = new Set([
@@ -208,9 +209,15 @@ export function compareValues(a: JavaValue, b: JavaValue, ctx: StdlibContext): n
  * `Comparator` object whose fields say how it orders: `order`, and for
  * reversed() the `base` comparator it reverses. The drawing shows both.
  */
-export function libraryComparator(order: 'natural' | 'reverse' | 'caseInsensitive', base: JavaValue | undefined, ctx: StdlibContext): JavaValue {
+export function libraryComparator(
+  order: 'natural' | 'reverse' | 'caseInsensitive' | 'comparing' | 'comparingInt' | 'comparingDouble' | 'comparingLong' | 'then',
+  base: JavaValue | undefined,
+  ctx: StdlibContext,
+  parts: Record<string, JavaValue> = {},
+): JavaValue {
   const fields = new Map<string, JavaValue>([['order', javaString(order)]]);
   if (base) fields.set('base', base);
+  for (const [k, v] of Object.entries(parts)) fields.set(k, v);
   return { kind: 'objectRef', heapId: ctx.allocObject('Comparator', fields), className: 'Comparator' };
 }
 
@@ -235,6 +242,21 @@ export function compareWith(cmp: JavaValue | undefined, a: JavaValue, b: JavaVal
     if (order?.kind === 'string' && order.value === 'caseInsensitive') {
       const x = javaValueToString(a, ctx.heap).toLowerCase(), y = javaValueToString(b, ctx.heap).toLowerCase();
       return x < y ? -1 : x > y ? 1 : 0;
+    }
+    // Comparator.comparing(key[, keyComparator]), comparingInt/Double/Long, and thenComparing (#16).
+    if (order?.kind === 'string' && order.value.startsWith('comparing')) {
+      const method = { comparing: 'apply', comparingInt: 'applyAsInt', comparingDouble: 'applyAsDouble', comparingLong: 'applyAsLong' }[order.value] ?? 'apply';
+      const key = fields.get('key');
+      const ka = applyFunction(key, method, [a], ctx), kb = applyFunction(key, method, [b], ctx);
+      if (order.value === 'comparing') {
+        const kc = fields.get('keyComparator');
+        return kc ? compareWith(kc, ka, kb, ctx) : compareValues(ka, kb, ctx);
+      }
+      return compareJava(ka, kb);
+    }
+    if (order?.kind === 'string' && order.value === 'then') {
+      const r = compareWith(base, a, b, ctx);
+      return r !== 0 ? r : compareWith(fields.get('then'), a, b, ctx);
     }
     return compareValues(a, b, ctx);
   }

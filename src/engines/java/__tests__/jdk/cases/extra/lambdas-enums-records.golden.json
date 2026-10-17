@@ -1,0 +1,8 @@
+{
+  "stdout": "MERCURY 3.70 0\nEARTH 9.80 1\nEARTH 1\n6 + 7 = 13\n6 * 7 = 42\nNo enum constant Main.Planet.PLUTO\nmultiply true [LOW, MID, HIGH]\nPoint[x=3, y=4] true true 5.0 -1\n2 Pair[first=k, second=2] true\nnegative x: -1\n50 150 150\n17\n49.0 true Main$2\n3 2 1 \n15 42 [] 42 HI 3 > x\n22 12 false true same\nran\n[fig, pear, kiwi, apple, banana]\n[banana, apple, fig, kiwi, pear]\n[Point[x=2, y=1], Point[x=1, y=5], Point[x=1, y=2]]\n[pear, kiwi, fig, banana, apple]\nand=2 bat=1 cat=101 dog=1 emu=3 hat=1 the=3\n50;30;10;90;\n[2, 4, 8, 21]\n108 18.0 6 true false\n[a, b, c]\n[1, 4, 9, 16, 25]\n[1, 3, 9, 27, 81] 6\n{1=[b], 2=[aa, cc], 3=[ddd]} {yy=2, x=1}\n1+2+3\n[peek1, peek2, use2, peek3, use3]\nstream has already been operated upon or closed\n2 3\nPoint[x=1, y=5] 1 false none Optional.empty\nNo value present\njava.lang.String int true [I\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "38b74f77e7aae8738aa6d551171a75b1de2fbf5563b8ac627100505488f49c5e"
+}

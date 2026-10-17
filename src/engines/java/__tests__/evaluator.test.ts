@@ -243,10 +243,15 @@ public class Main {
     expect(framesNamed('cmp')).toHaveLength(6); // three calls: entry and return each
   });
 
-  it('run a method the library calls back (compareTo for a sort, toString for println) without steps', () => {
-    // Only the explicit c.compareTo(…) and o.toString() calls show frames.
-    expect(framesNamed('compareTo').map(s => s.line)).toEqual([10, 10]);
-    expect(framesNamed('toString').map(s => s.line)).toEqual([11, 11]);
+  it('show the methods the library calls back (compareTo for a sort, toString for println), as pythontutor.com does', () => {
+    // Collections.sort compares the points, println(ps) prints each one, then the explicit c.compareTo(…) and o.toString().
+    const sortLine = 21, printLine = 22;
+    const callers = (name: string) => framesNamed(name).map(s => s.callStack.find(f => f.name === 'main')).filter(Boolean);
+    expect(framesNamed('compareTo').length).toBeGreaterThan(2);
+    expect(framesNamed('toString').length).toBe(5 * 2); // best(…) printed, the three points of ps, then o.toString(): entry and return each
+    expect(callers('compareTo').length).toBe(framesNamed('compareTo').length);
+    expect(result.snapshots.some(s => s.line === 10 && s.callStack.some(f => f.name === 'compareTo'))).toBe(true);
+    expect([sortLine, printLine]).toEqual([21, 22]);
   });
 
   it("name the method a NullPointerException couldn't call as the JVM does", () => {

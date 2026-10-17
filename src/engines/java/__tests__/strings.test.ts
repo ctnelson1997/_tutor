@@ -82,8 +82,8 @@ describe('String methods', () => {
     expect(stdout('char[] cs = {\'a\'};\n    new String(cs, 0, 5);')).toContain('StringIndexOutOfBoundsException: offset 0, count 5, length 1');
   });
 
-  it('reject streams', () => {
-    expect(stdout('long n = "ab".chars().count();')).toContain("Streams (String.chars()) aren't supported in JavaTutor yet");
+  it('stream their characters with chars() (#16)', () => {
+    expect(stdout(`System.out.println("hello".chars().filter(c -> c == 'l').count() + " " + "a\\nb\\n".lines().count());`)).toBe('2 2');
   });
 });
 

@@ -6,30 +6,6 @@
     "See the details of any case with: npx tsx scripts/java-diff.ts <case id>"
   ],
   "output": {
-    "collections/coll-foreach-lambda": {
-      "issues": [16],
-      "reason": "List.forEach needs a lambda, and lambdas are rejected until #16"
-    },
-    "collections/coll-map-computeIfAbsent": {
-      "issues": [16],
-      "reason": "Map.computeIfAbsent needs a lambda, and lambdas are rejected until #16"
-    },
-    "collections/coll-map-merge": {
-      "issues": [16],
-      "reason": "Map.merge with Integer::sum needs a method reference, rejected until #16"
-    },
-    "collections/coll-priorityqueue-comparator-lambda": {
-      "issues": [16],
-      "reason": "the PriorityQueue comparator is a lambda, rejected until #16"
-    },
-    "collections/coll-sort-comparator-lambda": {
-      "issues": [16],
-      "reason": "the List.sort comparator is a lambda, rejected until #16"
-    },
-    "collections/coll-stream-basic": {
-      "issues": [16],
-      "reason": "streams are unsupported (Unknown method: nums.stream())"
-    },
     "compile-errors/ce-missing-return": {
       "issues": [23],
       "reason": "runs a method with a missing return statement"
@@ -37,34 +13,6 @@
     "compile-errors/ce-uninitialized-local": {
       "issues": [23],
       "reason": "reports the read of a never-assigned local when that line runs, not before the program starts"
-    },
-    "misc/misc-string-methods-more": {
-      "issues": [16],
-      "reason": "String.chars() returns a stream, rejected until #16"
-    },
-    "oop/oop-anonymous-comparator": {
-      "issues": [16],
-      "reason": "anonymous classes are rejected until #16"
-    },
-    "oop/oop-custom-iterable": {
-      "issues": [16],
-      "reason": "for-each over a user Iterable, and its anonymous Iterator, are rejected until #16"
-    },
-    "oop/oop-enum-basic": {
-      "issues": [16],
-      "reason": "enums are rejected until #16"
-    },
-    "oop/oop-enum-top-level": {
-      "issues": [16],
-      "reason": "enums are rejected until #16"
-    },
-    "oop/oop-inner-class-outer-field": {
-      "issues": [16],
-      "reason": "creating an inner class through an object (m.new Walker()) is rejected until #16"
-    },
-    "oop/oop-record": {
-      "issues": [16],
-      "reason": "records are rejected until #16"
     }
   },
   "invariants": {}

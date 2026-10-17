@@ -65,6 +65,14 @@ export interface JavaObject {
   builtin?: boolean;
   /** A library collection's or iterator's state that isn't drawn (#21). */
   state?: LibraryState;
+  /** An enum constant's name and position (#16), drawn as `Color.RED`. */
+  enumConstant?: { name: string; ordinal: number; enumName: string };
+  /**
+   * A lambda's or method reference's function object (#16), drawn as its
+   * source with what it captured (its fields). `run` is what calling it
+   * needs, the evaluator's business.
+   */
+  lambda?: { text: string; run: unknown };
 }
 
 /**

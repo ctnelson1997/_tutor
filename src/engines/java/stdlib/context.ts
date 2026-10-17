@@ -44,6 +44,13 @@ export interface StdlibContext {
    * (for %s and String.valueOf). Without it, the library's rendering is used.
    */
   stringify?(value: JavaValue): string;
+  /**
+   * Which functional interface's method a program's function value has
+   * (#16): its name and arity (a lambda's interface method, or the one a
+   * class implements), so library overloads such as thenComparing(Comparator)
+   * and thenComparing(Function) can be told apart when the program runs.
+   */
+  functionShape?(value: JavaValue): { name: string; arity: number } | undefined;
 }
 
 /**

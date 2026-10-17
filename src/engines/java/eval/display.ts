@@ -72,12 +72,12 @@ export function serializeArray(id: string, entry: JavaArray, heap: Heap): HeapOb
  */
 export function serializeObject(id: string, entry: JavaObject, heap: Heap): HeapObject {
   const cls = entry.className;
-  if (!entry.builtin) {
-    return {
-      id, objectType: 'object', label: cls,
-      properties: Array.from(entry.fields.entries()).map(([k, v]) => ({ key: k, value: javaToRuntime(v, heap) })),
-    };
-  }
+  const fields = () => Array.from(entry.fields.entries()).map(([k, v]) => ({ key: k, value: javaToRuntime(v, heap) }));
+  // A lambda or method reference: its source, with the values it captured.
+  if (entry.lambda) return { id, objectType: 'function', label: entry.lambda.text, properties: fields() };
+  // An enum constant is labeled with its name.
+  if (entry.enumConstant) return { id, objectType: 'object', label: `${entry.enumConstant.enumName}.${entry.enumConstant.name}`, properties: fields() };
+  if (!entry.builtin) return { id, objectType: 'object', label: cls, properties: fields() };
   const map = mapContents(entry, heap);
   if (map) {
     return {

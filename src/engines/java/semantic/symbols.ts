@@ -32,6 +32,20 @@ export class ClassSymbol {
   decl?: A.TypeDecl;
   /** Declared in a block (a local class). */
   isLocal = false;
+  /** An anonymous class (#16), named `Main$1` as javac numbers them. */
+  isAnonymous = false;
+  /** The binary name of a local or anonymous class (`Main$1Helper`, `Main$1`), which isn't its outer's name plus its own. */
+  flatName?: string;
+  /** A local or anonymous class declared where there is no `this` (a static method): it has no enclosing instance. */
+  staticContext = false;
+  /** A local or anonymous class's copies of the enclosing locals it reads, as javac's `val$x` fields. */
+  readonly captures = new Map<LocalSymbol, FieldSymbol>();
+  /** The field holding the enclosing instance (`this$0`) of an inner class, or of a local or anonymous class that uses it. */
+  outerField?: FieldSymbol;
+  /** For naming the lambdas and anonymous classes declared in this class. */
+  lambdaCount = 0;
+  anonymousCount = 0;
+  localCount = 0;
 
   constructor(name: string, kind: ClassKind, packageName: string, isLibrary: boolean, outer?: ClassSymbol) {
     this.name = name;
@@ -46,11 +60,12 @@ export class ClassSymbol {
   get isAbstract(): boolean { return this.modifiers.has('abstract') || this.isInterface; }
   /** A nested class that isn't static: its objects belong to an object of the enclosing class (an inner class). */
   get isInner(): boolean {
-    return this.outer !== undefined && !this.modifiers.has('static') && this.kind === 'class' && !this.outer.isInterface;
+    return this.outer !== undefined && !this.modifiers.has('static') && this.kind === 'class' && !this.outer.isInterface && !this.isLocal && !this.isAnonymous;
   }
 
   /** The name Java prints: `Main$Point` for a nested class, `java.lang.String` for a library one. */
   get binaryName(): string {
+    if (this.flatName) return this.flatName;
     if (this.outer) return `${this.outer.binaryName}$${this.name}`;
     return this.packageName ? `${this.packageName}.${this.name}` : this.name;
   }
@@ -75,6 +90,10 @@ export class FieldSymbol {
   readonly decl?: A.VarDeclarator;
   /** The value of a constant variable (a final field with a constant initializer). */
   constant?: ConstValue;
+  /** An enum constant's position (#16). */
+  enumOrdinal?: number;
+  /** A record component's field. */
+  recordComponent?: boolean;
 
   constructor(name: string, owner: ClassSymbol, type: JType, isStatic: boolean, isFinal: boolean, decl?: A.VarDeclarator) {
     this.name = name;
@@ -104,6 +123,14 @@ export class MethodSymbol {
   readonly decl?: A.MethodDecl | A.ConstructorDecl;
   /** Locals of the body, filled in when it is bound (parameters first). */
   locals: LocalSymbol[] = [];
+  /**
+   * A method javac generates (#16): an enum's `values()`/`valueOf(String)`, a
+   * record's accessors, `equals`, `hashCode` and `toString`, and its
+   * canonical constructor. The evaluator runs them itself, taking no steps.
+   */
+  synthetic?: 'values' | 'valueOf' | 'accessor' | 'recordEquals' | 'recordHashCode' | 'recordToString' | 'canonical';
+  /** For an accessor or canonical constructor: the record's component fields. */
+  components?: FieldSymbol[];
 
   constructor(name: string, owner: ClassSymbol, returnType: JType, isConstructor: boolean, decl?: A.MethodDecl | A.ConstructorDecl) {
     this.name = name;
@@ -154,6 +181,10 @@ export class LocalSymbol {
   readonly range: A.Range;
   /** The value of a final local with a constant initializer. */
   constant?: ConstValue;
+  /** Declared with an initializer (or a parameter, catch or for-each variable, which always has a value). */
+  hasInit = false;
+  /** Assignments to it after its declaration: a captured local must be effectively final (#16). */
+  assignments = 0;
 
   constructor(name: string, type: JType, kind: LocalKind, isFinal: boolean, range: A.Range) {
     this.name = name;

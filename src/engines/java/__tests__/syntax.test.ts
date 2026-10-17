@@ -42,67 +42,35 @@ function stepsAt(result: { snapshots: ExecutionSnapshot[] }, line: number): Exec
 
 describe('unsupported constructs stop the program with a clear message', () => {
   it.each([
-    ['a lambda', program('Runnable r = () -> System.out.println("x");'), "Line 3: Lambda expressions aren't supported in JavaTutor yet"],
-    ['a lambda argument', program('java.util.List<String> l = new java.util.ArrayList<>();\n    l.sort((a, b) -> a.length() - b.length());'), "Line 4: Lambda expressions aren't supported in JavaTutor yet"],
-    ['a cast lambda', program('Object o = (Runnable) () -> {};'), "Line 3: Lambda expressions aren't supported in JavaTutor yet"],
-    ['a method reference', program('java.util.List<String> l = new java.util.ArrayList<>();\n    l.forEach(System.out::println);'), "Line 4: Method references (::) aren't supported in JavaTutor yet"],
-    ['a constructor reference', program('Object f = int[]::new;'), "Line 3: Method references (::) aren't supported in JavaTutor yet"],
-    ['a primitive class literal', program('Object c = int.class;'), "Line 3: Class literals (.class) aren't supported in JavaTutor yet"],
-    ['an anonymous class', program('Object o = new Object() { };'), "Line 3: Anonymous classes aren't supported in JavaTutor yet"],
-    ['a nested enum', program('', '  enum Color { RED, GREEN }'), "Line 5: Enums aren't supported in JavaTutor yet"],
-    ['a top-level enum', program('') + '\nenum Suit { HEARTS }', "Line 7: Enums aren't supported in JavaTutor yet"],
-    ['a nested record', program('', '  record Point(int x, int y) {}'), "Line 5: Records aren't supported in JavaTutor yet"],
-    ['a top-level record', program('') + '\nrecord Pair(int a, int b) {}', "Line 7: Records aren't supported in JavaTutor yet"],
+    ['a lambda passed to a library method JavaTutor lacks', program('java.util.List<String> l = new java.util.ArrayList<>();\n    l.stream().takeWhile(s -> true);'), "Line 4: Lambda expressions passed to a method JavaTutor doesn't know aren't supported in JavaTutor yet"],
+    ['an anonymous subclass of a collection class', program('Object o = new java.util.ArrayList<String>() { };'), "Line 3: Anonymous subclasses of library classes (ArrayList) aren't supported in JavaTutor yet"],
+    ['a record pattern', program('Object o = new P(1);\n    if (o instanceof P(int x)) System.out.println(x);', '  record P(int x) {}'), "Line 4: Record patterns aren't supported in JavaTutor yet"],
     ['extending a collection class', program('', '  static class Names extends java.util.ArrayList<String> {}'), "Line 5: Inheritance (class Names extends ArrayList) isn't supported in JavaTutor yet"],
     ['a qualified super call', program('System.out.println(new C().hi());', '  interface G { default String hi() { return "hi"; } }\n  static class C implements G { public String hi() { return G.super.hi(); } }'), "Line 6: Qualified super (X.super.name) isn't supported in JavaTutor yet"],
     ['extending a library class', program('', '  static class Worker extends Thread {}'), "Line 5: Inheritance (class Worker extends Thread) isn't supported in JavaTutor yet"],
-    ['a local class', program('class Helper {}\n    System.out.println("x");'), "Line 3: Classes declared inside a method aren't supported in JavaTutor yet"],
-    ['a local enum', program('enum Dir { UP }'), "Line 3: Enums declared inside a method aren't supported in JavaTutor yet"],
-    ['a local interface', program('interface Shape {}'), "Line 3: Interfaces declared inside a method aren't supported in JavaTutor yet"],
     ['an annotation type', program('') + '\n@interface Tag {}', "Line 7: Annotation types (@interface) aren't supported in JavaTutor yet"],
     ['a library class JavaTutor lacks', program('Thread t = new Thread();'), "Line 3: The Thread class isn't supported in JavaTutor yet"],
     ['a hexadecimal floating-point literal', program('double d = 0x1.8p1;'), "Line 3: Hexadecimal floating-point literals aren't supported in JavaTutor yet"],
     ['two nested classes with one name', 'public class Main {\n  static class A { static class Node {} }\n  static class B { static class Node {} }\n  public static void main(String[] args) {}\n}', "Line 3: Two classes named Node aren't supported in JavaTutor yet"],
-    ['a for-each over a user Iterable', program('for (Object x : new Bag()) {}', '  static class Bag implements Iterable<Object> { public java.util.Iterator<Object> iterator() { return null; } }'), "Line 3: For-each loops over your own Iterable classes aren't supported in JavaTutor yet"],
   ])('rejects %s', (_name, source, message) => {
     expect(execute(source).error).toBe(message);
-  });
-
-  it('rejects an inner class using a field of its enclosing object', () => {
-    const source = `public class Main {
-  int count = 5;
-  class Counter { int get() { return count; } }
-  void run() { System.out.println(new Counter().get()); }
-  public static void main(String[] args) { new Main().run(); }
-}`;
-    expect(execute(source).error).toBe("Line 3: Inner classes using a field of the enclosing object ('count') aren't supported in JavaTutor yet");
-  });
-
-  it('rejects an inner class calling a method of its enclosing object', () => {
-    const source = `public class Main {
-  int base() { return 1; }
-  class Counter { int get() { return base() + 1; } }
-  void run() { System.out.println(new Counter().get()); }
-  public static void main(String[] args) { new Main().run(); }
-}`;
-    expect(execute(source).error).toBe("Line 3: Inner classes calling a method of the enclosing object ('base()') aren't supported in JavaTutor yet");
   });
 
   it('rejects methods outside a class, which Java 21 only allows as a preview feature', () => {
     expect(execute('void main() { System.out.println("x"); }').error).toBe("Line 1: Methods and fields outside a class aren't supported in JavaTutor yet");
   });
 
-  it('rejects a declaration before running anything, and a lambda only when it is reached', () => {
-    const declaration = execute(program('System.out.println("before");', '  enum E { A }'));
+  it('rejects a declaration before running anything, and an expression only when it is reached', () => {
+    const declaration = execute(program('System.out.println("before");', '  @interface Tag {}'));
     expect(declaration.snapshots).toHaveLength(0);
-    const expression = execute(program('System.out.println("before");\n    Runnable r = () -> {};'));
+    const expression = execute(program('System.out.println("before");\n    double d = 0x1.8p1;'));
     expect(expression.stdout).toBe('before');
-    expect(expression.error).toContain('Line 4: Lambda expressions');
+    expect(expression.error).toContain('Line 4: Hexadecimal floating-point literals');
   });
 
   it("doesn't run finally blocks when the program stops on an unsupported construct", () => {
-    const result = execute(program('try {\n      Runnable r = () -> {};\n    } finally {\n      System.out.println("finally");\n    }'));
-    expect(result.error).toContain('Lambda expressions');
+    const result = execute(program('try {\n      double d = 0x1.8p1;\n    } finally {\n      System.out.println("finally");\n    }'));
+    expect(result.error).toContain('Hexadecimal floating-point literals');
     expect(result.stdout).toBe('');
   });
 

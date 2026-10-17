@@ -58,6 +58,11 @@ import { hashCodeOf, spreadHash, newTable, hashFind, hashInsert, hashRemove, pre
 import { isExceptionClass, newException, exceptionMethod } from './exceptions';
 import { newScanner, scannerMethod } from './scanner';
 import { newRandom, randomMethod } from './random';
+import { FUNCTION_CLASSES, applyFunction, functionalMethod, isOptionalClass, optionalMethod } from './functional';
+import { isStreamClass, streamMethod, collectionStream } from './streams';
+
+/** The collections' methods that take functions (#16). */
+const FUNCTIONAL_METHODS = new Set(['forEach', 'removeIf', 'replaceAll', 'computeIfAbsent', 'computeIfPresent', 'compute', 'merge']);
 
 export { scannerRemaining } from './scanner';
 
@@ -285,7 +290,14 @@ export function callInstanceMethod(
   const cls = ref.className;
   if (cls === 'Scanner') return scannerMethod(ref, method, ctx);
   if (cls === 'Random') return randomMethod(ref, method, args, ctx);
-  if (cls === 'Comparator') return comparatorMethod(ref, method, args, ctx);
+  if (cls === 'Comparator') return functionalMethod(ref, method, args, ctx) ?? comparatorMethod(ref, method, args, ctx);
+  // The library's own function objects (Function.identity(), f.andThen(g), …), streams and Optionals (#16).
+  if (FUNCTION_CLASSES.has(cls)) {
+    if (method === 'apply' || method === 'test' || method === 'accept') return applyFunction(ref, method, args, ctx);
+    return functionalMethod(ref, method, args, ctx);
+  }
+  if (isStreamClass(cls)) return streamMethod(ref, method, args, ctx);
+  if (isOptionalClass(cls)) return optionalMethod(ref, method, args, ctx);
   if (isExceptionClass(cls)) return exceptionMethod(ref, method, ctx);
   const c = collOf(ref, ctx);
   if (!c) return undefined;
@@ -296,6 +308,11 @@ export function callInstanceMethod(
     if (state?.snapshotOf) throw new StdlibError(`Changing the result of ${state.snapshotOf} isn't supported in JavaTutor yet, since it is a copy here, not a view`);
   }
   if (cls === 'MapEntry') return entryMethod(c, method, args);
+  if (method === 'stream' && args.length === 0 && collectionElements(c.obj, ctx.heap)) return collectionStream(ref, ctx);
+  if (FUNCTIONAL_METHODS.has(method)) {
+    const r = collectionFunctional(ref, method, args, mapContents(c.obj, ctx.heap) !== undefined, ctx);
+    if (r) return r;
+  }
   if (c.obj.fields.has('__unmodifiable__')) return unmodifiableMethod(c, method, args);
   switch (cls) {
     case 'KeySet': case 'Values': case 'EntrySet': return mapViewMethod(c, method, args);
@@ -1372,4 +1389,93 @@ export function rewriteList(list: JavaValue, ctx: StdlibContext, rewrite: (els: 
   const c = collArg(list, ctx);
   requireChangeable(c, false);
   rewrite(elements(c).slice()).forEach((e, i) => listSet(c, i, e));
+}
+
+// ── The collections' methods that take functions ──
+
+/**
+ * forEach, removeIf and replaceAll of a collection, and forEach,
+ * computeIfAbsent, computeIfPresent, compute, merge and replaceAll of a map,
+ * as java.util defines them, through the collection's own methods (so
+ * immutable collections refuse, and hashing and ordering apply).
+ */
+export function collectionFunctional(ref: JavaValue, method: string, args: JavaValue[], isMap: boolean, ctx: StdlibContext): JavaValue | undefined {
+  const call = (name: string, a: JavaValue[]) => callInstanceMethod(ref, name, a, ctx) ?? javaNull();
+  const obj = ctx.heap.get((ref as JavaObjectRef).heapId) as JavaObject;
+  if (isMap) {
+    switch (method) {
+      case 'forEach': {
+        if (args[0]?.kind === 'null') throw nullPointer();
+        const { keys, values } = mapContents(obj, ctx.heap)!;
+        [...keys].forEach((k, i) => applyFunction(args[0], 'accept', [k, values[i]], ctx));
+        return javaNull();
+      }
+      case 'computeIfAbsent': {
+        const old = call('get', [args[0]]);
+        if (old.kind !== 'null') return old;
+        const value = applyFunction(args[1], 'apply', [args[0]], ctx);
+        if (value.kind !== 'null') call('put', [args[0], value]);
+        return value;
+      }
+      case 'computeIfPresent': {
+        const old = call('get', [args[0]]);
+        if (old.kind === 'null') return javaNull();
+        const value = applyFunction(args[1], 'apply', [args[0], old], ctx);
+        call(value.kind === 'null' ? 'remove' : 'put', value.kind === 'null' ? [args[0]] : [args[0], value]);
+        return value;
+      }
+      case 'compute': {
+        const old = call('get', [args[0]]);
+        const value = applyFunction(args[1], 'apply', [args[0], old], ctx);
+        if (value.kind === 'null') {
+          if (old.kind !== 'null' || javaValueToBoolean(call('containsKey', [args[0]]))) call('remove', [args[0]]);
+        } else {
+          call('put', [args[0], value]);
+        }
+        return value;
+      }
+      case 'merge': {
+        if (args[1]?.kind === 'null') throw nullPointer();
+        const old = call('get', [args[0]]);
+        const value = old.kind === 'null' ? args[1] : applyFunction(args[2], 'apply', [old, args[1]], ctx);
+        call(value.kind === 'null' ? 'remove' : 'put', value.kind === 'null' ? [args[0]] : [args[0], value]);
+        return value;
+      }
+      case 'replaceAll': {
+        const { keys, values } = mapContents(obj, ctx.heap)!;
+        [...keys].forEach((k, i) => call('put', [k, applyFunction(args[0], 'apply', [k, values[i]], ctx)]));
+        return javaNull();
+      }
+    }
+    return undefined;
+  }
+  switch (method) {
+    case 'forEach': {
+      if (args[0]?.kind === 'null') throw nullPointer();
+      for (const e of [...(collectionElements(obj, ctx.heap) ?? [])]) applyFunction(args[0], 'accept', [e], ctx);
+      return javaNull();
+    }
+    case 'removeIf': {
+      if (args[0]?.kind === 'null') throw nullPointer();
+      // Every element is tested first, in order, then the matching ones are removed (as ArrayList.removeIf does).
+      const it = call('iterator', []);
+      const remove: boolean[] = [];
+      for (const e of [...(collectionElements(obj, ctx.heap) ?? [])]) remove.push(javaValueToBoolean(applyFunction(args[0], 'test', [e], ctx)));
+      let removed = false;
+      for (const r of remove) {
+        callInstanceMethod(it, 'next', [], ctx);
+        if (r) {
+          callInstanceMethod(it, 'remove', [], ctx);
+          removed = true;
+        }
+      }
+      return javaBool(removed);
+    }
+    case 'replaceAll': {
+      const elements = [...(collectionElements(obj, ctx.heap) ?? [])];
+      elements.forEach((e, i) => call('set', [javaInt(i), applyFunction(args[0], 'apply', [e], ctx)]));
+      return javaNull();
+    }
+  }
+  return undefined;
 }

@@ -49,6 +49,13 @@ function sx(e: B.BExpr): string {
     case 'Convert': return `(${e.conversion}:${typeName(e.type)} ${sx(e.expr)})`;
     case 'InstanceOf': return `(instanceof ${sx(e.expr)} ${typeName(e.target)}${e.binding ? ` ${e.binding.name}` : ''})`;
     case 'SwitchExpr': return `(switch ${sx(e.switch.selector)}):${typeName(e.type)}`;
+    case 'OuterThis': return `${e.cls.name}.this`;
+    case 'ClassLiteral': return `(class ${e.name})`;
+    case 'Lambda': {
+      const body = 'statements' in e.body ? '{…}' : sx(e.body as B.BExpr);
+      const captures = e.captures.length ? ` captures:${e.captures.map(c => c.name).join(',')}` : '';
+      return e.methodRef ? `(ref ${typeName(e.type)} ${body})` : `(lambda ${typeName(e.type)} (${e.params.map(p => `${p.name}:${typeName(p.type)}`).join(' ')})${captures} ${body})`;
+    }
     case 'Unsupported': return `(unsupported ${e.construct})`;
   }
 }
@@ -243,15 +250,16 @@ describe('what javac rejects', () => {
 describe('constructs JavaTutor can\'t run yet', () => {
   it('rejects unsupported declarations before anything runs, with the old messages', () => {
     const messages = (s: string) => bind(s).diagnostics.filter(d => d.kind === 'unsupported').map(d => d.message);
-    expect(messages('enum E { A } class M { public static void main(String[] a) {} }')).toEqual(["Enums aren't supported in JavaTutor yet"]);
+    expect(messages('enum E { A } class M { public static void main(String[] a) {} }')).toEqual([]);
+    expect(messages('@interface Tag {} class M { public static void main(String[] a) {} }')).toEqual(["Annotation types (@interface) aren't supported in JavaTutor yet"]);
     expect(messages('class A {} class B extends A { public static void main(String[] a) {} }')).toEqual([]);
     expect(messages('class N extends java.util.ArrayList<String> { public static void main(String[] a) {} }')).toEqual(["Inheritance (class N extends ArrayList) isn't supported in JavaTutor yet"]);
     expect(messages('class E extends RuntimeException { public static void main(String[] a) {} }')).toEqual([]);
   });
 
   it('leaves unsupported expressions for when they are reached', () => {
-    const calls = shapes('Runnable r = () -> {}; Object o = String.class;');
-    expect(calls).toEqual(['r:Runnable = (unsupported Lambda expressions)', 'o:Object = (unsupported Class literals (.class))']);
+    const calls = shapes('double d = 0x1.8p1; Object o = new java.util.ArrayList<String>() {};');
+    expect(calls).toEqual(['d:double = (unsupported Hexadecimal floating-point literals)', 'o:Object = (unsupported Anonymous subclasses of library classes (ArrayList))']);
   });
 });
 

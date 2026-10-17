@@ -88,6 +88,19 @@ export function toAst(cst: CstNode, source: string): A.CompilationUnit {
 
 // ── Ranges ──
 
+/**
+ * java-parser reads a member record with an empty body, `record P(int x) {}`,
+ * as a method named P returning a type named `record` (which can't exist:
+ * `record` is a restricted type name since Java 16). Such a method is that
+ * record; a record with members parses as one already.
+ */
+function recordFromMethod(m: A.MethodDecl): A.MethodDecl | A.RecordDecl {
+  const r = m.result;
+  if (r.kind !== 'ClassType' || r.parts.length !== 1 || r.parts[0].name !== 'record' || r.parts[0].typeArgs) return m;
+  if (m.typeParams.length || m.dims || m.throws.length || m.receiver || !m.body || m.body.statements.length) return m;
+  return { kind: 'RecordDecl', modifiers: m.modifiers, name: m.name, typeParams: [], components: m.params, interfaces: [], members: [], range: m.range };
+}
+
 function rangeOf(e: CstElement | CstLocation): A.Range {
   const l = isNodeLike(e) ? e.location : e;
   return { start: l.startOffset, end: l.endOffset + 1, line: l.startLine, column: l.startColumn, endLine: l.endLine, endColumn: l.endColumn };
@@ -478,7 +491,7 @@ class Converter {
         const cls = node(member, 'classDeclaration');
         const iface = node(member, 'interfaceDeclaration');
         if (field) members.push(this.field(field, 'fieldModifier'));
-        else if (method) members.push(this.method(method, 'methodModifier'));
+        else if (method) members.push(recordFromMethod(this.method(method, 'methodModifier')));
         else if (cls) members.push(this.classDeclaration(cls));
         else if (iface) members.push(this.interfaceDeclaration(iface));
         continue; // a lone `;`

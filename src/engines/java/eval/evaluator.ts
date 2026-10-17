@@ -79,8 +79,11 @@ import {
   isStringType,
   isBoxedInstanceOf,
   identityHashCode,
+  hashCodeOf,
+  valuesEqual,
 } from '../stdlib';
 import { javaToRuntime, reachableHeap } from './display';
+import { functionalMethod, isOptionalClass, optionalText } from '../stdlib/functional';
 
 // ── Limits ──
 
@@ -219,6 +222,16 @@ interface Frame {
   returning?: { value?: JavaValue };
   /** The line of the frame's last step: another statement on it takes no step of its own, as CPython emits no new line event. */
   lastStepLine?: number;
+  /** A method reference's frame (#16): not shown, and takes no steps; only the method it calls does. */
+  hidden?: boolean;
+}
+
+/** What calling a lambda or method reference needs (#16): its code, the locals it captured, `this`, a bound receiver. */
+interface LambdaRun {
+  node: B.BLambda;
+  captured: Map<LocalSymbol, JavaValue>;
+  thisValue?: JavaValue;
+  receiver?: JavaValue;
 }
 
 interface StaticSlot extends VariableSlot {
@@ -239,6 +252,12 @@ interface FailureSite {
   /** `Main.divide(Main.java:3)`, innermost first, as a Java stack trace lists them. */
   trace: string[];
 }
+
+/** The methods of the functional interfaces, with their arities: what a class implementing one provides (#16). */
+const FUNCTION_METHODS: [string, number[]][] = [
+  ['compare', [2]], ['apply', [1, 2]], ['accept', [1, 2]], ['test', [1, 2]], ['applyAsInt', [1, 2]], ['applyAsDouble', [1, 2]],
+  ['applyAsLong', [1]], ['get', [0]], ['getAsInt', [0]], ['run', [0]],
+];
 
 const SYSTEM_OUT_ID = '__system_out__';
 const SYSTEM_ERR_ID = '__system_err__';
@@ -309,7 +328,8 @@ export class Evaluator {
       this.byName.set(bc.symbol.name, bc.symbol);
       for (const m of [...bc.methods, ...bc.constructors]) this.methods.set(m.symbol, m);
     }
-    this.hasStatics = [...this.classes.values()].some(c => c.statics.size > 0);
+    // An enum's constants are static fields, but drawn as the objects they are, not in the "Static fields" frame.
+    this.hasStatics = [...this.classes.values()].some(c => [...c.statics.values()].some(s => s.field.enumOrdinal === undefined));
     this.hidesFields = program.classes.some(({ symbol }) => [...symbol.fields.values()].some(f => {
       for (let c = symbol.superclass?.symbol; c && !c.isLibrary; c = c.superclass?.symbol) if (c.fields.get(f.name)?.isStatic === false && !f.isStatic) return true;
       return false;
@@ -324,6 +344,7 @@ export class Evaluator {
       invokeUserMethod: (ref, name, args) => this.invokeUser(ref, name, args),
       binaryName: className => this.binaryName(className),
       stringify: value => this.stringify(value),
+      functionShape: value => this.functionShape(value),
     };
   }
 
@@ -417,8 +438,8 @@ export class Evaluator {
    * own scope, then a step as it returns. `entryLine` is where the step on
    * entering it goes (none for main).
    */
-  private *runBody(frame: Frame, body: B.BBlock, entryLine: number | undefined): Gen<JavaValue | undefined> {
-    if (entryLine !== undefined) this.stepAt(entryLine);
+  private *runBody(frame: Frame, body: B.BBlock, entryLine: number | undefined, beforeReturn?: () => void): Gen<JavaValue | undefined> {
+    if (entryLine !== undefined && !frame.hidden) this.stepAt(entryLine);
     let value: JavaValue | undefined;
     let line = body.range.endLine;
     try {
@@ -429,9 +450,12 @@ export class Evaluator {
       line = e.line;
     }
     frame.current = frame.scope;
-    frame.returning = { value };
-    this.stepAt(line, true);
-    frame.returning = undefined;
+    beforeReturn?.();
+    if (!frame.hidden) {
+      frame.returning = { value };
+      this.stepAt(line, true);
+      frame.returning = undefined;
+    }
     return value;
   }
 
@@ -472,7 +496,7 @@ export class Evaluator {
   private recordStep(line: number): void {
     const callStack: StackFrame[] = [];
     if (this.hasStatics) callStack.push(this.staticFieldsFrame());
-    let shown = this.frames;
+    let shown = this.frames.some(f => f.hidden) ? this.frames.filter(f => !f.hidden) : this.frames;
     if (shown.length > MAX_SHOWN_FRAMES) {
       const hidden = shown.length - MAX_SHOWN_FRAMES + 1;
       shown = [shown[0], ...shown.slice(hidden + 1)];
@@ -525,7 +549,9 @@ export class Evaluator {
     const variables: Variable[] = [];
     for (const [cls, rt] of this.classes) {
       if (rt.state === 'pending') continue;
-      for (const [name, slot] of rt.statics) variables.push({ name: `${cls.name}.${name}`, value: javaToRuntime(slot.value, this.heap) });
+      for (const [name, slot] of rt.statics) {
+        if (slot.field.enumOrdinal === undefined) variables.push({ name: `${cls.name}.${name}`, value: javaToRuntime(slot.value, this.heap) });
+      }
     }
     return { name: STATIC_FIELDS_FRAME, variables };
   }
@@ -662,7 +688,7 @@ export class Evaluator {
     const last = this.snapshots[this.snapshots.length - 1];
     if (!last || last.line !== line) return false;
     const frames = last.callStack.filter(f => !f.isBlockScope && f.name !== STATIC_FIELDS_FRAME).length;
-    return frames === Math.min(this.frames.length, MAX_SHOWN_FRAMES + 1);
+    return frames === Math.min(this.frames.filter(f => !f.hidden).length, MAX_SHOWN_FRAMES + 1);
   }
 
   /** The frames of a Java stack trace, innermost first: `Main.divide(Main.java:3)`. */
@@ -671,6 +697,7 @@ export class Evaluator {
     const innermost = this.frames.length - 1;
     for (let i = innermost; i >= 0 && trace.length < MAX_TRACE_FRAMES; i--) {
       const frame = this.frames[i];
+      if (frame.hidden) continue;
       const method = frame.kind === 'constructor' ? '<init>' : frame.kind === 'clinit' ? '<clinit>' : frame.method;
       trace.push(`${frame.cls.binaryName}.${method}(${this.fileName}:${i === innermost ? line : frame.line})`);
     }
@@ -754,11 +781,36 @@ export class Evaluator {
         this.stepAt(item.range.line);
         const v = this.isPure(item.value) ? this.pv(item.value) : yield* this.gv(item.value);
         rt.statics.get(item.field.name)!.value = v;
+      } else if (item.kind === 'enumConstant') {
+        yield* this.enumConstant(rt, item);
       } else {
         yield* this.blockIn(item.body, frame.scope, 'static');
       }
     }
     return undefined;
+  }
+
+  /** An enum constant (#16): an object of the enum (or of the constant's own class body) built by its constructor, then the static field. */
+  private *enumConstant(rt: ClassRuntime, item: Extract<B.BInitializer, { kind: 'enumConstant' }>): Gen<void> {
+    this.stepAt(item.range.line);
+    const args: JavaValue[] = [];
+    for (const a of item.args) args.push(this.isPure(a) ? this.pv(a) : yield* this.gv(a));
+    const enumCls = rt.bound.symbol;
+    const fields = new Map<string, JavaValue>();
+    for (const [f, key] of this.layout(item.cls)) fields.set(key, defaultValue(runtimeTypeName(f.type)));
+    const heapId = this.allocObject(item.cls.name, fields);
+    (this.heap.get(heapId) as JavaObject).enumConstant = { name: item.field.name, ordinal: item.ordinal, enumName: enumCls.name };
+    const self: JavaObjectRef = { kind: 'objectRef', heapId, className: item.cls.name };
+    if (item.cls === enumCls) yield* this.construct(enumCls, item.ctor, self, args);
+    else yield* this.constructAnonymous(item.cls, item.ctor, self, args);
+    rt.statics.get(item.field.name)!.value = self;
+  }
+
+  /** An enum's constants in order (its class is initialized). */
+  private enumConstants(cls: ClassSymbol): JavaValue[] {
+    const rt = this.classes.get(cls)!;
+    return [...rt.statics.values()].filter(s => s.field.enumOrdinal !== undefined)
+      .sort((a, b) => a.field.enumOrdinal! - b.field.enumOrdinal!).map(s => s.value);
   }
 
   private newThrowable(className: string, message: string | null, cause?: JavaValue): JavaValue {
@@ -1031,20 +1083,23 @@ export class Evaluator {
     const line = s.range.line;
     this.stepAt(line);
     const iterable = this.isPure(s.iterable) ? this.pv(s.iterable) : yield* this.gv(s.iterable);
-    let next: () => JavaValue | undefined;
+    let next: () => Gen<JavaValue | undefined>;
     if (iterable.kind === 'null') {
       throw nullPointer(`Cannot iterate over "${this.text(s.iterable)}" because it is null`, line);
     } else if (iterable.kind === 'arrayRef') {
       const arr = this.heap.get(iterable.heapId);
       const elements = arr && isJavaArray(arr) ? arr.elements : [];
       let i = 0;
-      next = () => (i < elements.length ? elements[i++] : undefined);
-    } else {
-      const iterator = iterable.kind === 'objectRef' && isBuiltinObject(this.heap.get(iterable.heapId))
-        ? this.stdlib(line, () => forEachIterator(iterable, this.ctx))
-        : undefined;
+      next = () => immediately(i < elements.length ? elements[i++] : undefined);
+    } else if (iterable.kind === 'objectRef' && isBuiltinObject(this.heap.get(iterable.heapId))) {
+      const iterator = this.stdlib(line, () => forEachIterator(iterable, this.ctx));
       if (!iterator) throw new InterpreterError('Enhanced for loop requires an array or collection', line);
-      next = () => this.stdlib(line, () => (iterator.hasNext() ? iterator.next() : undefined));
+      next = () => immediately(this.stdlib(line, () => (iterator.hasNext() ? iterator.next() : undefined)));
+    } else {
+      // A program's Iterable (#16): iterator(), then hasNext() and next() each time, as javac compiles the loop.
+      const text = this.text(s.iterable);
+      const iterator = yield* this.callByName(iterable, 'iterator', [], text, line);
+      next = () => this.iteratorNext(iterator, `${text}.iterator()`, line);
     }
     const forScope = this.pushScope('for');
     const slot = this.declare(frame, forScope, s.local, undefined);
@@ -1056,7 +1111,7 @@ export class Evaluator {
         frame.current = forScope;
         if (!first) this.stepAt(line, true);
         first = false;
-        const element = next();
+        const element = yield* next();
         if (element === undefined) break;
         sourceSlot.value = element;
         slot.value = this.isPure(s.element) ? this.pv(s.element) : yield* this.gv(s.element);
@@ -1072,6 +1127,12 @@ export class Evaluator {
     } finally {
       frame.current = outer;
     }
+  }
+
+  /** The next element from an iterator of the program's: hasNext(), then next(), each a call that may show its frame. */
+  private *iteratorNext(iterator: JavaValue, text: string, line: number): Gen<JavaValue | undefined> {
+    if (!javaValueToBoolean(yield* this.callByName(iterator, 'hasNext', [], text, line))) return undefined;
+    return yield* this.callByName(iterator, 'next', [], text, line);
   }
 
   /**
@@ -1224,7 +1285,10 @@ export class Evaluator {
         if (selector.kind === 'string') return typeof label.value === 'string' && selector.value === label.value;
         if (selector.kind === 'primitive') return typeof label.value !== 'string' && javaValueToNumber(selector) === Number(label.value);
         return false;
-      case 'enum': return false;
+      case 'enum': {
+        const obj = selector.kind === 'objectRef' ? (this.heap.get(selector.heapId) as JavaObject | undefined) : undefined;
+        return obj?.enumConstant?.name === label.name;
+      }
       case 'pattern': {
         if (!this.instanceOf(selector, label.type)) return false;
         if (label.binding) this.declare(this.top(), scope, label.binding, selector);
@@ -1249,7 +1313,8 @@ export class Evaluator {
   private computePure(e: B.BExpr): boolean {
     const p = (x: B.BExpr | undefined) => !x || this.isPure(x);
     switch (e.kind) {
-      case 'Const': case 'Local': case 'This': case 'Unsupported': return true;
+      case 'Const': case 'Local': case 'This': case 'OuterThis': case 'ClassLiteral': case 'Unsupported': return true;
+      case 'Lambda': return !e.receiver || this.isPure(e.receiver.value);
       case 'StaticField': return e.field.owner.isLibrary || e.field.constant !== undefined;
       case 'Field': return p(e.target);
       case 'ArrayLength': return p(e.array);
@@ -1304,10 +1369,13 @@ export class Evaluator {
   private pv(e: B.BExpr): JavaValue {
     switch (e.kind) {
       case 'Const': return this.constant(e);
-      case 'Local': return slotReference(this.top().slots.get(e.local)!, e.local.name, this.line(e)).get();
+      case 'Local': return slotReference(this.slotOf(e.local), e.local.name, this.line(e)).get();
       case 'StaticField': return this.readStatic(e.field);
       case 'Field': return this.fieldRef(this.pv(e.target), e).get();
       case 'This': return this.top().thisValue ?? javaNull();
+      case 'OuterThis': return this.outerThis(e.cls);
+      case 'ClassLiteral': return this.classObjectNamed(e.name, e.simpleName);
+      case 'Lambda': return this.makeLambda(e, e.receiver ? this.pv(e.receiver.value) : undefined);
       case 'ArrayLength': return this.arrayLength(this.pv(e.array), e);
       case 'ArrayElement': return this.elementRef(this.pv(e.array), this.pv(e.index), e).get();
       case 'Call': return this.callLibraryNow(e, e.target ? this.pv(e.target) : undefined, e.args.map(a => this.pv(a)));
@@ -1433,6 +1501,7 @@ export class Evaluator {
       case 'Convert': return this.convert(e, this.isPure(e.expr) ? this.pv(e.expr) : yield* this.gv(e.expr));
       case 'InstanceOf': return this.instanceOfExpr(e, this.isPure(e.expr) ? this.pv(e.expr) : yield* this.gv(e.expr));
       case 'SwitchExpr': return yield* this.switch_(e.switch, true);
+      case 'Lambda': return this.makeLambda(e, e.receiver ? yield* this.gv(e.receiver.value) : undefined);
       default: return this.pv(e);
     }
   }
@@ -1469,7 +1538,7 @@ export class Evaluator {
 
   private refPure(lv: B.BLValue): Reference {
     switch (lv.kind) {
-      case 'Local': return slotReference(this.top().slots.get(lv.local)!, lv.local.name, this.line(lv));
+      case 'Local': return slotReference(this.slotOf(lv.local), lv.local.name, this.line(lv));
       case 'StaticField': return this.staticRef(lv.field);
       case 'Field': return this.fieldRef(this.pv(lv.target), lv);
       case 'ArrayElement': return this.elementRef(this.pv(lv.array), this.pv(lv.index), lv);
@@ -1478,7 +1547,7 @@ export class Evaluator {
 
   private *refGen(lv: B.BLValue): Gen<Reference> {
     switch (lv.kind) {
-      case 'Local': return slotReference(this.top().slots.get(lv.local)!, lv.local.name, this.line(lv));
+      case 'Local': return slotReference(this.slotOf(lv.local), lv.local.name, this.line(lv));
       case 'StaticField':
         yield* this.initClass(lv.field.owner);
         return this.staticRef(lv.field);
@@ -1489,6 +1558,182 @@ export class Evaluator {
         return this.elementRef(array, index, lv);
       }
     }
+  }
+
+  // ── Captured locals and enclosing instances (#16) ──
+
+  /** A local's slot: the frame's, or (in a local or anonymous class's code) the copy its object captured as `val$x`. */
+  private slotOf(local: LocalSymbol): VariableSlot {
+    return this.top().slots.get(local) ?? this.capturedSlot(local);
+  }
+
+  private capturedSlot(local: LocalSymbol): VariableSlot {
+    for (let v = this.top()?.thisValue; v?.kind === 'objectRef';) {
+      const obj = this.heap.get(v.heapId) as JavaObject | undefined;
+      if (!obj) break;
+      for (let c: ClassSymbol | undefined = this.byName.get(v.className); c && !c.isLibrary; c = c.superclass?.symbol) {
+        const field = c.captures.get(local);
+        if (field) return { value: obj.fields.get(field.name) ?? javaNull(), type: runtimeTypeName(field.type) };
+      }
+      v = obj.fields.get('this$0');
+    }
+    throw new InterpreterError(`The variable '${local.name}' isn't available here`, this.top()?.line ?? 0);
+  }
+
+  /** `Outer.this`: from `this`, through each enclosing instance (`this$0`), to an object of class `cls`. */
+  private outerThis(cls: ClassSymbol): JavaValue {
+    let v = this.top()?.thisValue;
+    while (v?.kind === 'objectRef' && !this.isSubclass(v.className, cls.name)) {
+      v = (this.heap.get(v.heapId) as JavaObject | undefined)?.fields.get('this$0');
+    }
+    return v ?? javaNull();
+  }
+
+  // ── Lambdas and method references (#16) ──
+
+  /**
+   * A lambda's (or method reference's) function object: it copies the locals
+   * it captured (and `this`, and a bound receiver, evaluated now), and is
+   * drawn as its source with what it captured.
+   */
+  private makeLambda(node: B.BLambda, receiver?: JavaValue): JavaValue {
+    if (node.receiver && receiver?.kind === 'null') throw nullPointer('', this.line(node));
+    const captured = new Map<LocalSymbol, JavaValue>();
+    const fields = new Map<string, JavaValue>();
+    for (const local of node.captures) {
+      const value = this.slotOf(local).value;
+      captured.set(local, value);
+      fields.set(local.name, value);
+    }
+    const thisValue = node.usesThis ? this.top()?.thisValue : undefined;
+    if (thisValue) fields.set('this', thisValue);
+    if (receiver && (receiver.kind === 'objectRef' || receiver.kind === 'arrayRef') && this.heap.has(receiver.heapId)) fields.set('receiver', receiver);
+    const iface = node.type.tag === 'class' ? node.type.symbol.name : 'Lambda';
+    const heapId = this.allocObject(iface, fields);
+    const run: LambdaRun = { node, captured, thisValue, receiver };
+    (this.heap.get(heapId) as JavaObject).lambda = { text: node.text, run };
+    return { kind: 'objectRef', heapId, className: iface };
+  }
+
+  /** The lambda a value is, if it is one. */
+  private lambdaOf(value: JavaValue | undefined): LambdaRun | undefined {
+    if (value?.kind !== 'objectRef') return undefined;
+    return (this.heap.get(value.heapId) as JavaObject | undefined)?.lambda?.run as LambdaRun | undefined;
+  }
+
+  /**
+   * A call of a lambda: a frame named as javac names its method
+   * (`lambda$main$0`) showing the captured locals (javac passes them as
+   * arguments) and the parameters. Steps: its entry, its body's statements,
+   * its return with the value. A method reference's frame is hidden, so
+   * only the method it calls shows.
+   */
+  private lambdaFrame(run: LambdaRun, args: JavaValue[]): Frame {
+    const node = run.node;
+    const frame = this.newFrame(node.methodRef ? node.text : node.name, 'method', node.owner, run.thisValue, node.name || 'lambda');
+    frame.hidden = node.methodRef;
+    for (const [local, value] of run.captured) this.declare(frame, frame.scope, local, value);
+    if (node.receiver && run.receiver) frame.slots.set(node.receiver.local, { value: run.receiver, type: runtimeTypeName(node.receiver.local.type) });
+    node.params.forEach((p, i) => {
+      const value = this.toStatic(args[i] ?? javaNull(), p.type);
+      if (node.methodRef) frame.slots.set(p, { value, type: runtimeTypeName(p.type) });
+      else this.declare(frame, frame.scope, p, value);
+    });
+    frame.gen = this.runLambda(frame, node);
+    return frame;
+  }
+
+  private *runLambda(frame: Frame, node: B.BLambda): Gen<JavaValue | undefined> {
+    let value: JavaValue | undefined;
+    if (node.body.kind === 'Block') {
+      value = yield* this.runBody(frame, node.body, node.range.line);
+    } else {
+      const body = node.body as B.BExpr;
+      if (!frame.hidden) this.stepAt(node.range.line);
+      value = this.isPure(body) ? this.pv(body) : yield* this.gv(body);
+      if (node.sam.returnType.tag === 'void') value = undefined;
+      if (!frame.hidden) {
+        frame.returning = { value };
+        this.stepAt(node.range.line, true);
+        frame.returning = undefined;
+      }
+    }
+    return value === undefined ? undefined : this.toStatic(value, node.samReturn);
+  }
+
+  /**
+   * The program's code a call `name(args)` on `value` runs, if the program
+   * provides it: a lambda's body (for its interface's method), a method of
+   * the value's class or a default method of its interfaces, or a method
+   * javac generates for a record or an enum.
+   */
+  private programCode(value: JavaValue, name: string, args: JavaValue[], line: number): { frame: Frame } | { value: JavaValue } | undefined {
+    const run = this.lambdaOf(value);
+    if (run) return run.node.sam.name === name && run.node.params.length === args.length ? { frame: this.lambdaFrame(run, args) } : undefined;
+    const method = this.userMethod(value, name, args.length);
+    if (!method) return undefined;
+    if (method.synthetic) return { value: this.synthetic(method, value, args, line) };
+    return { frame: this.methodFrame(method, value, args, line) };
+  }
+
+  /** Which functional interface method a program's function value has: a lambda's, or the first SAM-like method its class provides. */
+  private functionShape(value: JavaValue): { name: string; arity: number } | undefined {
+    const run = this.lambdaOf(value);
+    if (run) return { name: run.node.sam.name, arity: run.node.params.length };
+    for (const [name, arities] of FUNCTION_METHODS) {
+      for (const arity of arities) if (this.userMethod(value, name, arity)) return { name, arity };
+    }
+    return undefined;
+  }
+
+  /** Run a frame to completion now, on the same frames (a library callback; `quiet` takes no steps). */
+  private runNow(frame: Frame, quiet: boolean): JavaValue {
+    if (quiet) this.suppress++;
+    try {
+      return this.drive(callFrame(frame)) ?? javaNull();
+    } finally {
+      if (quiet) this.suppress--;
+    }
+  }
+
+  // ── Methods javac generates (#16) ──
+
+  /** An enum's values()/valueOf(), a record's accessors, equals, hashCode and toString: run directly, taking no steps (no code of the program's runs). */
+  private synthetic(m: MethodSymbol, receiver: JavaValue | undefined, args: JavaValue[], line: number): JavaValue {
+    const fieldsOf = () => (this.heap.get((receiver as JavaObjectRef).heapId) as JavaObject).fields;
+    const component = (f: FieldSymbol, of = receiver!) => (this.heap.get((of as JavaObjectRef).heapId) as JavaObject).fields.get(this.fieldKey(of, f)) ?? javaNull();
+    switch (m.synthetic) {
+      case 'values': return { kind: 'arrayRef', heapId: this.allocArray(m.owner.name, this.enumConstants(m.owner)) };
+      case 'valueOf': {
+        if (args[0]?.kind !== 'string') throw nullPointer('Name is null', line);
+        const name = args[0].value;
+        const found = this.enumConstants(m.owner).find(c => c.kind === 'objectRef' && (this.heap.get(c.heapId) as JavaObject).enumConstant?.name === name);
+        if (!found) throw new JavaRuntimeError('IllegalArgumentException', `No enum constant ${m.owner.binaryName.replace(/\$/g, '.')}.${name}`, line);
+        return found;
+      }
+      case 'accessor': return fieldsOf().get(this.fieldKey(receiver!, m.components![0])) ?? javaNull();
+      case 'recordToString': return javaString(`${m.owner.name}[${m.components!.map(f => `${f.name}=${this.stringify(component(f))}`).join(', ')}]`);
+      case 'recordEquals': {
+        const other = args[0];
+        if (other?.kind !== 'objectRef' || other.className !== (receiver as JavaObjectRef).className) return javaBool(false);
+        return javaBool(m.components!.every(f => {
+          const a = component(f), b = component(f, other);
+          if (a.kind === 'primitive' && b.kind === 'primitive') {
+            // Float.compare/Double.compare for floating point (NaN equals NaN, 0.0 doesn't equal -0.0), == otherwise.
+            if (typeof a.value === 'number' && typeof b.value === 'number' && (a.javaType === 'double' || a.javaType === 'float')) return Object.is(a.value, b.value);
+            return a.value === b.value;
+          }
+          if (a.kind === 'null' || b.kind === 'null') return a.kind === b.kind;
+          return this.stdlib(line, () => valuesEqual(a, b, this.ctx));
+        }));
+      }
+      case 'recordHashCode': {
+        let h = 0;
+        for (const f of m.components!) h = (Math.imul(31, h) + this.stdlib(line, () => hashCodeOf(component(f), this.ctx))) | 0;
+        return javaInt(h);
+      }
+    }
+    throw new InterpreterError(`${m.name}() can't run`, line);
   }
 
   private staticRef(field: FieldSymbol): Reference {
@@ -1680,11 +1925,13 @@ export class Evaluator {
     return javaBool(ok);
   }
 
-  /** `value instanceof type`: the program's classes and interfaces, library types, boxes, arrays. */
+  /** `value instanceof type`: the program's classes and interfaces, library types, boxes, arrays, lambdas by their interface. */
   private instanceOf(value: JavaValue, type: JType): boolean {
     if (value.kind === 'null') return false;
     const t = erasure(type);
     if (t.tag === 'dynamic' || t.tag === 'error') return true;
+    const run = this.lambdaOf(value);
+    if (run) return t.tag === 'class' && (t.symbol.name === 'Object' || (run.node.type.tag === 'class' && symbolExtends(run.node.type.symbol, t.symbol)));
     if (t.tag === 'array') {
       if (value.kind !== 'arrayRef') return false;
       const arr = this.heap.get(value.heapId);
@@ -1782,7 +2029,12 @@ export class Evaluator {
         throw nullPointer(`Cannot invoke "${this.methodText(method, target)}" because "${target ? this.text(target) : 'this'}" is null`, this.line(e));
       }
     }
+    // A lambda implementing the program's own functional interface runs its body (#16).
+    const run = this.lambdaOf(receiver);
+    if (run && run.node.sam === method) return (yield this.lambdaFrame(run, args)) ?? javaNull();
     const actual = this.target(method, dispatch, receiver);
+    if (actual.synthetic) return this.synthetic(actual, receiver, args, this.line(e));
+    // The canonical constructor's work for a compact one, or an accessor overridden by the record: as declared.
     const frame = this.methodFrame(actual, receiver, args, this.line(e));
     const value = yield frame;
     return value ?? javaNull();
@@ -1803,44 +2055,52 @@ export class Evaluator {
   }
 
   /**
-   * Run one of the program's methods to completion now, on the same frames
-   * (a library callback, such as a toString() for println, or compareTo() for
-   * a sort). `quiet` records no steps inside it, so the call is atomic.
+   * The program's instance method of this name and arity for a user object:
+   * its class chain's (a record's generated ones included), then a default
+   * method of an interface it implements (for library code calling back:
+   * toString, compareTo, …, and for calls by name).
    */
-  private callNow(method: MethodSymbol, receiver: JavaValue, args: JavaValue[], quiet: boolean): JavaValue {
-    const frame = this.methodFrame(method, receiver, args, this.top()?.line ?? 0);
-    if (quiet) this.suppress++;
-    try {
-      return this.drive(callFrame(frame)) ?? javaNull();
-    } finally {
-      if (quiet) this.suppress--;
-    }
-  }
-
-  /** The program's instance method of this name and arity in a user object's class (for library code calling back: toString, compareTo, …). */
   private userMethod(value: JavaValue, name: string, arity: number): MethodSymbol | undefined {
     if (value.kind !== 'objectRef' || isBuiltinObject(this.heap.get(value.heapId))) return undefined;
+    const runs = (x: MethodSymbol) => !x.isStatic && x.arity === arity && (this.methods.get(x)?.body !== undefined || x.synthetic !== undefined);
+    const interfaces: ClassSymbol[] = [];
     for (let c: ClassSymbol | undefined = this.byName.get(value.className); c && !c.isLibrary; c = c.superclass?.symbol) {
-      const m = (c.methods.get(name) ?? []).find(x => !x.isStatic && x.arity === arity && this.methods.get(x)?.body);
+      const m = (c.methods.get(name) ?? []).find(runs);
       if (m) return m;
+      interfaces.push(...c.interfaces.map(i => i.symbol));
+    }
+    for (let i = 0; i < interfaces.length; i++) {
+      const iface = interfaces[i];
+      if (iface.isLibrary) continue;
+      const m = (iface.methods.get(name) ?? []).find(runs);
+      if (m) return m;
+      interfaces.push(...iface.interfaces.map(s => s.symbol).filter(s => !interfaces.includes(s)));
     }
     return undefined;
   }
 
-  /** ctx.invokeUserMethod: a user class's own method, run atomically; undefined if it has none. */
+  /**
+   * ctx.invokeUserMethod: the program's code for a call the library makes
+   * (compareTo in a sort, a lambda for forEach, toString for println). It
+   * takes steps, as pythontutor.com shows such calls. Undefined if the
+   * program has none; an enum constant compares by ordinal.
+   */
   private invokeUser(ref: JavaValue, name: string, args: JavaValue[]): JavaValue | undefined {
-    const method = this.userMethod(ref, name, args.length);
-    return method ? this.callNow(method, ref, args, true) : undefined;
+    const code = this.programCode(ref, name, args, this.top()?.line ?? 0);
+    if (code) return 'frame' in code ? this.runNow(code.frame, false) : code.value;
+    const constant = ref.kind === 'objectRef' ? (this.heap.get(ref.heapId) as JavaObject | undefined)?.enumConstant : undefined;
+    if (constant && name === 'compareTo' && args[0]?.kind === 'objectRef') {
+      const other = (this.heap.get(args[0].heapId) as JavaObject | undefined)?.enumConstant;
+      return javaInt(constant.ordinal - (other?.ordinal ?? 0));
+    }
+    return undefined;
   }
 
-  /** A call of a library method from the generator: one a program class implements (compareTo, toString, …) runs as a frame. */
+  /** A call of a library method from the generator: one the program provides (a class's compareTo, toString, …, or a lambda) runs as a frame. */
   private *callLibrary(e: B.BCall, target: JavaValue | undefined, args: JavaValue[]): Gen<JavaValue> {
     if (target && !e.method.isStatic && e.dispatch !== 'special') {
-      const own = this.userMethod(target, e.method.name, args.length);
-      if (own) {
-        const frame = this.methodFrame(own, target, args, this.line(e));
-        return (yield frame) ?? javaNull();
-      }
+      const code = this.programCode(target, e.method.name, args, this.line(e));
+      if (code) return 'frame' in code ? ((yield code.frame) ?? javaNull()) : code.value;
     }
     return this.callLibraryNow(e, target, args);
   }
@@ -1855,8 +2115,8 @@ export class Evaluator {
     }
     // super.toString() and the like run Object's (or Throwable's) own method, whatever the class overrides.
     if (e.dispatch === 'special' && target.kind === 'objectRef') return this.toStatic(this.objectMethod(target, m.name, args, line), e.type);
-    const own = this.userMethod(target, m.name, args.length);
-    if (own) return this.callNow(own, target, args, false);
+    const code = this.programCode(target, m.name, args, line);
+    if (code) return 'frame' in code ? this.runNow(code.frame, false) : code.value;
     return this.toStatic(this.instanceCall(target, m.name, args, e.target ? this.text(e.target) : '', line), e.type);
   }
 
@@ -1903,11 +2163,8 @@ export class Evaluator {
   /** A method by name on a value (dynamic calls, and close() for try-with-resources). */
   private *callByName(target: JavaValue, name: string, args: JavaValue[], text: string, line: number): Gen<JavaValue> {
     if (target.kind === 'null') throw nullPointer(`Cannot invoke "${name}()" because "${text}" is null`, line);
-    const own = this.userMethod(target, name, args.length);
-    if (own) {
-      const frame = this.methodFrame(own, target, args, line);
-      return (yield frame) ?? javaNull();
-    }
+    const code = this.programCode(target, name, args, line);
+    if (code) return 'frame' in code ? ((yield code.frame) ?? javaNull()) : code.value;
     return this.instanceCall(target, name, args, text, line);
   }
 
@@ -1956,6 +2213,21 @@ export class Evaluator {
         }
         if (['getMessage', 'getLocalizedMessage', 'toString', 'getCause'].includes(name)) return exceptionMethod(target, name, this.ctx) ?? javaNull();
       }
+      // A functional interface's default methods on a lambda or a function object of the program's (cmp.reversed(), f.andThen(g)).
+      if (!isBuiltinObject(obj)) {
+        const r = this.stdlib(line, () => functionalMethod(target, name, args, this.ctx));
+        if (r) return r;
+      }
+      // An enum constant's methods from Enum (#16).
+      const constant = (obj as JavaObject | undefined)?.enumConstant;
+      if (constant) {
+        if ((name === 'name' || name === 'toString') && args.length === 0) return internedString(constant.name);
+        if (name === 'ordinal' && args.length === 0) return javaInt(constant.ordinal);
+        if (name === 'compareTo' && args.length === 1) {
+          if (args[0].kind === 'null') throw nullPointer('', line);
+          return javaInt(constant.ordinal - ((this.heap.get((args[0] as JavaObjectRef).heapId) as JavaObject).enumConstant?.ordinal ?? 0));
+        }
+      }
       if (name === 'equals' && args.length === 1) return javaBool(args[0].kind === 'objectRef' && args[0].heapId === target.heapId);
       if (name === 'hashCode' && args.length === 0) return javaInt(identityHashCode(target.heapId));
       if (name === 'toString' && args.length === 0) return javaString(this.stringify(target));
@@ -1968,10 +2240,14 @@ export class Evaluator {
    * `getClass() == o.getClass()` compares classes), showing its name.
    */
   private classObject(value: JavaValue): JavaValue {
-    const name = this.runtimeClassName(value);
+    return this.classObjectNamed(this.runtimeClassName(value), this.simpleClassName(value));
+  }
+
+  /** The Class object of a class by its getName() (`T.class` gives the same object as getClass()). */
+  private classObjectNamed(name: string, simpleName: string): JavaValue {
     let ref = this.classObjects.get(name);
     if (!ref) {
-      const fields = new Map<string, JavaValue>([['name', javaString(name)], ['__simpleName__', javaString(this.simpleClassName(value))]]);
+      const fields = new Map<string, JavaValue>([['name', javaString(name)], ['__simpleName__', javaString(simpleName)]]);
       ref = { kind: 'objectRef', heapId: this.allocObject('Class', fields, true), className: 'Class' };
       this.classObjects.set(name, ref);
     }
@@ -1984,7 +2260,7 @@ export class Evaluator {
     switch (name) {
       case 'getName': case 'getTypeName': return fields.get('name');
       case 'getSimpleName': return fields.get('__simpleName__');
-      case 'toString': return javaString(`class ${javaValueToString(fields.get('name')!, this.heap)}`);
+      case 'toString': return javaString(classText(javaValueToString(fields.get('name')!, this.heap)));
     }
     return undefined;
   }
@@ -1998,7 +2274,11 @@ export class Evaluator {
         const arr = this.heap.get(value.heapId);
         return `${arr && isJavaArray(arr) ? arr.elementType : 'Object'}[]`;
       }
-      case 'objectRef': return value.className;
+      case 'objectRef': {
+        // An anonymous class has no simple name.
+        const sym = this.byName.get(value.className);
+        return sym?.isAnonymous ? '' : value.className;
+      }
       case 'null': return 'null';
     }
   }
@@ -2057,8 +2337,41 @@ export class Evaluator {
     const heapId = this.allocObject(cls.name, fields);
     const self: JavaObjectRef = { kind: 'objectRef', heapId, className: cls.name };
     if (this.isThrowable(self)) this.exceptionTraces.set(heapId, this.stackTrace(this.line(e)));
-    yield* this.construct(cls, e.ctor, self, args);
+    // An inner class's enclosing instance, and a local or anonymous class's captured locals (#16), before its constructor runs.
+    if (cls.outerField) {
+      const outer = e.outer ? (this.isPure(e.outer) ? this.pv(e.outer) : yield* this.gv(e.outer)) : this.top()?.thisValue;
+      if (e.outer && outer?.kind === 'null') throw nullPointer('', this.line(e));
+      if (outer) fields.set('this$0', outer);
+    }
+    for (const [local, field] of cls.captures) fields.set(field.name, this.slotOf(local).value);
+    if (e.anonymous) yield* this.constructAnonymous(cls, e.ctor, self, args);
+    else yield* this.construct(cls, e.ctor, self, args);
     return self;
+  }
+
+  /**
+   * An anonymous class's implicit constructor (JLS §15.9.5.1): its
+   * superclass's constructor with the arguments, then its initializers, in a
+   * frame of its own only if one of them runs code.
+   */
+  private *constructAnonymous(cls: ClassSymbol, superCtor: MethodSymbol | undefined, self: JavaObjectRef, args: JavaValue[]): Gen<void> {
+    const rt = this.classes.get(cls)!;
+    const sup = cls.superclass?.symbol;
+    const programSuper = sup !== undefined && !sup.isLibrary;
+    if (!programSuper && rt.bound.instanceInit.length === 0) {
+      this.superConstructor(cls, self, args);
+      return;
+    }
+    const frame = this.newFrame(cls.name, 'constructor', cls, self);
+    frame.gen = this.runAnonymousConstructor(frame, rt, programSuper ? sup : undefined, superCtor, self, args);
+    yield frame;
+  }
+
+  private *runAnonymousConstructor(frame: Frame, rt: ClassRuntime, sup: ClassSymbol | undefined, superCtor: MethodSymbol | undefined, self: JavaObjectRef, args: JavaValue[]): Gen<undefined> {
+    if (sup) yield* this.construct(sup, superCtor, self, args);
+    else this.superConstructor(rt.bound.symbol, self, args);
+    yield* this.instanceInit(frame, rt);
+    return undefined;
   }
 
   /**
@@ -2071,6 +2384,12 @@ export class Evaluator {
   private *construct(cls: ClassSymbol, ctor: MethodSymbol | undefined, self: JavaObjectRef, args: JavaValue[]): Gen<void> {
     const rt = this.classes.get(cls)!;
     const bm = ctor ? this.methods.get(ctor) : undefined;
+    // A record's canonical constructor that javac generates: the components assigned, taking no steps.
+    if (ctor?.synthetic === 'canonical') {
+      const obj = this.heap.get(self.heapId) as JavaObject;
+      ctor.components!.forEach((f, i) => obj.fields.set(this.fieldKey(self, f), args[i] ?? javaNull()));
+      return;
+    }
     if (!bm?.body) {
       const call = bm?.explicitCall;
       if (rt.bound.instanceInit.length === 0 && !(call?.ctor && !call.ctor.owner.isLibrary)) {
@@ -2112,7 +2431,12 @@ export class Evaluator {
       if (call) yield* this.superCall(call, rt, self, []);
       yield* this.instanceInit(frame, rt);
     }
-    yield* this.runBody(frame, bm.body!, undefined);
+    // A record's compact constructor assigns the components from its parameters at its end.
+    const assignComponents = bm.compact ? () => {
+      const obj = this.heap.get(self.heapId) as JavaObject;
+      bm.symbol.components!.forEach((f, i) => obj.fields.set(this.fieldKey(self, f), frame.slots.get(bm.params[i])?.value ?? javaNull()));
+    } : undefined;
+    yield* this.runBody(frame, bm.body!, undefined, assignComponents);
     return undefined;
   }
 
@@ -2152,7 +2476,7 @@ export class Evaluator {
           this.stepAt(item.range.line);
           const v = this.isPure(item.value) ? this.pv(item.value) : yield* this.gv(item.value);
           fieldReference(this.heap, frame.thisValue!, this.fieldKey(frame.thisValue!, item.field), runtimeTypeName(item.field.type), 'this', item.range.line).set(v);
-        } else {
+        } else if (item.kind === 'block') {
           yield* this.blockIn(item.body, initScope, undefined);
         }
       }
@@ -2184,6 +2508,8 @@ export class Evaluator {
           const exc = formatException(value, this.heap, this.ctx.binaryName);
           if (exc !== undefined) return exc;
         }
+        if (obj.enumConstant) return obj.enumConstant.name;
+        if (obj.lambda) return `${(obj.lambda.run as LambdaRun).node.owner.binaryName}$$Lambda@${identityHash(value.heapId)}`;
         if (!obj.builtin) return `${this.binaryName(value.className)}@${identityHash(value.heapId)}`;
         const element = (e: JavaValue, self: string) => (e.kind === 'objectRef' && e.heapId === value.heapId ? self : this.stringify(e));
         const map = mapContents(obj, this.heap);
@@ -2191,6 +2517,8 @@ export class Evaluator {
         const elements = collectionElements(obj, this.heap);
         if (elements) return '[' + elements.map(e => element(e, '(this Collection)')).join(', ') + ']';
         if (value.className === 'MapEntry') return this.stringify(obj.fields.get('key')!) + '=' + this.stringify(obj.fields.get('value')!);
+        if (isOptionalClass(value.className)) return optionalText(obj, v => this.stringify(v));
+        if (value.className === 'Class') return classText(javaValueToString(obj.fields.get('name') ?? javaNull(), this.heap));
       }
     }
     if (value.kind === 'arrayRef') {
@@ -2202,6 +2530,17 @@ export class Evaluator {
 }
 
 // ── Helpers ──
+
+/** Class.toString(): `class Main$Point`, or a primitive type's bare name (`int`). */
+function classText(name: string): string {
+  return ['int', 'long', 'short', 'byte', 'char', 'float', 'double', 'boolean', 'void'].includes(name) ? name : `class ${name}`;
+}
+
+/** Is `sym` the class or interface `target`, or a subtype of it? */
+function symbolExtends(sym: ClassSymbol, target: ClassSymbol): boolean {
+  if (sym === target) return true;
+  return [sym.superclass?.symbol, ...sym.interfaces.map(i => i.symbol)].some(s => s !== undefined && symbolExtends(s, target));
+}
 
 /** A class as the JVM's NullPointerException messages name it: by binary name, String and Object without their package. */
 function npeClassName(sym: ClassSymbol): string {
@@ -2217,6 +2556,12 @@ function npeTypeText(t: JType): string {
     case 'class': return npeClassName(e.symbol);
     default: return 'Object';
   }
+}
+
+/** A value as a generator that yields nothing (for code that may or may not call the program). */
+// eslint-disable-next-line require-yield
+function* immediately<T>(value: T): Gen<T> {
+  return value;
 }
 
 /** A generator that runs one frame and returns its result (for a nested drive). */

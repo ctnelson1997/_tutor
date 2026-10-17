@@ -56,6 +56,8 @@ import {
 import { javaFormat } from './format';
 import { boxedHashCode } from './strings';
 import { hashCodeOf } from './hashing';
+import { comparing, functionStatic, optionalStatic } from './functional';
+import { streamStatic } from './streams';
 import {
   callInstanceMethod,
   immutableList,
@@ -153,7 +155,16 @@ export function callStaticMethod(
     case 'Comparator':
       if (method === 'naturalOrder') return libraryComparator('natural', undefined, ctx);
       if (method === 'reverseOrder') return libraryComparator('reverse', undefined, ctx);
+      if (method === 'comparing' || method === 'comparingInt' || method === 'comparingDouble' || method === 'comparingLong') {
+        return comparing(args[0], args[1], method, ctx);
+      }
       break;
+    case 'Function': case 'UnaryOperator': case 'Predicate': case 'BinaryOperator': case 'Entry':
+      return functionStatic(className, method, args, ctx);
+    case 'Optional': case 'OptionalInt': case 'OptionalDouble':
+      return optionalStatic(className, method, args, ctx);
+    case 'Stream': case 'IntStream': case 'DoubleStream': case 'Collectors':
+      return streamStatic(className, method, args, ctx);
   }
   return undefined;
 }
@@ -383,6 +394,7 @@ function systemMethod(method: string, args: JavaValue[], ctx: StdlibContext): Ja
 }
 
 function arraysMethod(method: string, args: JavaValue[], ctx: StdlibContext): JavaValue | undefined {
+  if (method === 'stream') return streamStatic('Arrays', 'stream', args, ctx);
   const arrOf = (v: JavaValue) => (v?.kind === 'arrayRef' ? ctx.heap.get(v.heapId) : undefined);
   switch (method) {
     case 'toString': {

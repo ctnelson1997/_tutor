@@ -150,6 +150,19 @@ public final class Class<T> {
   public String getSimpleName();
   public String toString();
 }
+public abstract class Enum<E extends Enum<E>> implements Comparable<E> {
+  public final String name();
+  public final int ordinal();
+  public String toString();
+  public final int compareTo(E o);
+  public final boolean equals(Object o);
+  public final int hashCode();
+}
+public abstract class Record {
+  public boolean equals(Object o);
+  public int hashCode();
+  public String toString();
+}
 public interface Comparable<T> { int compareTo(T o); }
 public interface CharSequence {
   int length();
@@ -157,8 +170,12 @@ public interface CharSequence {
   CharSequence subSequence(int start, int end);
   String toString();
   default boolean isEmpty() {}
+  default java.util.stream.IntStream chars() {}
 }
-public interface Iterable<T> { java.util.Iterator<T> iterator(); }
+public interface Iterable<T> {
+  java.util.Iterator<T> iterator();
+  default void forEach(java.util.function.Consumer<? super T> action) {}
+}
 public interface AutoCloseable { void close(); }
 public interface Cloneable {}
 public interface Runnable { void run(); }
@@ -300,8 +317,52 @@ public interface Iterator<E> {
 public interface Comparator<T> {
   int compare(T a, T b);
   default Comparator<T> reversed() {}
+  default Comparator<T> thenComparing(Comparator<? super T> other) {}
+  default <U extends Comparable<? super U>> Comparator<T> thenComparing(Function<? super T, ? extends U> key) {}
+  default <U> Comparator<T> thenComparing(Function<? super T, ? extends U> key, Comparator<? super U> cmp) {}
+  default Comparator<T> thenComparingInt(ToIntFunction<? super T> key) {}
+  default Comparator<T> thenComparingLong(ToLongFunction<? super T> key) {}
+  default Comparator<T> thenComparingDouble(ToDoubleFunction<? super T> key) {}
   static <T extends Comparable<? super T>> Comparator<T> naturalOrder();
   static <T extends Comparable<? super T>> Comparator<T> reverseOrder();
+  static <T, U extends Comparable<? super U>> Comparator<T> comparing(Function<? super T, ? extends U> key);
+  static <T, U> Comparator<T> comparing(Function<? super T, ? extends U> key, Comparator<? super U> cmp);
+  static <T> Comparator<T> comparingInt(ToIntFunction<? super T> key);
+  static <T> Comparator<T> comparingLong(ToLongFunction<? super T> key);
+  static <T> Comparator<T> comparingDouble(ToDoubleFunction<? super T> key);
+}
+public final class Optional<T> {
+  public static <T> Optional<T> of(T value);
+  public static <T> Optional<T> ofNullable(T value);
+  public static <T> Optional<T> empty();
+  public T get();
+  public boolean isPresent();
+  public boolean isEmpty();
+  public T orElse(T other);
+  public T orElseGet(Supplier<? extends T> supplier);
+  public T orElseThrow();
+  public void ifPresent(Consumer<? super T> action);
+  public <U> Optional<U> map(Function<? super T, ? extends U> f);
+  public Optional<T> filter(Predicate<? super T> p);
+}
+public final class OptionalInt {
+  public static OptionalInt of(int value);
+  public static OptionalInt empty();
+  public int getAsInt();
+  public boolean isPresent();
+  public boolean isEmpty();
+  public int orElse(int other);
+  public int orElseThrow();
+  public void ifPresent(IntConsumer action);
+}
+public final class OptionalDouble {
+  public static OptionalDouble of(double value);
+  public static OptionalDouble empty();
+  public double getAsDouble();
+  public boolean isPresent();
+  public boolean isEmpty();
+  public double orElse(double other);
+  public double orElseThrow();
 }
 public interface Collection<E> extends Iterable<E> {
   int size();
@@ -317,6 +378,8 @@ public interface Collection<E> extends Iterable<E> {
   Object[] toArray();
   <T> T[] toArray(T[] a);
   Iterator<E> iterator();
+  default boolean removeIf(Predicate<? super E> filter) {}
+  default java.util.stream.Stream<E> stream() {}
 }
 public interface List<E> extends Collection<E> {
   E get(int index);
@@ -327,6 +390,7 @@ public interface List<E> extends Collection<E> {
   int lastIndexOf(Object o);
   List<E> subList(int from, int to);
   void sort(Comparator<? super E> c);
+  default void replaceAll(UnaryOperator<E> op) {}
   boolean addAll(int index, Collection<? extends E> c);
   E getFirst();
   E getLast();
@@ -469,6 +533,12 @@ public interface Map<K, V> {
   V putIfAbsent(K key, V value);
   V replace(K key, V value);
   boolean replace(K key, V oldValue, V newValue);
+  default void forEach(BiConsumer<? super K, ? super V> action) {}
+  default V computeIfAbsent(K key, Function<? super K, ? extends V> f) {}
+  default V computeIfPresent(K key, BiFunction<? super K, ? super V, ? extends V> f) {}
+  default V compute(K key, BiFunction<? super K, ? super V, ? extends V> f) {}
+  default V merge(K key, V value, BiFunction<? super V, ? super V, ? extends V> f) {}
+  default void replaceAll(BiFunction<? super K, ? super V, ? extends V> f) {}
 ${mapOf}
   static <K, V> Map.Entry<K, V> entry(K k, V v);
   static <K, V> Map<K, V> copyOf(Map<? extends K, ? extends V> m);
@@ -476,6 +546,8 @@ ${mapOf}
     K getKey();
     V getValue();
     V setValue(V value);
+    static <K extends Comparable<? super K>, V> Comparator<Map.Entry<K, V>> comparingByKey();
+    static <K, V extends Comparable<? super V>> Comparator<Map.Entry<K, V>> comparingByValue();
   }
 }
 public interface SortedMap<K, V> extends Map<K, V> {
@@ -541,6 +613,9 @@ ${arrayCopies}
   public static int binarySearch($any a, int from, int to, $any key);
   public static <T> int binarySearch(T[] a, T key, Comparator<? super T> c);
   public static <T> List<T> asList(T... a);
+  public static <T> java.util.stream.Stream<T> stream(T[] a);
+  public static java.util.stream.IntStream stream(int[] a);
+  public static java.util.stream.DoubleStream stream(double[] a);
 }
 public final class Collections {
   public static <T extends Comparable<? super T>> void sort(List<T> list);
@@ -621,6 +696,150 @@ public class Random {
 }
 `;
 
+/** java.util.function: the functional interfaces lambdas and method references implement (#16). */
+const JAVA_UTIL_FUNCTION = `
+public interface Function<T, R> {
+  R apply(T t);
+  default <V> Function<T, V> andThen(Function<? super R, ? extends V> after) {}
+  default <V> Function<V, R> compose(Function<? super V, ? extends T> before) {}
+  static <T> Function<T, T> identity();
+}
+public interface BiFunction<T, U, R> {
+  R apply(T t, U u);
+  default <V> BiFunction<T, U, V> andThen(Function<? super R, ? extends V> after) {}
+}
+public interface UnaryOperator<T> extends Function<T, T> { static <T> UnaryOperator<T> identity(); }
+public interface BinaryOperator<T> extends BiFunction<T, T, T> {
+  static <T> BinaryOperator<T> minBy(Comparator<? super T> c);
+  static <T> BinaryOperator<T> maxBy(Comparator<? super T> c);
+}
+public interface Consumer<T> {
+  void accept(T t);
+  default Consumer<T> andThen(Consumer<? super T> after) {}
+}
+public interface BiConsumer<T, U> { void accept(T t, U u); }
+public interface Supplier<T> { T get(); }
+public interface Predicate<T> {
+  boolean test(T t);
+  default Predicate<T> and(Predicate<? super T> other) {}
+  default Predicate<T> or(Predicate<? super T> other) {}
+  default Predicate<T> negate() {}
+  static <T> Predicate<T> isEqual(Object target);
+  static <T> Predicate<T> not(Predicate<? super T> target);
+}
+public interface BiPredicate<T, U> { boolean test(T t, U u); }
+public interface ToIntFunction<T> { int applyAsInt(T t); }
+public interface ToLongFunction<T> { long applyAsLong(T t); }
+public interface ToDoubleFunction<T> { double applyAsDouble(T t); }
+public interface IntFunction<R> { R apply(int value); }
+public interface IntPredicate { boolean test(int value); }
+public interface IntUnaryOperator { int applyAsInt(int operand); }
+public interface IntBinaryOperator { int applyAsInt(int left, int right); }
+public interface IntConsumer { void accept(int value); }
+public interface IntSupplier { int getAsInt(); }
+public interface IntToDoubleFunction { double applyAsDouble(int value); }
+public interface DoublePredicate { boolean test(double value); }
+public interface DoubleUnaryOperator { double applyAsDouble(double operand); }
+public interface DoubleBinaryOperator { double applyAsDouble(double left, double right); }
+public interface DoubleConsumer { void accept(double value); }
+public interface BooleanSupplier { boolean getAsBoolean(); }
+`;
+
+/** java.util.stream: the subset of streams intro courses use (#16), evaluated lazily as Java does. */
+const JAVA_UTIL_STREAM = `
+public interface Stream<T> {
+  Stream<T> filter(Predicate<? super T> p);
+  <R> Stream<R> map(Function<? super T, ? extends R> f);
+  IntStream mapToInt(ToIntFunction<? super T> f);
+  DoubleStream mapToDouble(ToDoubleFunction<? super T> f);
+  <R> Stream<R> flatMap(Function<? super T, ? extends Stream<? extends R>> f);
+  Stream<T> distinct();
+  Stream<T> sorted();
+  Stream<T> sorted(Comparator<? super T> c);
+  Stream<T> peek(Consumer<? super T> action);
+  Stream<T> limit(long n);
+  Stream<T> skip(long n);
+  void forEach(Consumer<? super T> action);
+  Object[] toArray();
+  <A> A[] toArray(IntFunction<A[]> generator);
+  T reduce(T identity, BinaryOperator<T> op);
+  Optional<T> reduce(BinaryOperator<T> op);
+  <R, A> R collect(Collector<? super T, A, R> collector);
+  List<T> toList();
+  Optional<T> min(Comparator<? super T> c);
+  Optional<T> max(Comparator<? super T> c);
+  long count();
+  boolean anyMatch(Predicate<? super T> p);
+  boolean allMatch(Predicate<? super T> p);
+  boolean noneMatch(Predicate<? super T> p);
+  Optional<T> findFirst();
+  Optional<T> findAny();
+  static <T> Stream<T> of(T... values);
+  static <T> Stream<T> empty();
+  static <T> Stream<T> iterate(T seed, UnaryOperator<T> f);
+  static <T> Stream<T> generate(Supplier<? extends T> s);
+}
+public interface IntStream {
+  IntStream filter(IntPredicate p);
+  IntStream map(IntUnaryOperator f);
+  <U> Stream<U> mapToObj(IntFunction<? extends U> f);
+  DoubleStream mapToDouble(IntToDoubleFunction f);
+  DoubleStream asDoubleStream();
+  Stream<Integer> boxed();
+  IntStream distinct();
+  IntStream sorted();
+  IntStream peek(IntConsumer action);
+  IntStream limit(long n);
+  IntStream skip(long n);
+  void forEach(IntConsumer action);
+  int sum();
+  long count();
+  OptionalInt min();
+  OptionalInt max();
+  OptionalDouble average();
+  int reduce(int identity, IntBinaryOperator op);
+  boolean anyMatch(IntPredicate p);
+  boolean allMatch(IntPredicate p);
+  boolean noneMatch(IntPredicate p);
+  OptionalInt findFirst();
+  int[] toArray();
+  static IntStream range(int from, int to);
+  static IntStream rangeClosed(int from, int to);
+  static IntStream of(int... values);
+  static IntStream iterate(int seed, IntUnaryOperator f);
+}
+public interface DoubleStream {
+  DoubleStream filter(DoublePredicate p);
+  DoubleStream map(DoubleUnaryOperator f);
+  Stream<Double> boxed();
+  DoubleStream sorted();
+  DoubleStream limit(long n);
+  void forEach(DoubleConsumer action);
+  double sum();
+  long count();
+  OptionalDouble min();
+  OptionalDouble max();
+  OptionalDouble average();
+  double reduce(double identity, DoubleBinaryOperator op);
+  double[] toArray();
+  static DoubleStream of(double... values);
+}
+public interface Collector<T, A, R> {}
+public final class Collectors {
+  public static <T> Collector<T, ?, List<T>> toList();
+  public static <T> Collector<T, ?, Set<T>> toSet();
+  public static Collector<CharSequence, ?, String> joining();
+  public static Collector<CharSequence, ?, String> joining(CharSequence delimiter);
+  public static Collector<CharSequence, ?, String> joining(CharSequence delimiter, CharSequence prefix, CharSequence suffix);
+  public static <T> Collector<T, ?, Long> counting();
+  public static <T> Collector<T, ?, Integer> summingInt(ToIntFunction<? super T> f);
+  public static <T> Collector<T, ?, Double> averagingInt(ToIntFunction<? super T> f);
+  public static <T, K> Collector<T, ?, Map<K, List<T>>> groupingBy(Function<? super T, ? extends K> classifier);
+  public static <T, K, A, D> Collector<T, ?, Map<K, D>> groupingBy(Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream);
+  public static <T, K, U> Collector<T, ?, Map<K, U>> toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper);
+}
+`;
+
 /** The exception classes, from the stdlib's hierarchy, each with Throwable's four constructors. */
 function exceptions(pkg: string): string {
   return Object.entries(EXCEPTION_SUPER)
@@ -647,5 +866,7 @@ export function libraryStubs(): { packageName: string; source: string }[] {
     { packageName: 'java.lang', source: JAVA_LANG + exceptions('java.lang') },
     { packageName: 'java.io', source: JAVA_IO + exceptions('java.io') },
     { packageName: 'java.util', source: JAVA_UTIL + exceptions('java.util') },
+    { packageName: 'java.util.function', source: JAVA_UTIL_FUNCTION },
+    { packageName: 'java.util.stream', source: JAVA_UTIL_STREAM },
   ];
 }

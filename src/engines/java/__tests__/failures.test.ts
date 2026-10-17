@@ -208,20 +208,20 @@ describe('errors from the engine', () => {
     const source = `public class Main {
   public static void main(String[] args) {
     System.out.println("ok");
-    int c = "abc".chars();
+    boolean b = "aaa".matches("a++");
   }
 }`;
     const { snapshots, error } = result(runJava(source));
-    expect(error).toEqual({ kind: 'error', message: "Streams (String.chars()) aren't supported in JavaTutor yet", line: 4 });
+    expect(error).toEqual({ kind: 'error', message: "Regular expressions with possessive quantifiers (a*+) aren't supported in JavaTutor yet", line: 4 });
     expect(snapshots[snapshots.length - 1].stdout).toEqual(['ok']);
   });
 
   it('report an unsupported declaration before any step', () => {
-    const source = 'public class Main {\n  enum Color { RED }\n  public static void main(String[] args) {}\n}';
+    const source = 'public class Main {\n  @interface Tag {}\n  public static void main(String[] args) {}\n}';
     expect(runJava(source)).toEqual({
       type: 'result',
       snapshots: [],
-      error: { kind: 'error', message: "Enums aren't supported in JavaTutor yet", line: 2 },
+      error: { kind: 'error', message: "Annotation types (@interface) aren't supported in JavaTutor yet", line: 2 },
     });
   });
 

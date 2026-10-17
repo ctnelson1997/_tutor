@@ -20,11 +20,11 @@ interface BTyped extends BNode {
 // ── Expressions ──
 
 export type BExpr =
-  | BConst | BLocal | BStaticField | BField | BArrayLength | BArrayElement | BThis
+  | BConst | BLocal | BStaticField | BField | BArrayLength | BArrayElement | BThis | BOuterThis
   | BCall | BDynamicCall | BNew | BNewArray | BArrayLiteral
   | BUnary | BIncDec | BBinary | BLogical | BRefEquals | BConcat
   | BAssign | BCompoundAssign | BConditional | BConvert | BInstanceOf
-  | BSwitchExpr | BUnsupportedExpr;
+  | BSwitchExpr | BLambda | BClassLiteral | BUnsupportedExpr;
 
 /** An expression that names a variable: what assignment, `++` and compound assignment write. */
 export type BLValue = BLocal | BStaticField | BField | BArrayElement;
@@ -70,6 +70,53 @@ export interface BThis extends BTyped {
 }
 
 /**
+ * The enclosing instance of class `cls` (#16): `Outer.this`, or what an inner,
+ * local or anonymous class's code reaches the enclosing object's members
+ * through. Reached from `this` through each object's `this$0`.
+ */
+export interface BOuterThis extends BTyped {
+  kind: 'OuterThis';
+  cls: ClassSymbol;
+}
+
+/**
+ * A lambda expression or method reference (#16): a function object of a
+ * functional interface `type`, whose single abstract method `sam` runs
+ * `body`. `captures` are the enclosing locals the body reads (effectively
+ * final, copied when the lambda is evaluated); `usesThis` that it reaches
+ * the enclosing object. A method reference is a lambda whose body calls the
+ * method (`methodRef`); its frame isn't shown, only the method's. A bound
+ * receiver (`System.out::println`) is evaluated once, when the reference
+ * is, into `receiver`.
+ */
+export interface BLambda extends BTyped {
+  kind: 'Lambda';
+  sam: MethodSymbol;
+  params: LocalSymbol[];
+  body: BExpr | BBlock;
+  captures: LocalSymbol[];
+  usesThis: boolean;
+  /** As javac names its method: `lambda$main$0`. */
+  name: string;
+  /** The class whose code it is in (its frame's class in a stack trace). */
+  owner: ClassSymbol;
+  /** The function type's result type: what a call returns, boxed or unboxed to fit. */
+  samReturn: JType;
+  /** The source, for drawing the function object. */
+  text: string;
+  methodRef?: boolean;
+  receiver?: { local: LocalSymbol; value: BExpr };
+}
+
+/** `String.class`, `int.class`: the Class object of a type. */
+export interface BClassLiteral extends BTyped {
+  kind: 'ClassLiteral';
+  /** The class's name as Class.getName() gives it: `java.lang.String`, `Main$Point`, `int`, `[I`. */
+  name: string;
+  simpleName: string;
+}
+
+/**
  * A method call, its overload chosen. `static` calls have no target;
  * `virtual` ones dispatch on the receiver's class; `special` ones (private
  * methods, `super.m()`) don't. Arguments are converted to the parameter
@@ -93,12 +140,19 @@ export interface BDynamicCall extends BTyped {
   args: BExpr[];
 }
 
-/** `new C(args)`, its constructor chosen. */
+/**
+ * `new C(args)`, its constructor chosen. An inner class's object gets its
+ * enclosing instance from `outer` (`this`, an enclosing `Outer.this`, or the
+ * `o` of `o.new Inner()`). An anonymous class's constructor is its
+ * superclass's (`ctor`), which receives the arguments.
+ */
 export interface BNew extends BTyped {
   kind: 'New';
   cls: ClassSymbol;
   ctor?: MethodSymbol;
   args: BExpr[];
+  outer?: BExpr;
+  anonymous?: boolean;
 }
 
 /** `new int[3][4][]`: `dims` are the sized dimensions. */
@@ -385,11 +439,15 @@ export interface BUnsupportedStmt extends BNode {
 /** A field initializer or initializer block, in the order the class runs them. */
 export type BInitializer =
   | { kind: 'field'; field: FieldSymbol; value: BExpr; range: A.Range }
-  | { kind: 'block'; body: BBlock; range: A.Range };
+  | { kind: 'block'; body: BBlock; range: A.Range }
+  /** An enum constant (#16), created first: an object of `cls` (the enum, or the constant's own class body) built by `ctor`. */
+  | { kind: 'enumConstant'; field: FieldSymbol; ordinal: number; cls: ClassSymbol; ctor?: MethodSymbol; args: BExpr[]; range: A.Range };
 
 export interface BMethod {
   symbol: MethodSymbol;
   params: LocalSymbol[];
+  /** A record's compact constructor: its body runs, then the fields are assigned from the parameters. */
+  compact?: boolean;
   /**
    * A constructor's `this(…)` or `super(…)`. A constructor without one calls
    * its superclass's no-argument constructor (`implicit`, at the
