@@ -106,16 +106,21 @@ export interface ExecutionSnapshot {
  * Why a run ended before the program finished normally.
  *   exception  the program threw an exception that nothing caught
  *   limit      the run hit the step cap or the time limit
- *   error      the engine stopped it: a construct it can't run yet, a
- *              problem the compiler would have reported, or an internal failure
+ *   error      the engine stopped it: a construct it can't run yet, or an
+ *              internal failure
+ *   compile    the program doesn't compile (Java): nothing ran, `message` and
+ *              `line` are the first error, `lines` has every error's line, and
+ *              `stderr` lists them all as javac does
  * `kind` is absent for failures before anything ran (a parse error, the engine
  * failing to load, the worker timing out).
  */
 export interface RunError {
   message: string;
   line?: number;
-  kind?: 'exception' | 'limit' | 'error';
-  /** What the program's stderr would show, such as Java's stack trace. The console shows it at the last step. */
+  kind?: 'exception' | 'limit' | 'error' | 'compile';
+  /** For a program that doesn't compile: the line of each error, in the compiler's order (the editor marks them all). */
+  lines?: number[];
+  /** What the program's stderr would show, such as Java's stack trace or javac's errors. The console shows it at the last step. */
   stderr?: string;
 }
 

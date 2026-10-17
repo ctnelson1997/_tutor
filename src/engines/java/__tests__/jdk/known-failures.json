@@ -5,15 +5,6 @@
     "\"issues\": what the failure is waiting on, main issue first. \"reason\": the symptom, in a few words.",
     "See the details of any case with: npx tsx scripts/java-diff.ts <case id>"
   ],
-  "output": {
-    "compile-errors/ce-missing-return": {
-      "issues": [23],
-      "reason": "runs a method with a missing return statement"
-    },
-    "compile-errors/ce-uninitialized-local": {
-      "issues": [23],
-      "reason": "reports the read of a never-assigned local when that line runs, not before the program starts"
-    }
-  },
+  "output": {},
   "invariants": {}
 }

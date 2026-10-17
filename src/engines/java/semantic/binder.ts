@@ -19,6 +19,8 @@
 import type * as A from '../ast/ast';
 import { parseAst } from '../ast/convert';
 import { libraryStubs } from './stubs';
+import { checkFlow } from './flow';
+import { JDK_METHODS } from './jdkMembers';
 import { ClassSymbol, FieldSymbol, MethodSymbol, LocalSymbol, type ClassKind, type ConstValue, type LocalKind, type ParamSymbol } from './symbols';
 import {
   type JType, type ClassT, type ArrayT, type PrimitiveT, type TypeVarT, type Builtins,
@@ -39,6 +41,10 @@ export interface Diagnostic {
   /** For `unsupported`: the construct, and whether its message is singular ("isn't supported"). */
   construct?: string;
   singular?: boolean;
+  /** An error javac's parser reports (`not a statement`): with one, javac reports no other kind (#23). */
+  syntax?: boolean;
+  /** An error javac simplified (one method's argument mismatch as the argument's own error): its listing then ends with a note. */
+  simplified?: boolean;
 }
 
 export interface BindResult {
@@ -387,6 +393,7 @@ class Declarer {
     for (let i = 0; i < m.dims; i++) result = arrayOf(result);
     method.returnType = result;
     this.params(method, m.params, mctx);
+    method.throws = m.throws.map(t => this.resolveType(t, mctx));
     return method;
   }
 
@@ -396,6 +403,7 @@ class Declarer {
     const mctx: TypeContext = { ...ctx, method: ctor };
     ctor.typeParams = this.declareTypeParams(c.typeParams, mctx);
     this.params(ctor, c.params, mctx);
+    ctor.throws = c.throws.map(t => this.resolveType(t, mctx));
     return ctor;
   }
 
@@ -427,7 +435,7 @@ class Declarer {
         if (resolved) return resolved;
         // A library class JavaTutor knows of but lacks (Thread, BinaryOperator, …): what uses it is reported when it runs.
         if (UNSUPPORTED_LIBRARY.has(t.parts[t.parts.length - 1].name)) return DYNAMIC;
-        this.error(`cannot find symbol\n  symbol:   class ${t.parts.map(p => p.name).join('.')}`, t.range);
+        this.error(`cannot find symbol\n  symbol:   class ${t.parts.map(p => p.name).join('.')}${ctx.cls ? `\n  location: class ${ctx.cls.name}` : ''}`, t.range);
         return ERROR;
       }
     }
@@ -539,6 +547,24 @@ export function bindProgram(unit: A.CompilationUnit, source = ''): BindResult {
   return new Binder(unit, source).bind();
 }
 
+/**
+ * Diagnostics in the order javac reports them (#23). A syntax error stops javac before anything else is checked.
+ * Otherwise it attributes, then checks the flow of, one top-level class at a time, in source order, and once it has
+ * found an error it checks no more flow. Within a class, errors come in source order.
+ */
+function javacOrder(diagnostics: Diagnostic[], flow: Diagnostic[], classes: A.Range[]): Diagnostic[] {
+  const byStart = (a: Diagnostic, b: Diagnostic) => a.range.start - b.range.start;
+  const syntax = diagnostics.filter(d => d.syntax);
+  if (syntax.length > 0) return syntax.sort(byStart);
+  const inside = (d: Diagnostic, r: A.Range) => d.range.start >= r.start && d.range.start < r.end;
+  const result = diagnostics.filter(d => !classes.some(r => inside(d, r))).sort(byStart);
+  for (const r of classes) {
+    result.push(...diagnostics.filter(d => inside(d, r)).sort(byStart));
+    if (result.length === 0) result.push(...flow.filter(d => inside(d, r)).sort(byStart));
+  }
+  return result;
+}
+
 /** A conversion's kind, for BConvert. */
 type ConversionKind = B.BConvert['conversion'];
 
@@ -635,6 +661,9 @@ class Binder {
     for (const c of all) program.classes.push(this.bindClass(c));
     program.classes.push(...this.extraClasses);
     this.checkEffectivelyFinal();
+    // javac's flow checks (#23): reachability, definite assignment, final variables, checked exceptions.
+    const byName = (n: string) => this.lib.byName(n)!;
+    const flow = checkFlow(program, { throwable: byName('Throwable'), runtimeException: byName('RuntimeException'), error: byName('Error'), exception: byName('Exception') }, this.source);
     for (const c of classes) {
       const main = (c.methods.get('main') ?? []).find(m => m.isStatic && (m.arity === 0 || (m.arity === 1 && m.params[0].type.tag === 'array')));
       if (main) {
@@ -643,7 +672,7 @@ class Binder {
         break;
       }
     }
-    return { program, diagnostics: this.diagnostics };
+    return { program, diagnostics: javacOrder(this.diagnostics, flow, this.unit.types.map(t => t.range)) };
   }
 
   private addImport(i: A.ImportDecl): void {
@@ -680,6 +709,50 @@ class Binder {
 
   private error(message: string, range: A.Range): void {
     this.diagnostics.push({ kind: 'error', message, range });
+  }
+
+  /**
+   * An expression used as a statement: only an assignment, `++`/`--`, a call or `new` may be one (JLS §14.8).
+   * javac's parser rejects the others, pointing at a binary expression's operator.
+   */
+  private statementExpr(e: A.Expr): B.BExpr {
+    if (e.kind !== 'Assign' && e.kind !== 'IncDec' && e.kind !== 'MethodCall' && e.kind !== 'NewObject' && e.kind !== 'Unsupported') {
+      this.diagnostics.push({ kind: 'error', message: 'not a statement', range: this.operatorRange(e), syntax: true });
+    }
+    return this.expr(e);
+  }
+
+  /** Where javac points at a member it can't find after a `.`: the dot, if it is on the name's line. */
+  private selectRange(nameRange: A.Range): A.Range {
+    for (let i = nameRange.start - 1, column = nameRange.column - 1; i >= 0 && column >= 1; i--, column--) {
+      const ch = this.source[i];
+      if (ch === '.') return { start: i, end: i + 1, line: nameRange.line, column, endLine: nameRange.line, endColumn: column };
+      if (ch !== ' ' && ch !== '\t') break;
+    }
+    return nameRange;
+  }
+
+  /** A binary expression's or compound assignment's operator, where javac points, found in the source between its operands; other expressions as they are. */
+  private operatorRange(e: A.Expr): A.Range {
+    if (e.kind === 'Binary') return this.between(e.left.range, e.right.range, e.op.length) ?? e.range;
+    if (e.kind === 'Assign') return this.between(e.target.range, e.value.range, e.op.length) ?? e.range;
+    return e.range;
+  }
+
+  /** The first token (of this length) in the source between two ranges. */
+  private between(left: A.Range, right: A.Range, length: number): A.Range | undefined {
+    let line = left.endLine, column = left.endColumn;
+    for (let i = left.end; i < right.start && i < this.source.length; i++) {
+      const ch = this.source[i];
+      if (ch === '\n') {
+        line++;
+        column = 0;
+        continue;
+      }
+      column++;
+      if (ch.trim() !== '') return { start: i, end: i + length, line, column, endLine: line, endColumn: column + length - 1 };
+    }
+    return undefined;
   }
 
   /** A construct the evaluator can't run yet, reported when (and only if) it is reached. */
@@ -783,6 +856,11 @@ class Binder {
       reported.add(local);
       this.error(`local variables referenced from ${inLambda ? 'a lambda expression' : 'an inner class'} must be final or effectively final`, range);
     }
+  }
+
+  /** javac's location line for a simple name it can't find: the class whose code names it. */
+  private location(): string {
+    return this.ctx.cls ? `\n  location: class ${this.ctx.cls.name}` : '';
   }
 
   private resolveType(t: A.TypeNode): JType {
@@ -1014,17 +1092,17 @@ class Binder {
       case 'Block': return this.block(s);
       case 'LocalVarDecl': return this.localDecl(s);
       case 'LocalClassDecl': return this.localClass(s.decl, range);
-      case 'ExprStmt': return { kind: 'ExprStmt', expr: this.expr(s.expr), range };
+      case 'ExprStmt': return { kind: 'ExprStmt', expr: this.statementExpr(s.expr), range };
       case 'If': return this.ifStmt(s);
       case 'While': return this.inScope(() => ({ kind: 'While', cond: this.condition(s.cond), body: this.inScope(() => this.stmt(s.body)), range }));
       case 'DoWhile': return { kind: 'DoWhile', body: this.inScope(() => this.stmt(s.body)), cond: this.inScope(() => this.condition(s.cond)), range };
       case 'For': return this.inScope(() => {
         const init: B.BStmt[] = s.init === undefined ? []
-          : Array.isArray(s.init) ? s.init.map(e => ({ kind: 'ExprStmt' as const, expr: this.expr(e), range: e.range }))
+          : Array.isArray(s.init) ? s.init.map(e => ({ kind: 'ExprStmt' as const, expr: this.statementExpr(e), range: e.range }))
           : [this.localDecl(s.init)];
         return {
           kind: 'For', init, cond: s.cond ? this.condition(s.cond) : undefined,
-          update: s.update.map(e => this.expr(e)), body: this.inScope(() => this.stmt(s.body)), range,
+          update: s.update.map(e => this.statementExpr(e)), body: this.inScope(() => this.stmt(s.body)), range,
         };
       });
       case 'ForEach': return this.forEach(s);
@@ -1281,7 +1359,7 @@ class Binder {
       case 'Name': {
         const m = this.name(e);
         if (m.kind === 'expr') return m.expr;
-        if (m.kind !== 'error') this.error(`cannot find symbol\n  symbol:   variable ${e.parts[e.parts.length - 1].name}`, range);
+        if (m.kind !== 'error') this.error(`cannot find symbol\n  symbol:   variable ${e.parts[e.parts.length - 1].name}${this.location()}`, range);
         return this.errorExpr(range);
       }
       case 'This': {
@@ -1405,7 +1483,7 @@ class Binder {
     const type = this.declarer.findType(part.name, this.typeContext());
     if (type) return { kind: 'type', type: classType(type) };
     if (PACKAGE_PREFIXES.has(part.name)) return { kind: 'package', name: part.name };
-    this.error(`cannot find symbol\n  symbol:   variable ${part.name}`, range);
+    this.error(`cannot find symbol\n  symbol:   variable ${part.name}${this.location()}`, range);
     return { kind: 'error' };
   }
 
@@ -1440,7 +1518,7 @@ class Binder {
       }
       const member = this.declarer.memberType(prefix.type.symbol, part.name);
       if (member) return { kind: 'type', type: classType(member) };
-      this.error(`cannot find symbol\n  symbol:   variable ${part.name}\n  location: class ${prefix.type.symbol.name}`, range);
+      this.error(`cannot find symbol\n  symbol:   variable ${part.name}\n  location: class ${prefix.type.symbol.name}`, this.selectRange(part.range));
       return { kind: 'error' };
     }
     if (prefix.kind === 'expr') return { kind: 'expr', expr: this.fieldOfValue(prefix.expr, part.name, range, part.range) };
@@ -1462,7 +1540,10 @@ class Binder {
     } else if (isLoose(t)) {
       return this.unsupportedExpr('Fields of a value whose type JavaTutor doesn\'t know', range);
     }
-    this.error(`cannot find symbol\n  symbol:   variable ${name}\n  location: ${t.tag === 'array' ? 'array' : `class ${typeName(t)}`}`, nameRange);
+    // javac names the variable the field was looked up in, if it was one.
+    const holder = target.kind === 'Local' ? target.local.name : target.kind === 'Field' || target.kind === 'StaticField' ? target.field.name : undefined;
+    const where = holder ? `variable ${holder} of type ${typeName(t)}` : t.tag === 'array' ? 'array' : `class ${typeName(t)}`;
+    this.error(`cannot find symbol\n  symbol:   variable ${name}\n  location: ${where}`, this.selectRange(nameRange));
     return this.errorExpr(range);
   }
 
@@ -1493,7 +1574,7 @@ class Binder {
       const args = e.args.map(a => this.argExpr(a));
       const candidates = methodsNamed((self.type as ClassT).symbol, e.name);
       if (!candidates.length) {
-        this.error(`cannot find symbol\n  symbol: method ${e.name}(${args.map(a => typeName(a.type)).join(',')})`, e.nameRange);
+        this.error(`cannot find symbol\n  symbol: method ${e.name}(${args.map(a => typeName(a.type)).join(',')})`, this.selectRange(e.nameRange));
         return this.errorExpr(range);
       }
       const chosen = this.chooseMethod(candidates, args, e.nameRange, e.name, self.type, expected, options);
@@ -1567,13 +1648,20 @@ class Binder {
     }
     // An array's clone() returns its own type (JLS §10.7), and can't fail.
     if (receiverType.tag === 'array' && e.name === 'clone' && args.length === 0) {
-      const clone = methodsNamed(this.b.object, 'clone')[0];
+      // An array's clone() is public and throws no checked exception (unlike Object's).
+      const clone = (this.arrayClone ??= Object.assign(new MethodSymbol('clone', this.b.object, this.objectType, false), { throws: [] }));
+      clone.modifiers.add('public');
       return { kind: 'Call', method: clone, dispatch: 'virtual', target: receiver, args: [], type: receiverType, range };
     }
     const candidates = methodsNamed(cls, e.name, receiverType.tag === 'array' ? this.b.object : undefined);
     if (!candidates.length) {
-      if (cls.isLibrary) return { kind: 'DynamicCall', owner: cls, name: e.name, target: receiver, args: this.resolveLoose(args), type: DYNAMIC, range };
-      this.error(`cannot find symbol\n  symbol:   method ${e.name}(${args.map(a => typeName(a.type)).join(',')})\n  location: class ${cls.name}`, e.nameRange);
+      // A library method the stubs lack is found by name when it runs, if the JDK class has one of that name.
+      if (cls.isLibrary && jdkHasMethod(cls, e.name)) return { kind: 'DynamicCall', owner: cls, name: e.name, target: receiver, args: this.resolveLoose(args), type: DYNAMIC, range };
+      const holder = receiver?.kind === 'Local' ? receiver.local.name : receiver?.kind === 'Field' || receiver?.kind === 'StaticField' ? receiver.field.name : undefined;
+      const where = holder ? `variable ${holder} of type ${typeName(receiverType)}` : `class ${cls.name}`;
+      const symbol = `method ${e.name}(${args.map(a => typeName(a.type)).join(',')})`;
+      // javac words a method missing from `this` without a location.
+      this.error(receiver?.kind === 'This' ? `cannot find symbol\n  symbol: ${symbol}` : `cannot find symbol\n  symbol:   ${symbol}\n  location: ${where}`, this.selectRange(e.nameRange));
       return this.errorExpr(range);
     }
     const chosen = this.chooseMethod(candidates, args, e.nameRange, e.name, receiverType, expected, options);
@@ -1644,9 +1732,40 @@ class Binder {
     if (candidates.length === 1) {
       const required = first.params.map(p => typeName(p.type)).join(',') || 'no arguments';
       const kind = first.isConstructor ? `constructor ${first.owner.name} in class ${first.owner.name}` : `method ${first.name} in class ${first.owner.name}`;
-      this.error(`${kind} cannot be applied to given types;\n  required: ${required}\n  found:    ${found || 'no arguments'}`, range);
+      const mismatch = this.argumentMismatch(first, args, argTypes, deferred);
+      if (mismatch && !first.varargs) {
+        // javac simplifies one method's argument mismatch to the argument's own error.
+        this.diagnostics.push({ kind: 'error', message: `incompatible types: ${mismatch.problem}`, range: mismatch.range, simplified: true });
+        return undefined;
+      }
+      const reason = mismatch ? `varargs mismatch; ${mismatch.problem}` : 'actual and formal argument lists differ in length';
+      this.error(`${kind} cannot be applied to given types;\n  required: ${required}\n  found:    ${found || 'no arguments'}\n  reason: ${reason}`, range);
     } else {
       this.error(`no suitable ${first.isConstructor ? 'constructor' : 'method'} found for ${first.isConstructor ? first.owner.name : first.name}(${found})`, range);
+    }
+    return undefined;
+  }
+
+  /**
+   * Why a method that takes this many arguments (counting a variable arity's
+   * elements) can't take these: the first argument that doesn't convert to its
+   * parameter's type, as javac words it. Not for a generic method, whose
+   * failure javac explains through inference.
+   */
+  private argumentMismatch(m: MethodSymbol, args: B.BExpr[], argTypes: JType[], deferred: (Deferred | undefined)[]): { problem: string; range: A.Range } | undefined {
+    if (m.typeParams.length > 0 || m.owner.typeParams.length > 0) return undefined;
+    const fixed = m.varargs ? m.params.length - 1 : m.params.length;
+    if (m.varargs ? args.length < fixed : args.length !== fixed) return undefined;
+    for (let i = 0; i < args.length; i++) {
+      if (deferred[i]) continue;
+      const last = m.params[m.params.length - 1]?.type;
+      const to = i < fixed ? m.params[i].type : last?.tag === 'array' ? last.component : undefined;
+      const from = argTypes[i];
+      if (!to || invocable(from, to, true, this.b)) continue;
+      const p = primitiveOf(from);
+      const lossy = p && to.tag === 'primitive' && isNumeric(p) && isNumeric(to) && !widensTo(p, to);
+      const problem = lossy ? `possible lossy conversion from ${typeName(from)} to ${typeName(to)}` : `${typeName(from)} cannot be converted to ${typeName(to)}`;
+      return { problem, range: args[i].range };
     }
     return undefined;
   }
@@ -1917,6 +2036,9 @@ class Binder {
 
   /** The type variables the last inference found nothing about. */
   private lastOpen = new Set<number>();
+
+  /** The method an array's clone() calls. */
+  private arrayClone?: MethodSymbol;
 
   /** Calls and diamonds whose type arguments only a target type can give (they're re-bound as arguments). */
   private readonly polyNodes = new WeakSet<B.BExpr>();
@@ -2288,7 +2410,7 @@ class Binder {
     if (baseSym.isInterface) {
       if (args.length) this.error('anonymous class implements interface; cannot have arguments', range);
     } else {
-      const chosen = this.chooseMethod(baseSym.constructors, args, e.type.range, `constructor ${baseSym.name}`, base);
+      const chosen = this.chooseMethod(baseSym.constructors, args, e.range, `constructor ${baseSym.name}`, base);
       if (!chosen) return this.errorExpr(range);
       ctor = chosen.method;
       converted = chosen.args;
@@ -2339,7 +2461,7 @@ class Binder {
       type = this.diamond(cls, expected);
       diamond = type.args.length === 0 && cls.typeParams.length > 0;
     }
-    const chosen = this.chooseMethod(cls.constructors, args, e.type.range, `constructor ${cls.name}`, type, undefined, { diamond });
+    const chosen = this.chooseMethod(cls.constructors, args, e.range, `constructor ${cls.name}`, type, undefined, { diamond });
     if (!chosen) return this.errorExpr(range);
     if (diamond && chosen.classArgs) type = classType(cls, chosen.classArgs);
     const node: B.BExpr = { kind: 'New', cls, ctor: chosen.method, args: chosen.args, outer, type, range };
@@ -2426,16 +2548,19 @@ class Binder {
   private binary(e: A.Binary): B.BExpr {
     const left = this.expr(e.left);
     const right = this.expr(e.right);
-    return this.binaryOp(e.op, left, right, e.range);
+    return this.binaryOp(e.op, left, right, e.range, this.operatorRange(e));
   }
 
-  private binaryOp(op: A.BinaryOp, left: B.BExpr, right: B.BExpr, range: A.Range): B.BExpr {
+  /** `left op right`; javac reports bad operands at the operator (`opRange`). */
+  private binaryOp(op: A.BinaryOp, left: B.BExpr, right: B.BExpr, range: A.Range, opRange = range): B.BExpr {
     const lt = left.type, rt = right.type;
     const bad = () => {
-      this.error(`bad operand types for binary operator '${op}'\n  first type:  ${typeName(lt)}\n  second type: ${typeName(rt)}`, range);
+      this.error(`bad operand types for binary operator '${op}'\n  first type:  ${typeName(lt)}\n  second type: ${typeName(rt)}`, opRange);
       return this.errorExpr(range);
     };
     if (op === '&&' || op === '||') {
+      const isBoolean = (t: JType) => isLoose(t) || primitiveOf(t)?.name === 'boolean';
+      if (!isBoolean(lt) || !isBoolean(rt)) return bad();
       const l = this.assignConvert(left, BOOLEAN, left.range, 'operand', `bad operand types for binary operator '${op}'`);
       const r = this.assignConvert(right, BOOLEAN, right.range, 'operand', `bad operand types for binary operator '${op}'`);
       return this.fold({ kind: 'Logical', op, left: l, right: r, type: BOOLEAN, range });
@@ -2503,7 +2628,7 @@ class Binder {
     if (op === '+' && this.isString(tt)) return { kind: 'CompoundAssign', op, concat: true, target, value, type: tt, range };
     if (isLoose(tt) || isLoose(value.type)) return { kind: 'CompoundAssign', op, concat: false, target, value, type: tt, range };
     // Checked as `target op value` would be, then narrowed back to the target's type.
-    const check = this.binaryOp(op, target, value, range);
+    const check = this.binaryOp(op, target, value, range, this.operatorRange(e));
     if (check.type.tag === 'error') return check;
     const rp = primitiveOf(value.type);
     const operand = op === '<<' || op === '>>' || op === '>>>' ? this.promote(value, unaryPromote(rp!)) : this.unbox(value);
@@ -2799,6 +2924,14 @@ function findField(cls: ClassSymbol, name: string): FieldSymbol | undefined {
 }
 
 /** The methods of a class with a name, its own first, then its supertypes' (and Object's, for an interface). */
+/** Does the JDK class have a public method of this name (jdkMembers.ts)? A class missing from the table might. */
+function jdkHasMethod(cls: ClassSymbol, name: string): boolean {
+  let binary = cls.name;
+  for (let c = cls.outer; c; c = c.outer) binary = `${c.name}$${binary}`;
+  const methods = JDK_METHODS[`${cls.packageName}.${binary}`];
+  return methods === undefined || ` ${methods} `.includes(` ${name} `);
+}
+
 function methodsNamed(cls: ClassSymbol, name: string, extra?: ClassSymbol): MethodSymbol[] {
   const out: MethodSymbol[] = [];
   const seen = new Set<ClassSymbol>();

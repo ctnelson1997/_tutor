@@ -7,7 +7,7 @@ import { useStore } from '../store/useStore';
 import { useEngine } from '../engines/useEngine';
 import StdinPanel from './StdinPanel';
 import type { ColumnRange, ConditionResult } from '../types/snapshot';
-import { errorTitle } from '../utils/runError';
+import { errorTitle, errorLines, moreErrorsNote } from '../utils/runError';
 
 // ── Line highlight via CodeMirror state effect ──
 
@@ -71,9 +71,9 @@ const prevHighlightField = StateField.define<DecorationSet>({
   provide: (f) => EditorView.decorations.from(f),
 });
 
-// ── Error line: where an error or uncaught exception happened ──
+// ── Error lines: where an error or uncaught exception happened (every compile error's line) ──
 
-const setErrorLine = StateEffect.define<number | null>();
+const setErrorLines = StateEffect.define<number[]>();
 
 const errorLineField = StateField.define<DecorationSet>({
   create() {
@@ -81,11 +81,10 @@ const errorLineField = StateField.define<DecorationSet>({
   },
   update(decos, tr) {
     for (const effect of tr.effects) {
-      if (effect.is(setErrorLine)) {
-        const line = effect.value;
-        if (line === null || line < 1 || line > tr.state.doc.lines) return Decoration.none;
+      if (effect.is(setErrorLines)) {
         const deco = Decoration.line({ class: 'cm-error-line' });
-        return Decoration.set([deco.range(tr.state.doc.line(line).from)]);
+        const lines = effect.value.filter(line => line >= 1 && line <= tr.state.doc.lines).sort((a, b) => a - b);
+        return Decoration.set(lines.map(line => deco.range(tr.state.doc.line(line).from)));
       }
     }
     return decos;
@@ -331,10 +330,12 @@ export default function EditorPanel() {
 
   // A run that stopped early keeps its steps; its error belongs to the last one.
   const atEnd = snapshots.length === 0 || currentStep === snapshots.length - 1;
-  const errorLine = error && atEnd ? error.line ?? null : null;
+  const errorLineKey = error && atEnd ? errorLines(error).join(',') : '';
   useEffect(() => {
-    viewRef.current?.dispatch({ effects: setErrorLine.of(errorLine) });
-  }, [errorLine]);
+    const lines = errorLineKey ? errorLineKey.split(',').map(Number) : [];
+    viewRef.current?.dispatch({ effects: setErrorLines.of(lines) });
+  }, [errorLineKey]);
+  const moreErrors = error ? moreErrorsNote(error) : '';
 
   return (
     <div className="d-flex flex-column h-100">
@@ -345,7 +346,10 @@ export default function EditorPanel() {
           role="alert"
           style={{ fontSize: '0.85rem' }}
         >
-          <strong>{errorTitle(error.kind)}{error.line ? ` (line ${error.line})` : ''}:</strong> {error.message}
+          <strong>{errorTitle(error.kind)}{error.line ? ` (line ${error.line})` : ''}:</strong>{' '}
+          {/* A compile error's details (`symbol:   variable z`) keep javac's line breaks. */}
+          <span style={{ whiteSpace: 'pre-wrap' }}>{error.message}</span>
+          {moreErrors && <span className="ms-1 fst-italic">({moreErrors})</span>}
         </div>
       )}
 

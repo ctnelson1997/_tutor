@@ -60,6 +60,14 @@ describe('runCode', () => {
     expect(useStore.getState().error?.message).toMatch(/^No execution steps were captured/);
   });
 
+  it('shows a program that does not compile: no steps, every error kept (#23)', async () => {
+    const error = { kind: 'compile' as const, message: "';' expected", line: 3, lines: [3, 5], stderr: "Main.java:3: error: ';' expected\n…\n2 errors" };
+    reply = { type: 'result', snapshots: [], error };
+    await runCode('code');
+    expect(useStore.getState().snapshots).toHaveLength(0);
+    expect(useStore.getState().error).toEqual(error);
+  });
+
   it('shows a failure before anything ran, such as a parse error', async () => {
     reply = { type: 'error', message: "Syntax error: expected ';' but found 'System'", line: 3 };
     await runCode('code');

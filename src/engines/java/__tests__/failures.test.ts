@@ -6,7 +6,7 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import { runJava } from '../run';
-import { parseJava, describeParseError } from '../parser';
+import { parseJava } from '../parser';
 import { JavaInterpreter } from '../interpreter';
 import { Evaluator } from '../eval/evaluator';
 import type { ExecutionSnapshot, RunError, WorkerMessage } from '../../../types/snapshot';
@@ -249,18 +249,4 @@ describe('errors from the engine', () => {
   });
 });
 
-describe('parse errors', () => {
-  it('put a missing semicolon on the line it belongs at the end of, as javac does', () => {
-    const source = 'public class Main {\n  public static void main(String[] args) {\n    int x = 5\n    System.out.println(x);\n  }\n}';
-    expect(runJava(source)).toEqual({ type: 'error', message: "Syntax error: expected ';' but found 'System'", line: 3 });
-  });
-
-  it('describe code that ends too early without a line', () => {
-    expect(runJava('public class Main {\n  void f() {\n')).toEqual({ type: 'error', message: "Syntax error: expected '}' but found the end of the code" });
-  });
-
-  it('turn java-parser\'s message into something readable', () => {
-    const raw = "Sad sad panda, parsing errors detected in line: 2, column: 7!\nExpecting --> ')' <-- but found --> ';' <--!\n\t->compilationUnit";
-    expect(describeParseError(raw, 'class A {\n  f(1;\n}')).toEqual({ message: "Syntax error: expected ')' but found ';'", line: 2 });
-  });
-});
+// Parse errors, and every other compile error, are in compile-errors.test.ts (#23).

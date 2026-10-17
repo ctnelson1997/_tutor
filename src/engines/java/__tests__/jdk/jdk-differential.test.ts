@@ -8,6 +8,8 @@
  *     normally, with the same uncaught exception class, or (for programs javac
  *     rejects) with an error before anything runs;
  *   - one test per enforced snapshot invariant (see INVARIANTS in harness.ts);
+ *   - for a program javac rejects, that the console lists javac's errors as
+ *     javac does (#23);
  *   - for a known failure waiting on a construct JavaTutor rejects (#6, #15,
  *     #16), a test that it fails with an error rather than wrong output.
  *
@@ -20,6 +22,7 @@
  * For a readable report of every difference: npx tsx scripts/java-diff.ts [filter]
  */
 import { afterAll, describe, expect, it } from 'vitest';
+import { runJava } from '../../run';
 import { findOrphanFiles, goldenIsCurrent, loadCases, readGolden } from './corpus';
 import {
   ENFORCED_INVARIANTS,
@@ -89,6 +92,16 @@ for (const c of cases) {
       }
       expect(verdict.problems, `${c.id} differs from real Java (${verdict.kind})`).toEqual([]);
     });
+
+    // #23: a program javac rejects gets javac's errors, listed as javac lists them.
+    if (usable && golden!.compileError !== null && !knownOutput) {
+      it("lists javac's errors as javac does", () => {
+        const reply = runJava(c.source, c.stdin);
+        const error = reply.type === 'result' ? reply.error : undefined;
+        expect(error?.kind).toBe('compile');
+        expect(error?.stderr).toBe(golden!.compileError);
+      });
+    }
 
     // #6's guard: a program using a construct JavaTutor rejects stops with an error.
     if (usable && mustFailLoudly(knownOutput)) {

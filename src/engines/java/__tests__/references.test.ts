@@ -298,7 +298,7 @@ public class Main {
     System.out.println(y);
   }
 }`);
-    expect(result.error).toBe('Line 3: cannot find symbol\n  symbol:   variable y'); // javac's error, before any step
+    expect(result.error).toBe('Line 3: cannot find symbol\n  symbol:   variable y\n  location: class Main'); // javac's error, before any step
     expect(result.stdout).toBe('');
   });
 

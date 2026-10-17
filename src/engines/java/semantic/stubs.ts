@@ -143,7 +143,7 @@ public class Object {
   public int hashCode();
   public String toString();
   public final Class<?> getClass();
-  protected Object clone();
+  protected Object clone() throws CloneNotSupportedException;
 }
 public final class Class<T> {
   public String getName();

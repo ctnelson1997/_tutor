@@ -6,7 +6,8 @@
  *
  * A program the binder rejects stops before any step: a construct JavaTutor
  * doesn't support yet with its "… aren't supported in JavaTutor yet"
- * message, and a program javac would reject with javac's error.
+ * message, and a program javac would reject with javac's errors, all of them,
+ * in javac's order (#23).
  */
 
 import type { CstNode } from './parser';
@@ -14,6 +15,7 @@ import { sourceOf } from './parser';
 import { toAst, type CstNode as AstCstNode } from './ast/convert';
 import { bindProgram, type Diagnostic } from './semantic/binder';
 import { Evaluator, type ExecuteResult, type RunLimits } from './eval/evaluator';
+import { compileFailure, javaFileName } from './compileErrors';
 
 export { STATIC_FIELDS_FRAME, RETURN_VALUE, DEFAULT_LIMITS } from './eval/evaluator';
 export type { ExecuteResult, RunLimits } from './eval/evaluator';
@@ -38,18 +40,24 @@ export class JavaInterpreter {
       const internal = 'Internal JavaTutor error (please report it)';
       return { snapshots: [], error: `${internal}: ${raw}`, failure: { kind: 'error', message: internal } };
     }
-    const rejected = firstOf(bound.diagnostics, 'unsupported') ?? firstOf(bound.diagnostics, 'error');
-    if (rejected) {
-      const line = rejected.range.line;
-      return { snapshots: [], error: `Line ${line}: ${rejected.message}`, failure: { kind: 'error', message: rejected.message, line } };
+    const unsupported = firstUnsupported(bound.diagnostics);
+    if (unsupported) {
+      const line = unsupported.range.line;
+      return { snapshots: [], error: `Line ${line}: ${unsupported.message}`, failure: { kind: 'error', message: unsupported.message, line } };
+    }
+    const errors = bound.diagnostics.filter(d => d.kind === 'error');
+    if (errors.length > 0) {
+      const file = bound.program.entry ? `${bound.program.entry.name}.java` : javaFileName(source);
+      const failure = compileFailure(errors.map(d => ({ message: d.message, line: d.range.line, column: d.range.column, simplified: d.simplified })), source, file);
+      return { snapshots: [], error: `Line ${errors[0].range.line}: ${errors[0].message}`, failure };
     }
     return new Evaluator(bound.program, source, this.stdin, this.limits).execute();
   }
 }
 
-/** The diagnostic of this kind that comes first in the source. */
-function firstOf(diagnostics: Diagnostic[], kind: Diagnostic['kind']): Diagnostic | undefined {
+/** The construct JavaTutor doesn't support that comes first in the source. */
+function firstUnsupported(diagnostics: Diagnostic[]): Diagnostic | undefined {
   let first: Diagnostic | undefined;
-  for (const d of diagnostics) if (d.kind === kind && (!first || d.range.start < first.range.start)) first = d;
+  for (const d of diagnostics) if (d.kind === 'unsupported' && (!first || d.range.start < first.range.start)) first = d;
   return first;
 }

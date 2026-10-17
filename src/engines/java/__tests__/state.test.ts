@@ -254,11 +254,11 @@ describe('a local declared without a value', () => {
     expect(snapshots.at(-1)!.stdout).toEqual(['-1']);
   });
 
-  it('is an error to read before it is assigned (javac rejects that)', () => {
+  it("is javac's error, before any step, to read before it is assigned (#23)", () => {
     const result = run(program('int x;\n    if (args.length > 0) x = 1;\n    System.out.println(x);'));
-    expect(result.error).toBe("Line 7: Variable 'x' might not have been initialized");
-    expect(result.snapshots.length).toBeGreaterThan(0);
-    expect(run(program('int total;\n    total += 5;')).error).toBe("Line 6: Variable 'total' might not have been initialized");
+    expect(result.error).toBe('Line 7: variable x might not have been initialized');
+    expect(result.snapshots).toEqual([]);
+    expect(run(program('int total;\n    total += 5;')).error).toBe('Line 6: variable total might not have been initialized');
   });
 
   it("can't be declared with var", () => {

@@ -123,6 +123,8 @@ export class MethodSymbol {
   readonly decl?: A.MethodDecl | A.ConstructorDecl;
   /** Locals of the body, filled in when it is bound (parameters first). */
   locals: LocalSymbol[] = [];
+  /** The exceptions its `throws` clause declares (#23). */
+  throws: JType[] = [];
   /**
    * A method javac generates (#16): an enum's `values()`/`valueOf(String)`, a
    * record's accessors, `equals`, `hashCode` and `toString`, and its

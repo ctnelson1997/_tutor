@@ -148,7 +148,7 @@ describe("the class model's compile errors, before any step", () => {
     ['a missing implementation', 'static abstract class Shape { abstract double area(); }\n  static class Circle extends Shape { }', 'Line 3: Circle is not abstract and does not override abstract method area() in Shape'],
     ['a missing compareTo', 'static class P implements Comparable<P> { }', 'Line 2: P is not abstract and does not override abstract method compareTo(P) in Comparable'],
     ['an abstract method in a class', 'static class Shape { abstract double area(); }', 'Line 2: Shape is not abstract and does not override abstract method area() in Shape'],
-    ['no constructor for the implicit super()', 'static class A { A(int x) {} }\n  static class B extends A { }', 'Line 3: constructor A in class A cannot be applied to given types;\n  required: int\n  found:    no arguments'],
+    ['no constructor for the implicit super()', 'static class A { A(int x) {} }\n  static class B extends A { }', 'Line 3: constructor A in class A cannot be applied to given types;\n  required: int\n  found:    no arguments\n  reason: actual and formal argument lists differ in length'],
     ['calling an abstract method through super', 'static abstract class S { abstract int f(); }\n  static class T extends S { int f() { return super.f(); } }', 'Line 3: abstract method f() in S cannot be accessed directly'],
     ['an incompatible return type', 'static class A { void m() {} }\n  static class B extends A { int m() { return 1; } }', 'Line 3: m() in B cannot override m() in A\n  return type int is not compatible with void'],
   ])('%s', (_name, classes, error) => {

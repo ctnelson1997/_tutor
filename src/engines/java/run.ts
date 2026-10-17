@@ -1,10 +1,12 @@
 /**
  * Run a Java program and build the reply the Java worker posts: the steps,
- * and why the run stopped early if it did. Only a parse error returns no
- * steps. Kept apart from worker.ts so it can be tested without a worker.
+ * and why the run stopped early if it did. A program that doesn't compile
+ * returns no steps. Kept apart from worker.ts so it can be tested without a
+ * worker.
  */
 
-import { parseJava, describeParseError, type CstNode } from './parser';
+import { parseJava, type CstNode } from './parser';
+import { describeParseError, compileFailure } from './compileErrors';
 import { JavaInterpreter, type RunLimits } from './interpreter';
 import type { WorkerMessage } from '../../types/snapshot';
 
@@ -13,7 +15,9 @@ export function runJava(source: string, stdin = '', limits?: Partial<RunLimits>)
   try {
     cst = parseJava(source);
   } catch (err) {
-    return { type: 'error', ...describeParseError(err instanceof Error ? err.message : String(err), source) };
+    // A syntax error is a compile error: nothing runs, and the console lists it as javac does (#23).
+    const error = describeParseError(err instanceof Error ? err.message : String(err), source);
+    return { type: 'result', snapshots: [], error: compileFailure([error], source) };
   }
   try {
     const result = new JavaInterpreter(stdin, limits).execute(cst);

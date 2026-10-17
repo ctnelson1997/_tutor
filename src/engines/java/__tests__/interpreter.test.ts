@@ -1496,7 +1496,7 @@ describe('Java Interpreter', () => {
         }
       }`);
       expect(result.snapshots).toEqual([]); // javac rejects it
-      expect(result.error).toBe('Line 3: cannot find symbol\n  symbol:   variable undefinedVar');
+      expect(result.error).toBe('Line 3: cannot find symbol\n  symbol:   variable undefinedVar\n  location: class Main');
     });
 
     it('reports unknown method errors', () => {

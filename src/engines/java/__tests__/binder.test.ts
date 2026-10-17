@@ -163,7 +163,7 @@ describe('names (JLS §6.5)', () => {
 
   it('reports a name that is nothing, as javac does', () => {
     const { diagnostics } = bind('class M { public static void main(String[] a) { int x = y + 1; } }');
-    expect(diagnostics.map(d => d.message.split('\n'))).toEqual([['cannot find symbol', '  symbol:   variable y']]);
+    expect(diagnostics.map(d => d.message.split('\n'))).toEqual([['cannot find symbol', '  symbol:   variable y', '  location: class M']]);
   });
 });
 
@@ -243,7 +243,7 @@ describe('what javac rejects', () => {
 
   it('reports a call with the wrong arguments as javac does', () => {
     const lines = bind('class M { static int add(int a, int b) { return a + b; } public static void main(String[] x) { add(1); } }').diagnostics[0].message.split('\n');
-    expect(lines).toEqual(['method add in class M cannot be applied to given types;', '  required: int,int', '  found:    int']);
+    expect(lines).toEqual(['method add in class M cannot be applied to given types;', '  required: int,int', '  found:    int', '  reason: actual and formal argument lists differ in length']);
   });
 });
 
