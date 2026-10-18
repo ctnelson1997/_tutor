@@ -38,27 +38,12 @@
         "reason": "holes drawn as other values"
       }
     },
-    "collections/copy-spread-structuredclone-json": {
-      "names": {
-        "issues": [
-          47
-        ],
-        "reason": "a DataCloneError's message quotes the function's instrumented source"
-      }
-    },
     "collections/map-object-keys": {
       "final-state": {
         "issues": [
           48
         ],
         "reason": "object Map keys drawn as other values"
-      },
-      "names": {
-        "issues": [
-          48,
-          47
-        ],
-        "reason": "a function used as a Map key is drawn as its instrumented source text"
       }
     },
     "collections/object-groupby": {
@@ -171,34 +156,6 @@
           48
         ],
         "reason": "NaN drawn as other values"
-      }
-    },
-    "functions/error-stack-first-line": {
-      "output": {
-        "issues": [
-          47
-        ],
-        "reason": "a step read error.stack before the constructor set the name, so the stack says Error"
-      }
-    },
-    "functions/fn-tostring": {
-      "output": {
-        "issues": [
-          47
-        ],
-        "reason": "fn.toString() returns the instrumented source"
-      },
-      "final-state": {
-        "issues": [
-          47
-        ],
-        "reason": "fn.toString() returns the instrumented source"
-      },
-      "names": {
-        "issues": [
-          47
-        ],
-        "reason": "fn.toString() returns the instrumented source"
       }
     },
     "generators/custom-iterable-object": {

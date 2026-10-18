@@ -79,8 +79,13 @@ function __runResult__(err) {
     msg.error = { kind: "limit", message: err.message };
   } else {
     var text = err instanceof Error ? err.name + ": " + err.message : String(err);
+    // The console shows the stack, whose frames name the program's lines (#47).
+    var trace = text;
+    if (err instanceof Error) {
+      try { if (typeof err.stack === "string" && err.stack.indexOf(text) === 0) trace = err.stack; } catch (e) { /* a stack getter that throws */ }
+    }
     // A rejected promise nothing handled ends the run as Node ends it; the browser says "(in promise)".
-    msg.error = { kind: "exception", message: text, stderr: (arguments[1] === "promise" ? "Uncaught (in promise) " : "Uncaught ") + text };
+    msg.error = { kind: "exception", message: text, stderr: (arguments[1] === "promise" ? "Uncaught (in promise) " : "Uncaught ") + trace };
   }
   return msg;
 }
@@ -174,11 +179,17 @@ function __serializeHeapObject__(obj, heapId, heapObjects, visited) {
     objectType = "regexp";
     label = obj.toString();
   } else if (obj instanceof Error) {
+    // Its stack isn't read: V8 writes a stack's text the first time it is read,
+    // from the error's name then, which a step taken before a constructor sets
+    // the name would freeze (#47).
     objectType = "error";
     label = obj.constructor.name;
     properties.push({ key: "message", value: { type: "string", value: obj.message } });
-    if (obj.stack) {
-      properties.push({ key: "stack", value: { type: "string", value: obj.stack.slice(0, 200) } });
+    var errorKeys = Object.keys(obj);
+    for (var ek = 0; ek < errorKeys.length && ek < 50; ek++) {
+      var ed = Object.getOwnPropertyDescriptor(obj, errorKeys[ek]);
+      if (errorKeys[ek] === "message" || errorKeys[ek] === "stack" || !ed || !("value" in ed)) continue;
+      properties.push({ key: errorKeys[ek], value: __serializeValue__(ed.value, heapObjects, visited) });
     }
   } else if (obj instanceof Map) {
     objectType = "map";
@@ -779,6 +790,121 @@ function __finalStep__() {
   try { __capture__(last.line, __globals__(), null, null, true); } catch (e) { /* the step cap */ }
 }
 
+// ── What the program sees of its instrumentation (#47) ──
+
+// Each function's own text, by its instrumented text's key (the instrumenter's
+// sourceKey; the program's first lines call these two).
+var __sourceTextMap__ = new Map();
+function __sourceTexts__(texts) {
+  for (var key in texts) __sourceTextMap__.set(key, texts[key]);
+}
+function __sourceKey__(text) {
+  var h1 = 0xdeadbeef;
+  var h2 = 0x41c6ce57;
+  for (var i = 0; i < text.length; i++) {
+    var c = text.charCodeAt(i);
+    h1 = Math.imul(h1 ^ c, 2654435761);
+    h2 = Math.imul(h2 ^ c, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return text.length + ":" + (h2 >>> 0).toString(36) + (h1 >>> 0).toString(36);
+}
+
+// Function.prototype.toString gives a function's own text, not its
+// instrumented one, and the runtime's functions the program can reach
+// (setTimeout, console.log, toString itself) look like the browser's own.
+var __looksNative__ = new WeakSet();
+var __nativeToString__ = Function.prototype.toString;
+(function () {
+  var toString = function toString() {
+    if (__looksNative__.has(this)) return "function " + (this.name || "") + "() { [native code] }";
+    var text = __nativeToString__.call(this);
+    var original = __sourceTextMap__.get(__sourceKey__(text));
+    return original === undefined ? text : original;
+  };
+  __looksNative__.add(toString);
+  Object.defineProperty(Function.prototype, "toString", { value: toString, writable: true, configurable: true, enumerable: false });
+  ["setTimeout", "setInterval", "clearTimeout", "clearInterval", "queueMicrotask", "structuredClone"].forEach(function (name) {
+    if (typeof self[name] === "function") __looksNative__.add(self[name]);
+  });
+})();
+
+// A DataCloneError quotes the function it couldn't clone: with its own text.
+if (typeof structuredClone === "function") {
+  (function () {
+    var hostClone = structuredClone;
+    var firstFunction = function (value, seen) {
+      if (typeof value === "function") return value;
+      if (value === null || typeof value !== "object" || seen.has(value)) return null;
+      seen.add(value);
+      var parts = value instanceof Map ? Array.from(value.keys()).concat(Array.from(value.values())) : value instanceof Set ? Array.from(value) : Object.keys(value).map(function (k) { return value[k]; });
+      for (var i = 0; i < parts.length; i++) { var f = firstFunction(parts[i], seen); if (f) return f; }
+      return null;
+    };
+    var clone = function structuredClone(value) {
+      try {
+        return hostClone.apply(this, arguments);
+      } catch (e) {
+        var fn = e && e.name === "DataCloneError" ? firstFunction(value, new Set()) : null;
+        if (fn) {
+          try {
+            // (The browser may shorten the text it quotes, so the quote is found by its start.)
+            var message = String(e.message);
+            var raw = __nativeToString__.call(fn);
+            var own = Function.prototype.toString.call(fn);
+            var start = message.indexOf(raw.slice(0, 20));
+            var end = message.lastIndexOf(" could not be cloned");
+            if (raw !== own && start !== -1 && end > start) {
+              Object.defineProperty(e, "message", { value: message.slice(0, start) + own + message.slice(end), writable: true, configurable: true, enumerable: false });
+            }
+          } catch (ignored) { /* leave the message */ }
+        }
+        throw e;
+      }
+    };
+    Object.defineProperty(self, "structuredClone", { value: clone, writable: true, configurable: true, enumerable: false });
+    __looksNative__.add(clone);
+  })();
+}
+
+// The program's line for each line of the instrumented code, and where the
+// instrumented code starts in the worker's script: a stack trace names the
+// program's functions and lines (at add (main.js:3)), and leaves out the
+// runtime's and the worker's frames. V8's Error.prepareStackTrace; other
+// browsers keep their own stacks.
+var __programLineMap__ = null;
+var __programSite__ = null;
+function __programLines__(map) {
+  __programLineMap__ = map;
+  if (typeof Error.captureStackTrace !== "function") return;
+  var previous = Error.prepareStackTrace;
+  var holder = {};
+  Error.prepareStackTrace = function (e, sites) { return sites; };
+  // (V8 makes the stack when it is first read: read it before putting prepareStackTrace back.)
+  var sites;
+  try { Error.captureStackTrace(holder, __programLines__); sites = holder.stack; } finally { Error.prepareStackTrace = previous; }
+  if (!Array.isArray(sites) || !sites[0] || typeof sites[0].getLineNumber !== "function") return;
+  __programSite__ = { base: sites[0].getLineNumber() - 1, file: sites[0].getFileName(), origin: sites[0].getEvalOrigin() };
+  Error.prepareStackTrace = __prepareStackTrace__;
+}
+function __prepareStackTrace__(error, sites) {
+  var header;
+  try { header = Error.prototype.toString.call(error); } catch (e) { header = "Error"; }
+  var out = header;
+  for (var i = 0; i < sites.length; i++) {
+    var site = sites[i];
+    if (site.getFileName() !== __programSite__.file || site.getEvalOrigin() !== __programSite__.origin) continue;
+    var line = __programLineMap__[site.getLineNumber() - __programSite__.base];
+    if (!line) continue;
+    var name = site.getFunctionName();
+    // The program's top level runs as eval code: no function name there.
+    if (name === "eval" && site.isEval()) name = null;
+    out +="\\n    at " + (name ? (site.isConstructor() ? "new " : "") + name + " (main.js:" + line + ")" : "main.js:" + line);
+  }
+  return out;
+}
+
 // ── Console ──
 
 // The program's console prints as Node does (inspect.ts). Each call's text
@@ -794,5 +920,6 @@ function __write__(stream, text) {
   if (stream === "stderr") __stderrUsed__ = true;
 }
 Object.defineProperty(self, "console", { value: __makeConsole__(__write__), writable: true, configurable: true, enumerable: false });
+Object.keys(console).forEach(function (name) { if (typeof console[name] === "function") __looksNative__.add(console[name]); });
 `;
 }

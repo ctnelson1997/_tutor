@@ -1,30 +1,35 @@
 /**
  * A Web Worker for Node (#42): the executor's `WorkerLike`, backed by a
- * `worker_threads` thread whose global scope is built like a browser
+ * `worker_threads` thread whose global scope is made to look like a browser
  * worker's. The thread runs the executor's own WORKER_SOURCE, so the suite
  * takes the reply exactly when the real worker sends it, and terminating the
  * thread drops whatever the program left pending, as terminating a Web Worker
  * does.
  *
- * The global scope: JavaScript's builtins (a fresh `vm` context), `self ===
- * globalThis`, timers with numeric ids, `queueMicrotask`, `structuredClone`,
- * `MessageChannel`, `performance`, the encoding and URL classes, `atob`/`btoa`,
- * `postMessage`, `addEventListener` for `error` and `unhandledrejection` (an
- * uncaught exception in a callback that no listener prevents reaches the
- * parent's `onerror`, as in a browser), and a `console` whose output goes
- * nowhere, like the worker's DevTools console, which JSTutor never shows.
+ * The program runs in the thread's own realm, as a browser worker's program
+ * runs in the worker's, so what V8 does per realm happens as in a browser
+ * (Error.prepareStackTrace, which Node ignores inside a vm context;
+ * structuredClone's results). Node's own globals are removed (`process`,
+ * `Buffer`, `global`, `setImmediate`, `clearImmediate`), and the browser's
+ * are added: `self === globalThis`, timers with numeric ids, `postMessage`,
+ * `addEventListener` for `error` and `unhandledrejection` (an uncaught
+ * exception in a callback that no listener prevents reaches the parent's
+ * `onerror`, as in a browser), and a `console` whose output goes nowhere, like
+ * the worker's DevTools console, which JSTutor never shows.
  */
 import { Worker } from 'node:worker_threads';
 import { WORKER_SOURCE, type WorkerLike } from '../../executor';
-import { STRUCTURED_CLONE_SOURCE } from './realm';
 import type { WorkerMessage } from '../../../../types/snapshot';
 
-const BOOTSTRAP = String.raw`
+// (In a function: its own names must not become the program's globals.)
+const BOOTSTRAP = String.raw`(() => {
 const { parentPort, workerData } = require('node:worker_threads');
-const vm = require('node:vm');
-
-const ctx = vm.createContext({});
-const g = vm.runInContext('globalThis', ctx);
+const proc = process;
+const nodeSetTimeout = setTimeout, nodeClearTimeout = clearTimeout, nodeSetInterval = setInterval, nodeClearInterval = clearInterval;
+const g = globalThis;
+for (const name of ['process', 'require', 'module', 'exports', '__filename', '__dirname', 'setImmediate', 'clearImmediate']) {
+  try { delete g[name]; } catch (e) { /* not configurable */ }
+}
 const listeners = { error: [], unhandledrejection: [] };
 
 function makeEvent(type, fields) {
@@ -53,18 +58,16 @@ const api = {
   self: g,
   setTimeout(fn, ms, ...args) {
     const id = nextId++;
-    timers.set(id, setTimeout(() => { timers.delete(id); callback(fn, args); }, ms));
+    timers.set(id, nodeSetTimeout(() => { timers.delete(id); callback(fn, args); }, ms));
     return id;
   },
-  clearTimeout(id) { const t = timers.get(id); if (t !== undefined) { clearTimeout(t); timers.delete(id); } },
+  clearTimeout(id) { const t = timers.get(id); if (t !== undefined) { nodeClearTimeout(t); timers.delete(id); } },
   setInterval(fn, ms, ...args) {
     const id = nextId++;
-    timers.set(id, setInterval(() => callback(fn, args), ms));
+    timers.set(id, nodeSetInterval(() => callback(fn, args), ms));
     return id;
   },
-  clearInterval(id) { const t = timers.get(id); if (t !== undefined) { clearInterval(t); timers.delete(id); } },
-  queueMicrotask(fn) { queueMicrotask(() => callback(fn, [])); },
-  TextEncoder, TextDecoder, URL, URLSearchParams, atob, btoa, performance, MessageChannel, MessagePort,
+  clearInterval(id) { const t = timers.get(id); if (t !== undefined) { nodeClearInterval(t); timers.delete(id); } },
   console: Object.fromEntries(['log', 'info', 'debug', 'warn', 'error', 'trace', 'dir', 'dirxml', 'table', 'group',
     'groupCollapsed', 'groupEnd', 'count', 'countReset', 'assert', 'time', 'timeEnd', 'timeLog', 'clear'].map(m => [m, noop])),
   postMessage(message) { parentPort.postMessage(message); },
@@ -76,14 +79,14 @@ for (const [key, value] of Object.entries(api)) {
 }
 
 // A rejection nothing handled: the browser's unhandledrejection event (it never stops the worker).
-process.on('unhandledRejection', (reason, promise) => { dispatch(makeEvent('unhandledrejection', { reason, promise })); });
+proc.on('unhandledRejection', (reason, promise) => { dispatch(makeEvent('unhandledrejection', { reason, promise })); });
 
-vm.runInContext(workerData.structuredCloneSource, ctx);
-vm.runInContext(workerData.workerSource, ctx);
+(0, eval)(workerData.workerSource);
 parentPort.on('message', data => {
   const handler = g.onmessage;
   if (typeof handler === 'function') handler.call(g, { data });
 });
+})();
 `;
 
 /** The text a browser gives a worker's uncaught exception: `Uncaught TypeError: …`. */
@@ -94,7 +97,7 @@ function uncaughtText(e: unknown): string {
 
 /** A fresh Web Worker running the executor's worker script, in a Node thread. */
 export function nodeWorker(): WorkerLike {
-  const thread = new Worker(BOOTSTRAP, { eval: true, workerData: { workerSource: WORKER_SOURCE, structuredCloneSource: STRUCTURED_CLONE_SOURCE } });
+  const thread = new Worker(BOOTSTRAP, { eval: true, workerData: { workerSource: WORKER_SOURCE } });
   const worker: WorkerLike = {
     onmessage: null,
     onerror: null,

@@ -96,7 +96,9 @@ clearTimeout(cancelled);`);
 check(-3);
 setTimeout(() => console.log("never"), 10);
 console.log("started");`);
-    expect(r.error).toMatchObject({ kind: 'exception', message: 'RangeError: negative: -3', stderr: 'Uncaught (in promise) RangeError: negative: -3' });
+    expect(r.error).toMatchObject({ kind: 'exception', message: 'RangeError: negative: -3' });
+    // its stack, with the program's lines (#47)
+    expect(r.error?.stderr).toBe('Uncaught (in promise) RangeError: negative: -3\n    at check (main.js:2)\n    at main.js:5');
     expect(last(r.snapshots).stdout).toEqual(['started']);
   });
 

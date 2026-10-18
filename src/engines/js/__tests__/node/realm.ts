@@ -2,7 +2,8 @@
  * Globals a browser worker has that a `vm` context lacks, written to run
  * inside the context, so the objects they make belong to the program's realm
  * as they would in a browser (a host function's results fail the program's
- * `instanceof Set`). Used by the golden recorder and the worker harness alike.
+ * `instanceof Set`). Used by the golden recorder, whose programs run in a vm
+ * context; the worker harness runs programs in its thread's own realm.
  */
 
 /** `structuredClone`, after the HTML spec's algorithm: primitives, wrappers, Date, RegExp, Map, Set, errors, arrays, plain objects, typed arrays and ArrayBuffers, keeping shared and circular references. */

@@ -44,6 +44,8 @@ export function instrument(source: string): string {
     sourceType: 'script',
     locations: true,
   }) as AnyNode;
+  // Each function's own text, before instrumentation changes it (#47).
+  const originalFunctions = functionTexts(ast, source);
 
   // Collect scope info: we walk the AST and build a scope tree
   // For simplicity, we do a two-pass approach:
@@ -58,8 +60,103 @@ export function instrument(source: string): string {
 var eval = undefined;
 `;
 
-  const generated = generate(ast);
-  return preamble + generated;
+  const body = preamble + generate(ast);
+  return programFacts(body, originalFunctions) + body;
+}
+
+// ── What the program could see of its instrumentation (#47) ──
+
+/** A function's text as Function.prototype.toString gives it, and what kind of function it is. */
+interface FunctionText { kind: string; text: string; line: number }
+
+/** Walk a tree in source order, with each node's parent. */
+function walkTree(node: AnyNode, visit: (n: AnyNode, parent: AnyNode | null) => void, parent: AnyNode | null = null): void {
+  if (!node || typeof node.type !== 'string') return;
+  visit(node, parent);
+  for (const [key, value] of Object.entries(node)) {
+    if (key === 'loc' || key.startsWith('_')) continue;
+    if (Array.isArray(value)) for (const v of value) walkTree(v, visit, node);
+    else if (value && typeof (value as AnyNode).type === 'string') walkTree(value, visit, node);
+  }
+}
+
+/**
+ * Every function and class of a program, in source order, with the text
+ * Function.prototype.toString returns for it: the node's own span; for a
+ * method, from its key (its get, async or * included, static not).
+ */
+function functionTexts(ast: AnyNode, text: string): FunctionText[] {
+  const out: FunctionText[] = [];
+  walkTree(ast, (node, parent) => {
+    if (node.type === 'ClassDeclaration' || node.type === 'ClassExpression') {
+      out.push({ kind: 'class', text: text.slice(node.start, node.end), line: node.loc?.start.line ?? 0 });
+    } else if (FUNCTION_TYPES.has(node.type)) {
+      if (node.id?.name === '__globals__') return;
+      const member = parent && parent.value === node && (parent.type === 'MethodDefinition' || (parent.type === 'Property' && (parent.method || parent.kind !== 'init'))) ? parent : null;
+      let start = member ? member.start : node.start;
+      if (member?.static) start += /^static\s*/.exec(text.slice(start))?.[0].length ?? 0;
+      out.push({ kind: member ? 'method' : node.type, text: text.slice(start, node.end), line: node.loc?.start.line ?? 0 });
+    }
+  });
+  return out;
+}
+
+/** The key the runtime finds a function's original text by: its instrumented text's length and hash. */
+export function sourceKey(text: string): string {
+  let h1 = 0xdeadbeef;
+  let h2 = 0x41c6ce57;
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charCodeAt(i);
+    h1 = Math.imul(h1 ^ c, 2654435761);
+    h2 = Math.imul(h2 ^ c, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return text.length + ':' + (h2 >>> 0).toString(36) + (h1 >>> 0).toString(36);
+}
+
+const STEP_CALLS = new Set(['__capture__', '__condition__', '__popFrame__', '__endScript__']);
+
+/**
+ * Two lines that go before the instrumented program, telling the runtime
+ * what the program must see instead of its instrumentation:
+ *   __programLines__([...]): the program's line for each line of the
+ *     instrumented code (the line of the step before it), so stack traces
+ *     name the program's lines;
+ *   __sourceTexts__({...}): each function's own text, by its instrumented
+ *     text's key, for Function.prototype.toString.
+ * If the instrumented program's functions don't line up with the
+ * program's, the texts are left out rather than risk a wrong one.
+ */
+function programFacts(body: string, originals: FunctionText[]): string {
+  const tree = acorn.parse(body, { ecmaVersion: 'latest', sourceType: 'script', locations: true }) as AnyNode;
+  const instrumented = functionTexts(tree, body);
+  const texts: Record<string, string> = {};
+  const marks: [number, number][] = [];
+  if (instrumented.length === originals.length && instrumented.every((f, i) => f.kind === originals[i].kind)) {
+    instrumented.forEach((f, i) => {
+      if (f.text !== originals[i].text) texts[sourceKey(f.text)] = originals[i].text;
+      marks.push([f.line, originals[i].line]);
+    });
+  }
+  walkTree(tree, node => {
+    if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier' || !STEP_CALLS.has(node.callee.name)) return;
+    const arg = node.arguments[node.callee.name === '__capture__' || node.callee.name === '__endScript__' ? 0 : 1];
+    const line = arg?.type === 'Literal' ? arg.value : arg?.type === 'ArrayExpression' ? arg.elements[0]?.value : null;
+    if (typeof line === 'number' && line > 0) marks.push([node.loc.start.line, line]);
+  });
+  // Line by line, the program's line of the nearest step at or before it (the two lines above come first).
+  marks.sort((a, b) => a[0] - b[0]);
+  const lineCount = body.split('\n').length;
+  // (index 0 is unused; the two lines of facts map to no line)
+  const lines: number[] = [0, 0, 0];
+  let m = 0;
+  let current = 0;
+  for (let line = 1; line <= lineCount; line++) {
+    while (m < marks.length && marks[m][0] <= line) current = marks[m++][1];
+    lines.push(current);
+  }
+  return `__programLines__(${JSON.stringify(lines)});\n__sourceTexts__(${JSON.stringify(texts)});\n`;
 }
 
 /**
