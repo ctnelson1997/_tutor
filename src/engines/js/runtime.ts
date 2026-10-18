@@ -45,6 +45,16 @@ var __stepLoopCount__ = 0;
 var __MAX_SNAPSHOTS = 5000;
 // Thrown at the step cap, so the program stops instead of running on unrecorded.
 var __STOP__ = { __tutorStop__: true };
+// Set once the cap is hit: a callback that hits it inside a promise only rejects that promise.
+var __stopped__ = false;
+// The time budget for the program's callbacks, before the worker's 10-second kill.
+var __TIME_LIMIT__ = { __tutorTime__: true };
+var __TIME_BUDGET_MS__ = 8500;
+// After the script's synchronous code (#45): its timers and promise callbacks
+// run before the reply. The step that starts a callback gets a label saying so.
+var __scriptDone__ = false;
+var __scriptEndStep__ = 0;
+var __nextLabel__ = null;
 
 // Expose snapshots on the global scope so the worker can read them
 self.__snapshots__ = __snapshots__;
@@ -63,11 +73,14 @@ function __runResult__(err) {
   }
   if (err === __STOP__) {
     msg.error = { kind: "limit", message: "Stopped after " + __MAX_SNAPSHOTS + " steps, the most that can be shown. Your code may contain an infinite loop." };
+  } else if (err === __TIME_LIMIT__) {
+    msg.error = { kind: "limit", message: "Stopped after " + (__TIME_BUDGET_MS__ / 1000) + " seconds, the longest a run can take. A timer may keep running forever (a setInterval never cleared)." };
   } else if (err instanceof Error && err.message.indexOf("Infinite loop detected") === 0) {
     msg.error = { kind: "limit", message: err.message };
   } else {
     var text = err instanceof Error ? err.name + ": " + err.message : String(err);
-    msg.error = { kind: "exception", message: text, stderr: "Uncaught " + text };
+    // A rejected promise nothing handled ends the run as Node ends it; the browser says "(in promise)".
+    msg.error = { kind: "exception", message: text, stderr: (arguments[1] === "promise" ? "Uncaught (in promise) " : "Uncaught ") + text };
   }
   return msg;
 }
@@ -88,7 +101,17 @@ function __finishOutput__() {
 function __outputOf__(snap) {
   snap.stdout = __stdout__.slice();
   if (__stderrUsed__) snap.console = __console__.slice();
+  if (__nextLabel__) { snap.label = __nextLabel__; __nextLabel__ = null; }
   return snap;
+}
+
+// The Global frame shows each top-level name's current value at every step,
+// inside functions too (a callback changing a global, #45): __globals__(),
+// which the instrumenter adds to the program, reads them all.
+function __refreshGlobals__(heapObjects, visited) {
+  if (__callStack__.length > 1 && typeof __globals__ === "function") {
+    __callStack__[0].variables = __serializeVars__(__globals__(), heapObjects, visited);
+  }
 }
 
 // ── Serialization ──
@@ -270,7 +293,7 @@ function __collectHeap__(stackSnapshot) {
 // blockFrame ({ name, vars }) is a for loop's let/const variables, whose frame
 // is pushed in the loop body: the step shows them in a frame of their own.
 function __condition__(value, line, expression, vars, parentVarNames, closureVars, blockFrame) {
-  if (__snapshots__.length >= __MAX_SNAPSHOTS) throw __STOP__;
+  if (__snapshots__.length >= __MAX_SNAPSHOTS) { __stopped__ = true; throw __STOP__; }
 
   var columnRange = null;
   if (Array.isArray(line)) {
@@ -282,6 +305,7 @@ function __condition__(value, line, expression, vars, parentVarNames, closureVar
   var heapObjects = [];
   var visited = new Set();
   if (vars) __updateFrames__(vars, parentVarNames, closureVars, heapObjects, visited);
+  __refreshGlobals__(heapObjects, visited);
   for (var ti = 0; ti < __callStack__.length; ti++) {
     if (__callStack__[ti].__rawThis !== undefined) {
       try {
@@ -344,7 +368,7 @@ function __serializeVars__(vars, heapObjects, visited) {
 // variables still refresh the frames for the next step. The program's final
 // capture (isFinal) is always a step.
 function __capture__(line, vars, parentVarNames, closureVars, isFinal) {
-  if (__snapshots__.length >= __MAX_SNAPSHOTS) throw __STOP__;
+  if (__snapshots__.length >= __MAX_SNAPSHOTS) { __stopped__ = true; throw __STOP__; }
 
   var columnRange = null;
   if (Array.isArray(line)) {
@@ -355,6 +379,7 @@ function __capture__(line, vars, parentVarNames, closureVars, isFinal) {
   var heapObjects = [];
   var visited = new Set();
   __updateFrames__(vars, parentVarNames, closureVars, heapObjects, visited);
+  __refreshGlobals__(heapObjects, visited);
 
   var last = __snapshots__[__snapshots__.length - 1];
   var loops = typeof __loopCount === "number" ? __loopCount : 0;
@@ -536,6 +561,8 @@ function __pushFrame__(name, params, isBlockScope, closureVars, thisVal) {
       frame.thisArg = __serializeValue__(thisVal, heapObjects, visited);
     } catch(e) {}
   }
+  // A function entered on an empty stack after the script ended was called by the event loop.
+  if (__scriptDone__ && __callStack__.length === 1 && !isBlockScope && !__nextLabel__) __nextLabel__ = "promise callback";
   __callStack__.push(frame);
   __framePushed__ = true;
   return frame;
@@ -565,6 +592,7 @@ function __suspend__(frame, value) {
 function __resume__(frame, value) {
   var saved = frame.__saved;
   if (saved) {
+    if (__scriptDone__ && __callStack__.length === 1 && !__nextLabel__) __nextLabel__ = "resumed after await";
     frame.__saved = null;
     for (var i = 0; i < saved.length; i++) __callStack__.push(saved[i]);
     __framePushed__ = true;
@@ -590,6 +618,7 @@ function __popFrame__(retVal, line) {
       var visited = new Set();
       var topFrame = __callStack__[__callStack__.length - 1];
 
+      __refreshGlobals__(heapObjects, visited);
       // Copy existing variables and append the return value
       var retVars = (topFrame.variables || []).slice();
       retVars.push({
@@ -629,6 +658,125 @@ function __popFrame__(retVal, line) {
     __callStack__.pop();
   }
   return retVal;
+}
+
+// ── The end of the script, and its callbacks (#45) ──
+
+// The script's last step: the state when its synchronous code has run (all
+// of it, if nothing is left to run). The program's timers and promise
+// callbacks run after it, each step that starts one labeled.
+function __endScript__(line) {
+  if (line > 0) __capture__(line, typeof __globals__ === "function" ? __globals__() : {}, null, null, true);
+  __scriptDone__ = true;
+  __scriptEndStep__ = __snapshots__.length;
+}
+
+// Timers run by virtual time, so a 2-second timeout takes no time: in order
+// of when they are due, then of when they were set, a delay below 1 ms being 1
+// ms (as in Node). Each callback runs after the microtasks before it.
+var __now__ = 0;
+var __timers__ = [];
+var __timerId__ = 0;
+var __timerSeq__ = 0;
+function __addTimer__(fn, ms, args, repeat) {
+  ms = Number(ms);
+  if (!(ms >= 1 && ms <= 2147483647)) ms = 1;
+  var t = { id: ++__timerId__, fn: fn, args: args, due: __now__ + Math.floor(ms), seq: ++__timerSeq__, interval: repeat ? Math.floor(ms) : null };
+  __timers__.push(t);
+  return t.id;
+}
+function __clearTimer__(id) {
+  for (var i = 0; i < __timers__.length; i++) if (__timers__[i].id === id) { __timers__.splice(i, 1); return; }
+}
+function __nextTimer__() {
+  var best = null;
+  for (var i = 0; i < __timers__.length; i++) {
+    var t = __timers__[i];
+    if (!best || t.due < best.due || (t.due === best.due && t.seq < best.seq)) best = t;
+  }
+  return best;
+}
+var __hostSetTimeout__ = typeof setTimeout === "function" ? setTimeout : null;
+(function () {
+  var define = function (name, fn) { Object.defineProperty(self, name, { value: fn, writable: true, configurable: true, enumerable: false }); };
+  define("setTimeout", function setTimeout(fn) { return __addTimer__(fn, arguments[1], Array.prototype.slice.call(arguments, 2), false); });
+  define("setInterval", function setInterval(fn) { return __addTimer__(fn, arguments[1], Array.prototype.slice.call(arguments, 2), true); });
+  define("clearTimeout", function clearTimeout(id) { __clearTimer__(id); });
+  define("clearInterval", function clearInterval(id) { __clearTimer__(id); });
+  if (typeof queueMicrotask === "function") {
+    var hostQueueMicrotask = queueMicrotask;
+    define("queueMicrotask", function queueMicrotask(fn) {
+      hostQueueMicrotask(function () {
+        __nextLabel__ = "queueMicrotask callback";
+        try { fn(); } catch (e) { if (!__callbackError__) __callbackError__ = { error: e, kind: "callback" }; }
+        __nextLabel__ = null;
+      });
+    });
+  }
+})();
+
+// The first rejection nothing handled, and the first exception a callback didn't catch: each ends the run, as in Node.
+var __unhandled__ = null;
+var __callbackError__ = null;
+if (typeof self.addEventListener === "function") {
+  self.addEventListener("unhandledrejection", function (e) {
+    if (!__unhandled__) __unhandled__ = { reason: e.reason };
+    if (e.preventDefault) e.preventDefault();
+  });
+}
+
+// Run a function in a new task, once the current one's microtasks have run.
+var __hop__ = (function () {
+  if (typeof MessageChannel === "function") {
+    var channel = new MessageChannel();
+    var queue = [];
+    channel.port1.onmessage = function () { queue.shift()(); };
+    return function (fn) { queue.push(fn); channel.port2.postMessage(null); };
+  }
+  return __hostSetTimeout__ ? function (fn) { __hostSetTimeout__(fn, 0); } : null;
+})();
+
+// After the script: let its microtasks run, then each timer that is due, and
+// reply (done) when nothing is left, at the first uncaught exception or
+// unhandled rejection, at the step cap, or at the time budget.
+function __eventLoop__(done) {
+  var started = Date.now();
+  var finish = function (err, kind) { done(arguments.length === 0 ? __runResult__() : __runResult__(err, kind)); };
+  if (!__hop__) { finish(); return; }
+  var check = function () {
+    if (__stopped__) return finish(__STOP__);
+    if (typeof __loopCount === "number" && typeof __MAX_LOOPS === "number" && __loopCount > __MAX_LOOPS) {
+      return finish(new Error("Infinite loop detected (exceeded " + __MAX_LOOPS + " iterations)"));
+    }
+    if (__callbackError__) return finish(__callbackError__.error, __callbackError__.kind);
+    if (__unhandled__) return finish(__unhandled__.reason, "promise");
+    if (Date.now() - started > __TIME_BUDGET_MS__) return finish(__TIME_LIMIT__);
+    var t = __nextTimer__();
+    if (!t) { __finalStep__(); return finish(); }
+    __now__ = t.due;
+    if (t.interval !== null) { t.due = __now__ + t.interval; t.seq = ++__timerSeq__; }
+    else __clearTimer__(t.id);
+    __nextLabel__ = t.interval !== null ? "setInterval callback" : "setTimeout callback";
+    try {
+      if (typeof t.fn === "function") t.fn.apply(undefined, t.args);
+    } catch (e) {
+      __nextLabel__ = null;
+      return finish(e, "callback");
+    }
+    __nextLabel__ = null;
+    tick();
+  };
+  // Two hops: one for the microtasks, one for the browser's unhandledrejection task.
+  var tick = function () { __hop__(function () { __hop__(check); }); };
+  tick();
+}
+self.__eventLoop__ = __eventLoop__;
+
+// When callbacks ran after the script, the last step is the state after them all.
+function __finalStep__() {
+  if (__snapshots__.length <= __scriptEndStep__ || typeof __globals__ !== "function") return;
+  var last = __snapshots__[__snapshots__.length - 1];
+  try { __capture__(last.line, __globals__(), null, null, true); } catch (e) { /* the step cap */ }
 }
 
 // ── Console ──

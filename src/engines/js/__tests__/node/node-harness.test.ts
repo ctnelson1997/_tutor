@@ -253,7 +253,8 @@ describe('nodeWorker', () => {
   const run = (code: string, timeoutMs?: number) => executeInWorker(code, nodeWorker, timeoutMs);
 
   it("gives the program a browser worker's global scope", async () => {
-    const reply = await run(`self.__runResult__ = () => ({ type: 'result', snapshots: [], probe: [
+    const reply = await run(`self.__eventLoop__ = done => done(self.__runResult__());
+    self.__runResult__ = () => ({ type: 'result', snapshots: [], probe: [
       self === globalThis, typeof setTimeout(() => {}, 0), structuredClone(new Set([1])) instanceof Set,
       typeof process, typeof require, typeof console.log, Object.keys(globalThis).includes('setTimeout'),
     ] });`);
@@ -271,9 +272,9 @@ describe('nodeWorker', () => {
     const rejection = await run(`const post = self.postMessage; self.postMessage = () => {};
       addEventListener('unhandledrejection', e => post({ type: 'result', snapshots: [], reason: e.reason.message }));
       Promise.reject(new Error('boom'));
-      self.__runResult__ = () => ({});`);
+      self.__eventLoop__ = () => {};`);
     expect((rejection as unknown as { reason: string }).reason).toBe('boom');
-    const late = await run(`self.postMessage = () => {}; setTimeout(() => { throw new TypeError('late'); }, 0); self.__runResult__ = () => ({});`);
+    const late = await run(`self.__eventLoop__ = () => {}; setTimeout(() => { throw new TypeError('late'); }, 0);`);
     expect(late).toEqual({ type: 'error', message: 'Uncaught TypeError: late' });
   });
 });

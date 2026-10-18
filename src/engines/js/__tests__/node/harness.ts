@@ -10,7 +10,8 @@
  *   output       the console at the last step (stdout and stderr lines, in
  *                order) is what Node's console printed. JSTutor prints in
  *                Node's format (#43's decision), so the text must match
- *                exactly; a run JSTutor stopped at the step cap shows a prefix.
+ *                exactly; a run JSTutor stopped at the step cap shows a prefix,
+ *                and one that died of an uncaught exception what came before.
  *   ending       the run ends as Node's did: normally, with the same uncaught
  *                exception, at the step cap for an endless loop, or, for a
  *                program that doesn't parse, with V8's SyntaxError and line.
@@ -126,8 +127,11 @@ function stoppedAtCap(reply: WorkerMessage): boolean {
 
 function checkOutput(golden: NodeGolden, reply: WorkerMessage): { problems: string[]; layoutOnly: boolean } {
   if (golden.compileError) return { problems: [], layoutOnly: false };
-  // An error's stack frames can't match, so neither side's are compared.
-  const want = withoutFrames(golden.console);
+  // An error's stack frames can't match, so neither side's are compared. The
+  // run ends at the first uncaught exception, as Node ends it (browsers would
+  // run the remaining callbacks), so Node's console counts up to there.
+  const first = golden.uncaught[0];
+  const want = withoutFrames(first ? golden.console.slice(0, first.consoleLines) : golden.console);
   const got = withoutFrames(shownConsole(reply));
   // A run stopped early (JSTutor's step cap, or Node's endless loop) is compared as far as both got.
   const prefixOnly = stoppedAtCap(reply) || golden.endless;
@@ -152,9 +156,9 @@ export function uncaughtText(u: { name: string | null; message: string }): strin
   return u.name !== null ? `${u.name}: ${u.message}` : u.message;
 }
 
-/** Whether a program does enough work that stopping at the step cap is expected. */
+/** Whether a program does enough work that stopping at the step cap is expected: an endless loop, a timer never cleared, or thousands of statements. */
 export function capExpected(golden: NodeGolden): boolean {
-  return golden.endless || golden.statementRuns + golden.functionCalls >= MAX_STEPS * 0.7;
+  return golden.endless || golden.pendingTimers || golden.statementRuns + golden.functionCalls >= MAX_STEPS * 0.7;
 }
 
 type EndingProblem = { problems: string[]; kind: 'none' | 'missing' | 'extra' | 'differs' | 'stopped' };

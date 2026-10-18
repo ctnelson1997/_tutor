@@ -41,7 +41,8 @@ const show = (v: RuntimeValue): string => (v.type === 'ref' ? `#${v.heapId}` : p
 
 function print(s: ExecutionSnapshot, lines: string[]): void {
   const condition = s.condition ? `  [${s.condition.expression} → ${s.condition.result}]` : '';
-  console.log(`\n[step ${s.step}] line ${s.line}: ${(lines[s.line - 1] ?? '').trim()}${condition}`);
+  const label = s.label ? `  (${s.label})` : '';
+  console.log(`\n[step ${s.step}] line ${s.line}: ${(lines[s.line - 1] ?? '').trim()}${condition}${label}`);
   for (const f of s.callStack) {
     const vars = [
       ...(f.thisArg ? [`this=${show(f.thisArg)}`] : []),

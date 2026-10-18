@@ -549,15 +549,50 @@ function instrumentBlock(
     i += 1;
   }
 
-  // The program's last step: the final state, after its last statement ran.
-  if (isTopLevel && finalLine > 0) {
-    const final = buildCaptureExpression(visible(), finalLine);
-    // A final capture is a step even on the line the program last stepped at.
-    const args = final.expression.arguments;
-    while (args.length < 4) args.push({ type: 'Literal', value: null, raw: 'null' });
-    args.push({ type: 'Literal', value: true });
-    body.push(final);
+  // The script's last step: the state after its last statement ran
+  // (__endScript__, a step even on the line it last stepped at). The program's
+  // timers and promise callbacks run after it (#45). __globals__ reads every
+  // top-level name, for that step and to keep the Global frame current while
+  // functions and callbacks run.
+  if (isTopLevel) {
+    body.push(buildGlobalsReader(visible()));
+    body.push({ type: 'ExpressionStatement', expression: runtimeCall('__endScript__', [{ type: 'Literal', value: finalLine }]) });
   }
+}
+
+/**
+ * `function __globals__() { const g = { __proto__: null }; try { g["a"] = a; } catch (e) {} … return g; }`:
+ * each top-level name's value, leaving out those still in their temporal dead zone.
+ */
+function buildGlobalsReader(names: string[]): AnyNode {
+  const g = { type: 'Identifier', name: '__g__' };
+  const body: AnyNode[] = [{
+    type: 'VariableDeclaration',
+    kind: 'var',
+    declarations: [{
+      type: 'VariableDeclarator',
+      id: g,
+      init: { type: 'ObjectExpression', properties: [{ type: 'Property', key: { type: 'Identifier', name: '__proto__' }, value: { type: 'Literal', value: null, raw: 'null' }, kind: 'init', shorthand: false, computed: false, method: false }] },
+    }],
+  }];
+  for (const name of names) {
+    body.push({
+      type: 'TryStatement',
+      block: { type: 'BlockStatement', body: [{
+        type: 'ExpressionStatement',
+        expression: {
+          type: 'AssignmentExpression',
+          operator: '=',
+          left: { type: 'MemberExpression', object: g, property: { type: 'Literal', value: name }, computed: true, optional: false },
+          right: { type: 'Identifier', name },
+        },
+      }] },
+      handler: { type: 'CatchClause', param: { type: 'Identifier', name: '__e__' }, body: { type: 'BlockStatement', body: [] } },
+      finalizer: null,
+    });
+  }
+  body.push({ type: 'ReturnStatement', argument: g });
+  return { type: 'FunctionDeclaration', id: { type: 'Identifier', name: '__globals__' }, params: [], body: { type: 'BlockStatement', body }, generator: false, async: false };
 }
 
 /**

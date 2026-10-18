@@ -6,332 +6,36 @@
     "See the details of any case with: npx tsx scripts/js-diff.ts <case id>"
   ],
   "failures": {
-    "async/allsettled-mixed-requests": {
-      "output": {
-        "issues": [
-          45
-        ],
-        "reason": "output of promise callbacks and timers is lost"
-      },
-      "final-state": {
-        "issues": [
-          45
-        ],
-        "reason": "the last step comes before the callbacks ran"
-      }
-    },
     "async/async-arrow": {
-      "output": {
-        "issues": [
-          45
-        ],
-        "reason": "output of promise callbacks and timers is lost"
-      },
       "coverage": {
         "issues": [
-          45
+          46
         ],
-        "reason": "callbacks run after the worker replied, with no steps"
-      },
-      "final-state": {
-        "issues": [
-          45
-        ],
-        "reason": "the last step comes before the callbacks ran"
-      }
-    },
-    "async/async-await-return": {
-      "output": {
-        "issues": [
-          45
-        ],
-        "reason": "output of promise callbacks and timers is lost"
-      },
-      "coverage": {
-        "issues": [
-          45
-        ],
-        "reason": "callbacks run after the worker replied, with no steps"
-      },
-      "final-state": {
-        "issues": [
-          45
-        ],
-        "reason": "the last step comes before the callbacks ran"
-      }
-    },
-    "async/async-class-method": {
-      "output": {
-        "issues": [
-          45
-        ],
-        "reason": "output of promise callbacks and timers is lost"
-      },
-      "final-state": {
-        "issues": [
-          45
-        ],
-        "reason": "the last step comes before the callbacks ran"
-      }
-    },
-    "async/async-throw-then-catch": {
-      "output": {
-        "issues": [
-          45
-        ],
-        "reason": "output of promise callbacks and timers is lost"
-      },
-      "final-state": {
-        "issues": [
-          45
-        ],
-        "reason": "the last step comes before the callbacks ran"
+        "reason": "a function inside await, new or another expression the instrumenter skips runs with no steps"
       }
     },
     "async/await-in-loop": {
-      "output": {
-        "issues": [
-          45
-        ],
-        "reason": "output of promise callbacks and timers is lost"
-      },
       "coverage": {
         "issues": [
-          45
+          46
         ],
-        "reason": "callbacks run after the worker replied, with no steps"
-      },
-      "final-state": {
-        "issues": [
-          45
-        ],
-        "reason": "the last step comes before the callbacks ran"
-      }
-    },
-    "async/catch-rejection": {
-      "output": {
-        "issues": [
-          45
-        ],
-        "reason": "output of promise callbacks and timers is lost"
+        "reason": "a function inside await, new or another expression the instrumenter skips runs with no steps"
       }
     },
     "async/fake-fetch": {
-      "output": {
-        "issues": [
-          45
-        ],
-        "reason": "output of promise callbacks and timers is lost"
-      },
       "coverage": {
         "issues": [
-          45
+          46
         ],
-        "reason": "callbacks run after the worker replied, with no steps"
-      },
-      "final-state": {
-        "issues": [
-          45
-        ],
-        "reason": "the last step comes before the callbacks ran"
-      }
-    },
-    "async/fire-and-forget": {
-      "output": {
-        "issues": [
-          45
-        ],
-        "reason": "output of promise callbacks and timers is lost"
-      },
-      "coverage": {
-        "issues": [
-          45
-        ],
-        "reason": "callbacks run after the worker replied, with no steps"
-      },
-      "final-state": {
-        "issues": [
-          45
-        ],
-        "reason": "the last step comes before the callbacks ran"
-      }
-    },
-    "async/microtask-macrotask-order": {
-      "output": {
-        "issues": [
-          45
-        ],
-        "reason": "output of promise callbacks and timers is lost"
-      },
-      "coverage": {
-        "issues": [
-          45
-        ],
-        "reason": "callbacks run after the worker replied, with no steps"
-      },
-      "final-state": {
-        "issues": [
-          45
-        ],
-        "reason": "the last step comes before the callbacks ran"
-      }
-    },
-    "async/promise-all": {
-      "output": {
-        "issues": [
-          45
-        ],
-        "reason": "output of promise callbacks and timers is lost"
-      },
-      "final-state": {
-        "issues": [
-          45
-        ],
-        "reason": "the last step comes before the callbacks ran"
-      }
-    },
-    "async/promise-allsettled-any": {
-      "output": {
-        "issues": [
-          45
-        ],
-        "reason": "output of promise callbacks and timers is lost"
-      },
-      "final-state": {
-        "issues": [
-          45
-        ],
-        "reason": "the last step comes before the callbacks ran"
+        "reason": "a function inside await, new or another expression the instrumenter skips runs with no steps"
       }
     },
     "async/promise-executor-order": {
-      "output": {
-        "issues": [
-          45
-        ],
-        "reason": "output of promise callbacks and timers is lost"
-      },
       "coverage": {
         "issues": [
-          45
+          46
         ],
-        "reason": "callbacks run after the worker replied, with no steps"
-      },
-      "final-state": {
-        "issues": [
-          45
-        ],
-        "reason": "the last step comes before the callbacks ran"
-      }
-    },
-    "async/promise-race": {
-      "output": {
-        "issues": [
-          45
-        ],
-        "reason": "output of promise callbacks and timers is lost"
-      },
-      "final-state": {
-        "issues": [
-          45
-        ],
-        "reason": "the last step comes before the callbacks ran"
-      }
-    },
-    "async/promise-then-chain": {
-      "output": {
-        "issues": [
-          45
-        ],
-        "reason": "output of promise callbacks and timers is lost"
-      },
-      "final-state": {
-        "issues": [
-          45
-        ],
-        "reason": "the last step comes before the callbacks ran"
-      }
-    },
-    "async/setinterval-cleared": {
-      "output": {
-        "issues": [
-          45
-        ],
-        "reason": "output of promise callbacks and timers is lost"
-      },
-      "coverage": {
-        "issues": [
-          45
-        ],
-        "reason": "callbacks run after the worker replied, with no steps"
-      },
-      "final-state": {
-        "issues": [
-          45
-        ],
-        "reason": "the last step comes before the callbacks ran"
-      }
-    },
-    "async/setinterval-countdown": {
-      "output": {
-        "issues": [
-          45
-        ],
-        "reason": "output of promise callbacks and timers is lost"
-      },
-      "coverage": {
-        "issues": [
-          45
-        ],
-        "reason": "callbacks run after the worker replied, with no steps"
-      },
-      "final-state": {
-        "issues": [
-          45
-        ],
-        "reason": "the last step comes before the callbacks ran"
-      }
-    },
-    "async/settimeout-delays": {
-      "output": {
-        "issues": [
-          45
-        ],
-        "reason": "output of promise callbacks and timers is lost"
-      },
-      "coverage": {
-        "issues": [
-          45
-        ],
-        "reason": "callbacks run after the worker replied, with no steps"
-      },
-      "final-state": {
-        "issues": [
-          45
-        ],
-        "reason": "the last step comes before the callbacks ran"
-      }
-    },
-    "async/try-catch-await": {
-      "output": {
-        "issues": [
-          45
-        ],
-        "reason": "output of promise callbacks and timers is lost"
-      }
-    },
-    "async/unhandled-rejection": {
-      "output": {
-        "issues": [
-          45
-        ],
-        "reason": "output of promise callbacks and timers is lost"
-      },
-      "ending": {
-        "issues": [
-          45
-        ],
-        "reason": "an unhandled rejection after the reply is never reported"
+        "reason": "a function inside await, new or another expression the instrumenter skips runs with no steps"
       }
     },
     "collections/array-concat-indexof-includes": {
@@ -673,74 +377,12 @@
         "reason": "holes drawn as other values"
       }
     },
-    "realistic/async-await-weather": {
-      "output": {
-        "issues": [
-          45
-        ],
-        "reason": "output of promise callbacks and timers is lost"
-      },
-      "final-state": {
-        "issues": [
-          45
-        ],
-        "reason": "the last step comes before the callbacks ran"
-      }
-    },
-    "realistic/countdown-timer": {
-      "output": {
-        "issues": [
-          45
-        ],
-        "reason": "output of promise callbacks and timers is lost"
-      },
-      "coverage": {
-        "issues": [
-          45
-        ],
-        "reason": "callbacks run after the worker replied, with no steps"
-      },
-      "final-state": {
-        "issues": [
-          45
-        ],
-        "reason": "the last step comes before the callbacks ran"
-      }
-    },
-    "realistic/fake-fetch-then": {
-      "output": {
-        "issues": [
-          45
-        ],
-        "reason": "output of promise callbacks and timers is lost"
-      },
-      "final-state": {
-        "issues": [
-          45
-        ],
-        "reason": "the last step comes before the callbacks ran"
-      }
-    },
     "realistic/json-round-trip": {
       "final-state": {
         "issues": [
           48
         ],
         "reason": "NaN, Infinity drawn as other values"
-      }
-    },
-    "realistic/promise-all-orders": {
-      "output": {
-        "issues": [
-          45
-        ],
-        "reason": "output of promise callbacks and timers is lost"
-      },
-      "final-state": {
-        "issues": [
-          45
-        ],
-        "reason": "the last step comes before the callbacks ran"
       }
     },
     "syntax-errors/await-in-non-async-function": {

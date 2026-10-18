@@ -98,6 +98,12 @@ export interface ExecutionSnapshot {
    */
   console?: ConsoleLine[];
   condition?: ConditionResult;
+  /**
+   * Why this step happens when nothing on the stack called it: the first step
+   * of a callback the event loop runs after the script (JS, #45), such as
+   * `setTimeout callback`, `promise callback` or `resumed after await`.
+   */
+  label?: string;
 }
 
 // ── Execution result from the worker ──

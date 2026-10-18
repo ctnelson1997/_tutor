@@ -25,11 +25,12 @@ describe('instrument', () => {
     expect(out).toContain('__capture__');
   });
 
-  it('injects multiple captures for multiple statements', () => {
+  it('injects multiple captures for multiple statements, and ends the script with __endScript__', () => {
     const out = instrument('let x = 1;\nlet y = 2;');
     const count = (out.match(/__capture__/g) || []).length;
-    // At least one per statement plus the initial capture
-    expect(count).toBeGreaterThanOrEqual(3);
+    // One per statement; the script's last step is __endScript__'s (#45)
+    expect(count).toBeGreaterThanOrEqual(2);
+    expect(out).toContain('__endScript__(2)');
   });
 
   // ── #44: frames leave with their code ──
@@ -184,8 +185,8 @@ async function outer() {
   it('does not insert pre-call capture for statements without calls', () => {
     const out = instrument('let x = 1;\nlet y = 2;');
     const captures = (out.match(/__capture__/g) || []).length;
-    // initial capture + 1 per statement = 3, no pre-call captures
-    expect(captures).toBe(3);
+    // 1 per statement = 2 (and __endScript__ for the last step), no pre-call captures
+    expect(captures).toBe(2);
   });
 
   it('does not insert pre-call capture for function definitions containing calls', () => {

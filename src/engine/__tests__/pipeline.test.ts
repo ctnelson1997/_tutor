@@ -597,6 +597,22 @@ let results = funcs.map(f => f());
     expect(arr?.properties.map(p => (p.value as { value: number }).value)).toEqual([0, 1, 2]);
   });
 
+  it('keeps the Global frame current inside a function, leaving out names not yet declared (#45)', () => {
+    const snaps = runPipeline(`let total = 0;
+function add(n) {
+  total += n;
+  const x = total;
+  return x;
+}
+add(5);
+let later = 1;`);
+    const inside = snaps.find(s => s.line === 4 && s.callStack.length === 2);
+    expect(inside && findVar(inside, 'total', 0)?.value).toEqual({ type: 'number', value: 5 });
+    // later is in its temporal dead zone while add runs
+    expect(inside?.callStack[0].variables.map(v => v.name)).toEqual(['add', 'total']);
+    expect(lastSnap(snaps).callStack[0].variables.map(v => v.name)).toEqual(['add', 'total', 'later']);
+  });
+
   // ── #44: frames leave the stack with their code ──
 
   /** Each step's frames, as "Global>f>for{}". */

@@ -24,15 +24,18 @@ export const WORKER_SOURCE = `
       try {
         var indirectEval = eval;
         indirectEval(data.code);
-        self.postMessage(self.__runResult__());
       } catch (err) {
-        // The steps recorded before an uncaught exception (or the step cap) are kept.
+        // The steps recorded before an uncaught exception (or the step cap) are kept,
+        // and the run ends there, as Node ends it.
         if (typeof self.__runResult__ === 'function') {
           self.postMessage(self.__runResult__(err));
         } else {
           self.postMessage({ type: 'error', message: err instanceof Error ? err.message : String(err) });
         }
+        return;
       }
+      // The program's timers and promise callbacks run, and take steps, before the reply (#45).
+      self.__eventLoop__(function (message) { self.postMessage(message); });
     };
   `;
 
