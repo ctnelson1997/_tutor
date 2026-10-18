@@ -40,7 +40,7 @@ export async function runJsTutor(source: string, timeoutMs = WORKER_TIMEOUT): Pr
 /**
  * How long a case may run before the worker is killed: the app's 10 seconds
  * for a program Node shows is endless, and a minute for the rest. A program
- * that posts hundreds of megabytes can take about 10 seconds, and which of
+ * that posted hundreds of megabytes took about 10 seconds before #49, and which of
  * its reply and the kill came first would make the result depend on the
  * machine's speed. The payload test (#49) watches the size instead.
  */

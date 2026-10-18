@@ -14,6 +14,7 @@
  */
 
 import { CONSOLE_SOURCE } from './inspect';
+import { SHARER_SOURCE } from './sharer';
 
 /**
  * Returns the runtime preamble as a string of JavaScript to be
@@ -59,6 +60,14 @@ var __nextLabel__ = null;
 // Expose snapshots on the global scope so the worker can read them
 self.__snapshots__ = __snapshots__;
 
+// Each step is recorded sharing what didn't change with the steps before it
+// (sharer.ts, #49), so the reply's structured clone carries each unchanged
+// frame, variable, heap object and console line once.
+${SHARER_SOURCE}
+function __record__(snap) {
+  __snapshots__.push(__shareSnapshot__(snap));
+}
+
 // The worker's reply once the program has run: its steps, and why it stopped
 // early if it did. Called with the thrown value when the program threw: the
 // step cap, the loop guard, or an exception the program didn't catch.
@@ -99,7 +108,7 @@ function __finishOutput__() {
   if (last.stdout.length === __stdout__.length && (last.console ? last.console.length : last.stdout.length) === __console__.length) return;
   var snap = { step: __snapshots__.length, line: last.line, callStack: last.callStack, heap: last.heap };
   __outputOf__(snap);
-  __snapshots__.push(snap);
+  __record__(snap);
 }
 
 // A snapshot's console: stdout's lines, and once the program has used stderr, every line with its stream.
@@ -367,7 +376,7 @@ function __condition__(value, line, expression, vars, parentVarNames, closureVar
     condition: { expression: expression, result: !!value, line: line }
   });
   if (columnRange) snap.columnRange = columnRange;
-  __snapshots__.push(snap);
+  __record__(snap);
 
   return value;
 }
@@ -452,7 +461,7 @@ function __capture__(line, vars, parentVarNames, closureVars, isFinal) {
     heap: __collectHeap__(stackSnapshot)
   });
   if (columnRange) snap.columnRange = columnRange;
-  __snapshots__.push(snap);
+  __record__(snap);
 }
 
 // Set the frames' variables from a capture's: the top frame's, or, inside a
@@ -675,7 +684,7 @@ function __popFrame__(retVal, line) {
         if (frame.thisArg) entry2.thisArg = frame.thisArg;
         stackSnapshot.push(entry2);
       }
-      __snapshots__.push(__outputOf__({
+      __record__(__outputOf__({
         step: __snapshots__.length,
         line: line,
         callStack: stackSnapshot,
