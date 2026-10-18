@@ -99,6 +99,84 @@ async function outer() {
     expect(nested).not.toContain('__resume__');
   });
 
+  // ── #46: every place code can appear ──
+
+  /** The function, of the instrumented output, whose frame is named name. */
+  const frameOf = (out: string, name: string) => out.includes(`__pushFrame__("${name}"`);
+
+  it('instruments a labeled loop: its guard and the steps in its body', () => {
+    const out = instrument(`outer: for (let i = 0; i < 3; i++) {
+  inner: while (true) {
+    break outer;
+  }
+}`);
+    // the preamble's declaration, and each loop's guard
+    expect((out.match(/__loopCount/g) || []).length).toBe(3);
+    expect(out).toMatch(/__capture__\(3,/);
+    expect(out).toMatch(/outer: for/);
+  });
+
+  it("instruments class fields' functions and static blocks (with a frame of their own)", () => {
+    const out = instrument(`class Button {
+  clicks = 0;
+  handle = () => {
+    this.clicks++;
+  };
+  static registry = [];
+  static {
+    Button.registry.push("made");
+  }
+}`);
+    expect(frameOf(out, 'handle')).toBe(true);
+    expect(frameOf(out, '<static_initializer>')).toBe(true);
+    expect(out).toMatch(/__capture__\(4,/);
+    expect(out).toMatch(/__capture__\(8,/);
+  });
+
+  it('reaches functions behind !, void, new, await, member chains, sequences, tagged templates and default values', () => {
+    const out = instrument(`!function bang() {
+  a();
+}();
+void (function v() {
+  b();
+})();
+const p = new Promise(function executor(resolve) {
+  resolve(1);
+});
+const doubled = [1, 2].map(function m(x) {
+  return x * 2;
+}).filter(function f(x) {
+  return x > 2;
+});
+const s = (0, function seq() {
+  return 1;
+})();
+tag\`\${(function t() {
+  return 1;
+})()}\`;
+function withDefault(cb = function d() {
+  return 0;
+}) {}
+async function later() {
+  await (async function aw() {
+    return 1;
+  })();
+}`);
+    for (const name of ['bang', 'v', 'executor', 'm', 'f', 'seq', 't', 'd', 'aw']) expect(frameOf(out, name), name).toBe(true);
+  });
+
+  it('names anonymous functions as JavaScript does: assignments, properties, defaults, class fields', () => {
+    const out = instrument(`let assigned;
+assigned = () => 1;
+const obj = { method: () => 2, ["computed"]: () => 3 };
+function f(cb = () => 4) {}
+class C { field = () => 5; }
+const Named = class {
+  constructor() {}
+};`);
+    for (const name of ['assigned', 'method', 'cb', 'field', 'Named']) expect(frameOf(out, name), name).toBe(true);
+  });
+
   // ── Eval blocking ──
 
   it('prepends eval blocker', () => {

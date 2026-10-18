@@ -613,6 +613,58 @@ let later = 1;`);
     expect(lastSnap(snaps).callStack[0].variables.map(v => v.name)).toEqual(['add', 'total', 'later']);
   });
 
+  // ── #46: code the instrumenter used to skip ──
+
+  it('steps through a labeled loop, and stops an endless one at the step cap (#46)', () => {
+    const snaps = runPipeline(`let found = null;
+search: for (let r = 0; r < 3; r++) {
+  for (let c = 0; c < 3; c++) {
+    if (r * c === 2) {
+      found = [r, c];
+      break search;
+    }
+  }
+}
+const done = found;`);
+    expect(snaps.some(s => s.line === 5)).toBe(true);
+    expect(lastSnap(snaps).callStack.map(f => f.name)).toEqual(['Global']);
+    const endless = runPipelineResult(`let n = 0;
+spin: while (true) {
+  n++;
+}`);
+    expect(endless.type === 'result' && endless.error?.kind).toBe('limit');
+  });
+
+  it("gives a class field's arrow function and a static block frames and steps (#46)", () => {
+    const snaps = runPipeline(`class Counter {
+  count = 0;
+  bump = () => {
+    this.count++;
+  };
+  static made = 0;
+  static {
+    Counter.made = 1;
+  }
+}
+const c = new Counter();
+c.bump();`);
+    const inBump = snaps.find(s => s.line === 4);
+    expect(inBump?.callStack.map(f => f.name)).toEqual(['Global', 'bump']);
+    const inStatic = snaps.find(s => s.line === 8);
+    expect(inStatic?.callStack.map(f => f.name)).toEqual(['Global', '<static_initializer>']);
+  });
+
+  it('steps into a function behind ! or new (#46)', () => {
+    const snaps = runPipeline(`!function setup() {
+  const ready = true;
+}();
+const p = new Promise(function executor(resolve) {
+  resolve(1);
+});`);
+    expect(snaps.find(s => s.line === 2)?.callStack.map(f => f.name)).toEqual(['Global', 'setup']);
+    expect(snaps.find(s => s.line === 5)?.callStack.map(f => f.name)).toEqual(['Global', 'executor']);
+  });
+
   // ── #44: frames leave the stack with their code ──
 
   /** Each step's frames, as "Global>f>for{}". */

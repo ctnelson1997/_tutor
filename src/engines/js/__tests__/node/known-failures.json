@@ -6,38 +6,6 @@
     "See the details of any case with: npx tsx scripts/js-diff.ts <case id>"
   ],
   "failures": {
-    "async/async-arrow": {
-      "coverage": {
-        "issues": [
-          46
-        ],
-        "reason": "a function inside await, new or another expression the instrumenter skips runs with no steps"
-      }
-    },
-    "async/await-in-loop": {
-      "coverage": {
-        "issues": [
-          46
-        ],
-        "reason": "a function inside await, new or another expression the instrumenter skips runs with no steps"
-      }
-    },
-    "async/fake-fetch": {
-      "coverage": {
-        "issues": [
-          46
-        ],
-        "reason": "a function inside await, new or another expression the instrumenter skips runs with no steps"
-      }
-    },
-    "async/promise-executor-order": {
-      "coverage": {
-        "issues": [
-          46
-        ],
-        "reason": "a function inside await, new or another expression the instrumenter skips runs with no steps"
-      }
-    },
     "collections/array-concat-indexof-includes": {
       "final-state": {
         "issues": [
@@ -115,30 +83,6 @@
           48
         ],
         "reason": "holes drawn as other values"
-      }
-    },
-    "control-flow/labeled-block": {
-      "coverage": {
-        "issues": [
-          46
-        ],
-        "reason": "a labeled statement's body takes no steps"
-      }
-    },
-    "control-flow/labeled-break-nested-for": {
-      "coverage": {
-        "issues": [
-          46
-        ],
-        "reason": "a labeled statement's body takes no steps"
-      }
-    },
-    "control-flow/labeled-while-do-while": {
-      "coverage": {
-        "issues": [
-          46
-        ],
-        "reason": "a labeled statement's body takes no steps"
       }
     },
     "core/coercion-arithmetic": {
@@ -257,14 +201,6 @@
         "reason": "fn.toString() returns the instrumented source"
       }
     },
-    "functions/iife-patterns": {
-      "coverage": {
-        "issues": [
-          46
-        ],
-        "reason": "a function behind ! or void runs with no steps"
-      }
-    },
     "generators/custom-iterable-object": {
       "final-state": {
         "issues": [
@@ -279,30 +215,6 @@
           48
         ],
         "reason": "Symbol keys drawn as other values"
-      }
-    },
-    "limits/endless-labeled-loop": {
-      "ending": {
-        "issues": [
-          46
-        ],
-        "reason": "a labeled endless loop has no loop guard: the worker is killed and every step lost"
-      }
-    },
-    "objects-classes/class-arrow-field": {
-      "coverage": {
-        "issues": [
-          46
-        ],
-        "reason": "an arrow function in a class field runs with no steps"
-      }
-    },
-    "objects-classes/class-static-block": {
-      "coverage": {
-        "issues": [
-          46
-        ],
-        "reason": "a static block runs with no steps"
       }
     },
     "objects-classes/json-stringify-classes": {

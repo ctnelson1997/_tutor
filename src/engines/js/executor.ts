@@ -5,7 +5,7 @@
  * No store coupling — returns a WorkerMessage.
  */
 
-import { instrument } from './instrumenter';
+import { UnsupportedSyntaxError, instrument } from './instrumenter';
 import { getRuntimeCode } from './runtime';
 import type { WorkerMessage } from '../../types/snapshot';
 
@@ -96,6 +96,8 @@ export function prepareProgram(source: string): { code: string } | { reply: Work
   try {
     instrumentedCode = instrument(source);
   } catch (err: unknown) {
+    // Syntax JSTutor can't show yet stops the program before it runs (#46).
+    if (err instanceof UnsupportedSyntaxError) return { reply: { type: 'error', message: err.message, line: err.line } };
     const message = err instanceof Error ? err.message : String(err);
     let line: number | undefined;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
