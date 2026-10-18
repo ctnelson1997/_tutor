@@ -21,7 +21,7 @@ function ValueDisplay({ value }: { value: RuntimeValue }) {
   }
 
   return (
-    <span style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
+    <span className={value.type === 'empty' ? 'value-empty' : undefined} style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
       {primitiveText(value)}
     </span>
   );
@@ -52,12 +52,13 @@ function ObjectDisplay({ obj, changedKeys, step }: { obj: HeapObject; changedKey
   return (
     <table className="w-100">
       <tbody>
-        {obj.properties.map((prop) => {
+        {obj.properties.map((prop, i) => {
           const isChanged = changedKeys.has(`heap:${obj.id}:${prop.key}`);
           return (
-            <tr key={prop.key}>
+            <tr key={i}>
               <td style={{ fontFamily: 'monospace', fontWeight: 500, fontSize: '0.8rem' }}>
-                {prop.key}
+                {/* A Map's key is a value: an object key points at its object (#48). */}
+                {prop.keyValue ? <ValueDisplay value={prop.keyValue} /> : prop.key}
               </td>
               <td className="text-end">
                 <span key={isChanged ? step : undefined} className={isChanged ? 'value-changed' : undefined}>
@@ -202,6 +203,7 @@ function reachableHeapIds(callStack: StackFrame[], heap: HeapObject[]): Set<stri
     if (!obj) return;
     for (const prop of obj.properties) {
       if (prop.value.type === 'ref') visit(prop.value.heapId);
+      if (prop.keyValue?.type === 'ref') visit(prop.keyValue.heapId);
     }
   }
   for (const id of directRefs) visit(id);

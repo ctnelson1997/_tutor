@@ -1,7 +1,8 @@
 // ── Primitive values ──
 
 export interface PrimitiveValue {
-  type: 'number' | 'string' | 'boolean' | 'null' | 'undefined' | 'symbol' | 'bigint';
+  /** `empty` is an array's hole (JS, #48): no element at that index, not even undefined. */
+  type: 'number' | 'string' | 'boolean' | 'null' | 'undefined' | 'symbol' | 'bigint' | 'empty';
   value: string | number | boolean | null;
   /**
    * The text to show, when the engine renders the value itself, e.g. Java's
@@ -25,6 +26,12 @@ export type RuntimeValue = PrimitiveValue | HeapRef;
 export interface Property {
   key: string;
   value: RuntimeValue;
+  /**
+   * The key itself, when it is a value rather than a name: a Map's key (JS,
+   * #48), drawn as values are, so an object key is a reference to its object.
+   * `key` is then only text that tells the entries apart.
+   */
+  keyValue?: RuntimeValue;
 }
 
 export type CommonHeapObjectType =

@@ -133,7 +133,14 @@ function __serializeValue__(val, heapObjects, visited) {
   if (val === null) return { type: "null", value: null };
   if (val === undefined) return { type: "undefined", value: null };
   var t = typeof val;
-  if (t === "number" || t === "boolean") return { type: t, value: val };
+  // NaN, the infinities and -0 say what they are (#48): JSON has no such numbers, and -0 prints as 0.
+  if (t === "number") {
+    if (val !== val) return { type: t, value: val, display: "NaN" };
+    if (val === Infinity || val === -Infinity) return { type: t, value: val, display: val > 0 ? "Infinity" : "-Infinity" };
+    if (val === 0 && 1 / val < 0) return { type: t, value: val, display: "-0" };
+    return { type: t, value: val };
+  }
+  if (t === "boolean") return { type: t, value: val };
   if (t === "string") return { type: "string", value: val };
   if (t === "symbol") return { type: "symbol", value: val.toString() };
   if (t === "bigint") return { type: "bigint", value: val.toString() };
@@ -161,10 +168,12 @@ function __serializeHeapObject__(obj, heapId, heapObjects, visited) {
   if (Array.isArray(obj)) {
     objectType = "array";
     for (var i = 0; i < obj.length && i < 100; i++) {
-      properties.push({
-        key: String(i),
-        value: __serializeValue__(obj[i], heapObjects, visited)
-      });
+      // A hole is drawn as empty, not undefined; a getter isn't called (#48).
+      var cell = Object.getOwnPropertyDescriptor(obj, i);
+      var cellValue = !cell ? { type: "empty", value: null, display: "empty" }
+        : !("value" in cell) ? { type: "string", value: cell.get && cell.set ? "<accessor>" : cell.get ? "<getter>" : "<setter>" }
+        : __serializeValue__(cell.value, heapObjects, visited);
+      properties.push({ key: String(i), value: cellValue });
     }
     if (obj.length > 100) {
       properties.push({ key: "...", value: { type: "string", value: "(" + (obj.length - 100) + " more)" } });
@@ -196,8 +205,11 @@ function __serializeHeapObject__(obj, heapId, heapObjects, visited) {
     var idx = 0;
     obj.forEach(function(v, k) {
       if (idx < 50) {
+        // The key is drawn as a value too, so an object key is a reference to its object (#48).
+        var keyValue = __serializeValue__(k, heapObjects, visited);
         properties.push({
-          key: String(k),
+          key: keyValue.type === "ref" ? "#" + keyValue.heapId : typeof k === "symbol" ? k.toString() : String(k),
+          keyValue: keyValue,
           value: __serializeValue__(v, heapObjects, visited)
         });
       }
@@ -222,9 +234,13 @@ function __serializeHeapObject__(obj, heapId, heapObjects, visited) {
       objectType = "class";
       label = constructor.name;
     }
+    // Its own enumerable keys, Symbol keys included, drawn as [Symbol(id)] (#48).
     var keys = Object.keys(obj);
+    var symbols = Object.getOwnPropertySymbols(obj);
+    for (var sk = 0; sk < symbols.length; sk++) if (Object.prototype.propertyIsEnumerable.call(obj, symbols[sk])) keys.push(symbols[sk]);
     for (var k = 0; k < keys.length && k < 50; k++) {
       var ki = keys[k];
+      var keyText = typeof ki === "symbol" ? "[" + ki.toString() + "]" : ki;
       // Skip accessor properties (get/set). Invoking the getter would run
       // user code, which would re-enter serialization via __pushFrame__ /
       // __capture__ and recurse without bound (the getter accesses \`this\`,
@@ -233,17 +249,17 @@ function __serializeHeapObject__(obj, heapId, heapObjects, visited) {
       try { desc = Object.getOwnPropertyDescriptor(obj, ki); } catch(e) {}
       if (desc && (desc.get || desc.set)) {
         var label = desc.get && desc.set ? "<accessor>" : desc.get ? "<getter>" : "<setter>";
-        properties.push({ key: ki, value: { type: "string", value: label } });
+        properties.push({ key: keyText, value: { type: "string", value: label } });
         continue;
       }
       try {
         properties.push({
-          key: ki,
+          key: keyText,
           value: __serializeValue__(obj[ki], heapObjects, visited)
         });
       } catch(e) {
         properties.push({
-          key: ki,
+          key: keyText,
           value: { type: "string", value: "[error reading property]" }
         });
       }
@@ -276,6 +292,7 @@ function __collectHeap__(stackSnapshot) {
       result.push(obj);
       for (var p = 0; p < obj.properties.length; p++) {
         visit(obj.properties[p].value);
+        if (obj.properties[p].keyValue) visit(obj.properties[p].keyValue);
       }
     }
   }

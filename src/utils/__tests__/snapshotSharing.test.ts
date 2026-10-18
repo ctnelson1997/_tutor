@@ -18,6 +18,17 @@ const snap = (step: number, x: number, heap: HeapObject[], stdout: string[] = []
 });
 
 describe('shareSnapshots', () => {
+  it("shares a NaN with a NaN, and treats a Map key's value as part of its property (#48)", () => {
+    const map = (keyId: string): HeapObject => ({
+      id: '1', objectType: 'map',
+      properties: [{ key: '#' + keyId, keyValue: { type: 'ref', heapId: keyId }, value: { type: 'number', value: NaN, display: 'NaN' } }],
+    });
+    const [a, b, c] = shareSnapshots([snap(0, NaN, [map('2')]), snap(1, NaN, [map('2')]), snap(2, NaN, [map('3')])]);
+    expect(b.callStack).toBe(a.callStack);
+    expect(b.heap[0]).toBe(a.heap[0]);
+    expect(c.heap[0]).not.toBe(b.heap[0]);
+  });
+
   it('shares frames, variables, heap objects and stdout that are unchanged', () => {
     const [a, b] = shareSnapshots([
       snap(0, 1, [array('1', [3, 1, 2]), array('2', [9])], ['hi']),

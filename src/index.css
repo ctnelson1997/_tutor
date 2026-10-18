@@ -231,6 +231,12 @@ html, body, #root {
   color: #b02a37;
 }
 
+/* An array's hole (JS, #48): no element there, not even undefined */
+.value-empty {
+  color: #6c757d;
+  font-style: italic;
+}
+
 /* What started a step the stack didn't call: a callback the event loop ran (JS, #45) */
 .step-label {
   margin-left: 0.5rem;

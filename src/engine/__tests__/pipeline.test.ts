@@ -613,6 +613,43 @@ let later = 1;`);
     expect(lastSnap(snaps).callStack[0].variables.map(v => v.name)).toEqual(['add', 'total', 'later']);
   });
 
+  // ── #48: values drawn as themselves ──
+
+  it('draws NaN, the infinities and -0 as themselves, also after JSON (#48)', () => {
+    const last = lastSnap(runPipeline(`const bad = 0 / 0;
+const values = [NaN, Infinity, -Infinity, -0, 1];
+const stats = { max: -Infinity, zero: -0 };`));
+    expect(findVar(last, 'bad')?.value).toEqual({ type: 'number', value: null, display: 'NaN' });
+    const values = last.heap.find(h => h.objectType === 'array')!;
+    expect(values.properties.map(p => (p.value as { display?: string }).display)).toEqual(['NaN', 'Infinity', '-Infinity', '-0', undefined]);
+    const stats = last.heap.find(h => h.objectType === 'object')!;
+    expect(stats.properties.map(p => [p.key, (p.value as { display?: string }).display])).toEqual([['max', '-Infinity'], ['zero', '-0']]);
+  });
+
+  it('draws holes as empty, and Symbol keys as [Symbol(…)] (#48)', () => {
+    const last = lastSnap(runPipeline(`const sparse = [1, , 3];
+sparse.length = 5;
+const id = Symbol("id");
+const user = { name: "Ann", [id]: 7 };`));
+    const sparse = last.heap.find(h => h.objectType === 'array')!;
+    expect(sparse.properties.map(p => p.value.type)).toEqual(['number', 'empty', 'number', 'empty', 'empty']);
+    const user = last.heap.find(h => h.objectType === 'object')!;
+    expect(user.properties.map(p => p.key)).toEqual(['name', '[Symbol(id)]']);
+  });
+
+  it("draws a Map's keys as values: an object key is a reference to its object (#48)", () => {
+    const last = lastSnap(runPipeline(`const owner = { name: "Ann" };
+const scores = new Map([[owner, 90], [1, "one"], ["1", "string one"]]);`));
+    const map = last.heap.find(h => h.objectType === 'map')!;
+    const ownerId = (findVar(last, 'owner')!.value as { heapId: string }).heapId;
+    expect(map.properties.map(p => p.keyValue)).toEqual([
+      { type: 'ref', heapId: ownerId },
+      { type: 'number', value: 1 },
+      { type: 'string', value: '1' },
+    ]);
+    expect(map.properties[0].key).toBe('#' + ownerId);
+  });
+
   // ── #46: code the instrumenter used to skip ──
 
   it('steps through a labeled loop, and stops an endless one at the step cap (#46)', () => {
