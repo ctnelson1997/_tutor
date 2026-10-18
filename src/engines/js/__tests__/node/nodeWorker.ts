@@ -17,8 +17,9 @@
  * `onerror`, as in a browser), and a `console` whose output goes nowhere, like
  * the worker's DevTools console, which JSTutor never shows.
  */
+import vm from 'node:vm';
 import { Worker } from 'node:worker_threads';
-import { WORKER_SOURCE, type WorkerLike } from '../../executor';
+import { WORKER_SOURCE, type SyntaxProblem, type WorkerLike } from '../../executor';
 import type { WorkerMessage } from '../../../../types/snapshot';
 
 // (In a function: its own names must not become the program's globals.)
@@ -107,4 +108,24 @@ export function nodeWorker(): WorkerLike {
   thread.on('message', (data: WorkerMessage) => worker.onmessage?.({ data } as MessageEvent<WorkerMessage>));
   thread.on('error', (e: unknown) => worker.onerror?.({ message: uncaughtText(e) } as ErrorEvent));
   return worker;
+}
+
+/**
+ * What the engine says of a program that doesn't parse, as a browser
+ * worker's error event tells it (#50): Node's vm compiles the program as a
+ * script, and V8's SyntaxError gives the message, and its stack the line and
+ * a caret under the column.
+ */
+export async function nodeCheckScript(source: string): Promise<SyntaxProblem | null> {
+  try {
+    new vm.Script(source, { filename: 'main.js' });
+    return null;
+  } catch (e) {
+    const err = e as Error;
+    const stack = String(err.stack ?? '');
+    const at = /main\.js:(\d+)\n[^\n]*\n( *)\^/.exec(stack);
+    // (At the end of the input there is no caret, only the line.)
+    const line = at ? Number(at[1]) : Number(/main\.js:(\d+)/.exec(stack)?.[1]) || null;
+    return { message: err.message, line, column: at ? at[2].length : null };
+  }
 }

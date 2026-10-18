@@ -121,11 +121,12 @@ export interface ExecutionSnapshot {
  *   limit      the run hit the step cap or the time limit
  *   error      the engine stopped it: a construct it can't run yet, or an
  *              internal failure
- *   compile    the program doesn't compile (Java): nothing ran, `message` and
- *              `line` are the first error, `lines` has every error's line, and
- *              `stderr` lists them all as javac does
- * `kind` is absent for failures before anything ran (a parse error, the engine
- * failing to load, the worker timing out).
+ *   compile    the program doesn't compile (Java) or parse (JS, #50): nothing
+ *              ran, `message` and `line` are the first error, `lines` has every
+ *              error's line, and `stderr` lists them all as javac or the
+ *              browser's console does
+ * `kind` is absent for failures before anything ran (a Python syntax error,
+ * the engine failing to load, the worker timing out).
  */
 export interface RunError {
   message: string;

@@ -87,11 +87,19 @@ export function executeInWorker(code: string, makeWorker: () => WorkerLike = cre
   });
 }
 
+/** A program the JavaScript engine can't parse: the engine's message, and where (line 1-based, column 0-based). */
+export interface SyntaxProblem {
+  message: string;
+  line: number | null;
+  column: number | null;
+}
+
 /**
  * The program the worker runs: the runtime, then the instrumented source.
- * A program that doesn't parse gets its error reply instead.
+ * A program that doesn't parse gives its parser's (Acorn's) problem instead,
+ * and syntax JSTutor can't show yet its error reply.
  */
-export function prepareProgram(source: string): { code: string } | { reply: WorkerMessage } {
+export function prepareProgram(source: string): { code: string } | { reply: WorkerMessage } | { syntax: SyntaxProblem } {
   let instrumentedCode: string;
   try {
     instrumentedCode = instrument(source);
@@ -99,15 +107,95 @@ export function prepareProgram(source: string): { code: string } | { reply: Work
     // Syntax JSTutor can't show yet stops the program before it runs (#46).
     if (err instanceof UnsupportedSyntaxError) return { reply: { type: 'error', message: err.message, line: err.line } };
     const message = err instanceof Error ? err.message : String(err);
-    let line: number | undefined;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((err as any)?.loc?.line) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      line = (err as any).loc.line;
-    }
-    return { reply: { type: 'error', message: `Parse error: ${message}`, line } };
+    const loc = (err as { loc?: { line?: number; column?: number } } | null)?.loc;
+    return { syntax: { message: message.replace(/ \(\d+:\d+\)$/, ''), line: loc?.line ?? null, column: loc?.column ?? null } };
   }
   return { code: getRuntimeCode() + '\n' + instrumentedCode };
+}
+
+/** Asks the JavaScript engine itself what is wrong with a program that doesn't parse; null if it has nothing to say. */
+export type ScriptChecker = (source: string) => Promise<SyntaxProblem | null>;
+
+/**
+ * The browser's own words for a program that doesn't parse (#50): the program
+ * is loaded as a worker's script, and a script that fails to parse fires the
+ * worker's error event with the engine's message and position (no browser
+ * gives a SyntaxError's line to eval or new Function). A script that parses
+ * starts running, so after a second the worker is ended and the parser's
+ * problem stands.
+ */
+function checkScriptInWorker(source: string): Promise<SyntaxProblem | null> {
+  return new Promise(resolve => {
+    let worker: Worker;
+    try {
+      const url = URL.createObjectURL(new Blob([source], { type: 'application/javascript' }));
+      worker = new Worker(url);
+      URL.revokeObjectURL(url);
+    } catch {
+      resolve(null);
+      return;
+    }
+    const done = (problem: SyntaxProblem | null) => {
+      clearTimeout(timer);
+      worker.terminate();
+      resolve(problem);
+    };
+    const timer = setTimeout(() => done(null), 1000);
+    worker.onerror = (e: ErrorEvent) => {
+      e.preventDefault();
+      done(syntaxProblemFromEvent(e));
+    };
+  });
+}
+
+/** A worker's error event as a syntax problem ("Uncaught SyntaxError: msg" in Chrome, "SyntaxError: msg" in Firefox), or null for another error. */
+export function syntaxProblemFromEvent(e: { message: string; lineno?: number; colno?: number }): SyntaxProblem | null {
+  const m = /^(?:Uncaught )?SyntaxError: ([^]*)$/.exec(e.message ?? '');
+  if (!m) return null;
+  return { message: m[1], line: e.lineno || null, column: e.colno ? e.colno - 1 : null };
+}
+
+/**
+ * A program that doesn't parse, as a `compile` RunError with no steps (#50),
+ * as JavaTutor reports a program javac rejects: the message and line, the line
+ * marked, and on the console what the browser's console shows for it, with
+ * the line and a caret under the column.
+ */
+export function syntaxErrorReply(source: string, problem: SyntaxProblem): WorkerMessage {
+  const message = `SyntaxError: ${problem.message}`;
+  const listing = [`Uncaught ${message}`];
+  const text = problem.line ? source.split('\n')[problem.line - 1] : undefined;
+  if (problem.line) listing.push(`    at main.js:${problem.line}${problem.column !== null ? `:${problem.column + 1}` : ''}`);
+  if (text !== undefined) {
+    listing.push(text);
+    if (problem.column !== null) listing.push(text.slice(0, problem.column).replace(/[^\t]/g, ' ') + '^');
+  }
+  return {
+    type: 'result',
+    snapshots: [],
+    error: { kind: 'compile', message, ...(problem.line ? { line: problem.line, lines: [problem.line] } : {}), stderr: listing.join('\n') },
+  };
+}
+
+/** The workers a run uses: the program's, and the one that asks the engine about a program that doesn't parse. */
+export interface ExecuteOptions {
+  makeWorker?: () => WorkerLike;
+  checkScript?: ScriptChecker;
+  timeoutMs?: number;
+}
+
+/**
+ * Run a program as JSTutor does: instrument it and run it in a worker; a
+ * program that doesn't parse is reported in the engine's own words.
+ */
+export async function executeProgram(source: string, options: ExecuteOptions = {}): Promise<WorkerMessage> {
+  const program = prepareProgram(source);
+  if ('syntax' in program) {
+    const engine = await (options.checkScript ?? checkScriptInWorker)(source).catch(() => null);
+    return syntaxErrorReply(source, engine ?? program.syntax);
+  }
+  if ('reply' in program) return program.reply;
+  return executeInWorker(program.code, options.makeWorker, options.timeoutMs);
 }
 
 /**
@@ -115,7 +203,5 @@ export function prepareProgram(source: string): { code: string } | { reply: Work
  * Returns the raw WorkerMessage (snapshots or error).
  */
 export async function execute(source: string): Promise<WorkerMessage> {
-  const program = prepareProgram(source);
-  if ('reply' in program) return program.reply;
-  return executeInWorker(program.code);
+  return executeProgram(source);
 }

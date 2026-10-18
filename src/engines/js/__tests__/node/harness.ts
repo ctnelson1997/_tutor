@@ -21,20 +21,22 @@
  *   refs, lines, names, reachable, frames   snapshot invariants (INVARIANTS).
  */
 import { readFileSync } from 'node:fs';
-import { WORKER_TIMEOUT, executeInWorker, prepareProgram } from '../../executor';
+import { WORKER_TIMEOUT, executeProgram } from '../../executor';
 import type { ExecutionSnapshot, RuntimeValue, WorkerMessage } from '../../../../types/snapshot';
 import { diffCanon, shownCanon } from './canon';
 import { KNOWN_FAILURES_PATH, SYNTAX_ERRORS_CATEGORY, type GoldenLine, type NodeCase, type NodeGolden } from './corpus';
-import { nodeWorker } from './nodeWorker';
+import { nodeCheckScript, nodeWorker } from './nodeWorker';
 
 /** The step cap every engine stops at. */
 export const MAX_STEPS = 5000;
 
-/** Run a program through JSTutor as the app does: instrument, then the worker's reply (or the kill after `timeoutMs`). */
+/**
+ * Run a program through JSTutor as the app does (executeProgram): instrument
+ * it and take the worker's reply (or the kill after `timeoutMs`); a program
+ * that doesn't parse is reported in the engine's words.
+ */
 export async function runJsTutor(source: string, timeoutMs = WORKER_TIMEOUT): Promise<WorkerMessage> {
-  const program = prepareProgram(source);
-  if ('reply' in program) return program.reply;
-  return executeInWorker(program.code, nodeWorker, timeoutMs);
+  return executeProgram(source, { makeWorker: nodeWorker, checkScript: nodeCheckScript, timeoutMs });
 }
 
 /**
