@@ -1,0 +1,9 @@
+{
+  "name": "tutor-roadmap-analysis",
+  "private": true,
+  "type": "module",
+  "description": "Throwaway differential harness behind the PyTutor and JSTutor roadmaps; see README.md",
+  "dependencies": {
+    "pyodide": "0.27.5"
+  }
+}

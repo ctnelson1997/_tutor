@@ -1,0 +1,28 @@
+// implicit coercion with + and the other arithmetic operators: '5' + 1, '5' - 1, [] + {}, unary plus
+const a = '5' + 1;
+const b = '5' - 1;
+const c = '5' * '2';
+const d = [] + {};
+const e = [] + [];
+const f = [1, 2] + [3];
+const g = true + 1;
+const h = null + 1;
+const i = undefined + 1;
+const j = 1 + 2 + '3';
+const k = '1' + 2 + 3;
+const l = +'42';
+const m = +'';
+const n = +'4px';
+const o = 'b' + 'a' + +'a' + 'a';
+const p = {} + 'x';
+const q = '10' / '4';
+const r = '3' - -'3';
+console.log(a, typeof a);
+console.log(b, typeof b);
+console.log(c, d, JSON.stringify(e), f);
+console.log(g, h, i);
+console.log(j, k);
+console.log(l, m, n);
+console.log(o, p, q, r);
+console.log(String([null]), String([undefined, 1]), String({ a: 1 }));
+console.log(`${[1, [2, 3]]}`, [] * 2, [5] * 2, [1, 2] * 2);

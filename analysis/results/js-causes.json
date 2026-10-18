@@ -1,0 +1,2294 @@
+{
+ "async/allsettled-mixed-requests": {
+  "group": "wrong-output",
+  "causes": [
+   "async"
+  ],
+  "tags": [
+   "async-output-lost",
+   "skipped-lines"
+  ]
+ },
+ "async/async-arrow": {
+  "group": "wrong-output",
+  "causes": [
+   "async"
+  ],
+  "tags": [
+   "async-output-lost",
+   "skipped-lines",
+   "frames-left"
+  ]
+ },
+ "async/async-await-return": {
+  "group": "wrong-output",
+  "causes": [
+   "async"
+  ],
+  "tags": [
+   "async-output-lost",
+   "skipped-lines",
+   "frames-left"
+  ]
+ },
+ "async/async-class-method": {
+  "group": "wrong-output",
+  "causes": [
+   "async"
+  ],
+  "tags": [
+   "async-output-lost",
+   "skipped-lines-unsure",
+   "frames-left"
+  ]
+ },
+ "async/async-throw-then-catch": {
+  "group": "wrong-output",
+  "causes": [
+   "async"
+  ],
+  "tags": [
+   "async-output-lost",
+   "skipped-lines-unsure"
+  ]
+ },
+ "async/await-in-loop": {
+  "group": "wrong-output",
+  "causes": [
+   "async"
+  ],
+  "tags": [
+   "async-output-lost",
+   "skipped-lines",
+   "frames-left"
+  ]
+ },
+ "async/catch-rejection": {
+  "group": "wrong-output",
+  "causes": [
+   "async"
+  ],
+  "tags": [
+   "async-output-lost",
+   "skipped-lines-unsure"
+  ]
+ },
+ "async/fake-fetch": {
+  "group": "wrong-output",
+  "causes": [
+   "async",
+   "frames"
+  ],
+  "tags": [
+   "async-output-lost",
+   "skipped-lines",
+   "frames-left"
+  ]
+ },
+ "async/fire-and-forget": {
+  "group": "wrong-output",
+  "causes": [
+   "async"
+  ],
+  "tags": [
+   "async-output-lost",
+   "skipped-lines",
+   "frames-left"
+  ]
+ },
+ "async/microtask-macrotask-order": {
+  "group": "wrong-output",
+  "causes": [
+   "async"
+  ],
+  "tags": [
+   "async-output-lost",
+   "skipped-lines",
+   "frames-left"
+  ]
+ },
+ "async/promise-all": {
+  "group": "wrong-output",
+  "causes": [
+   "async"
+  ],
+  "tags": [
+   "async-output-lost",
+   "skipped-lines-unsure"
+  ]
+ },
+ "async/promise-allsettled-any": {
+  "group": "wrong-output",
+  "causes": [
+   "async"
+  ],
+  "tags": [
+   "async-output-lost",
+   "skipped-lines-unsure"
+  ]
+ },
+ "async/promise-executor-order": {
+  "group": "wrong-output",
+  "causes": [
+   "async"
+  ],
+  "tags": [
+   "async-output-lost",
+   "skipped-lines"
+  ]
+ },
+ "async/promise-race": {
+  "group": "wrong-output",
+  "causes": [
+   "async"
+  ],
+  "tags": [
+   "async-output-lost",
+   "skipped-lines-unsure",
+   "frames-left"
+  ]
+ },
+ "async/promise-then-chain": {
+  "group": "wrong-output",
+  "causes": [
+   "async"
+  ],
+  "tags": [
+   "async-output-lost",
+   "skipped-lines"
+  ]
+ },
+ "async/setinterval-cleared": {
+  "group": "wrong-output",
+  "causes": [
+   "async"
+  ],
+  "tags": [
+   "async-output-lost",
+   "skipped-lines"
+  ]
+ },
+ "async/setinterval-countdown": {
+  "group": "wrong-output",
+  "causes": [
+   "async"
+  ],
+  "tags": [
+   "async-output-lost",
+   "skipped-lines"
+  ]
+ },
+ "async/settimeout-delays": {
+  "group": "wrong-output",
+  "causes": [
+   "async"
+  ],
+  "tags": [
+   "async-output-lost",
+   "skipped-lines"
+  ]
+ },
+ "async/try-catch-await": {
+  "group": "wrong-output",
+  "causes": [
+   "async"
+  ],
+  "tags": [
+   "async-output-lost",
+   "skipped-lines-unsure",
+   "frames-left"
+  ]
+ },
+ "async/unhandled-rejection": {
+  "group": "wrong-output",
+  "causes": [
+   "async"
+  ],
+  "tags": [
+   "async-output-lost",
+   "async-exception-lost",
+   "skipped-lines-unsure",
+   "frames-left"
+  ]
+ },
+ "collections/array-concat-indexof-includes": {
+  "group": "wrong-state",
+  "causes": [
+   "console-format",
+   "values"
+  ],
+  "tags": [
+   "console-format",
+   "final-state"
+  ]
+ },
+ "collections/array-fill-aliasing-bug": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format",
+   "values"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format",
+   "final-state"
+  ]
+ },
+ "collections/array-fill-at-join-reverse": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "collections/array-find-some-every": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "collections/array-flat-flatmap": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format"
+  ]
+ },
+ "collections/array-from": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format"
+  ]
+ },
+ "collections/array-immutable-methods": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format",
+   "values"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format",
+   "final-state"
+  ]
+ },
+ "collections/array-length-truncate": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format",
+   "values"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format",
+   "final-state"
+  ]
+ },
+ "collections/array-named-properties": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format"
+  ]
+ },
+ "collections/array-push-pop-shift-unshift": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "collections/array-splice-slice": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "collections/copy-spread-structuredclone-json": {
+  "group": "wrong-state",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format",
+   "final-state"
+  ]
+ },
+ "collections/iterators-entries": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format",
+   "frames"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format",
+   "frames-left",
+   "final-state"
+  ]
+ },
+ "collections/map-basics": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format"
+  ]
+ },
+ "collections/map-filter-reduce-chain": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format"
+  ]
+ },
+ "collections/map-object-keys": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format",
+   "visible",
+   "values"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format",
+   "final-state"
+  ]
+ },
+ "collections/object-groupby": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format",
+   "values"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format",
+   "final-state"
+  ]
+ },
+ "collections/set-dedupe-ops": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format",
+   "values"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format",
+   "final-state"
+  ]
+ },
+ "collections/sort-default-vs-comparator": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format"
+  ]
+ },
+ "collections/sparse-array-holes": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format",
+   "values"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format",
+   "final-state"
+  ]
+ },
+ "collections/strings-as-arrays": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "collections/two-d-array-grid": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "collections/typed-arrays": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format"
+  ]
+ },
+ "collections/weakmap-private-data": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format"
+  ]
+ },
+ "control-flow/comma-for-header": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "control-flow/continue-in-for-update": {
+  "group": "wrong-state",
+  "causes": [
+   "console-format",
+   "frames"
+  ],
+  "tags": [
+   "console-format",
+   "frames-left",
+   "final-state"
+  ]
+ },
+ "control-flow/for-in-objects-arrays": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "control-flow/for-no-test-break": {
+  "group": "wrong-state",
+  "causes": [
+   "frames"
+  ],
+  "tags": [
+   "frames-left",
+   "final-state"
+  ]
+ },
+ "control-flow/for-of-entries": {
+  "group": "wrong-state",
+  "causes": [
+   "console-format",
+   "frames"
+  ],
+  "tags": [
+   "console-format",
+   "frames-left",
+   "final-state"
+  ]
+ },
+ "control-flow/for-of-iterables": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "control-flow/labeled-block": {
+  "group": "wrong-state",
+  "causes": [
+   "unreached"
+  ],
+  "tags": [
+   "skipped-lines"
+  ]
+ },
+ "control-flow/labeled-break-nested-for": {
+  "group": "wrong-state",
+  "causes": [
+   "console-format",
+   "unreached"
+  ],
+  "tags": [
+   "console-format",
+   "skipped-lines"
+  ]
+ },
+ "control-flow/labeled-while-do-while": {
+  "group": "wrong-state",
+  "causes": [
+   "console-format",
+   "unreached"
+  ],
+  "tags": [
+   "console-format",
+   "skipped-lines"
+  ]
+ },
+ "control-flow/loop-body-same-line": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "control-flow/nested-ternaries": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "control-flow/short-circuit-side-effects": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "control-flow/statements-sharing-line": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "control-flow/switch-block-scope": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "control-flow/switch-default-middle": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "control-flow/switch-fall-through": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "control-flow/switch-true": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "core/bigint-values": {
+  "group": "wrong-output",
+  "causes": [
+   "console"
+  ],
+  "tags": [
+   "console-display-lossy"
+  ]
+ },
+ "core/chained-assignment": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "core/coercion-arithmetic": {
+  "group": "wrong-state",
+  "causes": [
+   "values"
+  ],
+  "tags": [
+   "final-state"
+  ]
+ },
+ "core/coercion-comparisons": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "core/const-object-mutation": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format",
+   "values"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format",
+   "final-state"
+  ]
+ },
+ "core/in-and-delete": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format",
+   "values"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format",
+   "final-state"
+  ]
+ },
+ "core/increment-pre-post": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format",
+   "values"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format",
+   "final-state"
+  ]
+ },
+ "core/logical-short-circuit": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "core/loose-vs-strict-equality": {
+  "group": "wrong-state",
+  "causes": [
+   "values"
+  ],
+  "tags": [
+   "final-state"
+  ]
+ },
+ "core/nan-comparisons": {
+  "group": "wrong-state",
+  "causes": [
+   "console-format",
+   "values"
+  ],
+  "tags": [
+   "console-format",
+   "final-state"
+  ]
+ },
+ "core/negative-zero": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "values"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "final-state"
+  ]
+ },
+ "core/special-values-in-containers": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "values"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "final-state"
+  ]
+ },
+ "core/tdz-reference-error": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "core/ternary-chains": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "core/truthiness": {
+  "group": "wrong-state",
+  "causes": [
+   "values"
+  ],
+  "tags": [
+   "final-state"
+  ]
+ },
+ "core/typeof-operator": {
+  "group": "wrong-state",
+  "causes": [
+   "values"
+  ],
+  "tags": [
+   "final-state"
+  ]
+ },
+ "core/var-vs-let-loop-closures": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "core/void-and-comma": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "errors/break-return-in-try-finally": {
+  "group": "wrong-state",
+  "causes": [
+   "unreached",
+   "frames"
+  ],
+  "tags": [
+   "skipped-lines",
+   "frames-left",
+   "final-state"
+  ]
+ },
+ "errors/builtin-error-types-range": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "errors/custom-error-subclass": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "errors/foreach-callback-throw": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "errors/json-parse-optional-catch": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "errors/rethrow-selective": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "errors/throw-non-error-values": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "errors/uncaught-custom-error": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format",
+   "skipped-lines-unsure"
+  ]
+ },
+ "errors/uncaught-in-class-method": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format",
+   "skipped-lines-unsure"
+  ]
+ },
+ "errors/uncaught-through-calls": {
+  "group": "wrong-output",
+  "causes": [
+   "console"
+  ],
+  "tags": [
+   "output-after-last-step",
+   "skipped-lines-unsure"
+  ]
+ },
+ "examples/higher-order-functions": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "examples/stack-array": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "functions/arguments-object": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "functions/arrow-vs-regular": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "functions/block-function-declarations": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "functions/call-apply-bind": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "functions/callbacks": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format",
+   "values"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format",
+   "final-state"
+  ]
+ },
+ "functions/closure-counter": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "functions/closure-private-state": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "functions/constructor-prototype": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format"
+  ]
+ },
+ "functions/currying": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "functions/declarations-expressions-arrows": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "functions/default-params": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "functions/error-stack-first-line": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format",
+   "visible"
+  ],
+  "tags": [
+   "console-values",
+   "console-format"
+  ]
+ },
+ "functions/fn-tostring": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "visible"
+  ],
+  "tags": [
+   "console-values",
+   "leaked-code",
+   "final-state"
+  ]
+ },
+ "functions/functions-in-collections": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "functions/higher-order-returning-functions": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "functions/iife-patterns": {
+  "group": "wrong-state",
+  "causes": [
+   "console-format",
+   "unreached"
+  ],
+  "tags": [
+   "console-format",
+   "skipped-lines"
+  ]
+ },
+ "functions/loop-closures": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "functions/mutual-recursion": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "functions/rest-and-spread": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "generators/array-from-generator": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "generators/basic-yield-next": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format",
+   "final-state"
+  ]
+ },
+ "generators/class-generator-iterator": {
+  "group": "wrong-state",
+  "causes": [
+   "frames"
+  ],
+  "tags": [
+   "frames-left",
+   "final-state"
+  ]
+ },
+ "generators/custom-iterable-object": {
+  "group": "wrong-state",
+  "causes": [
+   "console-format",
+   "values"
+  ],
+  "tags": [
+   "console-format",
+   "final-state"
+  ]
+ },
+ "generators/for-of-and-spread": {
+  "group": "wrong-state",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format",
+   "final-state"
+  ]
+ },
+ "generators/generator-return": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format",
+   "frames"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format",
+   "frames-left",
+   "final-state"
+  ]
+ },
+ "generators/hand-written-iterator": {
+  "group": "wrong-state",
+  "causes": [
+   "console-format",
+   "frames",
+   "values"
+  ],
+  "tags": [
+   "console-format",
+   "frames-left",
+   "final-state"
+  ]
+ },
+ "generators/infinite-take": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format",
+   "frames"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format",
+   "frames-left",
+   "final-state"
+  ]
+ },
+ "generators/interleaved-and-throw": {
+  "group": "wrong-state",
+  "causes": [
+   "frames"
+  ],
+  "tags": [
+   "frames-left",
+   "final-state"
+  ]
+ },
+ "generators/lazy-pipeline": {
+  "group": "wrong-state",
+  "causes": [
+   "console-format",
+   "frames"
+  ],
+  "tags": [
+   "console-format",
+   "frames-left",
+   "final-state"
+  ]
+ },
+ "generators/next-sends-values": {
+  "group": "wrong-state",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format",
+   "final-state"
+  ]
+ },
+ "generators/yield-star-delegation": {
+  "group": "wrong-state",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format",
+   "final-state"
+  ]
+ },
+ "limits/endless-labeled-loop": {
+  "group": "error",
+  "causes": [
+   "unreached"
+  ],
+  "tags": [
+   "worker-kill-endless"
+  ]
+ },
+ "objects-classes/circular-mutual-reference": {
+  "group": "wrong-output",
+  "causes": [
+   "console"
+  ],
+  "tags": [
+   "console-display-lossy"
+  ]
+ },
+ "objects-classes/circular-self-reference": {
+  "group": "wrong-output",
+  "causes": [
+   "console"
+  ],
+  "tags": [
+   "console-display-lossy"
+  ]
+ },
+ "objects-classes/class-arrow-field": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format",
+   "unreached"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format",
+   "skipped-lines"
+  ]
+ },
+ "objects-classes/class-basic-methods": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format"
+  ]
+ },
+ "objects-classes/class-expression": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format",
+   "final-state"
+  ]
+ },
+ "objects-classes/class-getters-setters": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format"
+  ]
+ },
+ "objects-classes/class-private-fields": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format"
+  ]
+ },
+ "objects-classes/class-static-block": {
+  "group": "wrong-state",
+  "causes": [
+   "console-format",
+   "unreached"
+  ],
+  "tags": [
+   "console-format",
+   "skipped-lines"
+  ]
+ },
+ "objects-classes/class-static-members": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format"
+  ]
+ },
+ "objects-classes/constructor-function-prototype": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format"
+  ]
+ },
+ "objects-classes/define-property-nonenumerable": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format",
+   "visible"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format",
+   "final-state"
+  ]
+ },
+ "objects-classes/derived-this-before-super": {
+  "group": "wrong-output",
+  "causes": [
+   "console"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "skipped-lines-unsure"
+  ]
+ },
+ "objects-classes/extends-builtins": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format"
+  ]
+ },
+ "objects-classes/getters-setters-literal": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format"
+  ]
+ },
+ "objects-classes/inheritance-super": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format"
+  ]
+ },
+ "objects-classes/instanceof-prototype-of": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format"
+  ]
+ },
+ "objects-classes/json-stringify-classes": {
+  "group": "wrong-state",
+  "causes": [
+   "console-format",
+   "values"
+  ],
+  "tags": [
+   "console-format",
+   "final-state"
+  ]
+ },
+ "objects-classes/method-chaining-this": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format"
+  ]
+ },
+ "objects-classes/nested-objects-references": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format"
+  ]
+ },
+ "objects-classes/object-create-prototype": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "objects-classes/object-freeze-seal": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "objects-classes/object-literal-shorthand": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "objects-classes/object-static-helpers": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "objects-classes/optional-chaining-nullish": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "objects-classes/property-order-integer-keys": {
+  "group": "wrong-state",
+  "causes": [
+   "console-format",
+   "values"
+  ],
+  "tags": [
+   "console-format",
+   "final-state"
+  ]
+ },
+ "objects-classes/spread-destructuring-defaults": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "objects-classes/symbol-keys": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format",
+   "values"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format",
+   "final-state"
+  ]
+ },
+ "objects-classes/symbol-toprimitive": {
+  "group": "wrong-state",
+  "causes": [
+   "console-format",
+   "values"
+  ],
+  "tags": [
+   "console-format",
+   "final-state"
+  ]
+ },
+ "objects-classes/this-lost-in-callback": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format",
+   "skipped-lines-unsure"
+  ]
+ },
+ "objects-classes/tostring-valueof": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "output/console-assert": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format"
+  ],
+  "tags": [
+   "console-method-missing",
+   "console-format"
+  ]
+ },
+ "output/console-group-count": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format"
+  ],
+  "tags": [
+   "console-method-missing",
+   "console-format"
+  ]
+ },
+ "output/console-levels": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format"
+  ],
+  "tags": [
+   "console-method-missing",
+   "console-display-lossy",
+   "stderr-as-stdout"
+  ]
+ },
+ "output/console-table": {
+  "group": "wrong-output",
+  "causes": [
+   "console"
+  ],
+  "tags": [
+   "console-method-missing"
+  ]
+ },
+ "output/format-substitutions": {
+  "group": "wrong-output",
+  "causes": [
+   "console"
+  ],
+  "tags": [
+   "console-display-lossy"
+  ]
+ },
+ "output/log-arrays-nested": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format",
+   "values"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format",
+   "final-state"
+  ]
+ },
+ "output/log-circular": {
+  "group": "wrong-output",
+  "causes": [
+   "console"
+  ],
+  "tags": [
+   "console-display-lossy"
+  ]
+ },
+ "output/log-functions-classes": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "visible"
+  ],
+  "tags": [
+   "console-display-lossy"
+  ]
+ },
+ "output/log-map-set": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format",
+   "values"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format",
+   "final-state"
+  ]
+ },
+ "output/log-mixed-arguments": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "output/log-objects-nested": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format"
+  ]
+ },
+ "output/log-special-values": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "values"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "final-state"
+  ]
+ },
+ "output/log-strings-quotes": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format"
+  ]
+ },
+ "output/log-symbol-bigint": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "values"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "final-state"
+  ]
+ },
+ "output/log-then-mutate": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format",
+   "values"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format",
+   "final-state"
+  ]
+ },
+ "realistic/array-stats": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "realistic/async-await-weather": {
+  "group": "wrong-output",
+  "causes": [
+   "async"
+  ],
+  "tags": [
+   "async-output-lost",
+   "skipped-lines-unsure",
+   "frames-left"
+  ]
+ },
+ "realistic/bank-account": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "realistic/bubble-sort": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "realistic/capitalize-words": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "realistic/countdown-timer": {
+  "group": "wrong-output",
+  "causes": [
+   "async"
+  ],
+  "tags": [
+   "async-output-lost",
+   "skipped-lines"
+  ]
+ },
+ "realistic/counter-factory": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "realistic/destructuring-spread": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "realistic/employee-array-methods": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "realistic/fake-fetch-then": {
+  "group": "wrong-output",
+  "causes": [
+   "async"
+  ],
+  "tags": [
+   "async-output-lost",
+   "skipped-lines-unsure"
+  ]
+ },
+ "realistic/fizzbuzz": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "realistic/flatten-array": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "realistic/guessing-game": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "realistic/insertion-sort": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "realistic/inventory-manager": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "realistic/json-round-trip": {
+  "group": "wrong-state",
+  "causes": [
+   "console-format",
+   "values"
+  ],
+  "tags": [
+   "console-format",
+   "final-state"
+  ]
+ },
+ "realistic/letter-frequency-map": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format",
+   "frames"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format",
+   "frames-left",
+   "final-state"
+  ]
+ },
+ "realistic/matrix-operations": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "realistic/once-and-memoize": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "realistic/prime-sieve": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "realistic/promise-all-orders": {
+  "group": "wrong-output",
+  "causes": [
+   "async"
+  ],
+  "tags": [
+   "async-output-lost",
+   "skipped-lines-unsure"
+  ]
+ },
+ "realistic/recursion-basics": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "realistic/remove-duplicates": {
+  "group": "wrong-state",
+  "causes": [
+   "console-format",
+   "frames"
+  ],
+  "tags": [
+   "console-format",
+   "frames-left",
+   "final-state"
+  ]
+ },
+ "realistic/selection-sort": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "realistic/stack-queue": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "realistic/student-records": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "realistic/switch-days": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "realistic/temperature-conversion": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "realistic/tic-tac-toe": {
+  "group": "wrong-state",
+  "causes": [
+   "frames"
+  ],
+  "tags": [
+   "frames-left",
+   "final-state"
+  ]
+ },
+ "realistic/tip-calculator": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "realistic/todo-list": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "realistic/towers-of-hanoi": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "realistic/traffic-light-state-machine": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "realistic/unique-visitors-set": {
+  "group": "wrong-output",
+  "causes": [
+   "console",
+   "console-format"
+  ],
+  "tags": [
+   "console-display-lossy",
+   "console-format"
+  ]
+ },
+ "realistic/word-count": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "strings-regex/char-codes-cipher": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "strings-regex/localecompare-sorting": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "strings-regex/matchall-iterator": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "strings-regex/named-groups-exec": {
+  "group": "wrong-state",
+  "causes": [
+   "frames"
+  ],
+  "tags": [
+   "frames-left",
+   "final-state"
+  ]
+ },
+ "strings-regex/pad-repeat-trim": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "strings-regex/regex-test-match": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "strings-regex/replace-function-dollar": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "strings-regex/split-join-slice": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "strings-regex/string-comparison": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "strings-regex/tagged-templates-raw": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "strings-regex/text-stats": {
+  "group": "format-only",
+  "causes": [
+   "console-format"
+  ],
+  "tags": [
+   "console-format"
+  ]
+ },
+ "syntax-errors/await-in-non-async-function": {
+  "group": "compile-differs",
+  "causes": [
+   "parse-errors"
+  ],
+  "tags": [
+   "compile-message"
+  ]
+ },
+ "syntax-errors/const-without-initializer": {
+  "group": "compile-differs",
+  "causes": [
+   "parse-errors"
+  ],
+  "tags": [
+   "compile-message"
+  ]
+ },
+ "syntax-errors/invalid-assignment-target": {
+  "group": "compile-differs",
+  "causes": [
+   "parse-errors"
+  ],
+  "tags": [
+   "compile-message"
+  ]
+ },
+ "syntax-errors/let-redeclaration": {
+  "group": "compile-differs",
+  "causes": [
+   "parse-errors"
+  ],
+  "tags": [
+   "compile-message"
+  ]
+ },
+ "syntax-errors/missing-closing-brace": {
+  "group": "compile-differs",
+  "causes": [
+   "parse-errors"
+  ],
+  "tags": [
+   "compile-message"
+  ]
+ },
+ "syntax-errors/missing-closing-paren": {
+  "group": "compile-differs",
+  "causes": [
+   "parse-errors"
+  ],
+  "tags": [
+   "compile-message"
+  ]
+ },
+ "syntax-errors/misspelled-function-keyword": {
+  "group": "compile-differs",
+  "causes": [
+   "parse-errors"
+  ],
+  "tags": [
+   "compile-message"
+  ]
+ },
+ "syntax-errors/object-missing-comma": {
+  "group": "compile-differs",
+  "causes": [
+   "parse-errors"
+  ],
+  "tags": [
+   "compile-message"
+  ]
+ },
+ "syntax-errors/return-outside-function": {
+  "group": "compile-differs",
+  "causes": [
+   "parse-errors"
+  ],
+  "tags": [
+   "compile-message"
+  ]
+ },
+ "syntax-errors/stray-else": {
+  "group": "compile-differs",
+  "causes": [
+   "parse-errors"
+  ],
+  "tags": [
+   "compile-message"
+  ]
+ },
+ "syntax-errors/unterminated-string": {
+  "group": "compile-differs",
+  "causes": [
+   "parse-errors"
+  ],
+  "tags": [
+   "compile-message"
+  ]
+ },
+ "syntax-errors/unterminated-template-literal": {
+  "group": "compile-differs",
+  "causes": [
+   "parse-errors"
+  ],
+  "tags": [
+   "compile-line",
+   "compile-message"
+  ]
+ }
+}

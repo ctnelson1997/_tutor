@@ -1,0 +1,17 @@
+# round() uses banker's rounding (half to even), round(x) is an int but round(x, n) a float, and binary floats round "wrong"
+r1 = round(0.5)
+r2 = round(1.5)
+r3 = round(2.5)
+r4 = round(-0.5)
+r5 = round(-1.5)
+r6 = round(5.5)
+print(r1, r2, r3, r4, r5, r6)
+print(round(2.675, 2), round(0.125, 2), round(0.375, 2), round(7.25, 1))
+print(round(1234, -2), round(1250, -2), round(1350, -2), round(-150, -2))
+whole = round(3.14159)
+f0 = round(3.14159, 0)
+f2 = round(3.14159, 2)
+print(whole, f0, f2, type(whole).__name__, type(f0).__name__)
+print(round(7), round(-7.5), round(1e16 + 2.5))
+prices = [2.345, 2.355, 0.045]
+print([round(p, 2) for p in prices])

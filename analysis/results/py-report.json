@@ -1,0 +1,3162 @@
+[
+ {
+  "id": "data-structures/array-module",
+  "category": "data-structures",
+  "tags": [],
+  "notes": [],
+  "bytes": 21648,
+  "steps": 31,
+  "group": "match"
+ },
+ {
+  "id": "data-structures/bisect-sorted-insert",
+  "category": "data-structures",
+  "tags": [],
+  "notes": [],
+  "bytes": 203009,
+  "steps": 70,
+  "group": "match"
+ },
+ {
+  "id": "data-structures/bytes-bytearray",
+  "category": "data-structures",
+  "tags": [],
+  "notes": [],
+  "bytes": 22415,
+  "steps": 31,
+  "group": "match"
+ },
+ {
+  "id": "data-structures/counter-defaultdict",
+  "category": "data-structures",
+  "tags": [],
+  "notes": [],
+  "bytes": 108272,
+  "steps": 52,
+  "group": "match"
+ },
+ {
+  "id": "data-structures/deque-ordereddict",
+  "category": "data-structures",
+  "tags": [],
+  "notes": [],
+  "bytes": 36845,
+  "steps": 39,
+  "group": "match"
+ },
+ {
+  "id": "data-structures/dict-comprehension",
+  "category": "data-structures",
+  "tags": [
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ],
+  "notes": [
+   "stdout differs at line 6: CPython \"{1: {1: 1, 2: 2, 3: 3}, 2: {1: 2, 2: 4, 3: 6}}\" | PyTutor \"<end>\"",
+   "PyTutor: exception: TypeError: unsupported operand type(s) for *: 'NoneType' and 'int'",
+   "21 CPython line event(s) have no step, lines 15, 16, 17, 18, 21, 26, 22, 23, 27, 28"
+  ],
+  "bytes": 99539,
+  "steps": 62,
+  "group": "wrong-output"
+ },
+ {
+  "id": "data-structures/dict-get-setdefault-pop-update",
+  "category": "data-structures",
+  "tags": [],
+  "notes": [],
+  "bytes": 44802,
+  "steps": 40,
+  "group": "match"
+ },
+ {
+  "id": "data-structures/dict-insertion-order",
+  "category": "data-structures",
+  "tags": [],
+  "notes": [],
+  "bytes": 30429,
+  "steps": 31,
+  "group": "match"
+ },
+ {
+  "id": "data-structures/dict-tuple-and-int-keys",
+  "category": "data-structures",
+  "tags": [],
+  "notes": [],
+  "bytes": 63638,
+  "steps": 52,
+  "group": "match"
+ },
+ {
+  "id": "data-structures/dict-views-live",
+  "category": "data-structures",
+  "tags": [],
+  "notes": [],
+  "bytes": 46865,
+  "steps": 33,
+  "group": "match"
+ },
+ {
+  "id": "data-structures/frozenset-keys",
+  "category": "data-structures",
+  "tags": [],
+  "notes": [],
+  "bytes": 49249,
+  "steps": 33,
+  "group": "match"
+ },
+ {
+  "id": "data-structures/heapq-priority-queue",
+  "category": "data-structures",
+  "tags": [
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ],
+  "notes": [
+   "stdout differs at line 12: CPython \"['coffee', 'build', 'deploy', 'email'] []\" | PyTutor \"<end>\"",
+   "PyTutor: exception: IndexError: index out of range",
+   "4 CPython line event(s) have no step, lines 23, 24, 25, 26"
+  ],
+  "bytes": 93028,
+  "steps": 48,
+  "group": "wrong-output"
+ },
+ {
+  "id": "data-structures/int-set-operations",
+  "category": "data-structures",
+  "tags": [
+   "value-shown-wrong"
+  ],
+  "notes": [
+   "4 value(s), first: step 9 <module>.n: 1 shown as 3 ; step 11 <module>.n: 3 shown as 1 ; step 13 <module>.n: 2 shown as 3"
+  ],
+  "bytes": 78994,
+  "steps": 54,
+  "group": "wrong-state"
+ },
+ {
+  "id": "data-structures/list-methods",
+  "category": "data-structures",
+  "tags": [],
+  "notes": [],
+  "bytes": 46277,
+  "steps": 38,
+  "group": "match"
+ },
+ {
+  "id": "data-structures/multi-key-tuple-sort",
+  "category": "data-structures",
+  "tags": [],
+  "notes": [],
+  "bytes": 235257,
+  "steps": 76,
+  "group": "match"
+ },
+ {
+  "id": "data-structures/namedtuple-records",
+  "category": "data-structures",
+  "tags": [],
+  "notes": [],
+  "bytes": 105694,
+  "steps": 53,
+  "group": "match"
+ },
+ {
+  "id": "data-structures/nested-dicts-aliasing",
+  "category": "data-structures",
+  "tags": [],
+  "notes": [],
+  "bytes": 46610,
+  "steps": 30,
+  "group": "match"
+ },
+ {
+  "id": "data-structures/nested-json-data",
+  "category": "data-structures",
+  "tags": [
+   "value-shown-wrong",
+   "return-value",
+   "final-state"
+  ],
+  "notes": [
+   "31 value(s), first: step 8 <module>.avg: 81.0 shown as 81 ; step 9 <module>.avg: 81.0 shown as 81 ; step 13 <module>.avg: 81.0 shown as 81",
+   "step 28 <lambda>: no return ↵ (returns 90) ; step 37 <lambda> return: 72 shown as 85",
+   "final globals: avg: 85.0 shown as 85"
+  ],
+  "bytes": 241193,
+  "steps": 88,
+  "group": "wrong-state"
+ },
+ {
+  "id": "data-structures/range-objects",
+  "category": "data-structures",
+  "tags": [],
+  "notes": [],
+  "bytes": 30369,
+  "steps": 35,
+  "group": "match"
+ },
+ {
+  "id": "data-structures/slice-assignment",
+  "category": "data-structures",
+  "tags": [],
+  "notes": [],
+  "bytes": 35391,
+  "steps": 38,
+  "group": "match"
+ },
+ {
+  "id": "data-structures/slicing-steps-negatives",
+  "category": "data-structures",
+  "tags": [],
+  "notes": [],
+  "bytes": 94121,
+  "steps": 38,
+  "group": "match"
+ },
+ {
+  "id": "data-structures/sorted-tuple-keys",
+  "category": "data-structures",
+  "tags": [],
+  "notes": [],
+  "bytes": 374777,
+  "steps": 131,
+  "group": "match"
+ },
+ {
+  "id": "data-structures/string-sequences",
+  "category": "data-structures",
+  "tags": [],
+  "notes": [],
+  "bytes": 122246,
+  "steps": 83,
+  "group": "match"
+ },
+ {
+  "id": "data-structures/tuple-packing-unpacking",
+  "category": "data-structures",
+  "tags": [],
+  "notes": [],
+  "bytes": 100351,
+  "steps": 39,
+  "group": "match"
+ },
+ {
+  "id": "data-structures/zip-enumerate-in-lists",
+  "category": "data-structures",
+  "tags": [],
+  "notes": [],
+  "bytes": 123100,
+  "steps": 33,
+  "group": "match"
+ },
+ {
+  "id": "examples/classes",
+  "category": "examples",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: Dog.__init__"
+  ],
+  "bytes": 6177,
+  "steps": 17,
+  "group": "wrong-state"
+ },
+ {
+  "id": "examples/dictionaries",
+  "category": "examples",
+  "tags": [],
+  "notes": [],
+  "bytes": 1598,
+  "steps": 5,
+  "group": "match"
+ },
+ {
+  "id": "examples/for-loop",
+  "category": "examples",
+  "tags": [],
+  "notes": [],
+  "bytes": 2580,
+  "steps": 14,
+  "group": "match"
+ },
+ {
+  "id": "examples/functions",
+  "category": "examples",
+  "tags": [],
+  "notes": [],
+  "bytes": 2294,
+  "steps": 8,
+  "group": "match"
+ },
+ {
+  "id": "examples/list-comprehension",
+  "category": "examples",
+  "tags": [],
+  "notes": [],
+  "bytes": 26327,
+  "steps": 28,
+  "group": "match"
+ },
+ {
+  "id": "examples/lists",
+  "category": "examples",
+  "tags": [],
+  "notes": [],
+  "bytes": 2250,
+  "steps": 6,
+  "group": "match"
+ },
+ {
+  "id": "examples/named-tuples",
+  "category": "examples",
+  "tags": [],
+  "notes": [],
+  "bytes": 4415,
+  "steps": 8,
+  "group": "match"
+ },
+ {
+  "id": "examples/nested-data",
+  "category": "examples",
+  "tags": [],
+  "notes": [],
+  "bytes": 2886,
+  "steps": 4,
+  "group": "match"
+ },
+ {
+  "id": "examples/recursion",
+  "category": "examples",
+  "tags": [],
+  "notes": [],
+  "bytes": 7954,
+  "steps": 20,
+  "group": "match"
+ },
+ {
+  "id": "examples/tuples-sets",
+  "category": "examples",
+  "tags": [],
+  "notes": [],
+  "bytes": 2828,
+  "steps": 6,
+  "group": "match"
+ },
+ {
+  "id": "examples/variables-types",
+  "category": "examples",
+  "tags": [],
+  "notes": [],
+  "bytes": 1344,
+  "steps": 6,
+  "group": "match"
+ },
+ {
+  "id": "examples/while-loop",
+  "category": "examples",
+  "tags": [],
+  "notes": [],
+  "bytes": 1760,
+  "steps": 12,
+  "group": "match"
+ },
+ {
+  "id": "exceptions/assert-statements",
+  "category": "exceptions",
+  "tags": [
+   "return-value"
+  ],
+  "notes": [
+   "step 6 average return: 5.0 shown as 5"
+  ],
+  "bytes": 134300,
+  "steps": 74,
+  "group": "wrong-state"
+ },
+ {
+  "id": "exceptions/bare-raise-reraise",
+  "category": "exceptions",
+  "tags": [],
+  "notes": [],
+  "bytes": 44011,
+  "steps": 54,
+  "group": "match"
+ },
+ {
+  "id": "exceptions/builtin-error-messages",
+  "category": "exceptions",
+  "tags": [
+   "value-shown-wrong",
+   "missing-variable",
+   "final-state"
+  ],
+  "notes": [
+   "119 value(s), first: step 8 <module>.position: 1.0 shown as 1 ; step 12 <module>.position: 1.0 shown as 1 ; step 13 <module>.position: 1.0 shown as 1",
+   "not shown: Pet.__init__",
+   "final globals: position: 1.0 shown as 1"
+  ],
+  "bytes": 605949,
+  "steps": 153,
+  "group": "wrong-state"
+ },
+ {
+  "id": "exceptions/context-manager-class",
+  "category": "exceptions",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: Tracker.__init__, Tracker.__enter__, Tracker.__exit__"
+  ],
+  "bytes": 81520,
+  "steps": 71,
+  "group": "wrong-state"
+ },
+ {
+  "id": "exceptions/contextmanager-decorator",
+  "category": "exceptions",
+  "tags": [],
+  "notes": [],
+  "bytes": 55991,
+  "steps": 59,
+  "group": "match"
+ },
+ {
+  "id": "exceptions/custom-exception-attributes",
+  "category": "exceptions",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: OutOfStock.__init__, BadCoupon.__init__, BadCoupon.__str__"
+  ],
+  "bytes": 80327,
+  "steps": 75,
+  "group": "wrong-state"
+ },
+ {
+  "id": "exceptions/exception-args-repr",
+  "category": "exceptions",
+  "tags": [],
+  "notes": [],
+  "bytes": 29448,
+  "steps": 46,
+  "group": "match"
+ },
+ {
+  "id": "exceptions/exception-hierarchy-order",
+  "category": "exceptions",
+  "tags": [],
+  "notes": [],
+  "bytes": 482148,
+  "steps": 74,
+  "group": "match"
+ },
+ {
+  "id": "exceptions/exception-in-generator",
+  "category": "exceptions",
+  "tags": [],
+  "notes": [],
+  "bytes": 55810,
+  "steps": 57,
+  "group": "match"
+ },
+ {
+  "id": "exceptions/exception-in-loop-continue",
+  "category": "exceptions",
+  "tags": [],
+  "notes": [],
+  "bytes": 70146,
+  "steps": 56,
+  "group": "match"
+ },
+ {
+  "id": "exceptions/finally-with-return",
+  "category": "exceptions",
+  "tags": [],
+  "notes": [],
+  "bytes": 41653,
+  "steps": 52,
+  "group": "match"
+ },
+ {
+  "id": "exceptions/nested-calls-caught-top",
+  "category": "exceptions",
+  "tags": [],
+  "notes": [],
+  "bytes": 63671,
+  "steps": 60,
+  "group": "match"
+ },
+ {
+  "id": "exceptions/raise-from-caught",
+  "category": "exceptions",
+  "tags": [],
+  "notes": [],
+  "bytes": 36918,
+  "steps": 44,
+  "group": "match"
+ },
+ {
+  "id": "exceptions/recursion-error-message",
+  "category": "exceptions",
+  "tags": [
+   "stdout",
+   "skipped-lines"
+  ],
+  "notes": [
+   "stdout differs at line 1: CPython \"RecursionError maximum recursion depth exceeded\" | PyTutor \"\"",
+   "19 CPython line event(s) have no step, lines 5"
+  ],
+  "bytes": 40592086,
+  "steps": 256,
+  "group": "wrong-output"
+ },
+ {
+  "id": "exceptions/try-except-else-finally",
+  "category": "exceptions",
+  "tags": [],
+  "notes": [],
+  "bytes": 26896,
+  "steps": 44,
+  "group": "match"
+ },
+ {
+  "id": "exceptions/uncaught-chained-from",
+  "category": "exceptions",
+  "tags": [
+   "traceback"
+  ],
+  "notes": [],
+  "bytes": 17789,
+  "steps": 22,
+  "traceback": {
+   "cpython": "Traceback (most recent call last):\n  File \"main.py\", line 7, in read_age\n    return int(record[\"age\"])\n           ^^^^^^^^^^^^^^^^^^\nValueError: invalid literal for int() with base 10: 'thirty'\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"main.py\", line 14, in <module>\n    ages.append(read_age(p))\n                ^^^^^^^^^^^\n  File \"main.py\", line 9, in read_age\n    raise DataError(f\"bad record for {record.get('name', '?')}\") from e\nDataError: bad record for Bo\n",
+   "pytutor": "Traceback (most recent call last):\n  File \"main.py\", line 14, in <module>\n    ages.append(read_age(p))\n  File \"main.py\", line 9, in read_age\n    raise DataError(f\"bad record for {record.get('name', '?')}\") from e\nDataError: bad record for Bo"
+  },
+  "group": "wrong-state"
+ },
+ {
+  "id": "exceptions/uncaught-custom-exception",
+  "category": "exceptions",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: InvalidMoveError.__init__"
+  ],
+  "bytes": 51109,
+  "steps": 42,
+  "group": "wrong-state"
+ },
+ {
+  "id": "exceptions/uncaught-in-list-comprehension",
+  "category": "exceptions",
+  "tags": [
+   "return-value"
+  ],
+  "notes": [
+   "step 30 summary return: 10.0 shown as 10"
+  ],
+  "bytes": 112563,
+  "steps": 64,
+  "group": "wrong-state"
+ },
+ {
+  "id": "exceptions/uncaught-in-method",
+  "category": "exceptions",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: Inventory.__init__"
+  ],
+  "bytes": 52264,
+  "steps": 47,
+  "group": "wrong-state"
+ },
+ {
+  "id": "exceptions/uncaught-through-functions",
+  "category": "exceptions",
+  "tags": [
+   "value-shown-wrong",
+   "return-value"
+  ],
+  "notes": [
+   "3 value(s), first: step 29 report.avg: 84.0 shown as 84 ; step 30 report.avg: 84.0 shown as 84 ; step 31 report.avg: 84.0 shown as 84",
+   "step 28 average_scores return: 84.0 shown as 84 ; step 31 report return: 84.0 shown as 84"
+  ],
+  "bytes": 45903,
+  "steps": 47,
+  "group": "wrong-state"
+ },
+ {
+  "id": "extra/calls-inside-comprehensions",
+  "category": "extra",
+  "tags": [
+   "steps-not-in-cpython"
+  ],
+  "notes": [
+   "6 step(s) match no CPython event in order, first: step 2 line 6 [<module>>square]; step 7 line 6 [<module>>square]; step 12 line 6 [<module>>square]"
+  ],
+  "bytes": 22605,
+  "steps": 44,
+  "group": "wrong-state"
+ },
+ {
+  "id": "extra/class-attributes",
+  "category": "extra",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: Counter.__init__"
+  ],
+  "bytes": 10202,
+  "steps": 25,
+  "group": "wrong-state"
+ },
+ {
+  "id": "extra/comprehension-side-effects",
+  "category": "extra",
+  "tags": [
+   "stdout",
+   "exception-extra",
+   "steps-not-in-cpython",
+   "skipped-lines",
+   "missing-variable"
+  ],
+  "notes": [
+   "stdout differs at line 2: CPython \"[(1, 2), (3, 4)]\" | PyTutor \"<end>\"",
+   "PyTutor: exception: StopIteration",
+   "3 step(s) match no CPython event in order, first: step 3 line 6 [<module>>f]; step 8 line 6 [<module>>f]; step 13 line 6 [<module>>f]",
+   "5 CPython line event(s) have no step, lines 10, 11, 12",
+   "not shown: f.x"
+  ],
+  "bytes": 15620,
+  "steps": 26,
+  "group": "wrong-output"
+ },
+ {
+  "id": "extra/ends-with-quote",
+  "category": "extra",
+  "tags": [
+   "pre-run-error"
+  ],
+  "notes": [
+   "Traceback (most recent call last):\n  File \"/lib/python312.zip/_pyodide/_base.py\", line 513, in eval_code\n    CodeRunner(\n  File \"/lib/python312.zip/_pyodide/_base.py\", line 285, in __init__\n    self.ast = next(self._gen)\n               ^^^^^^^^^^^^^^^\n  File \"/lib/python312.zip/_pyodide/_base.py\", l"
+  ],
+  "bytes": 664,
+  "group": "error"
+ },
+ {
+  "id": "extra/imported-modules",
+  "category": "extra",
+  "tags": [],
+  "notes": [],
+  "bytes": 924470,
+  "steps": 7,
+  "group": "match"
+ },
+ {
+  "id": "extra/low-recursion-limit",
+  "category": "extra",
+  "tags": [
+   "stdout",
+   "skipped-lines"
+  ],
+  "notes": [
+   "stdout differs at line 1: CPython \"caught: RecursionError\" | PyTutor \"\"",
+   "19 CPython line event(s) have no step, lines 6"
+  ],
+  "bytes": 30564370,
+  "steps": 195,
+  "group": "wrong-output"
+ },
+ {
+  "id": "extra/stale-with-later-comprehension",
+  "category": "extra",
+  "tags": [
+   "value-shown-wrong"
+  ],
+  "notes": [
+   "2 value(s), first: step 4 <module>.name: 'b' shown as {\"type\":\"string\",\"value\":\"a\"} ; step 7 <module>.name: 'c' shown as {\"type\":\"string\",\"value\":\"b\"}"
+  ],
+  "bytes": 4061,
+  "steps": 16,
+  "group": "wrong-state"
+ },
+ {
+  "id": "functional/any-all",
+  "category": "functional",
+  "tags": [
+   "steps-not-in-cpython",
+   "skipped-lines",
+   "missing-variable"
+  ],
+  "notes": [
+   "7 step(s) match no CPython event in order, first: step 5 line 7 [<module>>check]; step 12 line 7 [<module>>check]; step 21 line 8 [<module>>check]",
+   "3 CPython line event(s) have no step, lines 11, 17, 18",
+   "not shown: check.n"
+  ],
+  "bytes": 76537,
+  "steps": 104,
+  "group": "wrong-state"
+ },
+ {
+  "id": "functional/args-kwargs",
+  "category": "functional",
+  "tags": [],
+  "notes": [],
+  "bytes": 83095,
+  "steps": 94,
+  "group": "match"
+ },
+ {
+  "id": "functional/closure-counter",
+  "category": "functional",
+  "tags": [
+   "stdout",
+   "exception-extra",
+   "steps-not-in-cpython",
+   "skipped-lines",
+   "missing-variable"
+  ],
+  "notes": [
+   "stdout differs at line 4: CPython \"[2, 2, 2] [0, 1, 2]\" | PyTutor \"<end>\"",
+   "PyTutor: exception: NameError: cannot access free variable 'i' where it is not associated with a value in enclosing scope",
+   "1 step(s) match no CPython event in order, first: step 51 line 18 [<module>><lambda>]",
+   "7 CPython line event(s) have no step, lines 20, 23, 21, 24",
+   "not shown: <lambda>.i"
+  ],
+  "bytes": 44143,
+  "steps": 55,
+  "group": "wrong-output"
+ },
+ {
+  "id": "functional/comprehension-scope",
+  "category": "functional",
+  "tags": [],
+  "notes": [],
+  "bytes": 75516,
+  "steps": 81,
+  "group": "match"
+ },
+ {
+  "id": "functional/decorator-simple",
+  "category": "functional",
+  "tags": [],
+  "notes": [],
+  "bytes": 54639,
+  "steps": 65,
+  "group": "match"
+ },
+ {
+  "id": "functional/decorator-with-args",
+  "category": "functional",
+  "tags": [],
+  "notes": [],
+  "bytes": 104722,
+  "steps": 111,
+  "group": "match"
+ },
+ {
+  "id": "functional/decorator-wraps-stacking",
+  "category": "functional",
+  "tags": [],
+  "notes": [],
+  "bytes": 195879,
+  "steps": 52,
+  "group": "match"
+ },
+ {
+  "id": "functional/dict-set-comprehensions",
+  "category": "functional",
+  "tags": [],
+  "notes": [],
+  "bytes": 294015,
+  "steps": 135,
+  "group": "match"
+ },
+ {
+  "id": "functional/enumerate-zip",
+  "category": "functional",
+  "tags": [],
+  "notes": [],
+  "bytes": 79201,
+  "steps": 42,
+  "group": "match"
+ },
+ {
+  "id": "functional/functools-reduce-partial",
+  "category": "functional",
+  "tags": [],
+  "notes": [],
+  "bytes": 440184,
+  "steps": 64,
+  "group": "match"
+ },
+ {
+  "id": "functional/generator-expressions",
+  "category": "functional",
+  "tags": [
+   "steps-not-in-cpython",
+   "missing-variable"
+  ],
+  "notes": [
+   "4 step(s) match no CPython event in order, first: step 6 line 6 [<module>>noisy]; step 15 line 6 [<module>>noisy]; step 23 line 6 [<module>>noisy]",
+   "not shown: noisy.n"
+  ],
+  "bytes": 73042,
+  "steps": 97,
+  "group": "wrong-state"
+ },
+ {
+  "id": "functional/generator-function-state",
+  "category": "functional",
+  "tags": [],
+  "notes": [],
+  "bytes": 55673,
+  "steps": 80,
+  "group": "match"
+ },
+ {
+  "id": "functional/generator-send",
+  "category": "functional",
+  "tags": [
+   "value-shown-wrong",
+   "return-value"
+  ],
+  "notes": [
+   "24 value(s), first: step 16 averager.average: 10.0 shown as 10 ; step 17 averager.average: 10.0 shown as 10 ; step 18 averager.average: 10.0 shown as 10",
+   "step 18 averager return: 10.0 shown as 10 ; step 27 averager return: 15.0 shown as 15 ; step 36 averager return: 30.0 shown as 30"
+  ],
+  "bytes": 39704,
+  "steps": 72,
+  "group": "wrong-state"
+ },
+ {
+  "id": "functional/higher-order-functions",
+  "category": "functional",
+  "tags": [
+   "steps-not-in-cpython",
+   "value-shown-wrong",
+   "missing-variable",
+   "return-value"
+  ],
+  "notes": [
+   "13 step(s) match no CPython event in order, first: step 33 line 12 [<module>>my_filter>is_valid]; step 37 line 12 [<module>>my_filter>is_valid]; step 41 line 12 [<module>>my_filter>is_valid]",
+   "5 value(s), first: step 82 <lambda>.n: 0 shown as 5 ; step 86 <lambda>.n: 0 shown as 11 ; step 90 <lambda>.n: 5 shown as 7",
+   "not shown: my_filter.x",
+   "step 86 <lambda>: no return ↵ (returns 0) ; step 98 <lambda>: no return ↵ (returns 1)"
+  ],
+  "bytes": 253048,
+  "steps": 165,
+  "group": "wrong-state"
+ },
+ {
+  "id": "functional/infinite-generator-islice",
+  "category": "functional",
+  "tags": [],
+  "notes": [],
+  "bytes": 774998,
+  "steps": 615,
+  "group": "match"
+ },
+ {
+  "id": "functional/itertools-combinatorics",
+  "category": "functional",
+  "tags": [],
+  "notes": [],
+  "bytes": 248349,
+  "steps": 109,
+  "group": "match"
+ },
+ {
+  "id": "functional/itertools-groupby-accumulate",
+  "category": "functional",
+  "tags": [],
+  "notes": [],
+  "bytes": 513165,
+  "steps": 71,
+  "group": "match"
+ },
+ {
+  "id": "functional/keyword-only-unpacking",
+  "category": "functional",
+  "tags": [],
+  "notes": [],
+  "bytes": 49740,
+  "steps": 59,
+  "group": "match"
+ },
+ {
+  "id": "functional/lambdas-in-dicts",
+  "category": "functional",
+  "tags": [],
+  "notes": [],
+  "bytes": 67897,
+  "steps": 55,
+  "group": "match"
+ },
+ {
+  "id": "functional/list-comprehensions",
+  "category": "functional",
+  "tags": [
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ],
+  "notes": [
+   "stdout differs at line 1: CPython \"[1, 4, 9, 16, 25, 36, 49, 64, 81, 100]\" | PyTutor \"\"",
+   "PyTutor: exception: TypeError: '<' not supported between instances of 'NoneType' and 'int'",
+   "56 CPython line event(s) have no step, lines 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18…"
+  ],
+  "bytes": 70591,
+  "steps": 63,
+  "group": "wrong-output"
+ },
+ {
+  "id": "functional/lru-cache-fib",
+  "category": "functional",
+  "tags": [],
+  "notes": [],
+  "bytes": 907953,
+  "steps": 816,
+  "group": "match"
+ },
+ {
+  "id": "functional/map-filter-lazy",
+  "category": "functional",
+  "tags": [],
+  "notes": [],
+  "bytes": 59812,
+  "steps": 62,
+  "group": "match"
+ },
+ {
+  "id": "functional/recursion-returning-functions",
+  "category": "functional",
+  "tags": [
+   "steps-not-in-cpython",
+   "value-shown-wrong",
+   "return-value"
+  ],
+  "notes": [
+   "3 step(s) match no CPython event in order, first: step 174 line 28 [<module>><lambda>]; step 178 line 28 [<module>><lambda>]; step 182 line 28 [<module>><lambda>]",
+   "2 value(s), first: step 177 <lambda>.n: 1 shown as 2 ; step 181 <lambda>.n: 1 shown as 3",
+   "step 181 <lambda>: no return ↵ (returns 1)"
+  ],
+  "bytes": 224344,
+  "steps": 187,
+  "group": "wrong-state"
+ },
+ {
+  "id": "functional/sorted-key-min-max",
+  "category": "functional",
+  "tags": [],
+  "notes": [],
+  "bytes": 199193,
+  "steps": 114,
+  "group": "match"
+ },
+ {
+  "id": "functional/yield-from",
+  "category": "functional",
+  "tags": [],
+  "notes": [],
+  "bytes": 263417,
+  "steps": 158,
+  "group": "match"
+ },
+ {
+  "id": "limits/deep-recursion-500",
+  "category": "limits",
+  "tags": [
+   "worker-kill"
+  ],
+  "notes": [
+   "PyTutor ran past the harness timeout: the browser worker is killed at 10 s and every step is lost"
+  ],
+  "group": "error"
+ },
+ {
+  "id": "limits/endless-loop-with-calls",
+  "category": "limits",
+  "tags": [
+   "limit-expected"
+  ],
+  "notes": [],
+  "bytes": 1725653,
+  "steps": 5000,
+  "group": "match"
+ },
+ {
+  "id": "limits/endless-pass",
+  "category": "limits",
+  "tags": [
+   "limit-expected"
+  ],
+  "notes": [],
+  "bytes": 758946,
+  "steps": 5000,
+  "group": "match"
+ },
+ {
+  "id": "limits/large-list-10000",
+  "category": "limits",
+  "tags": [
+   "limit-expected"
+  ],
+  "notes": [],
+  "bytes": 26592733,
+  "steps": 5000,
+  "group": "match"
+ },
+ {
+  "id": "limits/long-string-100000",
+  "category": "limits",
+  "tags": [],
+  "notes": [],
+  "bytes": 1202645,
+  "steps": 9,
+  "group": "match"
+ },
+ {
+  "id": "limits/loop-6000-iterations",
+  "category": "limits",
+  "tags": [
+   "limit-expected"
+  ],
+  "notes": [],
+  "bytes": 1281832,
+  "steps": 5000,
+  "group": "match"
+ },
+ {
+  "id": "limits/recursion-error-caught",
+  "category": "limits",
+  "tags": [
+   "worker-kill"
+  ],
+  "notes": [
+   "PyTutor ran 21621 ms: the browser worker is killed at 10 s and every step is lost"
+  ],
+  "group": "error"
+ },
+ {
+  "id": "limits/recursion-error-uncaught",
+  "category": "limits",
+  "tags": [
+   "worker-kill"
+  ],
+  "notes": [
+   "PyTutor ran past the harness timeout: the browser worker is killed at 10 s and every step is lost"
+  ],
+  "group": "error"
+ },
+ {
+  "id": "numbers/big-int-powers",
+  "category": "numbers",
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ],
+  "notes": [
+   "104 value(s), first: step 1 <module>.a: 1267650600228229401496703205376 shown as 1.2676506002282294e+30 ; step 2 <module>.a: 1267650600228229401496703205376 shown as 1.2676506002282294e+30 ; step 2 <module>.b: 18446744073709551615 shown as 18446744073709552000",
+   "final globals: a: 1267650600228229401496703205376 shown as 1.2676506002282294e+30; b: 18446744073709551615 shown as 18446744073709552000; c: -1180591620717411303424 shown as -1.1805916207174113e+21; d: 9007199254740993 shown as 9007199254740992"
+  ],
+  "bytes": 16716,
+  "steps": 21,
+  "group": "wrong-state"
+ },
+ {
+  "id": "numbers/bool-arithmetic",
+  "category": "numbers",
+  "tags": [],
+  "notes": [],
+  "bytes": 34776,
+  "steps": 39,
+  "group": "match"
+ },
+ {
+  "id": "numbers/complex-numbers",
+  "category": "numbers",
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ],
+  "notes": [
+   "81 value(s), first: step 2 <module>.z: (3+4j) shown as {\"type\":\"string\",\"value\":\"(3+4j)\"} ; step 3 <module>.z: (3+4j) shown as {\"type\":\"string\",\"value\":\"(3+4j)\"} ; step 3 <module>.w: (1-1j) shown as {\"type\":\"string\",\"value\":\"(1-1j)\"}",
+   "final globals: z: (3+4j) shown as {\"type\":\"string\",\"value\":\"(3+4j)\"}; w: (1-1j) shown as {\"type\":\"string\",\"value\":\"(1-1j)\"}; i2: (-1+0j) shown as {\"type\":\"string\",\"value\":\"(-1+0j)\"}; neg: (-0-1j) shown as {\"type\":\"string\",\"value\":\"(-0-1j)\"}"
+  ],
+  "bytes": 63725,
+  "steps": 18,
+  "group": "wrong-state"
+ },
+ {
+  "id": "numbers/decimal-objects",
+  "category": "numbers",
+  "tags": [],
+  "notes": [],
+  "bytes": 31258,
+  "steps": 25,
+  "group": "match"
+ },
+ {
+  "id": "numbers/divmod-and-pow",
+  "category": "numbers",
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ],
+  "notes": [
+   "7 value(s), first: step 13 <module>.root: (1.0000000000000002+1.7320508075688772j) shown as {\"type\":\"string\",\"value\":\"(1.0000000000000002+1.7320508075688772j)\"} ; step 14 <module>.root: (1.0000000000000002+1.7320508075688772j) shown as {\"type\":\"string\",\"value\":\"(1.0000000000000002+1.7320508075688772j)\"} ; step 15 <module>.root: (1.0000000000000002+1.7320508075688772j) shown as {\"type\":\"string\",\"value\":\"(1.0000000000000002+1.7320508075688772j)\"}",
+   "final globals: root: (1.0000000000000002+1.7320508075688772j) shown as {\"type\":\"string\",\"value\":\"(1.0000000000000002+1.7320508075688772j)\"}"
+  ],
+  "bytes": 23486,
+  "steps": 20,
+  "group": "wrong-state"
+ },
+ {
+  "id": "numbers/factorial-30",
+  "category": "numbers",
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ],
+  "notes": [
+   "34 value(s), first: step 73 <module>.result: 1124000727777607680000 shown as 1.1240007277776077e+21 ; step 74 <module>.result: 1124000727777607680000 shown as 1.1240007277776077e+21 ; step 75 <module>.result: 1124000727777607680000 shown as 1.1240007277776077e+21",
+   "final globals: result: 265252859812191058636308480000000 shown as 2.6525285981219107e+32"
+  ],
+  "bytes": 30347,
+  "steps": 107,
+  "group": "wrong-state"
+ },
+ {
+  "id": "numbers/float-accumulation-steps",
+  "category": "numbers",
+  "tags": [
+   "value-shown-wrong"
+  ],
+  "notes": [
+   "6 value(s), first: step 2 <module>.total: 0.0 shown as 0 ; step 3 <module>.total: 0.0 shown as 0 ; step 62 <module>.balance: 100.0 shown as 100"
+  ],
+  "bytes": 457529,
+  "steps": 71,
+  "group": "wrong-state"
+ },
+ {
+  "id": "numbers/float-overflow-error",
+  "category": "numbers",
+  "tags": [
+   "value-shown-wrong"
+  ],
+  "notes": [
+   "28 value(s), first: step 1 <module>.x: 2.0 shown as 2 ; step 2 <module>.x: 2.0 shown as 2 ; step 3 <module>.x: 2.0 shown as 2"
+  ],
+  "bytes": 10697,
+  "steps": 41,
+  "group": "wrong-state"
+ },
+ {
+  "id": "numbers/float-repr",
+  "category": "numbers",
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ],
+  "notes": [
+   "109 value(s), first: step 2 <module>.b: 1e+16 shown as 10000000000000000 ; step 3 <module>.b: 1e+16 shown as 10000000000000000 ; step 3 <module>.c: 1e-07 shown as 1e-7",
+   "final globals: b: 1e+16 shown as 10000000000000000; c: 1e-07 shown as 1e-7; e: 1.2345678901234568e+17 shown as 123456789012345680; g: 2.5e-05 shown as 0.000025"
+  ],
+  "bytes": 19964,
+  "steps": 25,
+  "group": "wrong-state"
+ },
+ {
+  "id": "numbers/floor-div-mod-negatives",
+  "category": "numbers",
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ],
+  "notes": [
+   "17 value(s), first: step 2 <module>.whole: 2.0 shown as 2 ; step 3 <module>.whole: 2.0 shown as 2 ; step 4 <module>.whole: 2.0 shown as 2",
+   "final globals: whole: 2.0 shown as 2"
+  ],
+  "bytes": 68639,
+  "steps": 19,
+  "group": "wrong-state"
+ },
+ {
+  "id": "numbers/fraction-objects",
+  "category": "numbers",
+  "tags": [],
+  "notes": [],
+  "bytes": 39823,
+  "steps": 35,
+  "group": "match"
+ },
+ {
+  "id": "numbers/huge-int-variable",
+  "category": "numbers",
+  "tags": [
+   "pre-run-error"
+  ],
+  "notes": [
+   "Traceback (most recent call last):\n  File \"/lib/python312.zip/_pyodide/_base.py\", line 523, in eval_code\n    .run(globals, locals)\n     ^^^^^^^^^^^^^^^^^^^^\n  File \"/lib/python312.zip/_pyodide/_base.py\", line 357, in run\n    coroutine = eval(self.code, globals, locals)\n                ^^^^^^^^^^^^^^"
+  ],
+  "bytes": 1031,
+  "group": "error"
+ },
+ {
+  "id": "numbers/inf-and-nan",
+  "category": "numbers",
+  "tags": [],
+  "notes": [],
+  "bytes": 185730,
+  "steps": 28,
+  "group": "match"
+ },
+ {
+  "id": "numbers/int-bases-and-bits",
+  "category": "numbers",
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ],
+  "notes": [
+   "35 value(s), first: step 5 <module>.big: 1180591620717411303424 shown as 1.1805916207174113e+21 ; step 6 <module>.big: 1180591620717411303424 shown as 1.1805916207174113e+21 ; step 6 <module>.mask: 18446744073709551615 shown as 18446744073709552000",
+   "final globals: big: 1180591620717411303424 shown as 1.1805916207174113e+21; mask: 18446744073709551615 shown as 18446744073709552000"
+  ],
+  "bytes": 10534,
+  "steps": 23,
+  "group": "wrong-state"
+ },
+ {
+  "id": "numbers/int-conversion-truncation",
+  "category": "numbers",
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ],
+  "notes": [
+   "8 value(s), first: step 18 <module>.sci: 1000.0 shown as 1000 ; step 19 <module>.sci: 1000.0 shown as 1000 ; step 20 <module>.sci: 1000.0 shown as 1000",
+   "final globals: sci: 1000.0 shown as 1000; exact: 99999999999999991611392 shown as 1e+23"
+  ],
+  "bytes": 146019,
+  "steps": 23,
+  "group": "wrong-state"
+ },
+ {
+  "id": "numbers/math-functions",
+  "category": "numbers",
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ],
+  "notes": [
+   "21 value(s), first: step 2 <module>.s: 4.0 shown as 4 ; step 3 <module>.s: 4.0 shown as 4 ; step 4 <module>.s: 4.0 shown as 4",
+   "final globals: s: 4.0 shown as 4; dist: 5.0 shown as 5"
+  ],
+  "bytes": 137000,
+  "steps": 21,
+  "group": "wrong-state"
+ },
+ {
+  "id": "numbers/negative-zero",
+  "category": "numbers",
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ],
+  "notes": [
+   "69 value(s), first: step 2 <module>.z: -0.0 shown as 0 ; step 3 <module>.z: -0.0 shown as 0 ; step 3 <module>.pos: 0.0 shown as 0",
+   "final globals: z: -0.0 shown as 0; pos: 0.0 shown as 0; s: 0.0 shown as 0; p: -0.0 shown as 0"
+  ],
+  "bytes": 112231,
+  "steps": 18,
+  "group": "wrong-state"
+ },
+ {
+  "id": "numbers/round-bankers",
+  "category": "numbers",
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ],
+  "notes": [
+   "5 value(s), first: step 11 <module>.f0: 3.0 shown as 3 ; step 12 <module>.f0: 3.0 shown as 3 ; step 13 <module>.f0: 3.0 shown as 3",
+   "final globals: f0: 3.0 shown as 3"
+  ],
+  "bytes": 15690,
+  "steps": 23,
+  "group": "wrong-state"
+ },
+ {
+  "id": "numbers/small-int-identity",
+  "category": "numbers",
+  "tags": [],
+  "notes": [],
+  "bytes": 16452,
+  "steps": 27,
+  "group": "match"
+ },
+ {
+  "id": "numbers/whole-floats-in-variables",
+  "category": "numbers",
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ],
+  "notes": [
+   "140 value(s), first: step 1 <module>.x: 5.0 shown as 5 ; step 2 <module>.x: 5.0 shown as 5 ; step 2 <module>.y: 5.0 shown as 5",
+   "final globals: x: 5.0 shown as 5; y: 5.0 shown as 5; z: 3.0 shown as 3; w: 1024.0 shown as 1024"
+  ],
+  "bytes": 16845,
+  "steps": 22,
+  "group": "wrong-state"
+ },
+ {
+  "id": "oop/abc-abstract",
+  "category": "oop",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: Employee.__init__, Salaried.__init__, Hourly.__init__"
+  ],
+  "bytes": 81998,
+  "steps": 73,
+  "group": "wrong-state"
+ },
+ {
+  "id": "oop/attrs-added-after-init",
+  "category": "oop",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: Robot.__init__"
+  ],
+  "bytes": 23267,
+  "steps": 36,
+  "group": "wrong-state"
+ },
+ {
+  "id": "oop/bank-account",
+  "category": "oop",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: BankAccount.__init__, BankAccount.__repr__"
+  ],
+  "bytes": 95885,
+  "steps": 78,
+  "group": "wrong-state"
+ },
+ {
+  "id": "oop/binary-search-tree",
+  "category": "oop",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: TreeNode.__init__"
+  ],
+  "bytes": 621974,
+  "steps": 287,
+  "group": "wrong-state"
+ },
+ {
+  "id": "oop/class-attr-shared-list",
+  "category": "oop",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: Basket.__init__, FixedBasket.__init__"
+  ],
+  "bytes": 41632,
+  "steps": 51,
+  "group": "wrong-state"
+ },
+ {
+  "id": "oop/class-counter-ids",
+  "category": "oop",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: Ticket.__init__, Ticket.__repr__"
+  ],
+  "bytes": 57540,
+  "steps": 69,
+  "group": "wrong-state"
+ },
+ {
+  "id": "oop/container-protocol",
+  "category": "oop",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: Playlist.__init__, Playlist.__len__, Playlist.__getitem__, Playlist.__iter__, Playlist.__contains__"
+  ],
+  "bytes": 100904,
+  "steps": 118,
+  "group": "wrong-state"
+ },
+ {
+  "id": "oop/dataclass-basics",
+  "category": "oop",
+  "tags": [],
+  "notes": [],
+  "bytes": 68823,
+  "steps": 51,
+  "group": "match"
+ },
+ {
+  "id": "oop/dataclass-order-frozen",
+  "category": "oop",
+  "tags": [],
+  "notes": [],
+  "bytes": 40801,
+  "steps": 33,
+  "group": "match"
+ },
+ {
+  "id": "oop/enum-basics",
+  "category": "oop",
+  "tags": [
+   "leaked-name"
+  ],
+  "notes": [
+   "step 2: leaked-name: Color._generate_next_value_"
+  ],
+  "bytes": 52094,
+  "steps": 47,
+  "group": "wrong-state"
+ },
+ {
+  "id": "oop/eq-hash-in-set",
+  "category": "oop",
+  "tags": [
+   "missing-variable",
+   "return-value"
+  ],
+  "notes": [
+   "not shown: Card.__init__, Card.__eq__, Card.__hash__, Card.__repr__, NoHash.__init__, NoHash.__eq__",
+   "step 38 __hash__ return: -1389131507 shown as -820968568 ; step 41 __hash__ return: 653687614 shown as -894885342 ; step 44 __hash__ return: -1389131507 shown as -820968568"
+  ],
+  "bytes": 336781,
+  "steps": 189,
+  "group": "wrong-state"
+ },
+ {
+  "id": "oop/getattr-fallback",
+  "category": "oop",
+  "tags": [
+   "stdout",
+   "exception-extra",
+   "skipped-lines",
+   "missing-variable"
+  ],
+  "notes": [
+   "stdout differs at line 1: CPython \"made config\" | PyTutor \"\"",
+   "PyTutor: exception: RecursionError: maximum recursion depth exceeded",
+   "27 CPython line event(s) have no step, lines 4, 5, 15, 16, 8, 9, 10, 11, 17, 18, 19, 12…",
+   "not shown: Config.__init__, Config.__getattr__"
+  ],
+  "bytes": 67643,
+  "steps": 7,
+  "group": "wrong-output"
+ },
+ {
+  "id": "oop/inheritance-super-init",
+  "category": "oop",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: Animal.__init__, Cat.__init__"
+  ],
+  "bytes": 64370,
+  "steps": 66,
+  "group": "wrong-state"
+ },
+ {
+  "id": "oop/instance-vs-class-attr",
+  "category": "oop",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: Dog.__init__"
+  ],
+  "bytes": 14552,
+  "steps": 30,
+  "group": "wrong-state"
+ },
+ {
+  "id": "oop/isinstance-and-type",
+  "category": "oop",
+  "tags": [
+   "steps-not-in-cpython"
+  ],
+  "notes": [
+   "8 step(s) match no CPython event in order, first: step 22 line 22 [<module>>main>kind]; step 28 line 22 [<module>>main>kind]; step 34 line 22 [<module>>main>kind]"
+  ],
+  "bytes": 70284,
+  "steps": 83,
+  "group": "wrong-state"
+ },
+ {
+  "id": "oop/linked-list",
+  "category": "oop",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: Node.__init__, LinkedList.__init__, LinkedList.__str__"
+  ],
+  "bytes": 156425,
+  "steps": 132,
+  "group": "wrong-state"
+ },
+ {
+  "id": "oop/lt-sorting-objects",
+  "category": "oop",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: Student.__init__, Student.__eq__, Student.__lt__, Student.__repr__"
+  ],
+  "bytes": 223982,
+  "steps": 172,
+  "group": "wrong-state"
+ },
+ {
+  "id": "oop/multiple-inheritance-mro",
+  "category": "oop",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: Base.__init__, Left.__init__, Right.__init__, Child.__init__"
+  ],
+  "bytes": 57996,
+  "steps": 66,
+  "group": "wrong-state"
+ },
+ {
+  "id": "oop/objects-holding-objects",
+  "category": "oop",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: Course.__init__, Student.__init__"
+  ],
+  "bytes": 84279,
+  "steps": 65,
+  "group": "wrong-state"
+ },
+ {
+  "id": "oop/operator-overloading",
+  "category": "oop",
+  "tags": [
+   "missing-variable",
+   "return-value"
+  ],
+  "notes": [
+   "not shown: Vector.__init__, Vector.__add__, Vector.__sub__, Vector.__mul__, Vector.__rmul__, Vector.__neg__",
+   "step 82 __abs__ return: 5.0 shown as 5"
+  ],
+  "bytes": 226968,
+  "steps": 143,
+  "group": "wrong-state"
+ },
+ {
+  "id": "oop/override-polymorphism",
+  "category": "oop",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: Rect.__init__, Square.__init__, Circle.__init__"
+  ],
+  "bytes": 861470,
+  "steps": 117,
+  "group": "wrong-state"
+ },
+ {
+  "id": "oop/property-getter-side-effect",
+  "category": "oop",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: Account.__init__"
+  ],
+  "bytes": 20606,
+  "steps": 46,
+  "group": "wrong-state"
+ },
+ {
+  "id": "oop/property-raises",
+  "category": "oop",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: Sensor.__init__"
+  ],
+  "bytes": 22927,
+  "steps": 55,
+  "group": "wrong-state"
+ },
+ {
+  "id": "oop/property-setter-validation",
+  "category": "oop",
+  "tags": [
+   "missing-variable",
+   "return-value"
+  ],
+  "notes": [
+   "not shown: Temperature.__init__",
+   "step 31 fahrenheit return: 77.0 shown as 77 ; step 43 fahrenheit return: 212.0 shown as 212"
+  ],
+  "bytes": 23500,
+  "steps": 61,
+  "group": "wrong-state"
+ },
+ {
+  "id": "oop/slots-class",
+  "category": "oop",
+  "tags": [
+   "steps-not-in-cpython",
+   "missing-variable"
+  ],
+  "notes": [
+   "3 step(s) match no CPython event in order, first: step 44 line 32 [<module>>__init__]; step 50 line 32 [<module>>__init__]; step 56 line 32 [<module>>__init__]",
+   "not shown: Pixel.__slots__, Pixel.__init__, AlphaPixel.__slots__, AlphaPixel.__init__, Partial.__slots__"
+  ],
+  "bytes": 81284,
+  "steps": 70,
+  "group": "wrong-state"
+ },
+ {
+  "id": "oop/stack-class",
+  "category": "oop",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: Stack.__init__, Stack.__len__, Stack.__repr__"
+  ],
+  "bytes": 148531,
+  "steps": 179,
+  "group": "wrong-state"
+ },
+ {
+  "id": "oop/staticmethod-classmethod",
+  "category": "oop",
+  "tags": [
+   "steps-not-in-cpython",
+   "missing-variable"
+  ],
+  "notes": [
+   "14 step(s) match no CPython event in order, first: step 58 line 28 [<module>>is_leap]; step 62 line 28 [<module>>is_leap]; step 66 line 28 [<module>>is_leap]",
+   "not shown: Date.__init__, Date.__repr__"
+  ],
+  "bytes": 108027,
+  "steps": 116,
+  "group": "wrong-state"
+ },
+ {
+  "id": "oop/str-vs-repr",
+  "category": "oop",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: Point.__init__, Point.__repr__, Point.__str__, OnlyRepr.__repr__"
+  ],
+  "bytes": 62417,
+  "steps": 76,
+  "group": "wrong-state"
+ },
+ {
+  "id": "oop/subclass-builtin-list",
+  "category": "oop",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: History.__init__, Counter.__missing__"
+  ],
+  "bytes": 60822,
+  "steps": 82,
+  "group": "wrong-state"
+ },
+ {
+  "id": "oop/vars-and-dict",
+  "category": "oop",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: Book.__init__"
+  ],
+  "bytes": 28366,
+  "steps": 36,
+  "group": "wrong-state"
+ },
+ {
+  "id": "print-format/custom-str-repr",
+  "category": "print-format",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: Card.__init__, Card.__str__, Card.__repr__, Point.__init__, Point.__repr__"
+  ],
+  "bytes": 87209,
+  "steps": 89,
+  "group": "wrong-state"
+ },
+ {
+  "id": "print-format/end-builds-one-line",
+  "category": "print-format",
+  "tags": [
+   "stdout"
+  ],
+  "notes": [
+   "stdout differs at line 1: CPython \"1\\t2\\t3\\t4\\t5\" | PyTutor \"1\""
+  ],
+  "bytes": 34659,
+  "steps": 104,
+  "group": "wrong-output"
+ },
+ {
+  "id": "print-format/escapes-and-unicode",
+  "category": "print-format",
+  "tags": [],
+  "notes": [],
+  "bytes": 9985,
+  "steps": 21,
+  "group": "match"
+ },
+ {
+  "id": "print-format/format-error-after-output",
+  "category": "print-format",
+  "tags": [
+   "stdout"
+  ],
+  "notes": [
+   "stdout differs at line 1: CPython \"    1    2  3.5\" | PyTutor \"    1\""
+  ],
+  "bytes": 7844,
+  "steps": 16,
+  "group": "wrong-output"
+ },
+ {
+  "id": "print-format/fstring-align-width",
+  "category": "print-format",
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ],
+  "notes": [
+   "5 value(s), first: step 19 <module>.price: 3.0 shown as 3 ; step 20 <module>.price: 3.0 shown as 3 ; step 21 <module>.price: 3.0 shown as 3",
+   "final globals: price: 3.0 shown as 3"
+  ],
+  "bytes": 21063,
+  "steps": 24,
+  "group": "wrong-state"
+ },
+ {
+  "id": "print-format/fstring-numeric-specs",
+  "category": "print-format",
+  "tags": [],
+  "notes": [],
+  "bytes": 8804,
+  "steps": 19,
+  "group": "match"
+ },
+ {
+  "id": "print-format/fstring-repr-and-debug",
+  "category": "print-format",
+  "tags": [],
+  "notes": [],
+  "bytes": 12559,
+  "steps": 21,
+  "group": "match"
+ },
+ {
+  "id": "print-format/mixed-type-args",
+  "category": "print-format",
+  "tags": [],
+  "notes": [],
+  "bytes": 17970,
+  "steps": 20,
+  "group": "match"
+ },
+ {
+  "id": "print-format/multiline-strings",
+  "category": "print-format",
+  "tags": [
+   "stdout"
+  ],
+  "notes": [
+   "stdout differs at line 9: CPython \"'first\\\\n  second\\\\nthird\\\\n'\" | PyTutor \"\""
+  ],
+  "bytes": 2793030,
+  "steps": 19,
+  "group": "wrong-output"
+ },
+ {
+  "id": "print-format/nested-containers-strings",
+  "category": "print-format",
+  "tags": [],
+  "notes": [],
+  "bytes": 81411,
+  "steps": 29,
+  "group": "match"
+ },
+ {
+  "id": "print-format/percent-formatting",
+  "category": "print-format",
+  "tags": [],
+  "notes": [],
+  "bytes": 7816,
+  "steps": 21,
+  "group": "match"
+ },
+ {
+  "id": "print-format/print-star-list",
+  "category": "print-format",
+  "tags": [
+   "stdout"
+  ],
+  "notes": [
+   "stdout differs at line 10: CPython \"start a b 99 3 1.\" | PyTutor \"start a b 99 3 1\""
+  ],
+  "bytes": 54619,
+  "steps": 40,
+  "group": "wrong-output"
+ },
+ {
+  "id": "print-format/redirect-stdout",
+  "category": "print-format",
+  "tags": [
+   "stdout",
+   "value-shown-wrong",
+   "final-state"
+  ],
+  "notes": [
+   "stdout differs at line 2: CPython \"visible 2\" | PyTutor \"captured A\"",
+   "13 value(s), first: step 10 <module>.captured: 'captured A\\ncaptured B!' shown as {\"type\":\"string\",\"value\":\"\"} ; step 11 <module>.captured: 'captured A\\ncaptured B!' shown as {\"type\":\"string\",\"value\":\"\"} ; step 12 <module>.captured: 'captured A\\ncaptured B!' shown as {\"type\":\"string\",\"value\":\"\"}",
+   "final globals: captured: 'captured A\\ncaptured B!' shown as {\"type\":\"string\",\"value\":\"\"}; text: 'into other-1-2\\n' shown as {\"type\":\"string\",\"value\":\"\"}"
+  ],
+  "bytes": 2664766,
+  "steps": 19,
+  "group": "wrong-output"
+ },
+ {
+  "id": "print-format/repr-vs-str",
+  "category": "print-format",
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ],
+  "notes": [
+   "12 value(s), first: step 19 <module>.z: 2.0 shown as 2 ; step 20 <module>.z: 2.0 shown as 2 ; step 21 <module>.z: 2.0 shown as 2",
+   "final globals: z: 2.0 shown as 2"
+  ],
+  "bytes": 61468,
+  "steps": 50,
+  "group": "wrong-state"
+ },
+ {
+  "id": "print-format/sep-and-end",
+  "category": "print-format",
+  "tags": [
+   "stdout",
+   "exception-extra",
+   "skipped-lines",
+   "value-shown-wrong"
+  ],
+  "notes": [
+   "stdout differs at line 4: CPython \"1 -> two -> 3.0 <end>\" | PyTutor \"1 -> two -> 3.0\"",
+   "PyTutor: exception: AttributeError: 'NoneType' object has no attribute 'join'",
+   "2 CPython line event(s) have no step, lines 16, 17",
+   "13 value(s), first: step 1 <module>.c: 3.0 shown as 3 ; step 2 <module>.c: 3.0 shown as 3 ; step 3 <module>.c: 3.0 shown as 3"
+  ],
+  "bytes": 4553,
+  "steps": 14,
+  "group": "wrong-output"
+ },
+ {
+  "id": "print-format/stderr-mixed-with-stdout",
+  "category": "print-format",
+  "tags": [
+   "stdout",
+   "stderr-as-stdout"
+  ],
+  "notes": [
+   "stdout differs at line 2: CPython \"step 2 to stdout\" | PyTutor \"warning: to stderr\""
+  ],
+  "bytes": 3383283,
+  "steps": 23,
+  "group": "wrong-output"
+ },
+ {
+  "id": "print-format/stdout-write",
+  "category": "print-format",
+  "tags": [
+   "lost-stdout",
+   "stdout"
+  ],
+  "notes": [
+   "written to sys.stdout directly, never shown: \"hello world\\nabcde\\n3.0|'q'\\nbline1\\nline2\\n\"",
+   "stdout differs at line 1: CPython \"hello world\" | PyTutor \"write returned 5\""
+  ],
+  "bytes": 3232335,
+  "steps": 22,
+  "group": "wrong-output"
+ },
+ {
+  "id": "print-format/str-format-method",
+  "category": "print-format",
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ],
+  "notes": [
+   "13 value(s), first: step 9 <module>.c: (2+3j) shown as {\"type\":\"string\",\"value\":\"(2+3j)\"} ; step 10 <module>.c: (2+3j) shown as {\"type\":\"string\",\"value\":\"(2+3j)\"} ; step 11 <module>.c: (2+3j) shown as {\"type\":\"string\",\"value\":\"(2+3j)\"}",
+   "final globals: c: (2+3j) shown as {\"type\":\"string\",\"value\":\"(2+3j)\"}"
+  ],
+  "bytes": 15735,
+  "steps": 22,
+  "group": "wrong-state"
+ },
+ {
+  "id": "print-format/tabs-and-columns",
+  "category": "print-format",
+  "tags": [],
+  "notes": [],
+  "bytes": 43017,
+  "steps": 33,
+  "group": "match"
+ },
+ {
+  "id": "print-format/very-long-lines",
+  "category": "print-format",
+  "tags": [
+   "steps-not-in-cpython",
+   "skipped-lines"
+  ],
+  "notes": [
+   "9 step(s) match no CPython event in order, first: step 206 line 8 [<module>]; step 207 line 9 [<module>]; step 208 line 10 [<module>]",
+   "8 CPython line event(s) have no step, lines 8, 9, 10, 11, 12, 13, 15, 17"
+  ],
+  "bytes": 1924061,
+  "steps": 293,
+  "group": "wrong-state"
+ },
+ {
+  "id": "realistic/average-of-n",
+  "category": "realistic",
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ],
+  "notes": [
+   "written to sys.stdout directly, never shown: \"How many measurements? \"",
+   "stdout differs at line 1: CPython \"How many measurements? Measurement 1: Measurement 2: Measurement 3: Measurement 4: Measurement 5: Measurement 6: \" | PyTutor \"\"",
+   "PyTutor: exception: OSError: [Errno 29] I/O error",
+   "44 CPython line event(s) have no step, lines 5, 6, 7, 8, 10, 11, 12, 14, 15, 16, 17, 18…"
+  ],
+  "bytes": 6585,
+  "steps": 2,
+  "group": "wrong-output"
+ },
+ {
+  "id": "realistic/balanced-parens",
+  "category": "realistic",
+  "tags": [
+   "steps-not-in-cpython",
+   "missing-variable"
+  ],
+  "notes": [
+   "9 step(s) match no CPython event in order, first: step 328 line 48 [<module>>size]; step 339 line 48 [<module>>pop]; step 341 line 17 [<module>>is_empty]",
+   "not shown: Stack.__init__"
+  ],
+  "bytes": 637371,
+  "steps": 367,
+  "group": "wrong-state"
+ },
+ {
+  "id": "realistic/bank-account",
+  "category": "realistic",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: BankAccount.__init__, BankAccount.__str__"
+  ],
+  "bytes": 153145,
+  "steps": 102,
+  "group": "wrong-state"
+ },
+ {
+  "id": "realistic/binary-search",
+  "category": "realistic",
+  "tags": [],
+  "notes": [],
+  "bytes": 978760,
+  "steps": 359,
+  "group": "match"
+ },
+ {
+  "id": "realistic/bst",
+  "category": "realistic",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: TreeNode.__init__"
+  ],
+  "bytes": 1002008,
+  "steps": 392,
+  "group": "wrong-state"
+ },
+ {
+  "id": "realistic/bubble-sort",
+  "category": "realistic",
+  "tags": [],
+  "notes": [],
+  "bytes": 418193,
+  "steps": 217,
+  "group": "match"
+ },
+ {
+  "id": "realistic/caesar-cipher",
+  "category": "realistic",
+  "tags": [
+   "steps-not-in-cpython",
+   "missing-variable",
+   "extra-variable",
+   "return-value"
+  ],
+  "notes": [
+   "35 step(s) match no CPython event in order, first: step 10 line 16 [<module>>encrypt>shift_char]; step 18 line 16 [<module>>encrypt>shift_char]; step 27 line 16 [<module>>encrypt>shift_char]",
+   "not shown: shift_char.ch, encrypt..0, encrypt.ch",
+   "shown but not in CPython's frame: encrypt.message",
+   "step 123 encrypt return: '!' shown as {\"type\":\"string\",\"value\":\"Phhw dw Qrrq!\"} ; step 295 encrypt return: 'D' shown as {\"type\":\"string\",\"value\":\"bcd BCD\"} ; step 348 encrypt return: 'v' shown as {\"type\":\"string\",\"value\":\"olssv\"}"
+  ],
+  "bytes": 2019418,
+  "steps": 790,
+  "group": "wrong-state"
+ },
+ {
+  "id": "realistic/change-maker",
+  "category": "realistic",
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ],
+  "notes": [
+   "written to sys.stdout directly, never shown: \"Number of transactions: \"",
+   "stdout differs at line 1: CPython \"Number of transactions: Price: Paid:   Change $1.63: 1 x $1, 2 x quarter, 1 x dime, 3 x penny\" | PyTutor \"\"",
+   "PyTutor: exception: OSError: [Errno 29] I/O error",
+   "109 CPython line event(s) have no step, lines 20, 21, 22, 23, 7, 24, 28, 31, 32, 11, 12, 13…"
+  ],
+  "bytes": 6103,
+  "steps": 4,
+  "group": "wrong-output"
+ },
+ {
+  "id": "realistic/dice-simulation",
+  "category": "realistic",
+  "tags": [
+   "value-shown-wrong"
+  ],
+  "notes": [
+   "65 value(s), first: step 46 <module>.total: 5 shown as 7 ; step 53 <module>.total: 4 shown as 5 ; step 61 <module>.total: 7 shown as 4"
+  ],
+  "bytes": 3205390,
+  "steps": 493,
+  "group": "wrong-state"
+ },
+ {
+  "id": "realistic/grade-calculator",
+  "category": "realistic",
+  "tags": [
+   "value-shown-wrong",
+   "return-value"
+  ],
+  "notes": [
+   "28 value(s), first: step 29 weighted_average.total: 18.0 shown as 18 ; step 30 weighted_average.total: 18.0 shown as 18 ; step 33 weighted_average.total: 69.0 shown as 69",
+   "step 35 weighted_average return: 69.0 shown as 69 ; step 126 <lambda> return: 69.0 shown as 69"
+  ],
+  "bytes": 374924,
+  "steps": 135,
+  "group": "wrong-state"
+ },
+ {
+  "id": "realistic/gradebook-input",
+  "category": "realistic",
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ],
+  "notes": [
+   "written to sys.stdout directly, never shown: \"name, score (or done): \"",
+   "stdout differs at line 1: CPython \"name, score (or done): name, score (or done): name, score (or done): name, score (or done): name, score (or done): name, score (or done): name, score (or done): name, score (or done): \" | PyTutor \"\"",
+   "PyTutor: exception: OSError: [Errno 29] I/O error",
+   "97 CPython line event(s) have no step, lines 7, 9, 10, 13, 14, 15, 19, 5, 6, 11, 12, 16…"
+  ],
+  "bytes": 1150,
+  "steps": 4,
+  "group": "wrong-output"
+ },
+ {
+  "id": "realistic/grid-walk",
+  "category": "realistic",
+  "tags": [],
+  "notes": [],
+  "bytes": 861798,
+  "steps": 185,
+  "group": "match"
+ },
+ {
+  "id": "realistic/group-students",
+  "category": "realistic",
+  "tags": [
+   "value-shown-wrong"
+  ],
+  "notes": [
+   "53 value(s), first: step 7 <module>.name: 'Bob' shown as {\"type\":\"string\",\"value\":\"Alice\"} ; step 7 <module>.major: 'Math' shown as {\"type\":\"string\",\"value\":\"CS\"} ; step 7 <module>.year: 3 shown as 2"
+  ],
+  "bytes": 575811,
+  "steps": 127,
+  "group": "wrong-state"
+ },
+ {
+  "id": "realistic/guessing-game",
+  "category": "realistic",
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ],
+  "notes": [
+   "written to sys.stdout directly, never shown: \"Guess a number 1-50: \"",
+   "stdout differs at line 1: CPython \"Guess a number 1-50: Too low\" | PyTutor \"\"",
+   "PyTutor: exception: OSError: [Errno 29] I/O error",
+   "56 CPython line event(s) have no step, lines 13, 16, 17, 18, 19, 20, 11, 12, 14, 15, 21, 22…"
+  ],
+  "bytes": 33682,
+  "steps": 9,
+  "group": "wrong-output"
+ },
+ {
+  "id": "realistic/insertion-sort",
+  "category": "realistic",
+  "tags": [],
+  "notes": [],
+  "bytes": 290911,
+  "steps": 155,
+  "group": "match"
+ },
+ {
+  "id": "realistic/inventory",
+  "category": "realistic",
+  "tags": [],
+  "notes": [],
+  "bytes": 310368,
+  "steps": 108,
+  "group": "match"
+ },
+ {
+  "id": "realistic/leap-year-input",
+  "category": "realistic",
+  "tags": [
+   "stdout",
+   "exception-extra",
+   "steps-not-in-cpython",
+   "skipped-lines"
+  ],
+  "notes": [
+   "stdout differs at line 1: CPython \"2024: leap year, February has 29 days\" | PyTutor \"\"",
+   "PyTutor: exception: OSError: [Errno 29] I/O error",
+   "2 step(s) match no CPython event in order, first: step 7 line 19 [<module>]; step 8 line 19 [<module>]",
+   "123 CPython line event(s) have no step, lines 21, 22, 24, 25, 3, 5, 7, 26, 29, 11, 16, 17…"
+  ],
+  "bytes": 4213,
+  "steps": 9,
+  "group": "wrong-output"
+ },
+ {
+  "id": "realistic/linked-list",
+  "category": "realistic",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: Node.__init__, LinkedList.__init__, LinkedList.__str__"
+  ],
+  "bytes": 286860,
+  "steps": 217,
+  "group": "wrong-state"
+ },
+ {
+  "id": "realistic/list-stats",
+  "category": "realistic",
+  "tags": [
+   "return-value"
+  ],
+  "notes": [
+   "step 82 median return: 72.0 shown as 72"
+  ],
+  "bytes": 218459,
+  "steps": 139,
+  "group": "wrong-state"
+ },
+ {
+  "id": "realistic/matrix-input",
+  "category": "realistic",
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ],
+  "notes": [
+   "written to sys.stdout directly, never shown: \"rows cols: \"",
+   "stdout differs at line 1: CPython \"rows cols: row 1: row 2: Row 2 has 3 values, padding to 4\" | PyTutor \"\"",
+   "PyTutor: exception: OSError: [Errno 29] I/O error",
+   "78 CPython line event(s) have no step, lines 3, 4, 5, 6, 9, 7, 8, 11, 12, 13, 14, 15…"
+  ],
+  "bytes": 379,
+  "steps": 1,
+  "group": "wrong-output"
+ },
+ {
+  "id": "realistic/matrix-ops",
+  "category": "realistic",
+  "tags": [],
+  "notes": [],
+  "bytes": 1332929,
+  "steps": 324,
+  "group": "match"
+ },
+ {
+  "id": "realistic/menu-bank",
+  "category": "realistic",
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "exception-extra",
+   "skipped-lines",
+   "value-shown-wrong"
+  ],
+  "notes": [
+   "written to sys.stdout directly, never shown: \"> \"",
+   "stdout differs at line 2: CPython \"> OK, balance $100.00\" | PyTutor \"<end>\"",
+   "PyTutor: exception: OSError: [Errno 29] I/O error",
+   "125 CPython line event(s) have no step, lines 20, 22, 23, 26, 29, 32, 33, 34, 36, 8, 9, 14…",
+   "5 value(s), first: step 1 <module>.balance: 0.0 shown as 0 ; step 2 <module>.balance: 0.0 shown as 0 ; step 3 <module>.balance: 0.0 shown as 0"
+  ],
+  "bytes": 1913,
+  "steps": 6,
+  "group": "wrong-output"
+ },
+ {
+  "id": "realistic/merge-sort",
+  "category": "realistic",
+  "tags": [],
+  "notes": [],
+  "bytes": 490192,
+  "steps": 218,
+  "group": "match"
+ },
+ {
+  "id": "realistic/palindrome-checker",
+  "category": "realistic",
+  "tags": [],
+  "notes": [],
+  "bytes": 1586405,
+  "steps": 827,
+  "group": "match"
+ },
+ {
+  "id": "realistic/password-checker",
+  "category": "realistic",
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ],
+  "notes": [
+   "written to sys.stdout directly, never shown: \"Password (or quit): \"",
+   "stdout differs at line 1: CPython \"Password (or quit):   Rejected (very weak): too short, no uppercase letter, no digit, no symbol\" | PyTutor \"\"",
+   "PyTutor: exception: OSError: [Errno 29] I/O error",
+   "104 CPython line event(s) have no step, lines 28, 30, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15…"
+  ],
+  "bytes": 8544,
+  "steps": 6,
+  "group": "wrong-output"
+ },
+ {
+  "id": "realistic/permutations",
+  "category": "realistic",
+  "tags": [
+   "steps-not-in-cpython",
+   "value-shown-wrong"
+  ],
+  "notes": [
+   "58 step(s) match no CPython event in order, first: step 126 line 27 [<module>>permutations]; step 133 line 2 [<module>>permutations]; step 142 line 4 [<module>>permutations>permutations]",
+   "13 value(s), first: step 138 permutations.first: 'c' shown as {\"type\":\"string\",\"value\":\"a\"} ; step 139 permutations.first: 'c' shown as {\"type\":\"string\",\"value\":\"a\"} ; step 144 permutations.first: 'c' shown as {\"type\":\"string\",\"value\":\"a\"}"
+  ],
+  "bytes": 947299,
+  "steps": 306,
+  "group": "wrong-state"
+ },
+ {
+  "id": "realistic/printer-queue",
+  "category": "realistic",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: Queue.__init__, Queue.__len__, Job.__init__, Job.__repr__"
+  ],
+  "bytes": 269748,
+  "steps": 144,
+  "group": "wrong-state"
+ },
+ {
+  "id": "realistic/quiz-input",
+  "category": "realistic",
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ],
+  "notes": [
+   "written to sys.stdout directly, never shown: \"Your name: \"",
+   "stdout differs at line 1: CPython \"Your name: Q1. What is the capital of France?   Correct!\" | PyTutor \"\"",
+   "PyTutor: exception: OSError: [Errno 29] I/O error",
+   "43 CPython line event(s) have no step, lines 16, 17, 18, 19, 12, 20, 21, 22, 24, 25, 27, 28…"
+  ],
+  "bytes": 3161,
+  "steps": 3,
+  "group": "wrong-output"
+ },
+ {
+  "id": "realistic/recursion-basics",
+  "category": "realistic",
+  "tags": [
+   "steps-not-in-cpython",
+   "value-shown-wrong",
+   "return-value"
+  ],
+  "notes": [
+   "329 step(s) match no CPython event in order, first: step 226 line 42 [<module>>fib]; step 231 line 42 [<module>>fib]; step 236 line 42 [<module>>fib]",
+   "52 value(s), first: step 239 fib.n: 3 shown as 1 ; step 240 fib.n: 3 shown as 1 ; step 243 fib.n: 4 shown as 0",
+   "step 263 fib return: 5 shown as 1 ; step 287 fib return: 5 shown as 1 ; step 292 fib return: 8 shown as 2"
+  ],
+  "bytes": 886353,
+  "steps": 718,
+  "group": "wrong-state"
+ },
+ {
+  "id": "realistic/remove-duplicates",
+  "category": "realistic",
+  "tags": [],
+  "notes": [],
+  "bytes": 308401,
+  "steps": 122,
+  "group": "match"
+ },
+ {
+  "id": "realistic/safe-age-input",
+  "category": "realistic",
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ],
+  "notes": [
+   "written to sys.stdout directly, never shown: \"Age: \"",
+   "stdout differs at line 1: CPython \"Age:   'twenty' is not a whole number, try again\" | PyTutor \"\"",
+   "PyTutor: exception: OSError: [Errno 29] I/O error",
+   "53 CPython line event(s) have no step, lines 7, 8, 9, 10, 11, 4, 5, 6, 12, 13, 14, 15…"
+  ],
+  "bytes": 2888,
+  "steps": 7,
+  "group": "wrong-output"
+ },
+ {
+  "id": "realistic/selection-sort",
+  "category": "realistic",
+  "tags": [
+   "steps-not-in-cpython",
+   "skipped-lines"
+  ],
+  "notes": [
+   "24 step(s) match no CPython event in order, first: step 247 line 27 [<module>>selection_sort]; step 346 line 28 [<module>]; step 347 line 29 [<module>]",
+   "22 CPython line event(s) have no step, lines 28, 29, 30, 31, 32, 34"
+  ],
+  "bytes": 1234419,
+  "steps": 376,
+  "group": "wrong-state"
+ },
+ {
+  "id": "realistic/sentence-analyzer",
+  "category": "realistic",
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ],
+  "notes": [
+   "written to sys.stdout directly, never shown: \"Type a sentence: \"",
+   "stdout differs at line 1: CPython \"Type a sentence: Words: 7\" | PyTutor \"\"",
+   "PyTutor: exception: OSError: [Errno 29] I/O error",
+   "240 CPython line event(s) have no step, lines 3, 4, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16…"
+  ],
+  "bytes": 365,
+  "steps": 1,
+  "group": "wrong-output"
+ },
+ {
+  "id": "realistic/shapes-inheritance",
+  "category": "realistic",
+  "tags": [
+   "steps-not-in-cpython",
+   "missing-variable"
+  ],
+  "notes": [
+   "4 step(s) match no CPython event in order, first: step 140 line 58 [<module>>area]; step 146 line 58 [<module>>area]; step 152 line 58 [<module>>area]",
+   "not shown: Shape.__init__, Rectangle.__init__, Square.__init__, Circle.__init__"
+  ],
+  "bytes": 1357388,
+  "steps": 176,
+  "group": "wrong-state"
+ },
+ {
+  "id": "realistic/shopping-cart",
+  "category": "realistic",
+  "tags": [
+   "value-shown-wrong",
+   "missing-variable"
+  ],
+  "notes": [
+   "5 value(s), first: step 33 __init__.price: 8.0 shown as 8 ; step 34 __init__.price: 8.0 shown as 8 ; step 35 __init__.price: 8.0 shown as 8",
+   "not shown: Item.__init__, Item.__repr__, Cart.__init__"
+  ],
+  "bytes": 308496,
+  "steps": 143,
+  "group": "wrong-state"
+ },
+ {
+  "id": "realistic/shopping-list-input",
+  "category": "realistic",
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ],
+  "notes": [
+   "written to sys.stdout directly, never shown: \"Item and quantity (done to finish): \"",
+   "stdout differs at line 1: CPython \"Item and quantity (done to finish): Item and quantity (done to finish): Item and quantity (done to finish): Item and quantity (done to finish): Item and quantity (done to finish): Item and quantity (done to finish): Item and quantity (done to finish): Item and quantity (done to finish): \" | PyTutor \"\"",
+   "PyTutor: exception: OSError: [Errno 29] I/O error",
+   "84 CPython line event(s) have no step, lines 6, 7, 8, 9, 12, 13, 14, 15, 16, 11, 18, 19…"
+  ],
+  "bytes": 877,
+  "steps": 3,
+  "group": "wrong-output"
+ },
+ {
+  "id": "realistic/split-scores",
+  "category": "realistic",
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ],
+  "notes": [
+   "written to sys.stdout directly, never shown: \"Enter quiz scores separated by spaces: \"",
+   "stdout differs at line 1: CPython \"Enter quiz scores separated by spaces: Scores: [72, 88, 54, 91, 67, 80, 75]\" | PyTutor \"\"",
+   "PyTutor: exception: OSError: [Errno 29] I/O error",
+   "31 CPython line event(s) have no step, lines 3, 4, 6, 7, 8, 9, 11, 12, 14, 15, 16, 17…"
+  ],
+  "bytes": 383,
+  "steps": 1,
+  "group": "wrong-output"
+ },
+ {
+  "id": "realistic/student-course",
+  "category": "realistic",
+  "tags": [
+   "value-shown-wrong",
+   "missing-variable",
+   "return-value",
+   "final-state"
+  ],
+  "notes": [
+   "22 value(s), first: step 105 <module>.g: 3.0 shown as 3 ; step 106 add_grade.grade: 3.0 shown as 3 ; step 107 add_grade.grade: 3.0 shown as 3",
+   "not shown: Student.__init__, Student.__repr__, Course.__init__",
+   "step 144 gpa return: 0.0 shown as 0 ; step 150 gpa return: 3.0 shown as 3 ; step 156 gpa return: 4.0 shown as 4",
+   "final globals: g: 4.0 shown as 4"
+  ],
+  "bytes": 352066,
+  "steps": 159,
+  "group": "wrong-state"
+ },
+ {
+  "id": "realistic/sum-until-sentinel",
+  "category": "realistic",
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ],
+  "notes": [
+   "written to sys.stdout directly, never shown: \"Enter a number (-1 to stop): \"",
+   "stdout differs at line 1: CPython \"Enter a number (-1 to stop): Enter a number (-1 to stop): Enter a number (-1 to stop): Enter a number (-1 to stop): Enter a number (-1 to stop): Enter a number (-1 to stop): Enter a number (-1 to stop): \" | PyTutor \"\"",
+   "PyTutor: exception: OSError: [Errno 29] I/O error",
+   "39 CPython line event(s) have no step, lines 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19"
+  ],
+  "bytes": 1075,
+  "steps": 4,
+  "group": "wrong-output"
+ },
+ {
+  "id": "realistic/temperature-converter-input",
+  "category": "realistic",
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ],
+  "notes": [
+   "written to sys.stdout directly, never shown: \"Temperature (e.g. 100 C) or quit: \"",
+   "stdout differs at line 1: CPython \"Temperature (e.g. 100 C) or quit: 100.0 C = 212.0 F\" | PyTutor \"\"",
+   "PyTutor: exception: OSError: [Errno 29] I/O error",
+   "90 CPython line event(s) have no step, lines 16, 18, 19, 22, 23, 3, 4, 5, 24, 27, 28, 14…"
+  ],
+  "bytes": 1243,
+  "steps": 4,
+  "group": "wrong-output"
+ },
+ {
+  "id": "realistic/temperature-table",
+  "category": "realistic",
+  "tags": [
+   "value-shown-wrong",
+   "return-value",
+   "final-state"
+  ],
+  "notes": [
+   "69 value(s), first: step 75 <module>.f: -4.0 shown as -4 ; step 76 <module>.f: -4.0 shown as -4 ; step 77 <module>.f: 14.0 shown as 14",
+   "step 13 c_to_f return: -4.0 shown as -4 ; step 22 c_to_f return: 14.0 shown as 14 ; step 31 c_to_f return: 32.0 shown as 32",
+   "final globals: c: 100.0 shown as 100"
+  ],
+  "bytes": 560279,
+  "steps": 185,
+  "group": "wrong-state"
+ },
+ {
+  "id": "realistic/tic-tac-toe",
+  "category": "realistic",
+  "tags": [],
+  "notes": [],
+  "bytes": 1662061,
+  "steps": 398,
+  "group": "match"
+ },
+ {
+  "id": "realistic/towers-of-hanoi",
+  "category": "realistic",
+  "tags": [],
+  "notes": [],
+  "bytes": 359233,
+  "steps": 121,
+  "group": "match"
+ },
+ {
+  "id": "realistic/vowel-counter",
+  "category": "realistic",
+  "tags": [
+   "value-shown-wrong"
+  ],
+  "notes": [
+   "10 value(s), first: step 69 <module>.w: 'rhythm' shown as {\"type\":\"string\",\"value\":\"Education\"} ; step 109 <module>.v: 0 shown as 5 ; step 112 <module>.w: 'Banana' shown as {\"type\":\"string\",\"value\":\"rhythm\"}"
+  ],
+  "bytes": 856400,
+  "steps": 376,
+  "group": "wrong-state"
+ },
+ {
+  "id": "realistic/word-frequency",
+  "category": "realistic",
+  "tags": [
+   "value-shown-wrong"
+  ],
+  "notes": [
+   "1 value(s), first: step 153 <module>.n: 2 shown as 4"
+  ],
+  "bytes": 970976,
+  "steps": 281,
+  "group": "wrong-state"
+ },
+ {
+  "id": "scope-mutation/alias-two-names-one-list",
+  "category": "scope-mutation",
+  "tags": [],
+  "notes": [],
+  "bytes": 12995,
+  "steps": 19,
+  "group": "match"
+ },
+ {
+  "id": "scope-mutation/class-vs-instance-attributes",
+  "category": "scope-mutation",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: Dog.__init__"
+  ],
+  "bytes": 18443,
+  "steps": 35,
+  "group": "wrong-state"
+ },
+ {
+  "id": "scope-mutation/closure-cell-shared",
+  "category": "scope-mutation",
+  "tags": [],
+  "notes": [],
+  "bytes": 35998,
+  "steps": 49,
+  "group": "match"
+ },
+ {
+  "id": "scope-mutation/copy-vs-deepcopy",
+  "category": "scope-mutation",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: Box.__init__"
+  ],
+  "bytes": 111845,
+  "steps": 30,
+  "group": "wrong-state"
+ },
+ {
+  "id": "scope-mutation/del-and-recreate",
+  "category": "scope-mutation",
+  "tags": [],
+  "notes": [],
+  "bytes": 20158,
+  "steps": 33,
+  "group": "match"
+ },
+ {
+  "id": "scope-mutation/function-objects-in-variables",
+  "category": "scope-mutation",
+  "tags": [],
+  "notes": [],
+  "bytes": 75391,
+  "steps": 61,
+  "group": "match"
+ },
+ {
+  "id": "scope-mutation/global-keyword",
+  "category": "scope-mutation",
+  "tags": [],
+  "notes": [],
+  "bytes": 24547,
+  "steps": 34,
+  "group": "match"
+ },
+ {
+  "id": "scope-mutation/is-vs-equals",
+  "category": "scope-mutation",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: Always.__eq__"
+  ],
+  "bytes": 40791,
+  "steps": 36,
+  "group": "wrong-state"
+ },
+ {
+  "id": "scope-mutation/late-binding-closures",
+  "category": "scope-mutation",
+  "tags": [
+   "steps-not-in-cpython",
+   "value-shown-wrong",
+   "missing-variable",
+   "return-value"
+  ],
+  "notes": [
+   "16 step(s) match no CPython event in order, first: step 9 line 5 [<module>><lambda>]; step 13 line 5 [<module>><lambda>]; step 17 line 5 [<module>><lambda>]",
+   "2 value(s), first: step 33 <lambda>.i: 0 shown as 1 ; step 37 <lambda>.i: 0 shown as 2",
+   "not shown: make_adder.n",
+   "step 16 <lambda>: no return ↵ (returns 2) ; step 37 <lambda>: no return ↵ (returns 0) ; step 58 <lambda>: no return ↵ (returns 6)"
+  ],
+  "bytes": 145628,
+  "steps": 110,
+  "group": "wrong-state"
+ },
+ {
+  "id": "scope-mutation/list-contains-itself",
+  "category": "scope-mutation",
+  "tags": [],
+  "notes": [],
+  "bytes": 15267,
+  "steps": 19,
+  "group": "match"
+ },
+ {
+  "id": "scope-mutation/list-of-lists-aliasing-bug",
+  "category": "scope-mutation",
+  "tags": [],
+  "notes": [],
+  "bytes": 43544,
+  "steps": 28,
+  "group": "match"
+ },
+ {
+  "id": "scope-mutation/loop-variable-leaks",
+  "category": "scope-mutation",
+  "tags": [],
+  "notes": [],
+  "bytes": 43029,
+  "steps": 65,
+  "group": "match"
+ },
+ {
+  "id": "scope-mutation/mutable-default-argument",
+  "category": "scope-mutation",
+  "tags": [],
+  "notes": [],
+  "bytes": 47664,
+  "steps": 51,
+  "group": "match"
+ },
+ {
+  "id": "scope-mutation/nested-functions",
+  "category": "scope-mutation",
+  "tags": [],
+  "notes": [],
+  "bytes": 48665,
+  "steps": 59,
+  "group": "match"
+ },
+ {
+  "id": "scope-mutation/nonlocal-counter",
+  "category": "scope-mutation",
+  "tags": [],
+  "notes": [],
+  "bytes": 43708,
+  "steps": 64,
+  "group": "match"
+ },
+ {
+  "id": "scope-mutation/object-cycles",
+  "category": "scope-mutation",
+  "tags": [
+   "steps-not-in-cpython",
+   "missing-variable"
+  ],
+  "notes": [
+   "3 step(s) match no CPython event in order, first: step 23 line 14 [<module>>__init__]; step 30 line 14 [<module>>__init__]; step 37 line 14 [<module>>__init__]",
+   "not shown: Node.__init__"
+  ],
+  "bytes": 105888,
+  "steps": 75,
+  "group": "wrong-state"
+ },
+ {
+  "id": "scope-mutation/parameter-rebinding-vs-mutation",
+  "category": "scope-mutation",
+  "tags": [],
+  "notes": [],
+  "bytes": 41894,
+  "steps": 39,
+  "group": "match"
+ },
+ {
+  "id": "scope-mutation/plus-equals-list-tuple-str",
+  "category": "scope-mutation",
+  "tags": [],
+  "notes": [],
+  "bytes": 45751,
+  "steps": 32,
+  "group": "match"
+ },
+ {
+  "id": "scope-mutation/recursion-accumulator-by-reference",
+  "category": "scope-mutation",
+  "tags": [],
+  "notes": [],
+  "bytes": 413297,
+  "steps": 175,
+  "group": "match"
+ },
+ {
+  "id": "scope-mutation/same-object-many-paths",
+  "category": "scope-mutation",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: Account.__init__, Bank.__init__"
+  ],
+  "bytes": 42466,
+  "steps": 40,
+  "group": "wrong-state"
+ },
+ {
+  "id": "scope-mutation/shadowing-builtins",
+  "category": "scope-mutation",
+  "tags": [
+   "missing-variable",
+   "final-state"
+  ],
+  "notes": [
+   "not shown: <module>.list, <module>.sum, <module>.max, <module>.str, <module>.id, <module>.type",
+   "final globals: str missing; id missing; type missing; repr missing"
+  ],
+  "bytes": 8205,
+  "steps": 33,
+  "group": "wrong-state"
+ },
+ {
+  "id": "scope-mutation/slicing-copies",
+  "category": "scope-mutation",
+  "tags": [],
+  "notes": [],
+  "bytes": 30115,
+  "steps": 19,
+  "group": "match"
+ },
+ {
+  "id": "scope-mutation/swap-and-multiple-assignment",
+  "category": "scope-mutation",
+  "tags": [],
+  "notes": [],
+  "bytes": 26801,
+  "steps": 24,
+  "group": "match"
+ },
+ {
+  "id": "scope-mutation/tuple-with-mutable-inside",
+  "category": "scope-mutation",
+  "tags": [],
+  "notes": [],
+  "bytes": 18147,
+  "steps": 23,
+  "group": "match"
+ },
+ {
+  "id": "scope-mutation/unboundlocalerror",
+  "category": "scope-mutation",
+  "tags": [],
+  "notes": [],
+  "bytes": 4153,
+  "steps": 11,
+  "group": "match"
+ },
+ {
+  "id": "stdlib/collections-counter-defaultdict",
+  "category": "stdlib",
+  "tags": [],
+  "notes": [],
+  "bytes": 122362,
+  "steps": 57,
+  "group": "match"
+ },
+ {
+  "id": "stdlib/collections-deque-namedtuple",
+  "category": "stdlib",
+  "tags": [],
+  "notes": [],
+  "bytes": 49257,
+  "steps": 39,
+  "group": "match"
+ },
+ {
+  "id": "stdlib/copy-shallow-deep",
+  "category": "stdlib",
+  "tags": [
+   "missing-variable"
+  ],
+  "notes": [
+   "not shown: Team.__init__"
+  ],
+  "bytes": 107317,
+  "steps": 33,
+  "group": "wrong-state"
+ },
+ {
+  "id": "stdlib/datetime-fixed-dates",
+  "category": "stdlib",
+  "tags": [],
+  "notes": [],
+  "bytes": 28026,
+  "steps": 29,
+  "group": "match"
+ },
+ {
+  "id": "stdlib/fractions-decimal",
+  "category": "stdlib",
+  "tags": [],
+  "notes": [],
+  "bytes": 14062,
+  "steps": 15,
+  "group": "match"
+ },
+ {
+  "id": "stdlib/heapq-bisect",
+  "category": "stdlib",
+  "tags": [
+   "steps-not-in-cpython"
+  ],
+  "notes": [
+   "6 step(s) match no CPython event in order, first: step 29 line 24 [<module>>grade]; step 33 line 24 [<module>>grade]; step 37 line 24 [<module>>grade]"
+  ],
+  "bytes": 180978,
+  "steps": 58,
+  "group": "wrong-state"
+ },
+ {
+  "id": "stdlib/itertools-misc",
+  "category": "stdlib",
+  "tags": [
+   "stdout"
+  ],
+  "notes": [
+   "stdout differs at line 3: CPython \"['Ann', 'Bo', 'Cy', 'Ann', 'Bo', 'Cy', 'Ann']\" | PyTutor \"['Ann', 'Cy', 'Bo', 'Ann', 'Cy', 'Bo', 'Ann']\""
+  ],
+  "bytes": 108024,
+  "steps": 53,
+  "group": "wrong-output"
+ },
+ {
+  "id": "stdlib/json-dumps-loads",
+  "category": "stdlib",
+  "tags": [],
+  "notes": [],
+  "bytes": 4055974,
+  "steps": 27,
+  "group": "match"
+ },
+ {
+  "id": "stdlib/math-module",
+  "category": "stdlib",
+  "tags": [],
+  "notes": [],
+  "bytes": 124696,
+  "steps": 20,
+  "group": "match"
+ },
+ {
+  "id": "stdlib/random-seeded",
+  "category": "stdlib",
+  "tags": [
+   "stdout"
+  ],
+  "notes": [
+   "stdout differs at line 1: CPython \"[6, 1, 1, 6, 3, 2, 2, 2, 6, 1]\" | PyTutor \"[6, 1, 3, 2, 6, 6, 5, 5, 1, 1]\""
+  ],
+  "bytes": 311461,
+  "steps": 59,
+  "group": "wrong-output"
+ },
+ {
+  "id": "stdlib/re-basics",
+  "category": "stdlib",
+  "tags": [],
+  "notes": [],
+  "bytes": 4018208,
+  "steps": 27,
+  "group": "match"
+ },
+ {
+  "id": "stdlib/statistics-module",
+  "category": "stdlib",
+  "tags": [],
+  "notes": [],
+  "bytes": 2942924,
+  "steps": 19,
+  "group": "match"
+ },
+ {
+  "id": "stdlib/string-constants",
+  "category": "stdlib",
+  "tags": [],
+  "notes": [],
+  "bytes": 216925,
+  "steps": 98,
+  "group": "match"
+ },
+ {
+  "id": "stdlib/sys-info",
+  "category": "stdlib",
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "stderr-as-stdout",
+   "value-shown-wrong",
+   "final-state"
+  ],
+  "notes": [
+   "written to sys.stdout directly, never shown: \"written with sys.stdout.write\\n\"",
+   "stdout differs at line 7: CPython \"written with sys.stdout.write\" | PyTutor \"30\"",
+   "2 value(s), first: step 12 <module>.big: 1267650600228229401496703205376 shown as 1.2676506002282294e+30 ; step 13 <module>.big: 1267650600228229401496703205376 shown as 1.2676506002282294e+30",
+   "final globals: big: 1267650600228229401496703205376 shown as 1.2676506002282294e+30"
+  ],
+  "bytes": 1998749,
+  "steps": 14,
+  "group": "wrong-output"
+ },
+ {
+  "id": "stdlib/textwrap-module",
+  "category": "stdlib",
+  "tags": [],
+  "notes": [],
+  "bytes": 1864062,
+  "steps": 13,
+  "group": "match"
+ },
+ {
+  "id": "syntax-errors/assign-instead-of-equals",
+  "category": "syntax-errors",
+  "tags": [],
+  "notes": [],
+  "bytes": 111,
+  "group": "match"
+ },
+ {
+  "id": "syntax-errors/assign-to-call",
+  "category": "syntax-errors",
+  "tags": [],
+  "notes": [],
+  "bytes": 124,
+  "group": "match"
+ },
+ {
+  "id": "syntax-errors/elif-after-else",
+  "category": "syntax-errors",
+  "tags": [],
+  "notes": [],
+  "bytes": 66,
+  "group": "match"
+ },
+ {
+  "id": "syntax-errors/missing-colon",
+  "category": "syntax-errors",
+  "tags": [],
+  "notes": [],
+  "bytes": 63,
+  "group": "match"
+ },
+ {
+  "id": "syntax-errors/python2-print",
+  "category": "syntax-errors",
+  "tags": [],
+  "notes": [],
+  "bytes": 115,
+  "group": "match"
+ },
+ {
+  "id": "syntax-errors/return-outside-function",
+  "category": "syntax-errors",
+  "tags": [],
+  "notes": [],
+  "bytes": 76,
+  "group": "match"
+ },
+ {
+  "id": "syntax-errors/stray-close-paren",
+  "category": "syntax-errors",
+  "tags": [],
+  "notes": [],
+  "bytes": 64,
+  "group": "match"
+ },
+ {
+  "id": "syntax-errors/unclosed-bracket-at-eof",
+  "category": "syntax-errors",
+  "tags": [],
+  "notes": [],
+  "bytes": 71,
+  "group": "match"
+ },
+ {
+  "id": "syntax-errors/unclosed-paren-earlier-line",
+  "category": "syntax-errors",
+  "tags": [],
+  "notes": [],
+  "bytes": 71,
+  "group": "match"
+ },
+ {
+  "id": "syntax-errors/unexpected-indent",
+  "category": "syntax-errors",
+  "tags": [],
+  "notes": [],
+  "bytes": 73,
+  "group": "match"
+ },
+ {
+  "id": "syntax-errors/unindent-mismatch",
+  "category": "syntax-errors",
+  "tags": [],
+  "notes": [],
+  "bytes": 107,
+  "group": "match"
+ },
+ {
+  "id": "syntax-errors/unterminated-string",
+  "category": "syntax-errors",
+  "tags": [],
+  "notes": [],
+  "bytes": 99,
+  "group": "match"
+ }
+]

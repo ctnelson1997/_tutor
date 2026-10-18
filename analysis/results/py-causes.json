@@ -1,0 +1,1379 @@
+{
+ "data-structures/dict-comprehension": {
+  "group": "wrong-output",
+  "causes": [
+   "comprehensions"
+  ],
+  "tags": [
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ]
+ },
+ "data-structures/heapq-priority-queue": {
+  "group": "wrong-output",
+  "causes": [
+   "comprehensions"
+  ],
+  "tags": [
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ]
+ },
+ "data-structures/int-set-operations": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions"
+  ],
+  "tags": [
+   "value-shown-wrong"
+  ]
+ },
+ "data-structures/nested-json-data": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions",
+   "numbers"
+  ],
+  "tags": [
+   "value-shown-wrong",
+   "return-value",
+   "final-state"
+  ]
+ },
+ "examples/classes": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "exceptions/assert-statements": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions",
+   "numbers"
+  ],
+  "tags": [
+   "return-value"
+  ]
+ },
+ "exceptions/builtin-error-messages": {
+  "group": "wrong-state",
+  "causes": [
+   "numbers",
+   "state"
+  ],
+  "tags": [
+   "value-shown-wrong",
+   "missing-variable",
+   "final-state"
+  ]
+ },
+ "exceptions/context-manager-class": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "exceptions/custom-exception-attributes": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "exceptions/recursion-error-message": {
+  "group": "wrong-output",
+  "causes": [
+   "tracer-safety"
+  ],
+  "tags": [
+   "stdout",
+   "skipped-lines"
+  ]
+ },
+ "exceptions/uncaught-chained-from": {
+  "group": "wrong-state",
+  "causes": [
+   "errors"
+  ],
+  "tags": [
+   "traceback"
+  ]
+ },
+ "exceptions/uncaught-custom-exception": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "exceptions/uncaught-in-list-comprehension": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions",
+   "numbers"
+  ],
+  "tags": [
+   "return-value"
+  ]
+ },
+ "exceptions/uncaught-in-method": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "exceptions/uncaught-through-functions": {
+  "group": "wrong-state",
+  "causes": [
+   "numbers"
+  ],
+  "tags": [
+   "value-shown-wrong",
+   "return-value"
+  ]
+ },
+ "extra/calls-inside-comprehensions": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions"
+  ],
+  "tags": [
+   "steps-not-in-cpython"
+  ]
+ },
+ "extra/class-attributes": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "extra/comprehension-side-effects": {
+  "group": "wrong-output",
+  "causes": [
+   "comprehensions"
+  ],
+  "tags": [
+   "stdout",
+   "exception-extra",
+   "steps-not-in-cpython",
+   "skipped-lines",
+   "missing-variable"
+  ]
+ },
+ "extra/ends-with-quote": {
+  "group": "error",
+  "causes": [
+   "embedding"
+  ],
+  "tags": [
+   "pre-run-error"
+  ]
+ },
+ "extra/low-recursion-limit": {
+  "group": "wrong-output",
+  "causes": [
+   "tracer-safety"
+  ],
+  "tags": [
+   "stdout",
+   "skipped-lines"
+  ]
+ },
+ "extra/stale-with-later-comprehension": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions"
+  ],
+  "tags": [
+   "value-shown-wrong"
+  ]
+ },
+ "functional/any-all": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions"
+  ],
+  "tags": [
+   "steps-not-in-cpython",
+   "skipped-lines",
+   "missing-variable"
+  ]
+ },
+ "functional/closure-counter": {
+  "group": "wrong-output",
+  "causes": [
+   "comprehensions"
+  ],
+  "tags": [
+   "stdout",
+   "exception-extra",
+   "steps-not-in-cpython",
+   "skipped-lines",
+   "missing-variable"
+  ]
+ },
+ "functional/generator-expressions": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions"
+  ],
+  "tags": [
+   "steps-not-in-cpython",
+   "missing-variable"
+  ]
+ },
+ "functional/generator-send": {
+  "group": "wrong-state",
+  "causes": [
+   "numbers"
+  ],
+  "tags": [
+   "value-shown-wrong",
+   "return-value"
+  ]
+ },
+ "functional/higher-order-functions": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions"
+  ],
+  "tags": [
+   "steps-not-in-cpython",
+   "value-shown-wrong",
+   "missing-variable",
+   "return-value"
+  ]
+ },
+ "functional/list-comprehensions": {
+  "group": "wrong-output",
+  "causes": [
+   "comprehensions"
+  ],
+  "tags": [
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ]
+ },
+ "functional/recursion-returning-functions": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions"
+  ],
+  "tags": [
+   "steps-not-in-cpython",
+   "value-shown-wrong",
+   "return-value"
+  ]
+ },
+ "limits/deep-recursion-500": {
+  "group": "error",
+  "causes": [
+   "payload"
+  ],
+  "tags": [
+   "worker-kill"
+  ]
+ },
+ "limits/recursion-error-caught": {
+  "group": "error",
+  "causes": [
+   "payload"
+  ],
+  "tags": [
+   "worker-kill"
+  ]
+ },
+ "limits/recursion-error-uncaught": {
+  "group": "error",
+  "causes": [
+   "payload"
+  ],
+  "tags": [
+   "worker-kill"
+  ]
+ },
+ "numbers/big-int-powers": {
+  "group": "wrong-state",
+  "causes": [
+   "numbers"
+  ],
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ]
+ },
+ "numbers/complex-numbers": {
+  "group": "wrong-state",
+  "causes": [
+   "numbers"
+  ],
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ]
+ },
+ "numbers/divmod-and-pow": {
+  "group": "wrong-state",
+  "causes": [
+   "numbers"
+  ],
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ]
+ },
+ "numbers/factorial-30": {
+  "group": "wrong-state",
+  "causes": [
+   "numbers"
+  ],
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ]
+ },
+ "numbers/float-accumulation-steps": {
+  "group": "wrong-state",
+  "causes": [
+   "numbers"
+  ],
+  "tags": [
+   "value-shown-wrong"
+  ]
+ },
+ "numbers/float-overflow-error": {
+  "group": "wrong-state",
+  "causes": [
+   "numbers"
+  ],
+  "tags": [
+   "value-shown-wrong"
+  ]
+ },
+ "numbers/float-repr": {
+  "group": "wrong-state",
+  "causes": [
+   "numbers"
+  ],
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ]
+ },
+ "numbers/floor-div-mod-negatives": {
+  "group": "wrong-state",
+  "causes": [
+   "numbers"
+  ],
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ]
+ },
+ "numbers/huge-int-variable": {
+  "group": "error",
+  "causes": [
+   "tracer-safety"
+  ],
+  "tags": [
+   "pre-run-error"
+  ]
+ },
+ "numbers/int-bases-and-bits": {
+  "group": "wrong-state",
+  "causes": [
+   "numbers"
+  ],
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ]
+ },
+ "numbers/int-conversion-truncation": {
+  "group": "wrong-state",
+  "causes": [
+   "numbers"
+  ],
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ]
+ },
+ "numbers/math-functions": {
+  "group": "wrong-state",
+  "causes": [
+   "numbers"
+  ],
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ]
+ },
+ "numbers/negative-zero": {
+  "group": "wrong-state",
+  "causes": [
+   "numbers"
+  ],
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ]
+ },
+ "numbers/round-bankers": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions",
+   "numbers"
+  ],
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ]
+ },
+ "numbers/whole-floats-in-variables": {
+  "group": "wrong-state",
+  "causes": [
+   "numbers"
+  ],
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ]
+ },
+ "oop/abc-abstract": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "oop/attrs-added-after-init": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "oop/bank-account": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "oop/binary-search-tree": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "oop/class-attr-shared-list": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "oop/class-counter-ids": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "oop/container-protocol": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "oop/enum-basics": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "leaked-name"
+  ]
+ },
+ "oop/eq-hash-in-set": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable",
+   "return-value"
+  ]
+ },
+ "oop/getattr-fallback": {
+  "group": "wrong-output",
+  "causes": [
+   "tracer-safety",
+   "state"
+  ],
+  "tags": [
+   "stdout",
+   "exception-extra",
+   "skipped-lines",
+   "missing-variable"
+  ]
+ },
+ "oop/inheritance-super-init": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "oop/instance-vs-class-attr": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "oop/isinstance-and-type": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions"
+  ],
+  "tags": [
+   "steps-not-in-cpython"
+  ]
+ },
+ "oop/linked-list": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "oop/lt-sorting-objects": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "oop/multiple-inheritance-mro": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "oop/objects-holding-objects": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "oop/operator-overloading": {
+  "group": "wrong-state",
+  "causes": [
+   "numbers",
+   "state"
+  ],
+  "tags": [
+   "missing-variable",
+   "return-value"
+  ]
+ },
+ "oop/override-polymorphism": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "oop/property-getter-side-effect": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "oop/property-raises": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "oop/property-setter-validation": {
+  "group": "wrong-state",
+  "causes": [
+   "numbers",
+   "state"
+  ],
+  "tags": [
+   "missing-variable",
+   "return-value"
+  ]
+ },
+ "oop/slots-class": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions",
+   "state"
+  ],
+  "tags": [
+   "steps-not-in-cpython",
+   "missing-variable"
+  ]
+ },
+ "oop/stack-class": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "oop/staticmethod-classmethod": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions",
+   "state"
+  ],
+  "tags": [
+   "steps-not-in-cpython",
+   "missing-variable"
+  ]
+ },
+ "oop/str-vs-repr": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "oop/subclass-builtin-list": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "oop/vars-and-dict": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "print-format/custom-str-repr": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "print-format/end-builds-one-line": {
+  "group": "wrong-output",
+  "causes": [
+   "output"
+  ],
+  "tags": [
+   "stdout"
+  ]
+ },
+ "print-format/format-error-after-output": {
+  "group": "wrong-output",
+  "causes": [
+   "output"
+  ],
+  "tags": [
+   "stdout"
+  ]
+ },
+ "print-format/fstring-align-width": {
+  "group": "wrong-state",
+  "causes": [
+   "numbers"
+  ],
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ]
+ },
+ "print-format/multiline-strings": {
+  "group": "wrong-output",
+  "causes": [
+   "output"
+  ],
+  "tags": [
+   "stdout"
+  ]
+ },
+ "print-format/print-star-list": {
+  "group": "wrong-output",
+  "causes": [
+   "output"
+  ],
+  "tags": [
+   "stdout"
+  ]
+ },
+ "print-format/redirect-stdout": {
+  "group": "wrong-output",
+  "causes": [
+   "output"
+  ],
+  "tags": [
+   "stdout",
+   "value-shown-wrong",
+   "final-state"
+  ]
+ },
+ "print-format/repr-vs-str": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions",
+   "numbers"
+  ],
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ]
+ },
+ "print-format/sep-and-end": {
+  "group": "wrong-output",
+  "causes": [
+   "output",
+   "numbers"
+  ],
+  "tags": [
+   "stdout",
+   "exception-extra",
+   "skipped-lines",
+   "value-shown-wrong"
+  ]
+ },
+ "print-format/stderr-mixed-with-stdout": {
+  "group": "wrong-output",
+  "causes": [
+   "output"
+  ],
+  "tags": [
+   "stdout",
+   "stderr-as-stdout"
+  ]
+ },
+ "print-format/stdout-write": {
+  "group": "wrong-output",
+  "causes": [
+   "output"
+  ],
+  "tags": [
+   "lost-stdout",
+   "stdout"
+  ]
+ },
+ "print-format/str-format-method": {
+  "group": "wrong-state",
+  "causes": [
+   "numbers"
+  ],
+  "tags": [
+   "value-shown-wrong",
+   "final-state"
+  ]
+ },
+ "print-format/very-long-lines": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions"
+  ],
+  "tags": [
+   "steps-not-in-cpython",
+   "skipped-lines"
+  ]
+ },
+ "realistic/average-of-n": {
+  "group": "wrong-output",
+  "causes": [
+   "input",
+   "output",
+   "comprehensions"
+  ],
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ]
+ },
+ "realistic/balanced-parens": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions",
+   "state"
+  ],
+  "tags": [
+   "steps-not-in-cpython",
+   "missing-variable"
+  ]
+ },
+ "realistic/bank-account": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "realistic/bst": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "realistic/caesar-cipher": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions"
+  ],
+  "tags": [
+   "steps-not-in-cpython",
+   "missing-variable",
+   "extra-variable",
+   "return-value"
+  ]
+ },
+ "realistic/change-maker": {
+  "group": "wrong-output",
+  "causes": [
+   "input",
+   "output",
+   "comprehensions"
+  ],
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ]
+ },
+ "realistic/dice-simulation": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions"
+  ],
+  "tags": [
+   "value-shown-wrong"
+  ]
+ },
+ "realistic/grade-calculator": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions",
+   "numbers"
+  ],
+  "tags": [
+   "value-shown-wrong",
+   "return-value"
+  ]
+ },
+ "realistic/gradebook-input": {
+  "group": "wrong-output",
+  "causes": [
+   "input",
+   "output",
+   "comprehensions"
+  ],
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ]
+ },
+ "realistic/group-students": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions"
+  ],
+  "tags": [
+   "value-shown-wrong"
+  ]
+ },
+ "realistic/guessing-game": {
+  "group": "wrong-output",
+  "causes": [
+   "input",
+   "output",
+   "comprehensions"
+  ],
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ]
+ },
+ "realistic/leap-year-input": {
+  "group": "wrong-output",
+  "causes": [
+   "input"
+  ],
+  "tags": [
+   "stdout",
+   "exception-extra",
+   "steps-not-in-cpython",
+   "skipped-lines"
+  ]
+ },
+ "realistic/linked-list": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "realistic/list-stats": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions",
+   "numbers"
+  ],
+  "tags": [
+   "return-value"
+  ]
+ },
+ "realistic/matrix-input": {
+  "group": "wrong-output",
+  "causes": [
+   "input",
+   "output",
+   "comprehensions"
+  ],
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ]
+ },
+ "realistic/menu-bank": {
+  "group": "wrong-output",
+  "causes": [
+   "input",
+   "output",
+   "numbers"
+  ],
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "exception-extra",
+   "skipped-lines",
+   "value-shown-wrong"
+  ]
+ },
+ "realistic/password-checker": {
+  "group": "wrong-output",
+  "causes": [
+   "input",
+   "output",
+   "comprehensions"
+  ],
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ]
+ },
+ "realistic/permutations": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions"
+  ],
+  "tags": [
+   "steps-not-in-cpython",
+   "value-shown-wrong"
+  ]
+ },
+ "realistic/printer-queue": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "realistic/quiz-input": {
+  "group": "wrong-output",
+  "causes": [
+   "input",
+   "output"
+  ],
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ]
+ },
+ "realistic/recursion-basics": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions"
+  ],
+  "tags": [
+   "steps-not-in-cpython",
+   "value-shown-wrong",
+   "return-value"
+  ]
+ },
+ "realistic/safe-age-input": {
+  "group": "wrong-output",
+  "causes": [
+   "input",
+   "output"
+  ],
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ]
+ },
+ "realistic/selection-sort": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions"
+  ],
+  "tags": [
+   "steps-not-in-cpython",
+   "skipped-lines"
+  ]
+ },
+ "realistic/sentence-analyzer": {
+  "group": "wrong-output",
+  "causes": [
+   "input",
+   "output",
+   "comprehensions"
+  ],
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ]
+ },
+ "realistic/shapes-inheritance": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions",
+   "state"
+  ],
+  "tags": [
+   "steps-not-in-cpython",
+   "missing-variable"
+  ]
+ },
+ "realistic/shopping-cart": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions",
+   "numbers",
+   "state"
+  ],
+  "tags": [
+   "value-shown-wrong",
+   "missing-variable"
+  ]
+ },
+ "realistic/shopping-list-input": {
+  "group": "wrong-output",
+  "causes": [
+   "input",
+   "output",
+   "comprehensions"
+  ],
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ]
+ },
+ "realistic/split-scores": {
+  "group": "wrong-output",
+  "causes": [
+   "input",
+   "output",
+   "comprehensions"
+  ],
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ]
+ },
+ "realistic/student-course": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions",
+   "numbers",
+   "state"
+  ],
+  "tags": [
+   "value-shown-wrong",
+   "missing-variable",
+   "return-value",
+   "final-state"
+  ]
+ },
+ "realistic/sum-until-sentinel": {
+  "group": "wrong-output",
+  "causes": [
+   "input",
+   "output",
+   "comprehensions"
+  ],
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ]
+ },
+ "realistic/temperature-converter-input": {
+  "group": "wrong-output",
+  "causes": [
+   "input",
+   "output"
+  ],
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "exception-extra",
+   "skipped-lines"
+  ]
+ },
+ "realistic/temperature-table": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions",
+   "numbers"
+  ],
+  "tags": [
+   "value-shown-wrong",
+   "return-value",
+   "final-state"
+  ]
+ },
+ "realistic/vowel-counter": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions"
+  ],
+  "tags": [
+   "value-shown-wrong"
+  ]
+ },
+ "realistic/word-frequency": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions"
+  ],
+  "tags": [
+   "value-shown-wrong"
+  ]
+ },
+ "scope-mutation/class-vs-instance-attributes": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "scope-mutation/copy-vs-deepcopy": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "scope-mutation/is-vs-equals": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "scope-mutation/late-binding-closures": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions"
+  ],
+  "tags": [
+   "steps-not-in-cpython",
+   "value-shown-wrong",
+   "missing-variable",
+   "return-value"
+  ]
+ },
+ "scope-mutation/object-cycles": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions",
+   "state"
+  ],
+  "tags": [
+   "steps-not-in-cpython",
+   "missing-variable"
+  ]
+ },
+ "scope-mutation/same-object-many-paths": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "scope-mutation/shadowing-builtins": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable",
+   "final-state"
+  ]
+ },
+ "stdlib/copy-shallow-deep": {
+  "group": "wrong-state",
+  "causes": [
+   "state"
+  ],
+  "tags": [
+   "missing-variable"
+  ]
+ },
+ "stdlib/heapq-bisect": {
+  "group": "wrong-state",
+  "causes": [
+   "comprehensions"
+  ],
+  "tags": [
+   "steps-not-in-cpython"
+  ]
+ },
+ "stdlib/itertools-misc": {
+  "group": "wrong-output",
+  "causes": [
+   "comprehensions"
+  ],
+  "tags": [
+   "stdout"
+  ]
+ },
+ "stdlib/random-seeded": {
+  "group": "wrong-output",
+  "causes": [
+   "comprehensions"
+  ],
+  "tags": [
+   "stdout"
+  ]
+ },
+ "stdlib/sys-info": {
+  "group": "wrong-output",
+  "causes": [
+   "output",
+   "numbers"
+  ],
+  "tags": [
+   "lost-stdout",
+   "stdout",
+   "stderr-as-stdout",
+   "value-shown-wrong",
+   "final-state"
+  ]
+ }
+}

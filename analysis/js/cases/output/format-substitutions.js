@@ -1,0 +1,22 @@
+// printf-style substitutions in console.log: %s %d %i %f %o %O %j %c %%, extra and missing arguments
+const item = "apple";
+const qty = 3;
+const price = 1.25;
+const order = { item, qty, tags: ["fruit"] };
+console.log("Item: %s", item);
+console.log("%s costs %d dollars", item, price);
+console.log("int %i, float %f", 42.9, "3.5");
+console.log("%d of %s", "7", 42);
+console.log("object %o", order);
+console.log("object %O", order);
+console.log("json %j", order);
+console.log("%c styled", "color: red");
+console.log("100%% done, %s", "really");
+console.log("missing %s and %d");
+console.log("extra %s", "one", "two", 3);
+console.log("%s", null, undefined, [1, 2]);
+console.log("%d", 12n, "%i", -0);
+console.log(5, "%s is not a format here", "x");
+console.log("%s|%s", { a: 1 }, ["b"]);
+const total = qty * price;
+console.log("Total: %f", total);
