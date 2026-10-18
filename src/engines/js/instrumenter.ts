@@ -9,7 +9,6 @@
  *  - __popFrame__(value, line) at a return or the function's closing brace,
  *    a step showing the returned value
  *  - Loop guards to prevent infinite loops
- *  - Rewrites console.log/warn/error to __logOutput__
  *  - Blocks eval() and new Function()
  */
 

@@ -79,6 +79,34 @@ export function shownConsole(reply: WorkerMessage): GoldenLine[] {
   return lines.flatMap(l => l.text.split('\n').map(text => ({ stream: l.stream, text })));
 }
 
+/** A V8 stack frame line (`    at f (file:///main.js:3:9)`), or Node's note for frames shared with a cause. */
+const STACK_FRAME = /^\s+at .+(?:\(.*\)|:\d+:\d+)( \{)?$|^\s+\.\.\. \d+ lines? matching cause stack trace \.\.\.$/;
+
+/**
+ * Lines without an error's stack frames, which JSTutor leaves out (the
+ * browser's frames point into instrumented code, and Node's are Node's). A
+ * frame line ending an error's layout with ` {` gives it to the line before.
+ */
+export function withoutStackFrames(lines: string[]): string[] {
+  const out: string[] = [];
+  for (const line of lines) {
+    const m = STACK_FRAME.exec(line);
+    if (!m) { out.push(line); continue; }
+    if (m[1] && out.length) out[out.length - 1] += ' {';
+  }
+  return out;
+}
+
+function withoutFrames(lines: GoldenLine[]): GoldenLine[] {
+  const out: GoldenLine[] = [];
+  for (const l of lines) {
+    const m = STACK_FRAME.exec(l.text);
+    if (!m) { out.push(l); continue; }
+    if (m[1] && out.length) out[out.length - 1] = { ...out[out.length - 1], text: out[out.length - 1].text + ' {' };
+  }
+  return out;
+}
+
 const quote = (s: string) => JSON.stringify(s.length > 90 ? s.slice(0, 90) + '…' : s);
 const lineText = (l: GoldenLine | undefined) => (l ? `${quote(l.text)}${l.stream === 'stderr' ? ' (stderr)' : ''}` : '(nothing)');
 
@@ -98,8 +126,9 @@ function stoppedAtCap(reply: WorkerMessage): boolean {
 
 function checkOutput(golden: NodeGolden, reply: WorkerMessage): { problems: string[]; layoutOnly: boolean } {
   if (golden.compileError) return { problems: [], layoutOnly: false };
-  const want = golden.console;
-  const got = shownConsole(reply);
+  // An error's stack frames can't match, so neither side's are compared.
+  const want = withoutFrames(golden.console);
+  const got = withoutFrames(shownConsole(reply));
   // A run stopped early (JSTutor's step cap, or Node's endless loop) is compared as far as both got.
   const prefixOnly = stoppedAtCap(reply) || golden.endless;
   const n = prefixOnly ? Math.min(want.length, got.length) : Math.max(want.length, got.length);

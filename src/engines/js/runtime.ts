@@ -8,9 +8,12 @@
  *  - __capture__(line, vars) — serialize state into a snapshot
  *  - __pushFrame__(name, params) — push a call stack frame
  *  - __popFrame__() — pop a call stack frame
- *  - __logOutput__(level, ...args) — capture console output
+ *  - the program's console (inspect.ts: Node's format, #43), writing
+ *    stdout and stderr lines that each snapshot carries
  *  - Serialization logic for primitives, objects, arrays, functions
  */
+
+import { CONSOLE_SOURCE } from './inspect';
 
 /**
  * Returns the runtime preamble as a string of JavaScript to be
@@ -24,7 +27,11 @@ export function getRuntimeCode(): string {
 // ══════════════════════════════════════
 
 var __snapshots__ = [];
+// The console, by line: stdout's lines, and every line with its stream (the
+// snapshot's console once the program has written to stderr).
 var __stdout__ = [];
+var __console__ = [];
+var __stderrUsed__ = false;
 var __callStack__ = [{ name: "Global", variables: {} }];
 var __heapMap__ = new Map();  // object identity → heap ID
 var __heapRegistry__ = {};   // heapId → most recent serialized HeapObject
@@ -46,6 +53,7 @@ self.__snapshots__ = __snapshots__;
 // early if it did. Called with the thrown value when the program threw: the
 // step cap, the loop guard, or an exception the program didn't catch.
 function __runResult__(err) {
+  __finishOutput__();
   var msg = { type: "result", snapshots: __snapshots__ };
   if (arguments.length === 0) {
     if (__snapshots__.length >= __MAX_SNAPSHOTS) {
@@ -64,6 +72,24 @@ function __runResult__(err) {
   return msg;
 }
 self.__runResult__ = __runResult__;
+
+// Output written after the last step (a finally block's, on the way out of an
+// uncaught exception) gets one more step, the last, at the same place.
+function __finishOutput__() {
+  var last = __snapshots__[__snapshots__.length - 1];
+  if (!last || __snapshots__.length >= __MAX_SNAPSHOTS) return;
+  if (last.stdout.length === __stdout__.length && (last.console ? last.console.length : last.stdout.length) === __console__.length) return;
+  var snap = { step: __snapshots__.length, line: last.line, callStack: last.callStack, heap: last.heap };
+  __outputOf__(snap);
+  __snapshots__.push(snap);
+}
+
+// A snapshot's console: stdout's lines, and once the program has used stderr, every line with its stream.
+function __outputOf__(snap) {
+  snap.stdout = __stdout__.slice();
+  if (__stderrUsed__) snap.console = __console__.slice();
+  return snap;
+}
 
 // ── Serialization ──
 
@@ -281,14 +307,13 @@ function __condition__(value, line, expression, vars, parentVarNames, closureVar
     stackSnapshot.push({ name: blockFrame.name, variables: __serializeVars__(blockFrame.vars, heapObjects, visited), isBlockScope: true });
   }
 
-  var snap = {
+  var snap = __outputOf__({
     step: __snapshots__.length,
     line: line,
     callStack: stackSnapshot,
     heap: __collectHeap__(stackSnapshot),
-    stdout: __stdout__.slice(),
     condition: { expression: expression, result: !!value, line: line }
-  };
+  });
   if (columnRange) snap.columnRange = columnRange;
   __snapshots__.push(snap);
 
@@ -367,13 +392,12 @@ function __capture__(line, vars, parentVarNames, closureVars, isFinal) {
     stackSnapshot.push(entry);
   }
 
-  var snap = {
+  var snap = __outputOf__({
     step: __snapshots__.length,
     line: line,
     callStack: stackSnapshot,
-    heap: __collectHeap__(stackSnapshot),
-    stdout: __stdout__.slice()
-  };
+    heap: __collectHeap__(stackSnapshot)
+  });
   if (columnRange) snap.columnRange = columnRange;
   __snapshots__.push(snap);
 }
@@ -573,13 +597,12 @@ function __popFrame__(retVal, line) {
         if (frame.thisArg) entry2.thisArg = frame.thisArg;
         stackSnapshot.push(entry2);
       }
-      __snapshots__.push({
+      __snapshots__.push(__outputOf__({
         step: __snapshots__.length,
         line: line,
         callStack: stackSnapshot,
-        heap: __collectHeap__(stackSnapshot),
-        stdout: __stdout__.slice()
-      });
+        heap: __collectHeap__(stackSnapshot)
+      }));
     }
 
     __callStack__.pop();
@@ -587,38 +610,20 @@ function __popFrame__(retVal, line) {
   return retVal;
 }
 
-// ── Console capture ──
+// ── Console ──
 
-var __origConsole__ = {
-  log: console.log.bind(console),
-  warn: console.warn.bind(console),
-  error: console.error.bind(console)
-};
-
-console.log = function() {
-  var args = Array.prototype.slice.call(arguments);
-  var text = args.map(function(a) {
-    if (typeof a === "object" && a !== null) {
-      try { return JSON.stringify(a); } catch(e) { return String(a); }
-    }
-    return String(a);
-  }).join(" ");
-  __stdout__.push(text);
-  __origConsole__.log.apply(null, arguments);
-};
-
-console.warn = function() {
-  var args = Array.prototype.slice.call(arguments);
-  var text = "[warn] " + args.map(String).join(" ");
-  __stdout__.push(text);
-  __origConsole__.warn.apply(null, arguments);
-};
-
-console.error = function() {
-  var args = Array.prototype.slice.call(arguments);
-  var text = "[error] " + args.map(String).join(" ");
-  __stdout__.push(text);
-  __origConsole__.error.apply(null, arguments);
-};
+// The program's console prints as Node does (inspect.ts). Each call's text
+// becomes lines on its stream: log, info, debug, dir, table, count, group and
+// time write to stdout; warn, error, trace and assert to stderr.
+${CONSOLE_SOURCE}
+function __write__(stream, text) {
+  var lines = String(text).split("\\n");
+  for (var i = 0; i < lines.length; i++) {
+    __console__.push({ text: lines[i], stream: stream });
+    if (stream === "stdout") __stdout__.push(lines[i]);
+  }
+  if (stream === "stderr") __stderrUsed__ = true;
+}
+Object.defineProperty(self, "console", { value: __makeConsole__(__write__), writable: true, configurable: true, enumerable: false });
 `;
 }

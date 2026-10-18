@@ -362,18 +362,69 @@ a.push(4);`);
     expect(last.stdout).toContain('hello world');
   });
 
-  it('captures console.warn with prefix', () => {
-    const snaps = runPipeline(`console.warn("caution");`);
+  it('writes console.warn and console.error to stderr, in order with stdout (#43)', () => {
+    const snaps = runPipeline(`console.log("a");
+console.warn("caution");
+console.error("oops", { code: 1 });
+console.log("b");`);
 
     const last = lastSnap(snaps);
-    expect(last.stdout.some(s => s.includes('[warn]') && s.includes('caution'))).toBe(true);
+    expect(last.stdout).toEqual(['a', 'b']);
+    expect(last.console).toEqual([
+      { text: 'a', stream: 'stdout' },
+      { text: 'caution', stream: 'stderr' },
+      { text: 'oops { code: 1 }', stream: 'stderr' },
+      { text: 'b', stream: 'stdout' },
+    ]);
+    // A step before any stderr output has no console of its own.
+    expect(snaps[1].console).toBeUndefined();
   });
 
-  it('captures console.error with prefix', () => {
-    const snaps = runPipeline(`console.error("oops");`);
+  it("prints as Node's console does (#43)", () => {
+    const snaps = runPipeline(`console.log([1, , 3], new Map([[1, "a"]]), new Set([NaN, -0]), [-0], { k: undefined }, 10n);
+class Point { constructor() { this.x = 1; } }
+console.log(new Point(), function greet() {}, [1.5, "it's"], "%s costs %d", "pen", 2);
+const o = { name: "loop" }; o.self = o;
+console.log(o);
+console.table([{ a: 1 }]);
+console.group("g"); console.count(); console.groupEnd();`);
+    expect(lastSnap(snaps).stdout).toEqual([
+      "[ 1, <1 empty item>, 3 ] Map(1) { 1 => 'a' } Set(2) { NaN, 0 } [ -0 ] { k: undefined } 10n",
+      `Point { x: 1 } [Function: greet] [ 1.5, "it's" ] %s costs %d pen 2`,
+      "<ref *1> { name: 'loop', self: [Circular *1] }",
+      '┌─────────┬───┐',
+      '│ (index) │ a │',
+      '├─────────┼───┤',
+      '│ 0       │ 1 │',
+      '└─────────┴───┘',
+      'g',
+      '  default: 1',
+    ]);
+  });
 
-    const last = lastSnap(snaps);
-    expect(last.stdout.some(s => s.includes('[error]') && s.includes('oops'))).toBe(true);
+  it('never calls a getter or toJSON to print an object (#43)', () => {
+    const snaps = runPipeline(`let reads = 0;
+const o = { get total() { reads++; return 1; }, toJSON() { reads += 10; } };
+console.log(o);
+console.log(reads);`);
+    expect(lastSnap(snaps).stdout).toEqual(['{ total: [Getter], toJSON: [Function: toJSON] }', '0']);
+  });
+
+  it('adds a last step for output written after the last step, on the way out of an uncaught exception (#43)', () => {
+    const result = runPipelineResult(`function f() {
+  try {
+    throw new Error("boom");
+  } finally {
+    console.log("cleanup");
+  }
+}
+f();`);
+    if (result.type !== 'result') throw new Error('expected a result');
+    const [before, last] = result.snapshots.slice(-2);
+    expect(before.stdout).toEqual([]);
+    expect(last.stdout).toEqual(['cleanup']);
+    expect(last.line).toBe(before.line);
+    expect(result.error?.message).toBe('Error: boom');
   });
 
   it('accumulates stdout across steps', () => {
