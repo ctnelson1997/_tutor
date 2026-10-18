@@ -1,0 +1,46 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "running [ 1, 2 ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:running",
+    {
+     "array": [
+      "num:1",
+      "num:2"
+     ],
+     "len": 2
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": true,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5
+ ],
+ "statementRuns": 4,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "status": "str:running",
+  "seen": {
+   "array": [
+    "num:1",
+    "num:2"
+   ],
+   "len": 2
+  }
+ },
+ "sourceSha256": "40eadbb2b02a3a0cb37dd08aeff1f12d386b080b7b18914ddabc636007404bb2"
+}

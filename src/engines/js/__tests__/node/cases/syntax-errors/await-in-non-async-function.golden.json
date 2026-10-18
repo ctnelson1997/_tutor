@@ -1,0 +1,17 @@
+{
+ "console": [],
+ "calls": [],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": {
+  "message": "await is only valid in async functions and the top level bodies of modules",
+  "line": 8,
+  "column": 2
+ },
+ "executedLines": [],
+ "statementRuns": 0,
+ "functionCalls": 0,
+ "finalGlobals": {},
+ "sourceSha256": "ddbb576b1d2136d95996e093020449bbb11cc2c4ef76187e4fb56623d576070b"
+}

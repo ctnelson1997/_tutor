@@ -1,0 +1,189 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "null undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "-0 0 true false"
+  },
+  {
+   "stream": "stdout",
+   "text": "NaN number true"
+  },
+  {
+   "stream": "stdout",
+   "text": "Infinity -Infinity -Infinity"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ null, undefined, -0, 0, NaN, Infinity, -Infinity ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ a: null, b: undefined, c: -0, d: NaN, e: -Infinity }"
+  },
+  {
+   "stream": "stdout",
+   "text": "0 0 0 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ undefined, <1 empty item>, null ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "undefined 9007199254740991 2.220446049250313e-16 0.30000000000000004"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "null",
+    "undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:-0",
+    "num:0",
+    "boolean:true",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:NaN",
+    "str:number",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:Infinity",
+    "num:-Infinity",
+    "num:-Infinity"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "null",
+      "undefined",
+      "num:-0",
+      "num:0",
+      "num:NaN",
+      "num:Infinity",
+      "num:-Infinity"
+     ],
+     "len": 7
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "a": "null",
+      "b": "undefined",
+      "c": "num:-0",
+      "d": "num:NaN",
+      "e": "num:-Infinity"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:0",
+    "str:0",
+    "str:0",
+    "str:0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "undefined",
+      "<hole>",
+      "null"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "undefined",
+    "num:9007199254740991",
+    "num:2.220446049250313e-16",
+    "num:0.30000000000000004"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16
+ ],
+ "statementRuns": 15,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "nothing": "null",
+  "notSet": "undefined",
+  "negZero": "num:-0",
+  "notANumber": "num:NaN",
+  "values": {
+   "array": [
+    "null",
+    "undefined",
+    "num:-0",
+    "num:0",
+    "num:NaN",
+    "num:Infinity",
+    "num:-Infinity"
+   ],
+   "len": 7
+  },
+  "record": {
+   "object": "",
+   "props": {
+    "a": "null",
+    "b": "undefined",
+    "c": "num:-0",
+    "d": "num:NaN",
+    "e": "num:-Infinity"
+   }
+  }
+ },
+ "sourceSha256": "2e83988fd29c7a4e4a334e663558680bbd036b792ced70abd526103494abe3f5"
+}

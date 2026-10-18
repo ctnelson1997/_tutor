@@ -1,0 +1,384 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[ [ 1, 2, 3, 4 ], [ 2, 4, 6, 8 ], [ 3, 6, 9, 12 ] ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ [ 1, 2, 3 ], [ 2, 4, 6 ], [ 3, 6, 9 ], [ 4, 8, 12 ] ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 10, 20, 30 ] [ 6, 12, 18, 24 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "2*1"
+  },
+  {
+   "stream": "stdout",
+   "text": "*32"
+  },
+  {
+   "stream": "stdout",
+   "text": "12*"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 1, 4 ] [ [ 1, 2 ], [ 30, 4 ] ] 12 3 4"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      {
+       "array": [
+        "num:1",
+        "num:2",
+        "num:3",
+        "num:4"
+       ],
+       "len": 4
+      },
+      {
+       "array": [
+        "num:2",
+        "num:4",
+        "num:6",
+        "num:8"
+       ],
+       "len": 4
+      },
+      {
+       "array": [
+        "num:3",
+        "num:6",
+        "num:9",
+        "num:12"
+       ],
+       "len": 4
+      }
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      {
+       "array": [
+        "num:1",
+        "num:2",
+        "num:3"
+       ],
+       "len": 3
+      },
+      {
+       "array": [
+        "num:2",
+        "num:4",
+        "num:6"
+       ],
+       "len": 3
+      },
+      {
+       "array": [
+        "num:3",
+        "num:6",
+        "num:9"
+       ],
+       "len": 3
+      },
+      {
+       "array": [
+        "num:4",
+        "num:8",
+        "num:12"
+       ],
+       "len": 3
+      }
+     ],
+     "len": 4
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:10",
+      "num:20",
+      "num:30"
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "num:6",
+      "num:12",
+      "num:18",
+      "num:24"
+     ],
+     "len": 4
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:2*1\n*32\n12*"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:1",
+      "num:4"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      {
+       "array": [
+        "num:1",
+        "num:2"
+       ],
+       "len": 2
+      },
+      {
+       "array": [
+        "num:30",
+        "num:4"
+       ],
+       "len": 2
+      }
+     ],
+     "len": 2
+    },
+    "num:12",
+    "num:3",
+    "num:4"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  11,
+  13,
+  14,
+  16,
+  17,
+  18,
+  20,
+  25,
+  27,
+  28,
+  29,
+  30,
+  31,
+  34,
+  37,
+  39,
+  40,
+  41,
+  42
+ ],
+ "statementRuns": 148,
+ "functionCalls": 64,
+ "finalGlobals": {
+  "rows": "num:3",
+  "cols": "num:4",
+  "grid": {
+   "array": [
+    {
+     "array": [
+      "num:1",
+      "num:2",
+      "num:3",
+      "num:4"
+     ],
+     "len": 4
+    },
+    {
+     "array": [
+      "num:2",
+      "num:4",
+      "num:6",
+      "num:8"
+     ],
+     "len": 4
+    },
+    {
+     "array": [
+      "num:3",
+      "num:6",
+      "num:9",
+      "num:12"
+     ],
+     "len": 4
+    }
+   ],
+   "len": 3
+  },
+  "transpose": {
+   "array": [
+    {
+     "array": [
+      "num:1",
+      "num:2",
+      "num:3"
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "num:2",
+      "num:4",
+      "num:6"
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "num:3",
+      "num:6",
+      "num:9"
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "num:4",
+      "num:8",
+      "num:12"
+     ],
+     "len": 3
+    }
+   ],
+   "len": 4
+  },
+  "rowSums": {
+   "array": [
+    "num:10",
+    "num:20",
+    "num:30"
+   ],
+   "len": 3
+  },
+  "colSums": {
+   "array": [
+    "num:6",
+    "num:12",
+    "num:18",
+    "num:24"
+   ],
+   "len": 4
+  },
+  "board": {
+   "array": [
+    {
+     "array": [
+      "str:.",
+      "str:*",
+      "str:."
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "str:*",
+      "str:.",
+      "str:."
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "str:.",
+      "str:.",
+      "str:*"
+     ],
+     "len": 3
+    }
+   ],
+   "len": 3
+  },
+  "counts": {
+   "array": [
+    {
+     "array": [
+      "str:2",
+      "str:*",
+      "str:1"
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "str:*",
+      "str:3",
+      "str:2"
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "str:1",
+      "str:2",
+      "str:*"
+     ],
+     "len": 3
+    }
+   ],
+   "len": 3
+  },
+  "square": {
+   "array": [
+    {
+     "array": [
+      "num:1",
+      "num:2"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "num:30",
+      "num:4"
+     ],
+     "len": 2
+    }
+   ],
+   "len": 2
+  },
+  "diag": {
+   "array": [
+    "num:1",
+    "num:4"
+   ],
+   "len": 2
+  }
+ },
+ "sourceSha256": "085b5f686b2cce59c3cabc6025e3f6c9bc867e9b3db068cdaee3439bd724fb14"
+}

@@ -1,0 +1,139 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "\"racecar\" -> palindrome"
+  },
+  {
+   "stream": "stdout",
+   "text": "\"A man, a plan, a canal: Panama\" -> palindrome"
+  },
+  {
+   "stream": "stdout",
+   "text": "\"hello\" -> not a palindrome"
+  },
+  {
+   "stream": "stdout",
+   "text": "\"Never odd or even\" -> palindrome"
+  },
+  {
+   "stream": "stdout",
+   "text": "\"JavaScript\" -> not a palindrome"
+  },
+  {
+   "stream": "stdout",
+   "text": "Both methods agree: true"
+  },
+  {
+   "stream": "stdout",
+   "text": "3 palindromes found"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:\"racecar\" -> palindrome"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:\"A man, a plan, a canal: Panama\" -> palindrome"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:\"hello\" -> not a palindrome"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:\"Never odd or even\" -> palindrome"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:\"JavaScript\" -> not a palindrome"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Both methods agree:",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:3 palindromes found"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  5,
+  6,
+  9,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  20,
+  21,
+  23,
+  27,
+  28,
+  31,
+  32,
+  33,
+  34,
+  35,
+  36,
+  38,
+  39,
+  40,
+  41
+ ],
+ "statementRuns": 401,
+ "functionCalls": 25,
+ "finalGlobals": {
+  "cleanText": "fn:cleanText",
+  "isPalindrome": "fn:isPalindrome",
+  "isPalindromeShort": "fn:isPalindromeShort",
+  "phrases": {
+   "array": [
+    "str:racecar",
+    "str:A man, a plan, a canal: Panama",
+    "str:hello",
+    "str:Never odd or even",
+    "str:JavaScript"
+   ],
+   "len": 5
+  },
+  "results": {
+   "object": "",
+   "props": {
+    "racecar": "boolean:true",
+    "A man, a plan, a canal: Panama": "boolean:true",
+    "hello": "boolean:false",
+    "Never odd or even": "boolean:true",
+    "JavaScript": "boolean:false"
+   }
+  },
+  "agree": "boolean:true",
+  "count": "num:3"
+ },
+ "sourceSha256": "047a1b8fa7e76f8d3aa13f15288a08d7826fa564a326744bd9a50072a3437ca1"
+}

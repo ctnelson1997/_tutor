@@ -1,0 +1,141 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "nothing pulled yet"
+  },
+  {
+   "stream": "stdout",
+   "text": "source 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "source 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "got 6"
+  },
+  {
+   "stream": "stdout",
+   "text": "source 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "source 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "got 12"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 6, 12 ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:nothing pulled yet"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:source",
+    "num:1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:source",
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:got",
+    "num:6"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:source",
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:source",
+    "num:4"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:got",
+    "num:12"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:6",
+      "num:12"
+     ],
+     "len": 2
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  5,
+  10,
+  14,
+  15,
+  20,
+  21,
+  22,
+  23,
+  27,
+  28,
+  29,
+  30,
+  31,
+  32,
+  34
+ ],
+ "statementRuns": 37,
+ "functionCalls": 12,
+ "finalGlobals": {
+  "source": "fn:source",
+  "map": "fn:map",
+  "filter": "fn:filter",
+  "take": "fn:take",
+  "pipeline": {
+   "object": "",
+   "props": {}
+  },
+  "result": {
+   "array": [
+    "num:6",
+    "num:12"
+   ],
+   "len": 2
+  }
+ },
+ "sourceSha256": "fb745852ca7cb28882d1e0a70f690e9c85e63adb23a31b27c887403d4a16b1e3"
+}

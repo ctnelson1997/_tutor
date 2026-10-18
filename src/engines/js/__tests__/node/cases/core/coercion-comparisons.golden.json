@@ -1,0 +1,286 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "stringOrder true"
+  },
+  {
+   "stream": "stdout",
+   "text": "numberVsString false"
+  },
+  {
+   "stream": "stdout",
+   "text": "nullGe0 true"
+  },
+  {
+   "stream": "stdout",
+   "text": "nullGt0 false"
+  },
+  {
+   "stream": "stdout",
+   "text": "nullEq0 false"
+  },
+  {
+   "stream": "stdout",
+   "text": "undefinedEq0 false"
+  },
+  {
+   "stream": "stdout",
+   "text": "undefinedLt1 false"
+  },
+  {
+   "stream": "stdout",
+   "text": "arrayGt true"
+  },
+  {
+   "stream": "stdout",
+   "text": "letters true"
+  },
+  {
+   "stream": "stdout",
+   "text": "caps true"
+  },
+  {
+   "stream": "stdout",
+   "text": "boolMath true"
+  },
+  {
+   "stream": "stdout",
+   "text": "chained false"
+  },
+  {
+   "stream": "stdout",
+   "text": "chainedUp true"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ '10', '9', 'Apple', 'banana', 'cherry' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 1, 10, 100, 25, 9 ] [ 1, 9, 10, 25, 100 ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:stringOrder",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:numberVsString",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:nullGe0",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:nullGt0",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:nullEq0",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:undefinedEq0",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:undefinedLt1",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:arrayGt",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:letters",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:caps",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:boolMath",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:chained",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:chainedUp",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:10",
+      "str:9",
+      "str:Apple",
+      "str:banana",
+      "str:cherry"
+     ],
+     "len": 5
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:1",
+      "num:10",
+      "num:100",
+      "num:25",
+      "num:9"
+     ],
+     "len": 5
+    },
+    {
+     "array": [
+      "num:1",
+      "num:9",
+      "num:10",
+      "num:25",
+      "num:100"
+     ],
+     "len": 5
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  17,
+  18,
+  20,
+  21,
+  22,
+  23,
+  24,
+  25,
+  26
+ ],
+ "statementRuns": 22,
+ "functionCalls": 7,
+ "finalGlobals": {
+  "results": {
+   "object": "",
+   "props": {
+    "stringOrder": "boolean:true",
+    "numberVsString": "boolean:false",
+    "nullGe0": "boolean:true",
+    "nullGt0": "boolean:false",
+    "nullEq0": "boolean:false",
+    "undefinedEq0": "boolean:false",
+    "undefinedLt1": "boolean:false",
+    "arrayGt": "boolean:true",
+    "letters": "boolean:true",
+    "caps": "boolean:true",
+    "boolMath": "boolean:true",
+    "chained": "boolean:false",
+    "chainedUp": "boolean:true"
+   }
+  },
+  "words": {
+   "array": [
+    "str:banana",
+    "str:Apple",
+    "str:cherry",
+    "str:10",
+    "str:9"
+   ],
+   "len": 5
+  },
+  "sorted": {
+   "array": [
+    "str:10",
+    "str:9",
+    "str:Apple",
+    "str:banana",
+    "str:cherry"
+   ],
+   "len": 5
+  },
+  "nums": {
+   "array": [
+    "num:10",
+    "num:9",
+    "num:1",
+    "num:100",
+    "num:25"
+   ],
+   "len": 5
+  },
+  "defaultSorted": {
+   "array": [
+    "num:1",
+    "num:10",
+    "num:100",
+    "num:25",
+    "num:9"
+   ],
+   "len": 5
+  },
+  "numericSorted": {
+   "array": [
+    "num:1",
+    "num:9",
+    "num:10",
+    "num:25",
+    "num:100"
+   ],
+   "len": 5
+  }
+ },
+ "sourceSha256": "2c1cad6e0c145cc82384d8a8aa51e63e70a6ef1c37aeba5ade09864e4bb0efbc"
+}

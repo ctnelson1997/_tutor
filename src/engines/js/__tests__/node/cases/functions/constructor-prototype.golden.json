@@ -1,0 +1,187 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "5 (3, 4) (0, 0)"
+  },
+  {
+   "stream": "stdout",
+   "text": "true true true"
+  },
+  {
+   "stream": "stdout",
+   "text": "true false true"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'x', 'y' ] Point { x: 3, y: 4 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "methods are shared: true"
+  },
+  {
+   "stream": "stdout",
+   "text": "returning an object from a constructor: { value: 'replaced object' } false"
+  },
+  {
+   "stream": "stdout",
+   "text": "without new: undefined globalThis.celsius = 25"
+  },
+  {
+   "stream": "stdout",
+   "text": "added to the prototype later: (30, 40)"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:5",
+    "str:(3, 4)",
+    "str:(0, 0)"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:true",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:false",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:x",
+      "str:y"
+     ],
+     "len": 2
+    },
+    {
+     "object": "Point",
+     "props": {
+      "x": "num:3",
+      "y": "num:4"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:methods are shared:",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:returning an object from a constructor:",
+    {
+     "object": "",
+     "props": {
+      "value": "str:replaced object"
+     }
+    },
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:without new:",
+    "undefined",
+    "str:globalThis.celsius =",
+    "num:25"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:added to the prototype later:",
+    "str:(30, 40)"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  6,
+  7,
+  8,
+  9,
+  11,
+  12,
+  14,
+  15,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  25,
+  26,
+  28,
+  29,
+  31,
+  33,
+  34,
+  35,
+  36,
+  38,
+  39
+ ],
+ "statementRuns": 34,
+ "functionCalls": 11,
+ "finalGlobals": {
+  "Point": "fn:Point",
+  "p": {
+   "object": "Point",
+   "props": {
+    "x": "num:3",
+    "y": "num:4"
+   }
+  },
+  "o": {
+   "object": "Point",
+   "props": {
+    "x": "num:0",
+    "y": "num:0"
+   }
+  },
+  "Counter": "fn:Counter",
+  "c": {
+   "object": "",
+   "props": {
+    "value": "str:replaced object"
+   }
+  },
+  "Temp": "fn:Temp",
+  "forgot": "undefined",
+  "big": {
+   "object": "Point",
+   "props": {
+    "x": "num:30",
+    "y": "num:40"
+   }
+  }
+ },
+ "sourceSha256": "70275a9fc9cb598401dc8044dd9e542363bbadb5de080c1de2eff2f704526cb3"
+}

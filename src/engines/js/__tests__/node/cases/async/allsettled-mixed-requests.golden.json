@@ -1,0 +1,130 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "waiting for 3 requests"
+  },
+  {
+   "stream": "stdout",
+   "text": "requests sent"
+  },
+  {
+   "stream": "stdout",
+   "text": "ok: users loaded"
+  },
+  {
+   "stream": "stdout",
+   "text": "failed: posts failed"
+  },
+  {
+   "stream": "stdout",
+   "text": "ok: tags loaded"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'fulfilled', 'rejected', 'fulfilled' ] failures: 1"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:waiting for",
+    "num:3",
+    "str:requests"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:requests sent"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:ok:",
+    "str:users loaded"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:failed:",
+    "str:posts failed"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:ok:",
+    "str:tags loaded"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:fulfilled",
+      "str:rejected",
+      "str:fulfilled"
+     ],
+     "len": 3
+    },
+    "str:failures:",
+    "num:1"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  16,
+  17,
+  20,
+  21,
+  23
+ ],
+ "statementRuns": 22,
+ "functionCalls": 13,
+ "finalGlobals": {
+  "fakeRequest": "fn:fakeRequest",
+  "requests": {
+   "array": [
+    {
+     "promise": true
+    },
+    {
+     "promise": true
+    },
+    {
+     "promise": true
+    }
+   ],
+   "len": 3
+  },
+  "outcomes": {
+   "array": [
+    "str:fulfilled",
+    "str:rejected",
+    "str:fulfilled"
+   ],
+   "len": 3
+  },
+  "failures": "num:1"
+ },
+ "sourceSha256": "d23fe295f61c551b52bf8f6c79867df34290ccba96a82f3196a0d426d1a65099"
+}

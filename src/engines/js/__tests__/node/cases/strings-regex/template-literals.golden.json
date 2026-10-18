@@ -1,0 +1,159 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Hello, Grace Hopper!"
+  },
+  {
+   "stream": "stdout",
+   "text": "Score: 87 (B)"
+  },
+  {
+   "stream": "stdout",
+   "text": "Sum: 7, upper: HOPPER"
+  },
+  {
+   "stream": "stdout",
+   "text": "Languages:"
+  },
+  {
+   "stream": "stdout",
+   "text": "  1. COBOL"
+  },
+  {
+   "stream": "stdout",
+   "text": "  2. FLOW-MATIC"
+  },
+  {
+   "stream": "stdout",
+   "text": "Total: 2"
+  },
+  {
+   "stream": "stdout",
+   "text": ""
+  },
+  {
+   "stream": "stdout",
+   "text": "  +----------+"
+  },
+  {
+   "stream": "stdout",
+   "text": "  |       87 |"
+  },
+  {
+   "stream": "stdout",
+   "text": "  +----------+"
+  },
+  {
+   "stream": "stdout",
+   "text": "outer inner deepest 7"
+  },
+  {
+   "stream": "stdout",
+   "text": "backtick ` dollar ${not} and \\ slash 36"
+  },
+  {
+   "stream": "stdout",
+   "text": "nullundefined1,2[object Object]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Hello, Grace Hopper!"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Score: 87 (B)"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Sum: 7, upper: HOPPER"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Languages:\n  1. COBOL\n  2. FLOW-MATIC\nTotal: 2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:\n  +----------+\n  |       87 |\n  +----------+"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:outer inner deepest 7"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:backtick ` dollar ${not} and \\ slash",
+    "num:36"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:nullundefined1,2[object Object]"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  5,
+  6,
+  7,
+  8,
+  10,
+  13,
+  15,
+  19,
+  21,
+  22,
+  23,
+  24,
+  25,
+  26
+ ],
+ "statementRuns": 16,
+ "functionCalls": 2,
+ "finalGlobals": {
+  "user": {
+   "object": "",
+   "props": {
+    "first": "str:Grace",
+    "last": "str:Hopper",
+    "langs": {
+     "array": [
+      "str:COBOL",
+      "str:FLOW-MATIC"
+     ],
+     "len": 2
+    }
+   }
+  },
+  "score": "num:87",
+  "greeting": "str:Hello, Grace Hopper!",
+  "list": "str:Languages:\n  1. COBOL\n  2. FLOW-MATIC\nTotal: 2",
+  "card": "str:\n  +----------+\n  |       87 |\n  +----------+",
+  "nested": "str:outer inner deepest 7",
+  "escaped": "str:backtick ` dollar ${not} and \\ slash",
+  "empty": "str:nullundefined1,2[object Object]"
+ },
+ "sourceSha256": "060e5f94c3eabd0bbd3dc8ffcb282f66f73b2394535171d2eebac6faf69a73f6"
+}

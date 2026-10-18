@@ -1,0 +1,131 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "isEven(4): true"
+  },
+  {
+   "stream": "stdout",
+   "text": "isOdd(7): true"
+  },
+  {
+   "stream": "stdout",
+   "text": "F: 1 1 2 2 3 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "M: 0 0 1 2 2 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'even', 'odd', 'even', 'odd' ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:isEven(4):",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:isOdd(7):",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:F:",
+    "str:1 1 2 2 3 3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:M:",
+    "str:0 0 1 2 2 3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:even",
+      "str:odd",
+      "str:even",
+      "str:odd"
+     ],
+     "len": 4
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  7,
+  8,
+  10,
+  11,
+  13,
+  16,
+  18,
+  19,
+  20,
+  21,
+  22,
+  24,
+  25,
+  26,
+  27
+ ],
+ "statementRuns": 223,
+ "functionCalls": 183,
+ "finalGlobals": {
+  "isEven": "fn:isEven",
+  "isOdd": "fn:isOdd",
+  "female": "fn:female",
+  "male": "fn:male",
+  "fs": {
+   "array": [
+    "num:1",
+    "num:1",
+    "num:2",
+    "num:2",
+    "num:3",
+    "num:3"
+   ],
+   "len": 6
+  },
+  "ms": {
+   "array": [
+    "num:0",
+    "num:0",
+    "num:1",
+    "num:2",
+    "num:2",
+    "num:3"
+   ],
+   "len": 6
+  },
+  "parity": {
+   "array": [
+    "str:even",
+    "str:odd",
+    "str:even",
+    "str:odd"
+   ],
+   "len": 4
+  }
+ },
+ "sourceSha256": "b69e38f0ac303f884837ad7d475cbd14654ee1fd9f00abded1903a5a8096ce45"
+}

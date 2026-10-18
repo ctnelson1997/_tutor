@@ -1,0 +1,256 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "After pass 1: 10, 14, 29, 13, 5, 22, 18, 37"
+  },
+  {
+   "stream": "stdout",
+   "text": "After pass 2: 10, 14, 13, 5, 22, 18, 29, 37"
+  },
+  {
+   "stream": "stdout",
+   "text": "After pass 3: 10, 13, 5, 14, 18, 22, 29, 37"
+  },
+  {
+   "stream": "stdout",
+   "text": "After pass 4: 10, 5, 13, 14, 18, 22, 29, 37"
+  },
+  {
+   "stream": "stdout",
+   "text": "After pass 5: 5, 10, 13, 14, 18, 22, 29, 37"
+  },
+  {
+   "stream": "stdout",
+   "text": "After pass 6: 5, 10, 13, 14, 18, 22, 29, 37"
+  },
+  {
+   "stream": "stdout",
+   "text": "Original: ["
+  },
+  {
+   "stream": "stdout",
+   "text": "  29, 10, 14, 37,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  13,  5, 22, 18"
+  },
+  {
+   "stream": "stdout",
+   "text": "]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Sorted: ["
+  },
+  {
+   "stream": "stdout",
+   "text": "   5, 10, 13, 14,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  18, 22, 29, 37"
+  },
+  {
+   "stream": "stdout",
+   "text": "]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Passes: 6 Swaps: 15"
+  },
+  {
+   "stream": "stdout",
+   "text": "After pass 1: 1, 2, 3, 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "Already sorted took 1 pass"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:After pass 1: 10, 14, 29, 13, 5, 22, 18, 37"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:After pass 2: 10, 14, 13, 5, 22, 18, 29, 37"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:After pass 3: 10, 13, 5, 14, 18, 22, 29, 37"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:After pass 4: 10, 5, 13, 14, 18, 22, 29, 37"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:After pass 5: 5, 10, 13, 14, 18, 22, 29, 37"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:After pass 6: 5, 10, 13, 14, 18, 22, 29, 37"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Original:",
+    {
+     "array": [
+      "num:29",
+      "num:10",
+      "num:14",
+      "num:37",
+      "num:13",
+      "num:5",
+      "num:22",
+      "num:18"
+     ],
+     "len": 8
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Sorted:",
+    {
+     "array": [
+      "num:5",
+      "num:10",
+      "num:13",
+      "num:14",
+      "num:18",
+      "num:22",
+      "num:29",
+      "num:37"
+     ],
+     "len": 8
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Passes:",
+    "num:6",
+    "str:Swaps:",
+    "num:15"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:After pass 1: 1, 2, 3, 4"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Already sorted took",
+    "num:1",
+    "str:pass"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  17,
+  18,
+  19,
+  20,
+  23,
+  26,
+  27,
+  28,
+  29,
+  30,
+  31,
+  32
+ ],
+ "statementRuns": 159,
+ "functionCalls": 2,
+ "finalGlobals": {
+  "bubbleSort": "fn:bubbleSort",
+  "numbers": {
+   "array": [
+    "num:29",
+    "num:10",
+    "num:14",
+    "num:37",
+    "num:13",
+    "num:5",
+    "num:22",
+    "num:18"
+   ],
+   "len": 8
+  },
+  "result": {
+   "object": "",
+   "props": {
+    "sorted": {
+     "array": [
+      "num:5",
+      "num:10",
+      "num:13",
+      "num:14",
+      "num:18",
+      "num:22",
+      "num:29",
+      "num:37"
+     ],
+     "len": 8
+    },
+    "passes": "num:6",
+    "swaps": "num:15"
+   }
+  },
+  "alreadySorted": {
+   "object": "",
+   "props": {
+    "sorted": {
+     "array": [
+      "num:1",
+      "num:2",
+      "num:3",
+      "num:4"
+     ],
+     "len": 4
+    },
+    "passes": "num:1",
+    "swaps": "num:0"
+   }
+  }
+ },
+ "sourceSha256": "75cbf4fcb1842ca2f4800d73a5480942986fe92be637e5d8e49a061bd35ff5f8"
+}

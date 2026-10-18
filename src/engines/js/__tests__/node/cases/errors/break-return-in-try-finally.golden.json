@@ -1,0 +1,122 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "body 0, finally 0, finally 1, body 2, finally 2, finally 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "checked 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "checked 7"
+  },
+  {
+   "stream": "stdout",
+   "text": "checked 8"
+  },
+  {
+   "stream": "stdout",
+   "text": "found 8 after 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "2 r1j0 r1j1 r1j2 r2j0 r2j1"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:body 0, finally 0, finally 1, body 2, finally 2, finally 3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:checked",
+    "num:5"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:checked",
+    "num:7"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:checked",
+    "num:8"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:found 8 after 3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:2",
+    "str:r1j0 r1j1 r1j2 r2j0 r2j1"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  4,
+  6,
+  7,
+  8,
+  10,
+  13,
+  16,
+  17,
+  19,
+  20,
+  21,
+  24,
+  29,
+  30,
+  32,
+  33,
+  34,
+  35,
+  37,
+  39,
+  43
+ ],
+ "statementRuns": 50,
+ "functionCalls": 1,
+ "finalGlobals": {
+  "log": {
+   "array": [
+    "str:body 0",
+    "str:finally 0",
+    "str:finally 1",
+    "str:body 2",
+    "str:finally 2",
+    "str:finally 3",
+    "str:r1j0",
+    "str:r1j1",
+    "str:r1j2",
+    "str:r2j0",
+    "str:r2j1"
+   ],
+   "len": 11
+  },
+  "findFirstEven": "fn:findFirstEven",
+  "found": "str:found 8 after 3",
+  "rounds": "num:2"
+ },
+ "sourceSha256": "a82bdc743f7233aaa6badbc60ea77c2df16e70526fe21e5a705641df4c51b0f2"
+}

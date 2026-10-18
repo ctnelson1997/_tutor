@@ -1,0 +1,177 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Circle with area 12.57 and perimeter 12.57"
+  },
+  {
+   "stream": "stdout",
+   "text": "Rectangle with area 13.50 and perimeter 15.00"
+  },
+  {
+   "stream": "stdout",
+   "text": "Square with area 25.00 and perimeter 20.00 (all sides 5)"
+  },
+  {
+   "stream": "stdout",
+   "text": "Circle with area 0.79 and perimeter 3.14"
+  },
+  {
+   "stream": "stdout",
+   "text": "Total area: 51.852"
+  },
+  {
+   "stream": "stdout",
+   "text": "Rectangles (incl. squares): 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "Largest: Square Square"
+  },
+  {
+   "stream": "stdout",
+   "text": "Square is a Shape? true Circle is a Rectangle? false"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Circle with area 12.57 and perimeter 12.57"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Rectangle with area 13.50 and perimeter 15.00"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Square with area 25.00 and perimeter 20.00 (all sides 5)"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Circle with area 0.79 and perimeter 3.14"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Total area:",
+    "str:51.852"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Rectangles (incl. squares):",
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Largest:",
+    "str:Square",
+    "str:Square"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Square is a Shape?",
+    "boolean:true",
+    "str:Circle is a Rectangle?",
+    "boolean:false"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  4,
+  13,
+  19,
+  20,
+  23,
+  26,
+  32,
+  33,
+  34,
+  37,
+  40,
+  46,
+  47,
+  50,
+  54,
+  55,
+  56,
+  58,
+  59,
+  60,
+  61,
+  62,
+  63,
+  64
+ ],
+ "statementRuns": 52,
+ "functionCalls": 43,
+ "finalGlobals": {
+  "Shape": "fn:Shape",
+  "Circle": "fn:Circle",
+  "Rectangle": "fn:Rectangle",
+  "Square": "fn:Square",
+  "shapes": {
+   "array": [
+    {
+     "object": "Circle",
+     "props": {
+      "name": "str:Circle",
+      "radius": "num:2"
+     }
+    },
+    {
+     "object": "Rectangle",
+     "props": {
+      "name": "str:Rectangle",
+      "width": "num:3",
+      "height": "num:4.5"
+     }
+    },
+    {
+     "object": "Square",
+     "props": {
+      "name": "str:Square",
+      "width": "num:5",
+      "height": "num:5"
+     }
+    },
+    {
+     "object": "Circle",
+     "props": {
+      "name": "str:Circle",
+      "radius": "num:0.5"
+     }
+    }
+   ],
+   "len": 4
+  },
+  "totalArea": "num:51.85176877775662",
+  "rectangles": "num:2",
+  "largest": {
+   "object": "Square",
+   "props": {
+    "name": "str:Square",
+    "width": "num:5",
+    "height": "num:5"
+   }
+  }
+ },
+ "sourceSha256": "f81470f4b5966921d31fc53624c884c7a9601e5cfcc04e5eec81f958b4977db1"
+}

@@ -1,0 +1,95 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "started on port 8080"
+  },
+  {
+   "stream": "stdout",
+   "text": "Error: app failed to start"
+  },
+  {
+   "stream": "stdout",
+   "text": "  caused by Error: config is not valid JSON"
+  },
+  {
+   "stream": "stdout",
+   "text": "  caused by SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+  },
+  {
+   "stream": "stdout",
+   "text": "false undefined 404 []"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:started on port 8080"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Error: app failed to start\n  caused by Error: config is not valid JSON\n  caused by SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:false",
+    "undefined",
+    "num:404",
+    {
+     "array": [],
+     "len": 0
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  4,
+  6,
+  12,
+  13,
+  15,
+  19,
+  20,
+  22,
+  24,
+  26,
+  27,
+  28,
+  29,
+  32,
+  34,
+  35,
+  36
+ ],
+ "statementRuns": 24,
+ "functionCalls": 4,
+ "finalGlobals": {
+  "readConfig": "fn:readConfig",
+  "startApp": "fn:startApp",
+  "okMessage": "str:started on port 8080",
+  "chain": {
+   "array": [
+    "str:Error: app failed to start",
+    "str:Error: config is not valid JSON",
+    "str:SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+   ],
+   "len": 3
+  },
+  "plain": {
+   "error": "Error: no cause"
+  },
+  "withValue": {
+   "error": "Error: value cause"
+  }
+ },
+ "sourceSha256": "b9511f012dd0a4c655e01fe609bdf58313c40e33f250680a8b52588a87ff336a"
+}

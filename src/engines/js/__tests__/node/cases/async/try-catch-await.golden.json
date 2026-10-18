@@ -1,0 +1,103 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "loaded user7"
+  },
+  {
+   "stream": "stdout",
+   "text": "finally for id 7 status ok"
+  },
+  {
+   "stream": "stdout",
+   "text": "error: no user with id 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "finally for id 0 status failed"
+  },
+  {
+   "stream": "stdout",
+   "text": "results { id: 7, name: 'user7' } null"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:loaded",
+    "str:user7"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:finally for id",
+    "num:7",
+    "str:status",
+    "str:ok"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:error:",
+    "str:no user with id 0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:finally for id",
+    "num:0",
+    "str:status",
+    "str:failed"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:results",
+    {
+     "object": "",
+     "props": {
+      "id": "num:7",
+      "name": "str:user7"
+     }
+    },
+    "null"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  5,
+  6,
+  11,
+  13,
+  14,
+  15,
+  16,
+  18,
+  19,
+  20,
+  22,
+  26,
+  27,
+  28,
+  30
+ ],
+ "statementRuns": 24,
+ "functionCalls": 9,
+ "finalGlobals": {
+  "fetchUser": "fn:fetchUser",
+  "load": "fn:load",
+  "main": "fn:main"
+ },
+ "sourceSha256": "de53ad44ea6a893bb1d20605f0df89e090c71eafb7d0884eb122d852d5ef3501"
+}

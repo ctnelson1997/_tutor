@@ -1,0 +1,21 @@
+// how numbers print: floating-point error, exponent notation, toFixed, toPrecision, other bases, parsing
+const sum = 0.1 + 0.2;
+const big = 1e21;
+const almostBig = 1e20;
+const tiny = 0.0000001;
+const notTiny = 0.000001;
+console.log(sum, sum === 0.3, Math.abs(sum - 0.3) < Number.EPSILON);
+console.log(big, almostBig, tiny, notTiny);
+console.log(String(big), (123456789).toString(), 2 ** 70);
+console.log(sum.toFixed(2), (1.005).toFixed(2), (2.5).toFixed(0), (1234.5678).toFixed(1));
+console.log((255).toString(2), (255).toString(16), (-10).toString(2), (0.5).toString(2));
+console.log((123.456).toPrecision(4), (0.00012345).toPrecision(2), (1e21).toFixed(2));
+console.log(parseInt('08'), parseInt('0x1f'), parseInt('12px'), parseFloat('3.14abc'), Number('  12  '));
+console.log(1 / 3, 2 / 3, 100 / 3, 5e-324, Number.MAX_VALUE);
+const price = 19.999;
+const display = '$' + price.toFixed(2);
+const binary = (10).toString(2);
+const backToNumber = parseInt(binary, 2);
+const third = 1 / 3;
+const scaled = 1.1 * 3;
+console.log(display, binary, backToNumber, scaled);

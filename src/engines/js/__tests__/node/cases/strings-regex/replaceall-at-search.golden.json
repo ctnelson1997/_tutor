@@ -1,0 +1,164 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "a cat sat on the mat with the hat"
+  },
+  {
+   "stream": "stdout",
+   "text": "a cat sat on a mat with a hat"
+  },
+  {
+   "stream": "stdout",
+   "text": "a/b/c aaaaaa"
+  },
+  {
+   "stream": "stdout",
+   "text": "e t a undefined undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "e true"
+  },
+  {
+   "stream": "stdout",
+   "text": "5 9 33"
+  },
+  {
+   "stream": "stdout",
+   "text": "-1 true false"
+  },
+  {
+   "stream": "stdout",
+   "text": "true true true"
+  },
+  {
+   "stream": "stdout",
+   "text": "'the' appears 3 times"
+  },
+  {
+   "stream": "stdout",
+   "text": "report.final.v2 pdf true"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:a cat sat on the mat with the hat"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:a cat sat on a mat with a hat"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:a/b/c",
+    "str:aaaaaa"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:e",
+    "str:t",
+    "str:a",
+    "undefined",
+    "undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:e",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:5",
+    "num:9",
+    "num:33"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:-1",
+    "boolean:true",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:true",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:'the' appears",
+    "num:3",
+    "str:times"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:report.final.v2",
+    "str:pdf",
+    "boolean:true"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  9,
+  10,
+  11,
+  13,
+  14,
+  15,
+  17,
+  18,
+  19,
+  20,
+  21,
+  23,
+  25,
+  26,
+  27,
+  28
+ ],
+ "statementRuns": 26,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "phrase": "str:the cat sat on the mat with the hat",
+  "once": "str:a cat sat on the mat with the hat",
+  "all": "str:a cat sat on a mat with a hat",
+  "word": "str:elephant",
+  "count": "num:3",
+  "pos": "num:-1",
+  "filename": "str:report.final.v2.pdf",
+  "ext": "str:pdf",
+  "base": "str:report.final.v2"
+ },
+ "sourceSha256": "30ea8a78f65e6b3e9d5baf49e339ace300c2aad7ef39861e4e7baccd395a7830"
+}

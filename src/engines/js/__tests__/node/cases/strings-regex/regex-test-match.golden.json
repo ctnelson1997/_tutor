@@ -1,0 +1,220 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[ 'ada@lovelace.org', 'Grace.Hopper@NAVY.MIL' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "2024-03-15 2024 03 15 4 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ '2024-03-15', '2024-04-01' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "null null"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'Roses', 'violets', 'sugar' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'Roses' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "true false true false"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ '608-555-1234', '608-555-9876', 'invalid', '608-555-0000' ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:ada@lovelace.org",
+      "str:Grace.Hopper@NAVY.MIL"
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:2024-03-15",
+    "str:2024",
+    "str:03",
+    "str:15",
+    "num:4",
+    "num:4"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:2024-03-15",
+      "str:2024-04-01"
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "null",
+    "null"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:Roses",
+      "str:violets",
+      "str:sugar"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:Roses"
+     ],
+     "len": 1
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:false",
+    "boolean:true",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:608-555-1234",
+      "str:608-555-9876",
+      "str:invalid",
+      "str:608-555-0000"
+     ],
+     "len": 4
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  16,
+  17,
+  18,
+  19,
+  21,
+  22,
+  23,
+  24,
+  25,
+  27
+ ],
+ "statementRuns": 28,
+ "functionCalls": 8,
+ "finalGlobals": {
+  "emailRe": {
+   "regexp": "/^[\\w.]+@[\\w]+\\.[a-z]{2,}$/i"
+  },
+  "emails": {
+   "array": [
+    "str:ada@lovelace.org",
+    "str:bad@",
+    "str:Grace.Hopper@NAVY.MIL",
+    "str:no spaces@x.com"
+   ],
+   "len": 4
+  },
+  "valid": {
+   "array": [
+    "str:ada@lovelace.org",
+    "str:Grace.Hopper@NAVY.MIL"
+   ],
+   "len": 2
+  },
+  "dateText": "str:Due 2024-03-15, paid 2024-04-01",
+  "first": {
+   "array": [
+    "str:2024-03-15",
+    "str:2024",
+    "str:03",
+    "str:15"
+   ],
+   "len": 4
+  },
+  "allDates": {
+   "array": [
+    "str:2024-03-15",
+    "str:2024-04-01"
+   ],
+   "len": 2
+  },
+  "none": "null",
+  "noneGlobal": "null",
+  "poem": "str:Roses are red\nviolets are blue\nsugar is sweet",
+  "phone": {
+   "regexp": "/^\\(?(\\d{3})\\)?[-. ]?(\\d{3})[-. ]?(\\d{4})$/"
+  },
+  "phones": {
+   "array": [
+    "str:(608) 555-1234",
+    "str:608.555.9876",
+    "str:6085551",
+    "str:608-555-0000"
+   ],
+   "len": 4
+  },
+  "normalized": {
+   "array": [
+    "str:608-555-1234",
+    "str:608-555-9876",
+    "str:invalid",
+    "str:608-555-0000"
+   ],
+   "len": 4
+  }
+ },
+ "sourceSha256": "c4ab7199fef20343cb0c47d2c0423b38f56293b9414f1dc9e7a787bb5a684062"
+}

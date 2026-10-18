@@ -1,0 +1,101 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "i = 1 total = 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "i = 2 total = 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "i = 3 total = 6"
+  },
+  {
+   "stream": "stdout",
+   "text": "final total 6"
+  },
+  {
+   "stream": "stdout",
+   "text": "about to bump"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:i =",
+    "num:1",
+    "str:total =",
+    "num:1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:i =",
+    "num:2",
+    "str:total =",
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:i =",
+    "num:3",
+    "str:total =",
+    "num:6"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:final total",
+    "num:6"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:about to bump"
+   ]
+  }
+ ],
+ "uncaught": [
+  {
+   "name": "TypeError",
+   "message": "Assignment to constant variable.",
+   "where": "script",
+   "consoleLines": 5
+  }
+ ],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  8,
+  9,
+  11,
+  12,
+  13,
+  15,
+  16,
+  17
+ ],
+ "statementRuns": 17,
+ "functionCalls": 1,
+ "finalGlobals": {
+  "limit": "num:3",
+  "total": "num:6",
+  "finalTotal": "num:6",
+  "bump": "fn:bump"
+ },
+ "sourceSha256": "5f8c4e3d92775c4653d174a49365294a1399210e1b08cf7df5eaf1a8fcc4360d"
+}

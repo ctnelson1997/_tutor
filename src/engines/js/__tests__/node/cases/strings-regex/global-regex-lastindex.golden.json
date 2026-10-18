@@ -1,0 +1,189 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "a1:true:2 b2:false:0 c3:true:2 d4:false:0"
+  },
+  {
+   "stream": "stdout",
+   "text": "true 2 true 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "true 6 true 7"
+  },
+  {
+   "stream": "stdout",
+   "text": "false 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "Make@0->4, Each@5->9, Word@10->14, Big@15->18 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "12 2 null 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "34 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "true true g true true"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:a1:true:2 b2:false:0 c3:true:2 d4:false:0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "num:2",
+    "boolean:true",
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "num:6",
+    "boolean:true",
+    "num:7"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:false",
+    "num:0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Make@0->4, Each@5->9, Word@10->14, Big@15->18",
+    "num:0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:12",
+    "num:2",
+    "null",
+    "num:0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:34",
+    "num:5"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:true",
+    "str:g",
+    "boolean:true",
+    "boolean:true"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  8,
+  10,
+  11,
+  12,
+  13,
+  14,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  23,
+  25,
+  26,
+  27,
+  28,
+  29,
+  30,
+  32,
+  33
+ ],
+ "statementRuns": 35,
+ "functionCalls": 6,
+ "finalGlobals": {
+  "hasDigit": {
+   "regexp": "/\\d/g"
+  },
+  "inputs": {
+   "array": [
+    "str:a1",
+    "str:b2",
+    "str:c3",
+    "str:d4"
+   ],
+   "len": 4
+  },
+  "results": {
+   "array": [
+    "str:a1:true:2",
+    "str:b2:false:0",
+    "str:c3:true:2",
+    "str:d4:false:0"
+   ],
+   "len": 4
+  },
+  "re": {
+   "regexp": "/o/g"
+  },
+  "word": "str:foo boo",
+  "wordRe": {
+   "regexp": "/\\b(\\w)(\\w*)\\b/g"
+  },
+  "sentence": "str:make each word big",
+  "found": {
+   "array": [
+    "str:Make@0->4",
+    "str:Each@5->9",
+    "str:Word@10->14",
+    "str:Big@15->18"
+   ],
+   "len": 4
+  },
+  "m": "null",
+  "sticky": {
+   "regexp": "/\\d+/y"
+  },
+  "data": "str:12 34",
+  "s1": {
+   "array": [
+    "str:12"
+   ],
+   "len": 1
+  },
+  "fresh": "fn:fresh"
+ },
+ "sourceSha256": "95ac05ad8a69364612274b3b8b916c81a80b038ac33bb72a0e70809ed10fed68"
+}

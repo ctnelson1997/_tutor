@@ -1,0 +1,104 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "after deposit: 100"
+  },
+  {
+   "stream": "stdout",
+   "text": "after withdraw: 70"
+  },
+  {
+   "stream": "stdout",
+   "text": "failed: insufficient funds"
+  },
+  {
+   "stream": "stdout",
+   "text": "Ana 70 [ '+100', '-30' ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:after deposit:",
+    "num:100"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:after withdraw:",
+    "num:70"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:failed:",
+    "str:insufficient funds"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Ana",
+    "num:70",
+    {
+     "array": [
+      "str:+100",
+      "str:-30"
+     ],
+     "len": 2
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  4,
+  5,
+  6,
+  9,
+  10,
+  11,
+  12,
+  15,
+  16,
+  17,
+  18,
+  19,
+  22,
+  25,
+  27,
+  28,
+  30,
+  32,
+  34,
+  36
+ ],
+ "statementRuns": 25,
+ "functionCalls": 11,
+ "finalGlobals": {
+  "Account": "fn:Account",
+  "acct": {
+   "object": "Account",
+   "props": {
+    "owner": "str:Ana",
+    "balance": "num:70",
+    "log": {
+     "array": [
+      "str:+100",
+      "str:-30"
+     ],
+     "len": 2
+    }
+   }
+  },
+  "run": "fn:run"
+ },
+ "sourceSha256": "39d1f6c19fb7d06b07c03534dbe24f39262abbbcb8a5abcf08544fdfc0cece15"
+}

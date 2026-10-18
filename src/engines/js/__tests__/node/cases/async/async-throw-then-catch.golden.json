@@ -1,0 +1,122 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "loading settings.txt"
+  },
+  {
+   "stream": "stdout",
+   "text": "returned a promise: true"
+  },
+  {
+   "stream": "stdout",
+   "text": "script done"
+  },
+  {
+   "stream": "stdout",
+   "text": "caught TypeError: not a JSON file: settings.txt"
+  },
+  {
+   "stream": "stdout",
+   "text": "loading settings.json"
+  },
+  {
+   "stream": "stdout",
+   "text": "retry gave { name: 'settings.json', ok: true } after 2 attempts"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:loading",
+    "str:settings.txt"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:returned a promise:",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:script done"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:caught",
+    "str:TypeError:",
+    "str:not a JSON file: settings.txt"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:loading",
+    "str:settings.json"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:retry gave",
+    {
+     "object": "",
+     "props": {
+      "name": "str:settings.json",
+      "ok": "boolean:true"
+     }
+    },
+    "str:after",
+    "num:2",
+    "str:attempts"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  6,
+  7,
+  8,
+  9,
+  11,
+  13,
+  14,
+  15,
+  18,
+  19,
+  20,
+  23,
+  24,
+  26
+ ],
+ "statementRuns": 20,
+ "functionCalls": 4,
+ "finalGlobals": {
+  "attempts": "num:2",
+  "lastError": "str:not a JSON file: settings.txt",
+  "config": {
+   "object": "",
+   "props": {
+    "name": "str:settings.json",
+    "ok": "boolean:true"
+   }
+  },
+  "loadConfig": "fn:loadConfig",
+  "result": {
+   "promise": true
+  }
+ },
+ "sourceSha256": "bcb697121765beb61777a3cacd0a5fac9c0cf8634cba924bac3667fe006cc44e"
+}

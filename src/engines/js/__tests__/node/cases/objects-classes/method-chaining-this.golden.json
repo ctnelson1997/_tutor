@@ -1,0 +1,163 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "SELECT * FROM users WHERE age > 18 AND country = 'US' ORDER BY name ASC LIMIT 10"
+  },
+  {
+   "stream": "stdout",
+   "text": "SELECT * FROM logs LIMIT 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "30 [ 0, 5, 15 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "true 31 QueryBuilder {"
+  },
+  {
+   "stream": "stdout",
+   "text": "  table: 'users',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  conditions: [ 'age > 18', \"country = 'US'\" ],"
+  },
+  {
+   "stream": "stdout",
+   "text": "  order: 'name ASC',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  max: 10"
+  },
+  {
+   "stream": "stdout",
+   "text": "}"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:SELECT * FROM users WHERE age > 18 AND country = 'US' ORDER BY name ASC LIMIT 10"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:SELECT * FROM logs LIMIT 0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:30",
+    {
+     "array": [
+      "num:0",
+      "num:5",
+      "num:15"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "num:31",
+    {
+     "object": "QueryBuilder",
+     "props": {
+      "table": "str:users",
+      "conditions": {
+       "array": [
+        "str:age > 18",
+        "str:country = 'US'"
+       ],
+       "len": 2
+      },
+      "order": "str:name ASC",
+      "max": "num:10"
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  4,
+  5,
+  6,
+  7,
+  10,
+  11,
+  14,
+  15,
+  18,
+  19,
+  22,
+  23,
+  24,
+  25,
+  26,
+  30,
+  31,
+  32,
+  34,
+  37,
+  38,
+  39,
+  41,
+  42,
+  43,
+  44
+ ],
+ "statementRuns": 57,
+ "functionCalls": 15,
+ "finalGlobals": {
+  "QueryBuilder": "fn:QueryBuilder",
+  "q": {
+   "object": "QueryBuilder",
+   "props": {
+    "table": "str:users",
+    "conditions": {
+     "array": [
+      "str:age > 18",
+      "str:country = 'US'"
+     ],
+     "len": 2
+    },
+    "order": "str:name ASC",
+    "max": "num:10"
+   }
+  },
+  "calc": {
+   "object": "",
+   "props": {
+    "value": "num:31",
+    "history": {
+     "array": [
+      "num:0",
+      "num:5",
+      "num:15",
+      "num:30"
+     ],
+     "len": 4
+    },
+    "add": "fn:add",
+    "times": "fn:times",
+    "undo": "fn:undo"
+   }
+  },
+  "result": "num:30",
+  "same": "boolean:true"
+ },
+ "sourceSha256": "ed9152b4618faf10fb6c80a0e81d250c06b58d58a574a7a28c3a73772630070b"
+}

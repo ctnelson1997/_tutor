@@ -1,0 +1,102 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "sync code done first"
+  },
+  {
+   "stream": "stdout",
+   "text": "branch 1 a"
+  },
+  {
+   "stream": "stdout",
+   "text": "branch 2 aa"
+  },
+  {
+   "stream": "stdout",
+   "text": "result 16"
+  },
+  {
+   "stream": "stdout",
+   "text": "finally; trace: [ 'double 2', 'square 4', 'got 16' ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:sync code done first"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:branch 1",
+    "str:a"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:branch 2",
+    "str:aa"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:result",
+    "num:16"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:finally; trace:",
+    {
+     "array": [
+      "str:double 2",
+      "str:square 4",
+      "str:got 16"
+     ],
+     "len": 3
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  5,
+  6,
+  9,
+  10,
+  13,
+  14,
+  17,
+  19,
+  20,
+  21,
+  22
+ ],
+ "statementRuns": 13,
+ "functionCalls": 6,
+ "finalGlobals": {
+  "trace": {
+   "array": [
+    "str:double 2",
+    "str:square 4",
+    "str:got 16"
+   ],
+   "len": 3
+  },
+  "p": {
+   "promise": true
+  }
+ },
+ "sourceSha256": "b8626e5fbc1d8daaa514568f5a4d18ba40462e4bb860d27b05e828e3ac8cfe89"
+}

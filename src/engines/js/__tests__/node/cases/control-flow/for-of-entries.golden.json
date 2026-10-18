@@ -1,0 +1,225 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "0 apple"
+  },
+  {
+   "stream": "stdout",
+   "text": "1 banana"
+  },
+  {
+   "stream": "stdout",
+   "text": "2 cherry"
+  },
+  {
+   "stream": "stdout",
+   "text": "apple: 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "cherry: 12"
+  },
+  {
+   "stream": "stdout",
+   "text": "out of stock: [ 'banana' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'x', { v: 10 } ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'y', { v: 20 } ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 0, 'apple' ] false"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:0",
+    "str:apple"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:1",
+    "str:banana"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:2",
+    "str:cherry"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:apple: 5"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:cherry: 12"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:out of stock:",
+    {
+     "array": [
+      "str:banana"
+     ],
+     "len": 1
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:x",
+      {
+       "object": "",
+       "props": {
+        "v": "num:10"
+       }
+      }
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:y",
+      {
+       "object": "",
+       "props": {
+        "v": "num:20"
+       }
+      }
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:0",
+      "str:apple"
+     ],
+     "len": 2
+    },
+    "boolean:false"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  14,
+  16,
+  18,
+  19,
+  20,
+  21,
+  22,
+  24,
+  25,
+  26
+ ],
+ "statementRuns": 26,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "fruits": {
+   "array": [
+    "str:apple",
+    "str:banana",
+    "str:cherry"
+   ],
+   "len": 3
+  },
+  "stock": {
+   "object": "",
+   "props": {
+    "apple": "num:5",
+    "banana": "num:0",
+    "cherry": "num:12"
+   }
+  },
+  "empty": {
+   "array": [
+    "str:banana"
+   ],
+   "len": 1
+  },
+  "m": {
+   "map": [
+    [
+     "str:x",
+     {
+      "object": "",
+      "props": {
+       "v": "num:10"
+      }
+     }
+    ],
+    [
+     "str:y",
+     {
+      "object": "",
+      "props": {
+       "v": "num:20"
+      }
+     }
+    ]
+   ]
+  },
+  "iter": {
+   "object": "Iterator",
+   "props": {}
+  },
+  "first": {
+   "object": "",
+   "props": {
+    "value": {
+     "array": [
+      "num:0",
+      "str:apple"
+     ],
+     "len": 2
+    },
+    "done": "boolean:false"
+   }
+  }
+ },
+ "sourceSha256": "cea850b61815d09ef8cbb5db2060a808925fd731341467b96dc21a0940dfc4a3"
+}

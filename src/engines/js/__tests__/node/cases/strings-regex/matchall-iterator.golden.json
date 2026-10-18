@@ -1,0 +1,162 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "apple  3 1.50 @0"
+  },
+  {
+   "stream": "stdout",
+   "text": "bread  1 2.25 @17"
+  },
+  {
+   "stream": "stdout",
+   "text": "milk   2 2.20 @34"
+  },
+  {
+   "stream": "stdout",
+   "text": "total 5.95"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'js', 'regex', 'bugs' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "a1 1 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'b2', 'c3' ] true"
+  },
+  {
+   "stream": "stdout",
+   "text": "TypeError String.prototype.matchAll called with a non-global RegExp argument"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:apple  3 1.50 @0\nbread  1 2.25 @17\nmilk   2 2.20 @34"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:total",
+    "str:5.95"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:js",
+      "str:regex",
+      "str:bugs"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:a1",
+    "str:1",
+    "num:0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:b2",
+      "str:c3"
+     ],
+     "len": 2
+    },
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:TypeError",
+    "str:String.prototype.matchAll called with a non-global RegExp argument"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  13,
+  14,
+  16,
+  17,
+  19,
+  20,
+  21,
+  22,
+  23,
+  26,
+  28
+ ],
+ "statementRuns": 28,
+ "functionCalls": 5,
+ "finalGlobals": {
+  "receipt": "str:apple x3 @ 0.50; bread x1 @ 2.25; milk x2 @ 1.10",
+  "itemRe": {
+   "regexp": "/(?<name>[a-z]+) x(?<qty>\\d+) @ (?<price>\\d+\\.\\d+)/g"
+  },
+  "total": "num:5.95",
+  "lines": {
+   "array": [
+    "str:apple  3 1.50 @0",
+    "str:bread  1 2.25 @17",
+    "str:milk   2 2.20 @34"
+   ],
+   "len": 3
+  },
+  "hashtags": {
+   "array": [
+    "str:js",
+    "str:regex",
+    "str:bugs"
+   ],
+   "len": 3
+  },
+  "iter": {
+   "object": "Iterator",
+   "props": {}
+  },
+  "firstMatch": {
+   "array": [
+    "str:a1",
+    "str:1"
+   ],
+   "len": 2
+  },
+  "remaining": {
+   "array": [
+    "str:b2",
+    "str:c3"
+   ],
+   "len": 2
+  }
+ },
+ "sourceSha256": "8fbb33aaabd052b5558ac8ed11856e23ac973fc2a74c6d3c1d506733e956c60d"
+}

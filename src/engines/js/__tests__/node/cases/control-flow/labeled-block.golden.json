@@ -1,0 +1,89 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "negative"
+  },
+  {
+   "stream": "stdout",
+   "text": "non-negative!"
+  },
+  {
+   "stream": "stdout",
+   "text": "non-negative and positive and small!"
+  },
+  {
+   "stream": "stdout",
+   "text": "non-negative and positive"
+  },
+  {
+   "stream": "stdout",
+   "text": "count 1"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:negative"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:non-negative!"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:non-negative and positive and small!"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:non-negative and positive"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:count",
+    "num:1"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  5,
+  6,
+  7,
+  9,
+  11,
+  12,
+  13,
+  14,
+  16,
+  18,
+  20,
+  21,
+  22,
+  23,
+  25,
+  27,
+  28,
+  31
+ ],
+ "statementRuns": 38,
+ "functionCalls": 4,
+ "finalGlobals": {
+  "classify": "fn:classify",
+  "count": "num:1"
+ },
+ "sourceSha256": "b7ca0c4576d8f4667fe0935c67f5818b9d2aa3c96b6615dce849b3e75018b357"
+}

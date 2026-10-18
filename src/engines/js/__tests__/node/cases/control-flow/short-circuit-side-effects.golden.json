@@ -1,0 +1,162 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "0 yes fallback first 0 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "called: a,c,d,e,g,h,j,k,l"
+  },
+  {
+   "stream": "stdout",
+   "text": "city undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "Madison hi undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "count is 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ size: 20, name: 'default' }"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:0",
+    "str:yes",
+    "str:fallback",
+    "str:first",
+    "num:0",
+    "num:0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:called:",
+    "str:a,c,d,e,g,h,j,k,l"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:city",
+    "undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Madison",
+    "str:hi",
+    "undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:count is",
+    "num:1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "size": "num:20",
+      "name": "str:default"
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  4,
+  5,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  16,
+  17,
+  18,
+  19,
+  20,
+  22,
+  23,
+  24,
+  25,
+  26,
+  27,
+  28,
+  29,
+  30,
+  31
+ ],
+ "statementRuns": 43,
+ "functionCalls": 10,
+ "finalGlobals": {
+  "log": {
+   "array": [
+    "str:a",
+    "str:c",
+    "str:d",
+    "str:e",
+    "str:g",
+    "str:h",
+    "str:j",
+    "str:k",
+    "str:l"
+   ],
+   "len": 9
+  },
+  "f": "fn:f",
+  "a": "num:0",
+  "b": "str:yes",
+  "c": "str:fallback",
+  "d": "str:first",
+  "e": "num:0",
+  "g": "num:0",
+  "user": {
+   "object": "",
+   "props": {
+    "address": {
+     "object": "",
+     "props": {
+      "city": "str:Madison"
+     }
+    },
+    "greet": "fn:greet"
+   }
+  },
+  "city": "undefined",
+  "count": "num:1",
+  "flag": "boolean:false",
+  "opts": {
+   "object": "",
+   "props": {
+    "size": "num:20",
+    "name": "str:default"
+   }
+  }
+ },
+ "sourceSha256": "7423f4601eaa4541eb642248ef515308eb438296ebe96c24072799deb0140d7f"
+}

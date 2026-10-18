@@ -1,0 +1,115 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "before the block: undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "inside, before its line: helper result"
+  },
+  {
+   "stream": "stdout",
+   "text": "after the block: function helper result"
+  },
+  {
+   "stream": "stdout",
+   "text": "first second"
+  },
+  {
+   "stream": "stdout",
+   "text": "declared in a block that never ran: undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'loop 0', 'loop 1' ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:before the block:",
+    "str:undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:inside, before its line:",
+    "str:helper result"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:after the block:",
+    "str:function",
+    "str:helper result"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:first",
+    "str:second"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:declared in a block that never ran:",
+    "str:undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:loop 0",
+      "str:loop 1"
+     ],
+     "len": 2
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  4,
+  6,
+  9,
+  11,
+  12,
+  14,
+  16,
+  18,
+  20,
+  23,
+  25,
+  26,
+  27,
+  28,
+  29,
+  31
+ ],
+ "statementRuns": 23,
+ "functionCalls": 9,
+ "finalGlobals": {
+  "choose": "fn:choose",
+  "notRun": "fn:notRun",
+  "results": {
+   "array": [
+    "str:loop 0",
+    "str:loop 1"
+   ],
+   "len": 2
+  }
+ },
+ "sourceSha256": "688fcd62cf8067dcc373f86719ee162e7ae8b5f274c0d039ae8943276d87e02f"
+}

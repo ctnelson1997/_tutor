@@ -1,0 +1,163 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Shape Inner Inner undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "{\"text\":\"buy milk\",\"stamp\":1002} true \"\""
+  },
+  {
+   "stream": "stdout",
+   "text": "[ [ 'square', 4, 'square' ], [ 'triangle', 3, 'triangle' ] ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Note { text: 'buy milk', stamp: 1002 } square { sides: 4 }"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Shape",
+    "str:Inner",
+    "str:Inner",
+    "str:undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:{\"text\":\"buy milk\",\"stamp\":1002}",
+    "boolean:true",
+    "str:\"\""
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      {
+       "array": [
+        "str:square",
+        "num:4",
+        "str:square"
+       ],
+       "len": 3
+      },
+      {
+       "array": [
+        "str:triangle",
+        "num:3",
+        "str:triangle"
+       ],
+       "len": 3
+      }
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "text": "str:buy milk",
+      "stamp": "num:1002"
+     }
+    },
+    {
+     "object": "square",
+     "props": {
+      "sides": "num:4"
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  4,
+  7,
+  9,
+  12,
+  15,
+  18,
+  19,
+  23,
+  26,
+  32,
+  35,
+  36,
+  37,
+  38,
+  40,
+  43,
+  48,
+  52,
+  53,
+  54,
+  55
+ ],
+ "statementRuns": 27,
+ "functionCalls": 16,
+ "finalGlobals": {
+  "Shape": "fn:Shape",
+  "Named": "fn:Inner",
+  "withTimestamps": "fn:withTimestamps",
+  "Serializable": "fn:Serializable",
+  "Note": "fn:Note",
+  "SmartNote": "fn:",
+  "note": {
+   "object": "",
+   "props": {
+    "text": "str:buy milk",
+    "stamp": "num:1002"
+   }
+  },
+  "registry": {
+   "object": "",
+   "props": {
+    "square": "fn:square",
+    "triangle": "fn:triangle"
+   }
+  },
+  "shapes": {
+   "array": [
+    {
+     "array": [
+      "str:square",
+      "num:4",
+      "str:square"
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "str:triangle",
+      "num:3",
+      "str:triangle"
+     ],
+     "len": 3
+    }
+   ],
+   "len": 2
+  },
+  "sq": {
+   "object": "square",
+   "props": {
+    "sides": "num:4"
+   }
+  }
+ },
+ "sourceSha256": "d1af40c13462279c551493abca3d702fcd33e80d22ea2fc706b4a7cd725102b0"
+}

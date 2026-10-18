@@ -1,0 +1,609 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[Object: null prototype] {"
+  },
+  {
+   "stream": "stdout",
+   "text": "  eng: ["
+  },
+  {
+   "stream": "stdout",
+   "text": "    { name: 'Ann', age: 34, dept: 'eng' },"
+  },
+  {
+   "stream": "stdout",
+   "text": "    { name: 'Cat', age: 52, dept: 'eng' }"
+  },
+  {
+   "stream": "stdout",
+   "text": "  ],"
+  },
+  {
+   "stream": "stdout",
+   "text": "  ops: ["
+  },
+  {
+   "stream": "stdout",
+   "text": "    { name: 'Bob', age: 19, dept: 'ops' },"
+  },
+  {
+   "stream": "stdout",
+   "text": "    { name: 'Eve', age: 41, dept: 'ops' }"
+  },
+  {
+   "stream": "stdout",
+   "text": "  ],"
+  },
+  {
+   "stream": "stdout",
+   "text": "  sales: [ { name: 'Dan', age: 27, dept: 'sales' } ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "}"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'eng', 'ops', 'sales' ] 2 null"
+  },
+  {
+   "stream": "stdout",
+   "text": "false true"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ '30s: Ann', '10s: Bob', '50s: Cat', '20s: Dan', '40s: Eve' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[Object: null prototype] { odd: [ 1, 3, 5 ], even: [ 2, 4, 6 ] }"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'Bob', 'Dan' ] 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "undefined 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ eng: [ 'Ann', 'Cat' ], ops: [ 'Bob', 'Eve' ], sales: [ 'Dan' ] }"
+  },
+  {
+   "stream": "stdout",
+   "text": "3 5"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "eng": {
+       "array": [
+        {
+         "object": "",
+         "props": {
+          "name": "str:Ann",
+          "age": "num:34",
+          "dept": "str:eng"
+         }
+        },
+        {
+         "object": "",
+         "props": {
+          "name": "str:Cat",
+          "age": "num:52",
+          "dept": "str:eng"
+         }
+        }
+       ],
+       "len": 2
+      },
+      "ops": {
+       "array": [
+        {
+         "object": "",
+         "props": {
+          "name": "str:Bob",
+          "age": "num:19",
+          "dept": "str:ops"
+         }
+        },
+        {
+         "object": "",
+         "props": {
+          "name": "str:Eve",
+          "age": "num:41",
+          "dept": "str:ops"
+         }
+        }
+       ],
+       "len": 2
+      },
+      "sales": {
+       "array": [
+        {
+         "object": "",
+         "props": {
+          "name": "str:Dan",
+          "age": "num:27",
+          "dept": "str:sales"
+         }
+        }
+       ],
+       "len": 1
+      }
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:eng",
+      "str:ops",
+      "str:sales"
+     ],
+     "len": 3
+    },
+    "num:2",
+    "null"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:false",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:30s: Ann",
+      "str:10s: Bob",
+      "str:50s: Cat",
+      "str:20s: Dan",
+      "str:40s: Eve"
+     ],
+     "len": 5
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "odd": {
+       "array": [
+        "num:1",
+        "num:3",
+        "num:5"
+       ],
+       "len": 3
+      },
+      "even": {
+       "array": [
+        "num:2",
+        "num:4",
+        "num:6"
+       ],
+       "len": 3
+      }
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:Bob",
+      "str:Dan"
+     ],
+     "len": 2
+    },
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "undefined",
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "eng": {
+       "array": [
+        "str:Ann",
+        "str:Cat"
+       ],
+       "len": 2
+      },
+      "ops": {
+       "array": [
+        "str:Bob",
+        "str:Eve"
+       ],
+       "len": 2
+      },
+      "sales": {
+       "array": [
+        "str:Dan"
+       ],
+       "len": 1
+      }
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:3",
+    "num:5"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  10,
+  11,
+  12,
+  13,
+  15,
+  16,
+  18,
+  19,
+  21,
+  22,
+  23,
+  24,
+  25,
+  27,
+  28,
+  29,
+  31,
+  32,
+  33
+ ],
+ "statementRuns": 24,
+ "functionCalls": 33,
+ "finalGlobals": {
+  "people": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:Ann",
+      "age": "num:34",
+      "dept": "str:eng"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Bob",
+      "age": "num:19",
+      "dept": "str:ops"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Cat",
+      "age": "num:52",
+      "dept": "str:eng"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Dan",
+      "age": "num:27",
+      "dept": "str:sales"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Eve",
+      "age": "num:41",
+      "dept": "str:ops"
+     }
+    }
+   ],
+   "len": 5
+  },
+  "byDept": {
+   "object": "",
+   "props": {
+    "eng": {
+     "array": [
+      {
+       "object": "",
+       "props": {
+        "name": "str:Ann",
+        "age": "num:34",
+        "dept": "str:eng"
+       }
+      },
+      {
+       "object": "",
+       "props": {
+        "name": "str:Cat",
+        "age": "num:52",
+        "dept": "str:eng"
+       }
+      },
+      {
+       "object": "",
+       "props": {
+        "name": "str:New",
+        "age": "num:22",
+        "dept": "str:eng"
+       }
+      }
+     ],
+     "len": 3
+    },
+    "ops": {
+     "array": [
+      {
+       "object": "",
+       "props": {
+        "name": "str:Bob",
+        "age": "num:19",
+        "dept": "str:ops"
+       }
+      },
+      {
+       "object": "",
+       "props": {
+        "name": "str:Eve",
+        "age": "num:41",
+        "dept": "str:ops"
+       }
+      }
+     ],
+     "len": 2
+    },
+    "sales": {
+     "array": [
+      {
+       "object": "",
+       "props": {
+        "name": "str:Dan",
+        "age": "num:27",
+        "dept": "str:sales"
+       }
+      }
+     ],
+     "len": 1
+    }
+   }
+  },
+  "byDecade": {
+   "object": "",
+   "props": {
+    "30s": {
+     "array": [
+      {
+       "object": "",
+       "props": {
+        "name": "str:Ann",
+        "age": "num:34",
+        "dept": "str:eng"
+       }
+      }
+     ],
+     "len": 1
+    },
+    "10s": {
+     "array": [
+      {
+       "object": "",
+       "props": {
+        "name": "str:Bob",
+        "age": "num:19",
+        "dept": "str:ops"
+       }
+      }
+     ],
+     "len": 1
+    },
+    "50s": {
+     "array": [
+      {
+       "object": "",
+       "props": {
+        "name": "str:Cat",
+        "age": "num:52",
+        "dept": "str:eng"
+       }
+      }
+     ],
+     "len": 1
+    },
+    "20s": {
+     "array": [
+      {
+       "object": "",
+       "props": {
+        "name": "str:Dan",
+        "age": "num:27",
+        "dept": "str:sales"
+       }
+      }
+     ],
+     "len": 1
+    },
+    "40s": {
+     "array": [
+      {
+       "object": "",
+       "props": {
+        "name": "str:Eve",
+        "age": "num:41",
+        "dept": "str:ops"
+       }
+      }
+     ],
+     "len": 1
+    }
+   }
+  },
+  "byParity": {
+   "object": "",
+   "props": {
+    "odd": {
+     "array": [
+      "num:1",
+      "num:3",
+      "num:5"
+     ],
+     "len": 3
+    },
+    "even": {
+     "array": [
+      "num:2",
+      "num:4",
+      "num:6"
+     ],
+     "len": 3
+    }
+   }
+  },
+  "young": {
+   "object": "",
+   "props": {
+    "label": "str:young"
+   }
+  },
+  "old": {
+   "object": "",
+   "props": {
+    "label": "str:old"
+   }
+  },
+  "byAgeGroup": {
+   "map": [
+    [
+     {
+      "object": "",
+      "props": {
+       "label": "str:old"
+      }
+     },
+     {
+      "array": [
+       {
+        "object": "",
+        "props": {
+         "name": "str:Ann",
+         "age": "num:34",
+         "dept": "str:eng"
+        }
+       },
+       {
+        "object": "",
+        "props": {
+         "name": "str:Cat",
+         "age": "num:52",
+         "dept": "str:eng"
+        }
+       },
+       {
+        "object": "",
+        "props": {
+         "name": "str:Eve",
+         "age": "num:41",
+         "dept": "str:ops"
+        }
+       }
+      ],
+      "len": 3
+     }
+    ],
+    [
+     {
+      "object": "",
+      "props": {
+       "label": "str:young"
+      }
+     },
+     {
+      "array": [
+       {
+        "object": "",
+        "props": {
+         "name": "str:Bob",
+         "age": "num:19",
+         "dept": "str:ops"
+        }
+       },
+       {
+        "object": "",
+        "props": {
+         "name": "str:Dan",
+         "age": "num:27",
+         "dept": "str:sales"
+        }
+       }
+      ],
+      "len": 2
+     }
+    ]
+   ]
+  },
+  "manual": {
+   "object": "",
+   "props": {
+    "eng": {
+     "array": [
+      "str:Ann",
+      "str:Cat"
+     ],
+     "len": 2
+    },
+    "ops": {
+     "array": [
+      "str:Bob",
+      "str:Eve"
+     ],
+     "len": 2
+    },
+    "sales": {
+     "array": [
+      "str:Dan"
+     ],
+     "len": 1
+    }
+   }
+  }
+ },
+ "sourceSha256": "f71b3a04ad21ab3538ffff0041b8517de2c5df168de89fc51cbdaea7bc19ce07"
+}

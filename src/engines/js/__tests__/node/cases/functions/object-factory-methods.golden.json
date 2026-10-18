@@ -1,0 +1,103 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Ravi has 2 item(s) totaling $18.25"
+  },
+  {
+   "stream": "stdout",
+   "text": "count getter: 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "Lee has 1 item(s) totaling $0.99 true"
+  },
+  {
+   "stream": "stdout",
+   "text": "destructured method lost this: TypeError: this.total is not a function"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Ravi has 2 item(s) totaling $18.25"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:count getter:",
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Lee has 1 item(s) totaling $0.99",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:destructured method lost this:",
+    "str:TypeError: this.total is not a function"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  7,
+  8,
+  11,
+  12,
+  13,
+  16,
+  19,
+  22,
+  26,
+  27,
+  28,
+  29,
+  30,
+  31,
+  32,
+  34,
+  36
+ ],
+ "statementRuns": 33,
+ "functionCalls": 24,
+ "finalGlobals": {
+  "createCart": "fn:createCart",
+  "cart": {
+   "object": "",
+   "props": {
+    "owner": "str:Ravi",
+    "add": "fn:add",
+    "remove": "fn:remove",
+    "total": "fn:total",
+    "describe": "fn:describe",
+    "count": "<getter>"
+   }
+  },
+  "other": {
+   "object": "",
+   "props": {
+    "owner": "str:Lee",
+    "add": "fn:add",
+    "remove": "fn:remove",
+    "total": "fn:total",
+    "describe": "fn:describe",
+    "count": "<getter>"
+   }
+  },
+  "describe": "fn:describe"
+ },
+ "sourceSha256": "572d829e78b2d065ad0f4dfee6c622848a7307e5657883cf35f39ec5d4ebceb5"
+}

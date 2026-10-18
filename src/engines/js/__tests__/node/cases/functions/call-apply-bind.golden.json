@@ -1,0 +1,181 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Hi, I am Alice!"
+  },
+  {
+   "stream": "stdout",
+   "text": "Hello, I am Bob."
+  },
+  {
+   "stream": "stdout",
+   "text": "Yo, I am Alice? Hey, I am Bob!!"
+  },
+  {
+   "stream": "stdout",
+   "text": "bound introduce | bound introduce | 2 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "bind twice keeps the first this: Hi, I am Alice."
+  },
+  {
+   "stream": "stdout",
+   "text": "call on a bound function: Hi, I am Alice."
+  },
+  {
+   "stream": "stdout",
+   "text": "9 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "10"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 2, 4, 6 ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Hi, I am Alice!"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Hello, I am Bob."
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Yo, I am Alice?",
+    "str:Hey, I am Bob!!"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:bound introduce",
+    "str:|",
+    "str:bound introduce",
+    "str:|",
+    "num:2",
+    "num:1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:bind twice keeps the first this:",
+    "str:Hi, I am Alice."
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:call on a bound function:",
+    "str:Hi, I am Alice."
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:9",
+    "num:1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:10"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:2",
+      "num:4",
+      "num:6"
+     ],
+     "len": 3
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  21,
+  23,
+  24,
+  25,
+  26
+ ],
+ "statementRuns": 29,
+ "functionCalls": 14,
+ "finalGlobals": {
+  "introduce": "fn:introduce",
+  "alice": {
+   "object": "",
+   "props": {
+    "name": "str:Alice"
+   }
+  },
+  "bob": {
+   "object": "",
+   "props": {
+    "name": "str:Bob"
+   }
+  },
+  "aliceIntro": "fn:bound introduce",
+  "bobHey": "fn:bound introduce",
+  "rebound": "fn:bound bound introduce",
+  "numbers": {
+   "array": [
+    "num:5",
+    "num:1",
+    "num:9",
+    "num:3"
+   ],
+   "len": 4
+  },
+  "biggest": "num:9",
+  "smallest": "num:1",
+  "sumAll": "fn:sumAll",
+  "double": "fn:bound ",
+  "doubled": {
+   "array": [
+    "num:2",
+    "num:4",
+    "num:6"
+   ],
+   "len": 3
+  }
+ },
+ "sourceSha256": "70f3d09d4ef4488a8a826721d3270a3af1c5c25b51d8939fbc78b8d4693f69d9"
+}

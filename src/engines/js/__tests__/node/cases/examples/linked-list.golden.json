@@ -1,0 +1,76 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "1"
+  },
+  {
+   "stream": "stdout",
+   "text": "2"
+  },
+  {
+   "stream": "stdout",
+   "text": "3"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:3"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  5,
+  6,
+  7,
+  11,
+  12,
+  13,
+  14
+ ],
+ "statementRuns": 16,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "createNode": "fn:createNode",
+  "list": {
+   "object": "",
+   "props": {
+    "value": "num:1",
+    "next": {
+     "object": "",
+     "props": {
+      "value": "num:2",
+      "next": {
+       "object": "",
+       "props": {
+        "value": "num:3",
+        "next": "null"
+       }
+      }
+     }
+    }
+   }
+  },
+  "current": "null"
+ },
+ "sourceSha256": "64fda4535b212065281d6626e9d205b7482e0bc4bb9affd126761407f2b956c0"
+}

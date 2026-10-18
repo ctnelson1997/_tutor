@@ -1,0 +1,153 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Orders submitted"
+  },
+  {
+   "stream": "stdout",
+   "text": "Order 1 ready: pen, stapler"
+  },
+  {
+   "stream": "stdout",
+   "text": "Order 2 failed: paper is out of stock"
+  },
+  {
+   "stream": "stdout",
+   "text": "Settled: [ 'pen ok', 'paper is out of stock', 'stapler is out of stock' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Stock left: { pen: 7, paper: 0, stapler: 0 }"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Orders submitted"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Order 1 ready:",
+    "str:pen, stapler"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Order 2 failed:",
+    "str:paper is out of stock"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Settled:",
+    {
+     "array": [
+      "str:pen ok",
+      "str:paper is out of stock",
+      "str:stapler is out of stock"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Stock left:",
+    {
+     "object": "",
+     "props": {
+      "pen": "num:7",
+      "paper": "num:0",
+      "stapler": "num:0"
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  6,
+  9,
+  10,
+  11,
+  12,
+  14,
+  18,
+  19,
+  20,
+  22,
+  24,
+  25,
+  26,
+  30,
+  31,
+  32,
+  35,
+  36,
+  37,
+  38,
+  41
+ ],
+ "statementRuns": 53,
+ "functionCalls": 51,
+ "finalGlobals": {
+  "delay": "fn:delay",
+  "stock": {
+   "object": "",
+   "props": {
+    "pen": "num:7",
+    "paper": "num:0",
+    "stapler": "num:0"
+   }
+  },
+  "checkStock": "fn:checkStock",
+  "order": {
+   "array": [
+    "str:pen",
+    "str:stapler"
+   ],
+   "len": 2
+  },
+  "badOrder": {
+   "array": [
+    "str:pen",
+    "str:paper",
+    "str:stapler"
+   ],
+   "len": 3
+  },
+  "results": {
+   "object": "",
+   "props": {
+    "first": {
+     "array": [
+      "str:pen",
+      "str:stapler"
+     ],
+     "len": 2
+    },
+    "error": "str:paper is out of stock",
+    "settled": {
+     "array": [
+      "str:fulfilled",
+      "str:rejected",
+      "str:rejected"
+     ],
+     "len": 3
+    }
+   }
+  }
+ },
+ "sourceSha256": "f0b52ec6fb7b49c460a3c193698b1b0ea40cc42d72bec9d051e981fef311e188"
+}

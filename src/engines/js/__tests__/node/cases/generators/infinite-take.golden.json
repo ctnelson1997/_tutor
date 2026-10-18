@@ -1,0 +1,142 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[ 1, 2, 3, 4, 5 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 0, 1, 1, 2, 3, 5 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "after break, fib is closed: { value: undefined, done: true }"
+  },
+  {
+   "stream": "stdout",
+   "text": "10th fib 34 next 55"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:1",
+      "num:2",
+      "num:3",
+      "num:4",
+      "num:5"
+     ],
+     "len": 5
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:0",
+      "num:1",
+      "num:1",
+      "num:2",
+      "num:3",
+      "num:5"
+     ],
+     "len": 6
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:after break, fib is closed:",
+    {
+     "object": "",
+     "props": {
+      "value": "undefined",
+      "done": "boolean:true"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:10th fib",
+    "num:34",
+    "str:next",
+    "num:55"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  5,
+  10,
+  11,
+  12,
+  13,
+  18,
+  19,
+  20,
+  21,
+  23,
+  26,
+  27,
+  28,
+  29,
+  30,
+  31,
+  33,
+  34,
+  35,
+  36,
+  38
+ ],
+ "statementRuns": 98,
+ "functionCalls": 5,
+ "finalGlobals": {
+  "naturals": "fn:naturals",
+  "fibonacci": "fn:fibonacci",
+  "take": "fn:take",
+  "firstFive": {
+   "array": [
+    "num:1",
+    "num:2",
+    "num:3",
+    "num:4",
+    "num:5"
+   ],
+   "len": 5
+  },
+  "fib": {
+   "object": "",
+   "props": {}
+  },
+  "fibStart": {
+   "array": [
+    "num:0",
+    "num:1",
+    "num:1",
+    "num:2",
+    "num:3",
+    "num:5"
+   ],
+   "len": 6
+  },
+  "fib2": {
+   "object": "",
+   "props": {}
+  },
+  "tenth": "num:34"
+ },
+ "sourceSha256": "5eea64c079b19287380aed8b7cf743f215e327e33f72217edd934c4759f60eeb"
+}

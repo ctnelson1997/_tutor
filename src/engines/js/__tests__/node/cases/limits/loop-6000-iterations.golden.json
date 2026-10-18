@@ -1,0 +1,70 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "sum 18003000"
+  },
+  {
+   "stream": "stdout",
+   "text": "milestones [ 1000, 2000, 3000, 4000, 5000, 6000 ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:sum",
+    "num:18003000"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:milestones",
+    {
+     "array": [
+      "num:1000",
+      "num:2000",
+      "num:3000",
+      "num:4000",
+      "num:5000",
+      "num:6000"
+     ],
+     "len": 6
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  8,
+  9,
+  10
+ ],
+ "statementRuns": 10000,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "sum": "num:18003000",
+  "milestones": {
+   "array": [
+    "num:1000",
+    "num:2000",
+    "num:3000",
+    "num:4000",
+    "num:5000",
+    "num:6000"
+   ],
+   "len": 6
+  },
+  "done": "boolean:true"
+ },
+ "sourceSha256": "04a712bd93b27ed25b01f0c593849ef93436e8eb405e2ce38961efb8f3336a34"
+}

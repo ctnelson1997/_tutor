@@ -1,0 +1,17 @@
+{
+ "console": [],
+ "calls": [],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": {
+  "message": "Unexpected identifier 'year'",
+  "line": 6,
+  "column": 2
+ },
+ "executedLines": [],
+ "statementRuns": 0,
+ "functionCalls": 0,
+ "finalGlobals": {},
+ "sourceSha256": "5c907d49d9597a52e1d0a1aa877d0d8124efe858c444f80a6d22914f1e75e371"
+}

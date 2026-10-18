@@ -1,0 +1,261 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Sold 15 apples for $7.50"
+  },
+  {
+   "stream": "stdout",
+   "text": "Not enough milk: only 3 left"
+  },
+  {
+   "stream": "stdout",
+   "text": "No such item: cheese"
+  },
+  {
+   "stream": "stdout",
+   "text": "Sold 6 bread for $13.50"
+  },
+  {
+   "stream": "stdout",
+   "text": "Sales succeeded: [ true, false, false, true ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Low stock: [ 'bread' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Inventory value: $127.80"
+  },
+  {
+   "stream": "stdout",
+   "text": "5 products: {"
+  },
+  {
+   "stream": "stdout",
+   "text": "  apples: { price: 0.5, quantity: 25 },"
+  },
+  {
+   "stream": "stdout",
+   "text": "  bread: { price: 2.25, quantity: 2 },"
+  },
+  {
+   "stream": "stdout",
+   "text": "  milk: { price: 3.1, quantity: 13 },"
+  },
+  {
+   "stream": "stdout",
+   "text": "  eggs: { price: 4, quantity: 12 },"
+  },
+  {
+   "stream": "stdout",
+   "text": "  butter: { price: 3.75, quantity: 6 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "}"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Sold 15 apples for $7.50"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Not enough milk: only 3 left"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:No such item: cheese"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Sold 6 bread for $13.50"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Sales succeeded:",
+    {
+     "array": [
+      "boolean:true",
+      "boolean:false",
+      "boolean:false",
+      "boolean:true"
+     ],
+     "len": 4
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Low stock:",
+    {
+     "array": [
+      "str:bread"
+     ],
+     "len": 1
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Inventory value: $127.80"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:5 products:",
+    {
+     "object": "",
+     "props": {
+      "apples": {
+       "object": "",
+       "props": {
+        "price": "num:0.5",
+        "quantity": "num:25"
+       }
+      },
+      "bread": {
+       "object": "",
+       "props": {
+        "price": "num:2.25",
+        "quantity": "num:2"
+       }
+      },
+      "milk": {
+       "object": "",
+       "props": {
+        "price": "num:3.1",
+        "quantity": "num:13"
+       }
+      },
+      "eggs": {
+       "object": "",
+       "props": {
+        "price": "num:4",
+        "quantity": "num:12"
+       }
+      },
+      "butter": {
+       "object": "",
+       "props": {
+        "price": "num:3.75",
+        "quantity": "num:6"
+       }
+      }
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  10,
+  11,
+  12,
+  13,
+  15,
+  16,
+  17,
+  19,
+  20,
+  21,
+  25,
+  26,
+  28,
+  32,
+  33,
+  34,
+  35,
+  38,
+  42,
+  43,
+  44,
+  46,
+  49,
+  50,
+  51,
+  52,
+  53,
+  54,
+  55,
+  56
+ ],
+ "statementRuns": 52,
+ "functionCalls": 12,
+ "finalGlobals": {
+  "inventory": {
+   "object": "",
+   "props": {
+    "apples": {
+     "object": "",
+     "props": {
+      "price": "num:0.5",
+      "quantity": "num:25"
+     }
+    },
+    "bread": {
+     "object": "",
+     "props": {
+      "price": "num:2.25",
+      "quantity": "num:2"
+     }
+    },
+    "milk": {
+     "object": "",
+     "props": {
+      "price": "num:3.1",
+      "quantity": "num:13"
+     }
+    },
+    "eggs": {
+     "object": "",
+     "props": {
+      "price": "num:4",
+      "quantity": "num:12"
+     }
+    },
+    "butter": {
+     "object": "",
+     "props": {
+      "price": "num:3.75",
+      "quantity": "num:6"
+     }
+    }
+   }
+  },
+  "sell": "fn:sell",
+  "restock": "fn:restock",
+  "lowStock": "fn:lowStock",
+  "totalValue": "fn:totalValue",
+  "sales": {
+   "array": [
+    "boolean:true",
+    "boolean:false",
+    "boolean:false",
+    "boolean:true"
+   ],
+   "len": 4
+  },
+  "itemCount": "num:5"
+ },
+ "sourceSha256": "c46a2367cfb5ed046f27573fc470f89669629b197d201b713d97d3085f7fcd62"
+}

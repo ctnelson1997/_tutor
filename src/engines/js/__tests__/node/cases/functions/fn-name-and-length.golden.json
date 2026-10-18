@@ -1,0 +1,254 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "declared/2"
+  },
+  {
+   "stream": "stdout",
+   "text": "anonExpr/1"
+  },
+  {
+   "stream": "stdout",
+   "text": "inner/3"
+  },
+  {
+   "stream": "stdout",
+   "text": "arrow/2"
+  },
+  {
+   "stream": "stdout",
+   "text": "withDefault/1"
+  },
+  {
+   "stream": "stdout",
+   "text": "withRest/1"
+  },
+  {
+   "stream": "stdout",
+   "text": "method/0"
+  },
+  {
+   "stream": "stdout",
+   "text": "arrowProp/0"
+  },
+  {
+   "stream": "stdout",
+   "text": "computedKey/0"
+  },
+  {
+   "stream": "stdout",
+   "text": "get size/0"
+  },
+  {
+   "stream": "stdout",
+   "text": "Shape/0"
+  },
+  {
+   "stream": "stdout",
+   "text": "area/0"
+  },
+  {
+   "stream": "stdout",
+   "text": "create/0"
+  },
+  {
+   "stream": "stdout",
+   "text": "bound declared/1"
+  },
+  {
+   "stream": "stdout",
+   "text": "(empty)/0"
+  },
+  {
+   "stream": "stdout",
+   "text": "alias keeps its name: reassigned"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:declared/2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:anonExpr/1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:inner/3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:arrow/2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:withDefault/1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:withRest/1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:method/0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:arrowProp/0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:computedKey/0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:get size/0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Shape/0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:area/0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:create/0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:bound declared/1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:(empty)/0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:alias keeps its name:",
+    "str:reassigned"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  18,
+  19,
+  20,
+  25,
+  26,
+  27,
+  29,
+  30,
+  31,
+  32
+ ],
+ "statementRuns": 30,
+ "functionCalls": 15,
+ "finalGlobals": {
+  "declared": "fn:declared",
+  "anonExpr": "fn:anonExpr",
+  "namedExpr": "fn:inner",
+  "arrow": "fn:arrow",
+  "withDefault": "fn:withDefault",
+  "withRest": "fn:withRest",
+  "obj": {
+   "object": "",
+   "props": {
+    "method": "fn:method",
+    "arrowProp": "fn:arrowProp",
+    "computedKey": "fn:computedKey",
+    "size": "<getter>"
+   }
+  },
+  "Shape": "fn:Shape",
+  "bound": "fn:bound declared",
+  "sizeGetter": "fn:get size",
+  "list": {
+   "array": [
+    "fn:declared",
+    "fn:anonExpr",
+    "fn:inner",
+    "fn:arrow",
+    "fn:withDefault",
+    "fn:withRest",
+    "fn:method",
+    "fn:arrowProp",
+    "fn:computedKey",
+    "fn:get size",
+    "fn:Shape",
+    "fn:area",
+    "fn:create",
+    "fn:bound declared",
+    "fn:"
+   ],
+   "len": 15
+  },
+  "summary": {
+   "array": [
+    "str:declared/2",
+    "str:anonExpr/1",
+    "str:inner/3",
+    "str:arrow/2",
+    "str:withDefault/1",
+    "str:withRest/1",
+    "str:method/0",
+    "str:arrowProp/0",
+    "str:computedKey/0",
+    "str:get size/0",
+    "str:Shape/0",
+    "str:area/0",
+    "str:create/0",
+    "str:bound declared/1",
+    "str:(empty)/0"
+   ],
+   "len": 15
+  },
+  "reassigned": "null",
+  "alias": "fn:reassigned"
+ },
+ "sourceSha256": "fd726ab6bc32cda60d2857fa5cb84ca1a37dccec15f79fbc89c2d8bc74b5dacf"
+}

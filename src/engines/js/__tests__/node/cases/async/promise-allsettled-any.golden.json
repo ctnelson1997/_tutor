@@ -1,0 +1,138 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "AggregateError [ 'a', 'b' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "any: first success"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'ok:1', 'err:boom', 'ok:late', 'err:plain string' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "fulfilled"
+  },
+  {
+   "stream": "stdout",
+   "text": "rejected"
+  },
+  {
+   "stream": "stdout",
+   "text": "fulfilled"
+  },
+  {
+   "stream": "stdout",
+   "text": "rejected"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:AggregateError",
+    {
+     "array": [
+      "str:a",
+      "str:b"
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:any:",
+    "str:first success"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:ok:1",
+      "str:err:boom",
+      "str:ok:late",
+      "str:err:plain string"
+     ],
+     "len": 4
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:fulfilled"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:rejected"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:fulfilled"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:rejected"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  8,
+  9,
+  10,
+  11,
+  12,
+  14,
+  17,
+  18
+ ],
+ "statementRuns": 13,
+ "functionCalls": 13,
+ "finalGlobals": {
+  "tasks": {
+   "array": [
+    {
+     "promise": true
+    },
+    {
+     "promise": true
+    },
+    {
+     "promise": true
+    },
+    {
+     "promise": true
+    }
+   ],
+   "len": 4
+  },
+  "report": {
+   "array": [
+    "str:ok:1",
+    "str:err:boom",
+    "str:ok:late",
+    "str:err:plain string"
+   ],
+   "len": 4
+  }
+ },
+ "sourceSha256": "dd8abd5abdfea0c41ba029b75450907a47dc8eaefa9ca3c2a558d28368d0b0c3"
+}

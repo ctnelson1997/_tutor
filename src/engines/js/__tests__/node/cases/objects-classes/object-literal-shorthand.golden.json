@@ -1,0 +1,170 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Hi, I am Ada"
+  },
+  {
+   "stream": "stdout",
+   "text": "JS 2024 first second 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "Ada Lovelace"
+  },
+  {
+   "stream": "stdout",
+   "text": "37 37 36"
+  },
+  {
+   "stream": "stdout",
+   "text": "["
+  },
+  {
+   "stream": "stdout",
+   "text": "  'name',     'age',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  'lang',     'langVersion',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  'k1',       'k2',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  'greet',    'full name',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  'birthday'"
+  },
+  {
+   "stream": "stdout",
+   "text": "]"
+  },
+  {
+   "stream": "stdout",
+   "text": "function greet birthday"
+  },
+  {
+   "stream": "stdout",
+   "text": "47"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Hi, I am Ada"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:JS",
+    "num:2024",
+    "str:first",
+    "str:second",
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Ada Lovelace"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:37",
+    "num:37",
+    "num:36"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:name",
+      "str:age",
+      "str:lang",
+      "str:langVersion",
+      "str:k1",
+      "str:k2",
+      "str:greet",
+      "str:full name",
+      "str:birthday"
+     ],
+     "len": 9
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:function",
+    "str:greet",
+    "str:birthday"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:47"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  8,
+  16,
+  20,
+  21,
+  25,
+  26,
+  27,
+  28,
+  29,
+  30,
+  31,
+  32,
+  33
+ ],
+ "statementRuns": 18,
+ "functionCalls": 4,
+ "finalGlobals": {
+  "name": "str:Ada",
+  "age": "num:36",
+  "field": "str:lang",
+  "counter": "num:2",
+  "nextKey": "fn:nextKey",
+  "person": {
+   "object": "",
+   "props": {
+    "name": "str:Ada",
+    "age": "num:47",
+    "lang": "str:JS",
+    "langVersion": "num:2024",
+    "k1": "str:first",
+    "k2": "str:second",
+    "greet": "fn:greet",
+    "full name": "str:Ada Lovelace",
+    "birthday": "fn:birthday"
+   }
+  },
+  "key": "str:age"
+ },
+ "sourceSha256": "9725fb04a0eaafbbaf6e107e5b468d887ee4a2e19b30d441c108f9a793f77a7d"
+}

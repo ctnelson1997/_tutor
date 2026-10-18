@@ -1,0 +1,204 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Generic says ... | I am Generic"
+  },
+  {
+   "stream": "stdout",
+   "text": "Rex says woof! | I am Rex, a beagle"
+  },
+  {
+   "stream": "stdout",
+   "text": "BIT SAYS WOOF! | I am Bit, a pug"
+  },
+  {
+   "stream": "stdout",
+   "text": "true true true false"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'name', 'sound', 'breed' ] Puppy"
+  },
+  {
+   "stream": "stdout",
+   "text": "true true"
+  },
+  {
+   "stream": "stdout",
+   "text": "["
+  },
+  {
+   "stream": "stdout",
+   "text": "  Animal { name: 'Generic', sound: '...' },"
+  },
+  {
+   "stream": "stdout",
+   "text": "  Dog { name: 'Rex', sound: 'woof', breed: 'beagle' },"
+  },
+  {
+   "stream": "stdout",
+   "text": "  Puppy { name: 'Bit', sound: 'woof', breed: 'pug' }"
+  },
+  {
+   "stream": "stdout",
+   "text": "]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Generic says ...",
+    "str:|",
+    "str:I am Generic"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Rex says woof!",
+    "str:|",
+    "str:I am Rex, a beagle"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:BIT SAYS WOOF!",
+    "str:|",
+    "str:I am Bit, a pug"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:true",
+    "boolean:true",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:name",
+      "str:sound",
+      "str:breed"
+     ],
+     "len": 3
+    },
+    "str:Puppy"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      {
+       "object": "Animal",
+       "props": {
+        "name": "str:Generic",
+        "sound": "str:..."
+       }
+      },
+      {
+       "object": "Dog",
+       "props": {
+        "name": "str:Rex",
+        "sound": "str:woof",
+        "breed": "str:beagle"
+       }
+      },
+      {
+       "object": "Puppy",
+       "props": {
+        "name": "str:Bit",
+        "sound": "str:woof",
+        "breed": "str:pug"
+       }
+      }
+     ],
+     "len": 3
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  4,
+  5,
+  8,
+  11,
+  17,
+  18,
+  21,
+  24,
+  30,
+  34,
+  35,
+  36,
+  38,
+  39,
+  40,
+  41,
+  42
+ ],
+ "statementRuns": 31,
+ "functionCalls": 16,
+ "finalGlobals": {
+  "Animal": "fn:Animal",
+  "Dog": "fn:Dog",
+  "Puppy": "fn:Puppy",
+  "animals": {
+   "array": [
+    {
+     "object": "Animal",
+     "props": {
+      "name": "str:Generic",
+      "sound": "str:..."
+     }
+    },
+    {
+     "object": "Dog",
+     "props": {
+      "name": "str:Rex",
+      "sound": "str:woof",
+      "breed": "str:beagle"
+     }
+    },
+    {
+     "object": "Puppy",
+     "props": {
+      "name": "str:Bit",
+      "sound": "str:woof",
+      "breed": "str:pug"
+     }
+    }
+   ],
+   "len": 3
+  },
+  "p": {
+   "object": "Puppy",
+   "props": {
+    "name": "str:Bit",
+    "sound": "str:woof",
+    "breed": "str:pug"
+   }
+  }
+ },
+ "sourceSha256": "fd0c73d089e5031dcac40f6a2582a85f4c23358ef0bf965155decdac24c60406"
+}

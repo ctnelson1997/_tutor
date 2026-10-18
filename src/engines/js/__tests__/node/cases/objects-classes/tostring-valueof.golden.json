@@ -1,0 +1,235 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "449"
+  },
+  {
+   "stream": "stdout",
+   "text": "250"
+  },
+  {
+   "stream": "stdout",
+   "text": "$2.50"
+  },
+  {
+   "stream": "stdout",
+   "text": "$1.99 true 500 $2.50 & $1.99"
+  },
+  {
+   "stream": "stdout",
+   "text": "Total: 250"
+  },
+  {
+   "stream": "stdout",
+   "text": "TS1 TS NaN"
+  },
+  {
+   "stream": "stdout",
+   "text": "[object Object] 1,2,3  [object Object]"
+  },
+  {
+   "stream": "stdout",
+   "text": "15 ten [ 'ten' ] [ 'valueOf', 'toString', 'toString' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ '$0.05', '$0.50', '$5.00' ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:449"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:250"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:$2.50"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:$1.99",
+    "boolean:true",
+    "num:500",
+    "str:$2.50 & $1.99"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Total: 250"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:TS1",
+    "str:TS",
+    "num:NaN"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:[object Object]",
+    "str:1,2,3",
+    "str:",
+    "str:[object Object]"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:15",
+    "str:ten",
+    {
+     "array": [
+      "str:ten"
+     ],
+     "len": 1
+    },
+    {
+     "array": [
+      "str:valueOf",
+      "str:toString",
+      "str:toString"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:$0.05",
+      "str:$0.50",
+      "str:$5.00"
+     ],
+     "len": 3
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  4,
+  7,
+  10,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  22,
+  24,
+  27,
+  29,
+  30,
+  32,
+  33,
+  35,
+  36,
+  39,
+  40,
+  43,
+  44,
+  45,
+  46,
+  47,
+  48
+ ],
+ "statementRuns": 55,
+ "functionCalls": 37,
+ "finalGlobals": {
+  "Money": "fn:Money",
+  "a": {
+   "object": "Money",
+   "props": {
+    "cents": "num:250"
+   }
+  },
+  "b": {
+   "object": "Money",
+   "props": {
+    "cents": "num:199"
+   }
+  },
+  "onlyToString": {
+   "object": "",
+   "props": {
+    "toString": "fn:toString"
+   }
+  },
+  "plain": {
+   "object": "",
+   "props": {
+    "n": "num:1"
+   }
+  },
+  "calls": {
+   "array": [
+    "str:valueOf",
+    "str:toString",
+    "str:toString"
+   ],
+   "len": 3
+  },
+  "tracer": {
+   "object": "",
+   "props": {
+    "valueOf": "fn:valueOf",
+    "toString": "fn:toString"
+   }
+  },
+  "sum": "num:15",
+  "text": "str:ten",
+  "keyed": {
+   "object": "",
+   "props": {
+    "ten": "boolean:true"
+   }
+  },
+  "sorted": {
+   "array": [
+    {
+     "object": "Money",
+     "props": {
+      "cents": "num:5"
+     }
+    },
+    {
+     "object": "Money",
+     "props": {
+      "cents": "num:50"
+     }
+    },
+    {
+     "object": "Money",
+     "props": {
+      "cents": "num:500"
+     }
+    }
+   ],
+   "len": 3
+  }
+ },
+ "sourceSha256": "38c76bb0b893d75098c3de59a6f6aa103db0d339cb931a097ebcd633eced5e5f"
+}

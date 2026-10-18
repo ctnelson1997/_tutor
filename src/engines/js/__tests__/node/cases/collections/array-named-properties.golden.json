@@ -1,0 +1,351 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "3 ["
+  },
+  {
+   "stream": "stdout",
+   "text": "  90,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  85,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  70,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  label: 'midterm',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  max: 90,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  '-1': 'negative key',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  '1.5': 'fraction key'"
+  },
+  {
+   "stream": "stdout",
+   "text": "]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ '0', '1', '2', 'label', 'max', '-1', '1.5' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ '0', '1', '2', 'label', 'max', '-1', '1.5' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 90, 85, 70 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[90,85,70] [ 90, 85, 70 ] [ 90, 85, 70 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "undefined 70 negative key"
+  },
+  {
+   "stream": "stdout",
+   "text": "["
+  },
+  {
+   "stream": "stdout",
+   "text": "  label: 'midterm',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  max: 90,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  '-1': 'negative key',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  '1.5': 'fraction key'"
+  },
+  {
+   "stream": "stdout",
+   "text": "] midterm"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 1, 2, 3, tag: 'small', sum: 6 ] 6 small true"
+  },
+  {
+   "stream": "stdout",
+   "text": "5 call 555-1234 now 3 [ '555-1234', '555', '1234' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "["
+  },
+  {
+   "stream": "stdout",
+   "text": "  '555-1234',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  '555',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  '1234',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  index: 5,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  input: 'call 555-1234 now',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  groups: undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:3",
+    {
+     "array": [
+      "num:90",
+      "num:85",
+      "num:70"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:0",
+      "str:1",
+      "str:2",
+      "str:label",
+      "str:max",
+      "str:-1",
+      "str:1.5"
+     ],
+     "len": 7
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:0",
+      "str:1",
+      "str:2",
+      "str:label",
+      "str:max",
+      "str:-1",
+      "str:1.5"
+     ],
+     "len": 7
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:90",
+      "num:85",
+      "num:70"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:[90,85,70]",
+    {
+     "array": [
+      "num:90",
+      "num:85",
+      "num:70"
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "num:90",
+      "num:85",
+      "num:70"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "undefined",
+    "num:70",
+    "str:negative key"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [],
+     "len": 0
+    },
+    "str:midterm"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:1",
+      "num:2",
+      "num:3"
+     ],
+     "len": 3
+    },
+    "num:6",
+    "str:small",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:5",
+    "str:call 555-1234 now",
+    "num:3",
+    {
+     "array": [
+      "str:555-1234",
+      "str:555",
+      "str:1234"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:555-1234",
+      "str:555",
+      "str:1234"
+     ],
+     "len": 3
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  18,
+  19,
+  21,
+  22,
+  25,
+  26,
+  27,
+  28,
+  30,
+  31,
+  32,
+  33,
+  34
+ ],
+ "statementRuns": 37,
+ "functionCalls": 7,
+ "finalGlobals": {
+  "scores": {
+   "array": [],
+   "len": 0
+  },
+  "viaForIn": {
+   "array": [
+    "str:0",
+    "str:1",
+    "str:2",
+    "str:label",
+    "str:max",
+    "str:-1",
+    "str:1.5"
+   ],
+   "len": 7
+  },
+  "viaForOf": {
+   "array": [
+    "num:90",
+    "num:85",
+    "num:70"
+   ],
+   "len": 3
+  },
+  "tagged": "fn:tagged",
+  "t": {
+   "array": [
+    "num:1",
+    "num:2",
+    "num:3"
+   ],
+   "len": 3
+  },
+  "re": {
+   "array": [
+    "str:555-1234",
+    "str:555",
+    "str:1234"
+   ],
+   "len": 3
+  }
+ },
+ "sourceSha256": "b8d533cb834e19a60356c6706ce3e5ed97b30568b6e1bc64961419d465afe8f9"
+}

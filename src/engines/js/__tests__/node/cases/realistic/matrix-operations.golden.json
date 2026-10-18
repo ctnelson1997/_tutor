@@ -1,0 +1,289 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "A + B:"
+  },
+  {
+   "stream": "stdout",
+   "text": "  7\t7\t7"
+  },
+  {
+   "stream": "stdout",
+   "text": "  7\t7\t7"
+  },
+  {
+   "stream": "stdout",
+   "text": "A transposed:"
+  },
+  {
+   "stream": "stdout",
+   "text": "  1\t4"
+  },
+  {
+   "stream": "stdout",
+   "text": "  2\t5"
+  },
+  {
+   "stream": "stdout",
+   "text": "  3\t6"
+  },
+  {
+   "stream": "stdout",
+   "text": "A x At:"
+  },
+  {
+   "stream": "stdout",
+   "text": "  14\t32"
+  },
+  {
+   "stream": "stdout",
+   "text": "  32\t77"
+  },
+  {
+   "stream": "stdout",
+   "text": "Diagonal of A x At: [ 14, 77 ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:A + B:"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:  7\t7\t7"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:  7\t7\t7"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:A transposed:"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:  1\t4"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:  2\t5"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:  3\t6"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:A x At:"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:  14\t32"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:  32\t77"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Diagonal of A x At:",
+    {
+     "array": [
+      "num:14",
+      "num:77"
+     ],
+     "len": 2
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  5,
+  7,
+  11,
+  12,
+  13,
+  14,
+  17,
+  21,
+  22,
+  23,
+  24,
+  27,
+  31,
+  32,
+  33,
+  34,
+  35,
+  36,
+  38,
+  41,
+  45,
+  46,
+  47,
+  51,
+  52,
+  53,
+  54,
+  55,
+  56,
+  57,
+  58,
+  59,
+  60
+ ],
+ "statementRuns": 90,
+ "functionCalls": 11,
+ "finalGlobals": {
+  "createMatrix": "fn:createMatrix",
+  "add": "fn:add",
+  "transpose": "fn:transpose",
+  "multiply": "fn:multiply",
+  "printMatrix": "fn:printMatrix",
+  "A": {
+   "array": [
+    {
+     "array": [
+      "num:1",
+      "num:2",
+      "num:3"
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "num:4",
+      "num:5",
+      "num:6"
+     ],
+     "len": 3
+    }
+   ],
+   "len": 2
+  },
+  "B": {
+   "array": [
+    {
+     "array": [
+      "num:6",
+      "num:5",
+      "num:4"
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "num:3",
+      "num:2",
+      "num:1"
+     ],
+     "len": 3
+    }
+   ],
+   "len": 2
+  },
+  "sum": {
+   "array": [
+    {
+     "array": [
+      "num:7",
+      "num:7",
+      "num:7"
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "num:7",
+      "num:7",
+      "num:7"
+     ],
+     "len": 3
+    }
+   ],
+   "len": 2
+  },
+  "At": {
+   "array": [
+    {
+     "array": [
+      "num:1",
+      "num:4"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "num:2",
+      "num:5"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "num:3",
+      "num:6"
+     ],
+     "len": 2
+    }
+   ],
+   "len": 3
+  },
+  "product": {
+   "array": [
+    {
+     "array": [
+      "num:14",
+      "num:32"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "num:32",
+      "num:77"
+     ],
+     "len": 2
+    }
+   ],
+   "len": 2
+  },
+  "diagonal": {
+   "array": [
+    "num:14",
+    "num:77"
+   ],
+   "len": 2
+  }
+ },
+ "sourceSha256": "80b6edb5c9969af137f709f853ddedbc38f142f79501719f2f7422d344db4ef9"
+}

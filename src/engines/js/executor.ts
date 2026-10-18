@@ -9,10 +9,14 @@ import { instrument } from './instrumenter';
 import { getRuntimeCode } from './runtime';
 import type { WorkerMessage } from '../../types/snapshot';
 
-const WORKER_TIMEOUT = 10_000;
+export const WORKER_TIMEOUT = 10_000;
 
-function createWorker(): Worker {
-  const workerCode = `
+/**
+ * The worker's script. It runs the program (the runtime followed by the
+ * instrumented code) in its own global scope and posts the reply.
+ * The differential suite (#42) runs this same script in a Node worker thread.
+ */
+export const WORKER_SOURCE = `
     self.onmessage = function(e) {
       var data = e.data;
       if (data.type !== 'run') return;
@@ -32,24 +36,34 @@ function createWorker(): Worker {
     };
   `;
 
-  const blob = new Blob([workerCode], { type: 'application/javascript' });
+/** The parts of a Web Worker the executor uses. */
+export interface WorkerLike {
+  onmessage: ((e: MessageEvent<WorkerMessage>) => void) | null;
+  onerror: ((e: ErrorEvent) => void) | null;
+  postMessage(message: unknown): void;
+  terminate(): void;
+}
+
+function createWorker(): WorkerLike {
+  const blob = new Blob([WORKER_SOURCE], { type: 'application/javascript' });
   const url = URL.createObjectURL(blob);
   const worker = new Worker(url);
   URL.revokeObjectURL(url);
   return worker;
 }
 
-function executeInWorker(code: string): Promise<WorkerMessage> {
+/** Run a prepared program in a fresh worker; it is terminated once it replies, or after `timeoutMs`. */
+export function executeInWorker(code: string, makeWorker: () => WorkerLike = createWorker, timeoutMs = WORKER_TIMEOUT): Promise<WorkerMessage> {
   return new Promise((resolve) => {
-    const worker = createWorker();
+    const worker = makeWorker();
 
     const timeout = setTimeout(() => {
       worker.terminate();
       resolve({
         type: 'error',
-        message: `Execution timed out after ${WORKER_TIMEOUT / 1000} seconds. Your code may contain an infinite loop.`,
+        message: `Execution timed out after ${timeoutMs / 1000} seconds. Your code may contain an infinite loop.`,
       });
-    }, WORKER_TIMEOUT);
+    }, timeoutMs);
 
     worker.onmessage = (e: MessageEvent<WorkerMessage>) => {
       clearTimeout(timeout);
@@ -71,10 +85,10 @@ function executeInWorker(code: string): Promise<WorkerMessage> {
 }
 
 /**
- * Execute user source code through the JS instrumentation pipeline.
- * Returns the raw WorkerMessage (snapshots or error).
+ * The program the worker runs: the runtime, then the instrumented source.
+ * A program that doesn't parse gets its error reply instead.
  */
-export async function execute(source: string): Promise<WorkerMessage> {
+export function prepareProgram(source: string): { code: string } | { reply: WorkerMessage } {
   let instrumentedCode: string;
   try {
     instrumentedCode = instrument(source);
@@ -86,10 +100,17 @@ export async function execute(source: string): Promise<WorkerMessage> {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       line = (err as any).loc.line;
     }
-    return { type: 'error', message: `Parse error: ${message}`, line };
+    return { reply: { type: 'error', message: `Parse error: ${message}`, line } };
   }
+  return { code: getRuntimeCode() + '\n' + instrumentedCode };
+}
 
-  const runtimeCode = getRuntimeCode();
-  const fullCode = runtimeCode + '\n' + instrumentedCode;
-  return executeInWorker(fullCode);
+/**
+ * Execute user source code through the JS instrumentation pipeline.
+ * Returns the raw WorkerMessage (snapshots or error).
+ */
+export async function execute(source: string): Promise<WorkerMessage> {
+  const program = prepareProgram(source);
+  if ('reply' in program) return program.reply;
+  return executeInWorker(program.code);
 }

@@ -1,0 +1,17 @@
+{
+ "console": [],
+ "calls": [],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": {
+  "message": "Unexpected end of input",
+  "line": 10,
+  "column": null
+ },
+ "executedLines": [],
+ "statementRuns": 0,
+ "functionCalls": 0,
+ "finalGlobals": {},
+ "sourceSha256": "0c4712bfb8f8c1aca78aeb9c8ddadd95142593cdda10c45acfb9f48908581256"
+}

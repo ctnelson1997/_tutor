@@ -26,7 +26,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:integration": "npm run build:viewer:js && vitest run integration",
-    "test:java:golden": "tsx scripts/java-golden.ts"
+    "test:java:golden": "tsx scripts/java-golden.ts",
+    "test:js:golden": "tsx scripts/js-golden.ts"
   },
   "dependencies": {
     "@codemirror/lang-java": "^6.0.2",

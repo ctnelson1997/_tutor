@@ -1,0 +1,23 @@
+// console.log of Maps and Sets: empty, with object keys, nested inside each other and inside arrays/objects
+const emptyMap = new Map();
+const emptySet = new Set();
+const ages = new Map([["ann", 30], ["bob", 25]]);
+const keyObj = { id: 1 };
+const lookup = new Map();
+lookup.set(keyObj, "object key");
+lookup.set(42, [1, 2]);
+lookup.set("nested", new Map([["inner", new Set([1, 2])]]));
+const colors = new Set(["red", "green", "red", "blue"]);
+const mixedSet = new Set([1, "1", [1], { one: 1 }, null]);
+const inventory = { fruit: new Set(["apple", "pear"]), counts: new Map([["apple", 3]]) };
+console.log(emptyMap, emptySet);
+console.log(ages);
+console.log(lookup);
+console.log(colors, colors.size);
+console.log(mixedSet);
+console.log(inventory);
+console.log([ages, colors]);
+console.log([...ages.keys()], [...ages.entries()], [...colors]);
+ages.delete("bob");
+colors.add("yellow");
+console.log(ages, colors, new WeakMap(), new WeakSet());

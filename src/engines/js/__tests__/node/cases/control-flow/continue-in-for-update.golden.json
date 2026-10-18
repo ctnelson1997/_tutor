@@ -1,0 +1,126 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "odds [ 1, 3, 5, 7 ] updates 8"
+  },
+  {
+   "stream": "stdout",
+   "text": "i = 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "i = 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "skipped 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 0, 2 ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:odds",
+    {
+     "array": [
+      "num:1",
+      "num:3",
+      "num:5",
+      "num:7"
+     ],
+     "len": 4
+    },
+    "str:updates",
+    "num:8"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:i =",
+    "num:4"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:i =",
+    "num:1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:skipped",
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:0",
+      "num:2"
+     ],
+     "len": 2
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  4,
+  5,
+  7,
+  8,
+  9,
+  10,
+  12,
+  14,
+  15,
+  16,
+  17,
+  18,
+  20,
+  22,
+  24,
+  25,
+  26,
+  27,
+  29
+ ],
+ "statementRuns": 60,
+ "functionCalls": 12,
+ "finalGlobals": {
+  "updates": "num:8",
+  "next": "fn:next",
+  "odds": {
+   "array": [
+    "num:1",
+    "num:3",
+    "num:5",
+    "num:7"
+   ],
+   "len": 4
+  },
+  "skipped": "num:2",
+  "fns": {
+   "array": [
+    "fn:",
+    "fn:"
+   ],
+   "len": 2
+  }
+ },
+ "sourceSha256": "19b16e4e0821cfdff6f29afce835d8884d88ffac987feca773973e1268ea40f5"
+}

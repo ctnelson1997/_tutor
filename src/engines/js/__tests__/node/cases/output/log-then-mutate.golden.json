@@ -1,0 +1,250 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "{ items: [ 'apple' ], total: 1 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ items: [ 'apple', 'pear' ], total: 2 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ items: [ 'apple', 'pear' ], total: 2, owner: 'Lee' } true"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 1, 2, 3 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 1, <2 empty items>, 'x' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ items: [ 'APPLE', 'PEAR' ], owner: 'Lee' }"
+  },
+  {
+   "stream": "stdout",
+   "text": "counter { n: 1 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "counter { n: 2 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "counter { n: 3 }"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "items": {
+       "array": [
+        "str:apple"
+       ],
+       "len": 1
+      },
+      "total": "num:1"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "items": {
+       "array": [
+        "str:apple",
+        "str:pear"
+       ],
+       "len": 2
+      },
+      "total": "num:2"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "items": {
+       "array": [
+        "str:apple",
+        "str:pear"
+       ],
+       "len": 2
+      },
+      "total": "num:2",
+      "owner": "str:Lee"
+     }
+    },
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:1",
+      "num:2",
+      "num:3"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:1",
+      "<hole>",
+      "<hole>",
+      "str:x"
+     ],
+     "len": 4
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "items": {
+       "array": [
+        "str:APPLE",
+        "str:PEAR"
+       ],
+       "len": 2
+      },
+      "owner": "str:Lee"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:counter",
+    {
+     "object": "",
+     "props": {
+      "n": "num:1"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:counter",
+    {
+     "object": "",
+     "props": {
+      "n": "num:2"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:counter",
+    {
+     "object": "",
+     "props": {
+      "n": "num:3"
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21
+ ],
+ "statementRuns": 24,
+ "functionCalls": 2,
+ "finalGlobals": {
+  "cart": {
+   "object": "",
+   "props": {
+    "items": {
+     "array": [
+      "str:APPLE",
+      "str:PEAR"
+     ],
+     "len": 2
+    },
+    "owner": "str:Lee"
+   }
+  },
+  "snapshot": {
+   "object": "",
+   "props": {
+    "items": {
+     "array": [
+      "str:APPLE",
+      "str:PEAR"
+     ],
+     "len": 2
+    },
+    "owner": "str:Lee"
+   }
+  },
+  "list": {
+   "array": [
+    "num:1",
+    "<hole>",
+    "<hole>",
+    "str:x"
+   ],
+   "len": 4
+  },
+  "counter": {
+   "object": "",
+   "props": {
+    "n": "num:3"
+   }
+  }
+ },
+ "sourceSha256": "69ecb6202942421fb03bdc48ac90bb3e4cfd2c7449a9eb6e1f531c33a254c30c"
+}

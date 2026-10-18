@@ -1,0 +1,198 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "2 1 5 8"
+  },
+  {
+   "stream": "stdout",
+   "text": "9 8 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "d83d dc4d"
+  },
+  {
+   "stream": "stdout",
+   "text": "1f44d dc4d"
+  },
+  {
+   "stream": "stdout",
+   "text": "😀 true true"
+  },
+  {
+   "stream": "stdout",
+   "text": "ereht👋ih false 9"
+  },
+  {
+   "stream": "stdout",
+   "text": "a 1 97"
+  },
+  {
+   "stream": "stdout",
+   "text": "😀 2 128512"
+  },
+  {
+   "stream": "stdout",
+   "text": "b 1 98"
+  },
+  {
+   "stream": "stdout",
+   "text": "code points: 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "4 5 false"
+  },
+  {
+   "stream": "stdout",
+   "text": "true 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "äöü straße STRASSE"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:2",
+    "num:1",
+    "num:5",
+    "num:8"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:9",
+    "num:8",
+    "num:4"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:d83d",
+    "str:dc4d"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:1f44d",
+    "str:dc4d"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:😀",
+    "boolean:true",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:ereht👋ih",
+    "boolean:false",
+    "num:9"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:a",
+    "num:1",
+    "num:97"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:😀",
+    "num:2",
+    "num:128512"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:b",
+    "num:1",
+    "num:98"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:code points:",
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:4",
+    "num:5",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "num:4"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:äöü straße",
+    "str:STRASSE"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  6,
+  7,
+  9,
+  10,
+  11,
+  13,
+  14,
+  15,
+  17,
+  18,
+  19,
+  20,
+  22,
+  24,
+  25,
+  26,
+  27,
+  28
+ ],
+ "statementRuns": 25,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "thumbs": "str:👍",
+  "family": "str:👨‍👩‍👧",
+  "mixed": "str:hi👋there",
+  "reversedBad": "str:ereht\udc4b\ud83dih",
+  "reversedGood": "str:ereht👋ih",
+  "points": "num:3",
+  "composed": "str:café",
+  "decomposed": "str:café"
+ },
+ "sourceSha256": "dc66b64fe215866d43ba88cc0f4b206a8f0a0f62b58abef7b72725406fb0141a"
+}

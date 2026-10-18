@@ -1,0 +1,288 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "{"
+  },
+  {
+   "stream": "stdout",
+   "text": "  id: 1,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  name: 'Widget',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  price: 12.5,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  meta: { color: 'blue' },"
+  },
+  {
+   "stream": "stdout",
+   "text": "  onSale: true"
+  },
+  {
+   "stream": "stdout",
+   "text": "}"
+  },
+  {
+   "stream": "stdout",
+   "text": "true"
+  },
+  {
+   "stream": "stdout",
+   "text": "Widget 9.99 0 blue M"
+  },
+  {
+   "stream": "stdout",
+   "text": "1 { name: 'Widget', price: 12.5, meta: { color: 'blue' }, onSale: true }"
+  },
+  {
+   "stream": "stdout",
+   "text": "fallback Widget"
+  },
+  {
+   "stream": "stdout",
+   "text": "Widget costs 9.99 with 0 tags"
+  },
+  {
+   "stream": "stdout",
+   "text": "Free costs 0 with 0 tags"
+  },
+  {
+   "stream": "stdout",
+   "text": "undefined costs 0 with 0 tags"
+  },
+  {
+   "stream": "stdout",
+   "text": "null B default"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ '0': 'h', '1': 'i', x: 1, y: 3 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "2 1"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "id": "num:1",
+      "name": "str:Widget",
+      "price": "num:12.5",
+      "meta": {
+       "object": "",
+       "props": {
+        "color": "str:blue"
+       }
+      },
+      "onSale": "boolean:true"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Widget",
+    "num:9.99",
+    "num:0",
+    "str:blue",
+    "str:M"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:1",
+    {
+     "object": "",
+     "props": {
+      "name": "str:Widget",
+      "price": "num:12.5",
+      "meta": {
+       "object": "",
+       "props": {
+        "color": "str:blue"
+       }
+      },
+      "onSale": "boolean:true"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:fallback",
+    "str:Widget"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Widget costs 9.99 with 0 tags"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Free costs 0 with 0 tags"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:undefined costs 0 with 0 tags"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "null",
+    "str:B default"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "0": "str:h",
+      "1": "str:i",
+      "x": "num:1",
+      "y": "num:3"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:2",
+    "num:1"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  7,
+  8,
+  10,
+  11,
+  13,
+  14,
+  17,
+  19,
+  20,
+  21,
+  23,
+  24,
+  25,
+  27,
+  28,
+  30,
+  31,
+  32
+ ],
+ "statementRuns": 24,
+ "functionCalls": 3,
+ "finalGlobals": {
+  "base": {
+   "object": "",
+   "props": {
+    "id": "num:1",
+    "name": "str:Widget",
+    "price": "num:9.99",
+    "meta": {
+     "object": "",
+     "props": {
+      "color": "str:blue"
+     }
+    }
+   }
+  },
+  "updated": {
+   "object": "",
+   "props": {
+    "id": "num:1",
+    "name": "str:Widget",
+    "price": "num:12.5",
+    "meta": {
+     "object": "",
+     "props": {
+      "color": "str:blue"
+     }
+    },
+    "onSale": "boolean:true"
+   }
+  },
+  "name": "str:Widget",
+  "cost": "num:9.99",
+  "stock": "num:0",
+  "color": "str:blue",
+  "size": "str:M",
+  "id": "num:1",
+  "rest": {
+   "object": "",
+   "props": {
+    "name": "str:Widget",
+    "price": "num:12.5",
+    "meta": {
+     "object": "",
+     "props": {
+      "color": "str:blue"
+     }
+    },
+    "onSale": "boolean:true"
+   }
+  },
+  "renamed": "str:fallback",
+  "title": "str:Widget",
+  "describe": "fn:describe",
+  "nullish": {
+   "object": "",
+   "props": {
+    "a": "null",
+    "b": "undefined"
+   }
+  },
+  "a": "null",
+  "b": "str:B default",
+  "merged": {
+   "object": "",
+   "props": {
+    "0": "str:h",
+    "1": "str:i",
+    "x": "num:1",
+    "y": "num:3"
+   }
+  },
+  "p": "num:2",
+  "q": "num:1"
+ },
+ "sourceSha256": "71633734d8ae583b2d8dfe544037f55150a15f0b94bd1ce810863d53bcfe2f25"
+}

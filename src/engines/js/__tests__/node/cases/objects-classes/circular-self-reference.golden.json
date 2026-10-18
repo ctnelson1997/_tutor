@@ -1,0 +1,207 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "true root"
+  },
+  {
+   "stream": "stdout",
+   "text": "<ref *1> {"
+  },
+  {
+   "stream": "stdout",
+   "text": "  name: 'root',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  value: 1,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  self: [Circular *1],"
+  },
+  {
+   "stream": "stdout",
+   "text": "  children: [ [Circular *1] ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "}"
+  },
+  {
+   "stream": "stdout",
+   "text": "3 true"
+  },
+  {
+   "stream": "stdout",
+   "text": "<ref *1> [ 1, 2, [Circular *1] ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "walked 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "TypeError"
+  },
+  {
+   "stream": "stdout",
+   "text": "{\"name\":\"root\",\"value\":1,\"self\":\"[Circular]\",\"children\":[\"[Circular]\"]}"
+  },
+  {
+   "stream": "stdout",
+   "text": "1,2,"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "str:root"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:root",
+      "value": "num:1",
+      "self": "<circular>",
+      "children": {
+       "array": [
+        "<circular>"
+       ],
+       "len": 1
+      }
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:3",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:1",
+      "num:2",
+      "<circular>"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:walked",
+    "num:5"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:TypeError"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:{\"name\":\"root\",\"value\":1,\"self\":\"[Circular]\",\"children\":[\"[Circular]\"]}"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:1,2,"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  8,
+  9,
+  10,
+  11,
+  13,
+  14,
+  15,
+  16,
+  17,
+  19,
+  22,
+  24,
+  27,
+  28,
+  29,
+  30,
+  31,
+  33,
+  35,
+  36
+ ],
+ "statementRuns": 47,
+ "functionCalls": 6,
+ "finalGlobals": {
+  "node": {
+   "object": "",
+   "props": {
+    "name": "str:root",
+    "value": "num:1",
+    "self": "<circular>",
+    "children": {
+     "array": [
+      "<circular>"
+     ],
+     "len": 1
+    }
+   }
+  },
+  "arr": {
+   "array": [
+    "num:1",
+    "num:2",
+    "<circular>"
+   ],
+   "len": 3
+  },
+  "depth": "num:5",
+  "cur": {
+   "object": "",
+   "props": {
+    "name": "str:root",
+    "value": "num:1",
+    "self": "<circular>",
+    "children": {
+     "array": [
+      "<circular>"
+     ],
+     "len": 1
+    }
+   }
+  },
+  "seen": {
+   "object": "WeakSet",
+   "props": {}
+  },
+  "safe": "str:{\"name\":\"root\",\"value\":1,\"self\":\"[Circular]\",\"children\":[\"[Circular]\"]}"
+ },
+ "sourceSha256": "e56c6a8a0d3f6f800ccfb60d389f699124a0fbe0140404aa107d1ccf3cc88dbe"
+}

@@ -1,0 +1,258 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Top student: Priya 94"
+  },
+  {
+   "stream": "stdout",
+   "text": "Honor roll: Maria, Priya"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ math: 81.5, science: 83.25, english: 82 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "James's new average: 75.67"
+  },
+  {
+   "stream": "stdout",
+   "text": "{"
+  },
+  {
+   "stream": "stdout",
+   "text": "  name: 'James',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  id: 102,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  grades: { math: 72, science: 80, english: 75 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "}"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Top student:",
+    "str:Priya",
+    "num:94"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Honor roll:",
+    "str:Maria, Priya"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "math": "num:81.5",
+      "science": "num:83.25",
+      "english": "num:82"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:James's new average: 75.67"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:James",
+      "id": "num:102",
+      "grades": {
+       "object": "",
+       "props": {
+        "math": "num:72",
+        "science": "num:80",
+        "english": "num:75"
+       }
+      }
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  10,
+  11,
+  12,
+  13,
+  14,
+  16,
+  19,
+  20,
+  21,
+  22,
+  23,
+  27,
+  28,
+  29,
+  31,
+  32,
+  33,
+  34,
+  35,
+  36,
+  38,
+  40,
+  42,
+  43,
+  44,
+  45,
+  46
+ ],
+ "statementRuns": 96,
+ "functionCalls": 13,
+ "finalGlobals": {
+  "students": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:Maria",
+      "id": "num:101",
+      "grades": {
+       "object": "",
+       "props": {
+        "math": "num:91",
+        "science": "num:88",
+        "english": "num:94"
+       }
+      },
+      "average": "num:91"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:James",
+      "id": "num:102",
+      "grades": {
+       "object": "",
+       "props": {
+        "math": "num:72",
+        "science": "num:80",
+        "english": "num:75"
+       }
+      }
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Priya",
+      "id": "num:103",
+      "grades": {
+       "object": "",
+       "props": {
+        "math": "num:98",
+        "science": "num:95",
+        "english": "num:89"
+       }
+      },
+      "average": "num:94"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Tom",
+      "id": "num:104",
+      "grades": {
+       "object": "",
+       "props": {
+        "math": "num:65",
+        "science": "num:70",
+        "english": "num:77"
+       }
+      },
+      "average": "num:70.67"
+     }
+    }
+   ],
+   "len": 4
+  },
+  "studentAverage": "fn:studentAverage",
+  "top": {
+   "object": "",
+   "props": {
+    "name": "str:Priya",
+    "id": "num:103",
+    "grades": {
+     "object": "",
+     "props": {
+      "math": "num:98",
+      "science": "num:95",
+      "english": "num:89"
+     }
+    },
+    "average": "num:94"
+   }
+  },
+  "honorRoll": {
+   "array": [
+    "str:Maria",
+    "str:Priya"
+   ],
+   "len": 2
+  },
+  "subjects": {
+   "array": [
+    "str:math",
+    "str:science",
+    "str:english"
+   ],
+   "len": 3
+  },
+  "subjectAverages": {
+   "object": "",
+   "props": {
+    "math": "num:81.5",
+    "science": "num:83.25",
+    "english": "num:82"
+   }
+  },
+  "james": {
+   "object": "",
+   "props": {
+    "name": "str:James",
+    "id": "num:102",
+    "grades": {
+     "object": "",
+     "props": {
+      "math": "num:72",
+      "science": "num:80",
+      "english": "num:75"
+     }
+    }
+   }
+  }
+ },
+ "sourceSha256": "a557fe3b8171c67a3e5541d5a53dbb02ff200033a913983cb7e5c7aff81f79ce"
+}

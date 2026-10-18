@@ -1,0 +1,161 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "value a"
+  },
+  {
+   "stream": "stdout",
+   "text": "value b"
+  },
+  {
+   "stream": "stdout",
+   "text": "value c"
+  },
+  {
+   "stream": "stdout",
+   "text": "a->b->c"
+  },
+  {
+   "stream": "stdout",
+   "text": "0 a"
+  },
+  {
+   "stream": "stdout",
+   "text": "1 b"
+  },
+  {
+   "stream": "stdout",
+   "text": "2 c"
+  },
+  {
+   "stream": "stdout",
+   "text": "a 3"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:value",
+    "str:a"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:value",
+    "str:b"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:value",
+    "str:c"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:a->b->c"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:0",
+    "str:a"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:1",
+    "str:b"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:2",
+    "str:c"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:a",
+    "num:3"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  4,
+  5,
+  8,
+  9,
+  10,
+  12,
+  13,
+  14,
+  16,
+  17,
+  20,
+  21,
+  22,
+  23,
+  27,
+  28,
+  29,
+  34,
+  35,
+  36,
+  38,
+  39,
+  40,
+  42,
+  43,
+  44
+ ],
+ "statementRuns": 67,
+ "functionCalls": 9,
+ "finalGlobals": {
+  "LinkedList": "fn:LinkedList",
+  "list": {
+   "object": "LinkedList",
+   "props": {
+    "head": {
+     "object": "",
+     "props": {
+      "value": "str:a",
+      "next": {
+       "object": "",
+       "props": {
+        "value": "str:b",
+        "next": {
+         "object": "",
+         "props": {
+          "value": "str:c",
+          "next": "null"
+         }
+        }
+       }
+      }
+     }
+    },
+    "size": "num:3"
+   }
+  },
+  "iter": {
+   "object": "",
+   "props": {}
+  },
+  "firstValue": "str:a"
+ },
+ "sourceSha256": "ac3696e2e9e006a3f0ecb3b9f96eeac54dc48fc756c0816c537b1bf1b2a17f30"
+}

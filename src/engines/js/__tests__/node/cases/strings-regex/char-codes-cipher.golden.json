@@ -1,0 +1,143 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Khoor, Zruog! abc"
+  },
+  {
+   "stream": "stdout",
+   "text": "Hello, World! xyz"
+  },
+  {
+   "stream": "stdout",
+   "text": "65 97 48 32"
+  },
+  {
+   "stream": "stdout",
+   "text": "NaN 98 undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "Hi! ☃"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 90, 101, 98, 114, 97 ] 500"
+  },
+  {
+   "stream": "stdout",
+   "text": "false,true,false,false,true,false"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Khoor, Zruog! abc"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Hello, World! xyz"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:65",
+    "num:97",
+    "num:48",
+    "num:32"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:NaN",
+    "num:98",
+    "undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Hi!",
+    "str:☃"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:90",
+      "num:101",
+      "num:98",
+      "num:114",
+      "num:97"
+     ],
+     "len": 5
+    },
+    "num:500"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:false,true,false,false,true,false"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  5,
+  7,
+  8,
+  10,
+  14,
+  15,
+  16,
+  18,
+  21,
+  22,
+  23,
+  24,
+  26,
+  27,
+  28,
+  30,
+  31,
+  32,
+  33,
+  34,
+  35
+ ],
+ "statementRuns": 185,
+ "functionCalls": 52,
+ "finalGlobals": {
+  "shiftChar": "fn:shiftChar",
+  "caesar": "fn:caesar",
+  "secret": "str:Khoor, Zruog! abc",
+  "restored": "str:Hello, World! xyz",
+  "word": "str:Zebra",
+  "codes": {
+   "array": [
+    "num:90",
+    "num:101",
+    "num:98",
+    "num:114",
+    "num:97"
+   ],
+   "len": 5
+  },
+  "sumCodes": "num:500",
+  "isUpper": "fn:isUpper"
+ },
+ "sourceSha256": "ee09defa41f591498cbc527563809a8a5fdd725c906d2d40f224d6a8337e73de"
+}

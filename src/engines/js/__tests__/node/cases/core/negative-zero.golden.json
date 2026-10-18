@@ -1,0 +1,192 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "-0 -0 -0"
+  },
+  {
+   "stream": "stdout",
+   "text": "=== 0: true Object.is: false"
+  },
+  {
+   "stream": "stdout",
+   "text": "1 / -0: -Infinity 1 / 0: Infinity"
+  },
+  {
+   "stream": "stdout",
+   "text": "String(-0): 0 template: 0 JSON: 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "toFixed: 0.0 sign is -0: true"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ -0, 0 ] { value: -0 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "indexOf(-0): 0 includes: true"
+  },
+  {
+   "stream": "stdout",
+   "text": "true false true"
+  },
+  {
+   "stream": "stdout",
+   "text": "Math.min(0, -0) is -0: true"
+  },
+  {
+   "stream": "stdout",
+   "text": "product: -0"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:-0",
+    "num:-0",
+    "num:-0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:=== 0:",
+    "boolean:true",
+    "str:Object.is:",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:1 / -0:",
+    "num:-Infinity",
+    "str:1 / 0:",
+    "num:Infinity"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:String(-0):",
+    "str:0",
+    "str:template:",
+    "str:0",
+    "str:JSON:",
+    "str:0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:toFixed:",
+    "str:0.0",
+    "str:sign is -0:",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:-0",
+      "num:0"
+     ],
+     "len": 2
+    },
+    {
+     "object": "",
+     "props": {
+      "value": "num:-0"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:indexOf(-0):",
+    "num:0",
+    "str:includes:",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:false",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Math.min(0, -0) is -0:",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:product:",
+    "num:-0"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21
+ ],
+ "statementRuns": 20,
+ "functionCalls": 3,
+ "finalGlobals": {
+  "negZero": "num:-0",
+  "fromMath": "num:-0",
+  "fromMultiply": "num:-0",
+  "plainZero": "num:0",
+  "inArray": {
+   "array": [
+    "num:-0",
+    "num:0"
+   ],
+   "len": 2
+  },
+  "inObject": {
+   "object": "",
+   "props": {
+    "value": "num:-0"
+   }
+  },
+  "isNegZero": "fn:isNegZero",
+  "min": "num:-0",
+  "product": "num:-0"
+ },
+ "sourceSha256": "524dac1ab7e71d29c398d515893a0520fc3f5ad9108d8ddc3fdde311141308b8"
+}

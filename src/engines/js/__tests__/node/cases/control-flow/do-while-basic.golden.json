@@ -1,0 +1,93 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "digits 4 sum 29"
+  },
+  {
+   "stream": "stdout",
+   "text": "body ran once even though test is false"
+  },
+  {
+   "stream": "stdout",
+   "text": "x 12"
+  },
+  {
+   "stream": "stdout",
+   "text": "value 64 attempts 6"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:digits",
+    "num:4",
+    "str:sum",
+    "num:29"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:body ran once even though test is false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:x",
+    "num:12"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:value",
+    "num:64",
+    "str:attempts",
+    "num:6"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  6,
+  7,
+  8,
+  9,
+  10,
+  12,
+  14,
+  15,
+  16,
+  18,
+  19,
+  20,
+  22,
+  23,
+  25,
+  26,
+  27,
+  28,
+  29
+ ],
+ "statementRuns": 51,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "n": "num:0",
+  "digits": "num:4",
+  "digitSum": "num:29",
+  "ran": "num:1",
+  "x": "num:12",
+  "attempts": "num:6",
+  "value": "num:64"
+ },
+ "sourceSha256": "c1fbcef95fe658dedcf35c53f746300cb2d2a680527680d2fa7f2e3d4a544705"
+}

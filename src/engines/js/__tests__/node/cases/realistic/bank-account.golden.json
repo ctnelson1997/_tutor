@@ -1,0 +1,166 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Error: Insufficient funds: balance is 30"
+  },
+  {
+   "stream": "stdout",
+   "text": "Error: Deposit must be positive"
+  },
+  {
+   "stream": "stdout",
+   "text": "Checked deposit"
+  },
+  {
+   "stream": "stdout",
+   "text": "#1001 Alice: $120.00"
+  },
+  {
+   "stream": "stdout",
+   "text": "#1002 Bob: $42.50"
+  },
+  {
+   "stream": "stdout",
+   "text": "Accounts opened: 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'deposit 50', 'withdraw 30' ] [ 'deposit 30', 'deposit 12.5' ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Error:",
+    "str:Insufficient funds: balance is 30"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Error:",
+    "str:Deposit must be positive"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Checked deposit"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:#1001 Alice: $120.00"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:#1002 Bob: $42.50"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Accounts opened:",
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:deposit 50",
+      "str:withdraw 30"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "str:deposit 30",
+      "str:deposit 12.5"
+     ],
+     "len": 2
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  6,
+  7,
+  8,
+  9,
+  10,
+  14,
+  15,
+  17,
+  18,
+  19,
+  23,
+  24,
+  26,
+  27,
+  28,
+  32,
+  33,
+  37,
+  41,
+  42,
+  43,
+  44,
+  46,
+  48,
+  51,
+  53,
+  55,
+  57,
+  58,
+  59,
+  60,
+  61
+ ],
+ "statementRuns": 48,
+ "functionCalls": 12,
+ "finalGlobals": {
+  "BankAccount": "fn:BankAccount",
+  "alice": {
+   "object": "BankAccount",
+   "props": {
+    "owner": "str:Alice",
+    "balance": "num:120",
+    "history": {
+     "array": [
+      "str:deposit 50",
+      "str:withdraw 30"
+     ],
+     "len": 2
+    },
+    "number": "num:1001"
+   }
+  },
+  "bob": {
+   "object": "BankAccount",
+   "props": {
+    "owner": "str:Bob",
+    "balance": "num:42.5",
+    "history": {
+     "array": [
+      "str:deposit 30",
+      "str:deposit 12.5"
+     ],
+     "len": 2
+    },
+    "number": "num:1002"
+   }
+  }
+ },
+ "sourceSha256": "7db6167112c1e98d1dc7636f28180f3a4a33b071833a06b2ae7fb2169ef2abbd"
+}

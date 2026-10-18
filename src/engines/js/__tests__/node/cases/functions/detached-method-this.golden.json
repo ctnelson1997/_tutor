@@ -1,0 +1,179 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Lin has 50"
+  },
+  {
+   "stream": "stdout",
+   "text": "this is globalThis"
+  },
+  {
+   "stream": "stdout",
+   "text": "Wrapper has 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "parenthesized member keeps this: Lin has 50"
+  },
+  {
+   "stream": "stdout",
+   "text": "comma expression loses this: this is globalThis"
+  },
+  {
+   "stream": "stdout",
+   "text": "as a callback: this is globalThis"
+  },
+  {
+   "stream": "stdout",
+   "text": "map thisArg: Lin has 50"
+  },
+  {
+   "stream": "stdout",
+   "text": "bound: Lin has 50"
+  },
+  {
+   "stream": "stdout",
+   "text": "arrow wrapper: Lin has 50"
+  },
+  {
+   "stream": "stdout",
+   "text": "passed to a helper: this is globalThis"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Lin has 50"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:this is globalThis"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Wrapper has 0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:parenthesized member keeps this:",
+    "str:Lin has 50"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:comma expression loses this:",
+    "str:this is globalThis"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:as a callback:",
+    "str:this is globalThis"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:map thisArg:",
+    "str:Lin has 50"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:bound:",
+    "str:Lin has 50"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:arrow wrapper:",
+    "str:Lin has 50"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:passed to a helper:",
+    "str:this is globalThis"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  6,
+  7,
+  8,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  24,
+  25,
+  27,
+  29,
+  30
+ ],
+ "statementRuns": 45,
+ "functionCalls": 12,
+ "finalGlobals": {
+  "account": {
+   "object": "",
+   "props": {
+    "owner": "str:Lin",
+    "balance": "num:50",
+    "describe": "fn:describe"
+   }
+  },
+  "detached": "fn:describe",
+  "wrapper": {
+   "object": "",
+   "props": {
+    "owner": "str:Wrapper",
+    "balance": "num:0",
+    "describe": "fn:describe"
+   }
+  },
+  "results": {
+   "array": [
+    "str:this is globalThis"
+   ],
+   "len": 1
+  },
+  "mapWithThis": {
+   "array": [
+    "str:Lin has 50"
+   ],
+   "len": 1
+  },
+  "bound": "fn:bound describe",
+  "viaArrow": "fn:viaArrow",
+  "callLater": "fn:callLater",
+  "fromHelper": "str:this is globalThis"
+ },
+ "sourceSha256": "3b9fc5b0872dbea6076e122343f803ae4d05b1992eff5f18d6d2c967c7105771"
+}

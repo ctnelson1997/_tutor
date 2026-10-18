@@ -1,0 +1,105 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "i after empty for: 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "first >= 16 at 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "j 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "k 128"
+  },
+  {
+   "stream": "stdout",
+   "text": "last odd index 4 23"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:i after empty for:",
+    "num:5"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:first >= 16 at",
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:j",
+    "num:4"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:k",
+    "num:128"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:last odd index",
+    "num:4",
+    "num:23"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  6,
+  7,
+  8,
+  9,
+  11,
+  12,
+  13,
+  15,
+  16,
+  17,
+  19,
+  20,
+  21
+ ],
+ "statementRuns": 19,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "i": "num:5",
+  "data": {
+   "array": [
+    "num:4",
+    "num:8",
+    "num:15",
+    "num:16",
+    "num:23",
+    "num:42"
+   ],
+   "len": 6
+  },
+  "idx": "num:3",
+  "j": "num:4",
+  "k": "num:128",
+  "pos": "num:4"
+ },
+ "sourceSha256": "74d9dd8d0ea83e423f046a2d0977718c5c54166804c1fc3132157088e8baf347"
+}

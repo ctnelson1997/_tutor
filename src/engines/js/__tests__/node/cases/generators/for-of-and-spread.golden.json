@@ -1,0 +1,176 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "sum 10"
+  },
+  {
+   "stream": "stdout",
+   "text": "evens [ 0, 2, 4, 6, 8 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "10 11 [ 12, 13, 14 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "max 7"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 1, 2, 3 ] []"
+  },
+  {
+   "stream": "stdout",
+   "text": "11,12,21,22"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:sum",
+    "num:10"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:evens",
+    {
+     "array": [
+      "num:0",
+      "num:2",
+      "num:4",
+      "num:6",
+      "num:8"
+     ],
+     "len": 5
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:10",
+    "num:11",
+    {
+     "array": [
+      "num:12",
+      "num:13",
+      "num:14"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:max",
+    "num:7"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:1",
+      "num:2",
+      "num:3"
+     ],
+     "len": 3
+    },
+    {
+     "array": [],
+     "len": 0
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:11,12,21,22"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  8,
+  9,
+  10,
+  12,
+  14,
+  15,
+  17,
+  18,
+  20,
+  22,
+  23,
+  24,
+  25,
+  27,
+  28,
+  29,
+  30,
+  33
+ ],
+ "statementRuns": 63,
+ "functionCalls": 8,
+ "finalGlobals": {
+  "range": "fn:range",
+  "sum": "num:10",
+  "evens": {
+   "array": [
+    "num:0",
+    "num:2",
+    "num:4",
+    "num:6",
+    "num:8"
+   ],
+   "len": 5
+  },
+  "a": "num:10",
+  "b": "num:11",
+  "rest": {
+   "array": [
+    "num:12",
+    "num:13",
+    "num:14"
+   ],
+   "len": 3
+  },
+  "g": {
+   "object": "",
+   "props": {}
+  },
+  "once": {
+   "array": [
+    "num:1",
+    "num:2",
+    "num:3"
+   ],
+   "len": 3
+  },
+  "twice": {
+   "array": [],
+   "len": 0
+  },
+  "pairs": {
+   "array": [
+    "str:11",
+    "str:12",
+    "str:21",
+    "str:22"
+   ],
+   "len": 4
+  }
+ },
+ "sourceSha256": "b6d556600f6e2a911e69d32baf34441dee3f123f6c5e5f3bb50d37f569df0b1a"
+}

@@ -1,0 +1,140 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "start: msg = undefined i = undefined last = undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "after loop: i = 3 last = 20"
+  },
+  {
+   "stream": "stdout",
+   "text": "flag was true"
+  },
+  {
+   "stream": "stdout",
+   "text": "start: msg = undefined i = undefined last = undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "after loop: i = 3 last = 20"
+  },
+  {
+   "stream": "stdout",
+   "text": "undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "undefined BLOCK ONLY"
+  },
+  {
+   "stream": "stdout",
+   "text": "j = 4 squared = 9"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:start: msg =",
+    "undefined",
+    "str:i =",
+    "undefined",
+    "str:last =",
+    "undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:after loop: i =",
+    "num:3",
+    "str:last =",
+    "num:20"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:flag was true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:start: msg =",
+    "undefined",
+    "str:i =",
+    "undefined",
+    "str:last =",
+    "undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:after loop: i =",
+    "num:3",
+    "str:last =",
+    "num:20"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:undefined",
+    "str:BLOCK ONLY"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:j =",
+    "num:4",
+    "str:squared =",
+    "num:9"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  5,
+  7,
+  8,
+  10,
+  11,
+  13,
+  14,
+  17,
+  18,
+  19,
+  21,
+  22,
+  24,
+  26,
+  27,
+  28,
+  30
+ ],
+ "statementRuns": 31,
+ "functionCalls": 3,
+ "finalGlobals": {
+  "describe": "fn:describe",
+  "letVersion": "fn:letVersion",
+  "result": "str:BLOCK ONLY",
+  "j": "num:4"
+ },
+ "sourceSha256": "459164fc6e89050ac4341f3cb0e65198af9d9771aba284fb6c492fe5622c2af4"
+}

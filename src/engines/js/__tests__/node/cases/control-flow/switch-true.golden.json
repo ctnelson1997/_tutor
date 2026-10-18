@@ -1,0 +1,96 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "A,B,C,F"
+  },
+  {
+   "stream": "stdout",
+   "text": "second matched"
+  },
+  {
+   "stream": "stdout",
+   "text": "case expressions evaluated: [ 'first', 'second' ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:A,B,C,F"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:second matched"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:case expressions evaluated:",
+    {
+     "array": [
+      "str:first",
+      "str:second"
+     ],
+     "len": 2
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  5,
+  7,
+  9,
+  11,
+  14,
+  15,
+  16,
+  18,
+  20,
+  21,
+  23,
+  28,
+  29,
+  33
+ ],
+ "statementRuns": 20,
+ "functionCalls": 6,
+ "finalGlobals": {
+  "grade": "fn:grade",
+  "scores": {
+   "array": [
+    "num:95",
+    "num:83",
+    "num:70",
+    "num:42"
+   ],
+   "len": 4
+  },
+  "grades": {
+   "array": [
+    "str:A",
+    "str:B",
+    "str:C",
+    "str:F"
+   ],
+   "len": 4
+  },
+  "evaluated": {
+   "array": [
+    "str:first",
+    "str:second"
+   ],
+   "len": 2
+  },
+  "test": "fn:test"
+ },
+ "sourceSha256": "6927844dabf8429b0fe3e9ee5d7eb5833fd889b438e863f70683ca94b75fe257"
+}

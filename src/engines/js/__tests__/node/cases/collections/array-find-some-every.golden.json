@@ -1,0 +1,186 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "{ name: 'beans', qty: 0, type: 'veg' } 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "dates"
+  },
+  {
+   "stream": "stdout",
+   "text": "-1 undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "true 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "false 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "false true"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ name: 'beans', qty: 10, type: 'veg' }"
+  },
+  {
+   "stream": "stdout",
+   "text": "true true"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:beans",
+      "qty": "num:0",
+      "type": "str:veg"
+     }
+    },
+    "num:1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:dates"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:-1",
+    "undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:false",
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:false",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:beans",
+      "qty": "num:10",
+      "type": "str:veg"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:true"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  9,
+  10,
+  11,
+  12,
+  14,
+  15,
+  16,
+  17,
+  19,
+  21,
+  22,
+  23,
+  24,
+  26,
+  28,
+  29,
+  30,
+  31,
+  32
+ ],
+ "statementRuns": 24,
+ "functionCalls": 22,
+ "finalGlobals": {
+  "inventory": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:apples",
+      "qty": "num:2",
+      "type": "str:fruit"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:beans",
+      "qty": "num:10",
+      "type": "str:veg"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:cherries",
+      "qty": "num:5",
+      "type": "str:fruit"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:dates",
+      "qty": "num:0",
+      "type": "str:fruit"
+     }
+    }
+   ],
+   "len": 4
+  },
+  "found": {
+   "object": "",
+   "props": {
+    "name": "str:beans",
+    "qty": "num:10",
+    "type": "str:veg"
+   }
+  },
+  "checks": "num:2",
+  "anyEmpty": "boolean:true",
+  "allFruit": "boolean:false",
+  "isPositive": "fn:isPositive"
+ },
+ "sourceSha256": "748944d9d09ddfe526bb5ef43e3bfafc644d0a2637ebad0785cfab74ee782222"
+}

@@ -1,0 +1,165 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "undefined undefined undefined 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "comma result: 30 a is now 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ [ 0, 10 ], [ 3, 7 ] ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "3 2 [ 'first', 'second' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "12 14 7"
+  },
+  {
+   "stream": "stdout",
+   "text": "undefined"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "undefined",
+    "undefined",
+    "undefined",
+    "num:5"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:comma result:",
+    "num:30",
+    "str:a is now",
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      {
+       "array": [
+        "num:0",
+        "num:10"
+       ],
+       "len": 2
+      },
+      {
+       "array": [
+        "num:3",
+        "num:7"
+       ],
+       "len": 2
+      }
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:3",
+    "num:2",
+    {
+     "array": [
+      "str:first",
+      "str:second"
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:12",
+    "num:14",
+    "num:7"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:undefined"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21
+ ],
+ "statementRuns": 21,
+ "functionCalls": 3,
+ "finalGlobals": {
+  "sideEffect": "num:7",
+  "v1": "undefined",
+  "v2": "undefined",
+  "v3": "undefined",
+  "a": "num:3",
+  "b": "num:30",
+  "pairs": {
+   "array": [
+    {
+     "array": [
+      "num:0",
+      "num:10"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "num:3",
+      "num:7"
+     ],
+     "len": 2
+    }
+   ],
+   "len": 2
+  },
+  "x": "num:3",
+  "log": {
+   "array": [
+    "str:first",
+    "str:second"
+   ],
+   "len": 2
+  },
+  "last": "num:2",
+  "arrow": "fn:arrow"
+ },
+ "sourceSha256": "77c66055627587547f2ed7432e5ff8dd94c64fcf0e6cea04ee42ef7c64150a30"
+}

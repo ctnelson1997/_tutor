@@ -1,0 +1,296 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Lincoln High"
+  },
+  {
+   "stream": "stdout",
+   "text": "Lincoln High Shelbyville"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'Al', 'Bea', 'Cal' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Renamed replaced"
+  },
+  {
+   "stream": "stdout",
+   "text": "Shelbyville Capital City"
+  },
+  {
+   "stream": "stdout",
+   "text": "false true"
+  },
+  {
+   "stream": "stdout",
+   "text": "{"
+  },
+  {
+   "stream": "stdout",
+   "text": "  name: 'Renamed',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  address: { street: '2 Oak', city: 'Capital City' },"
+  },
+  {
+   "stream": "stdout",
+   "text": "  classes: [ { title: 'Math', students: [Array] } ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "}"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Lincoln High"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Lincoln High",
+    "str:Shelbyville"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:Al",
+      "str:Bea",
+      "str:Cal"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Renamed",
+    "str:replaced"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Shelbyville",
+    "str:Capital City"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:false",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:Renamed",
+      "address": {
+       "object": "",
+       "props": {
+        "street": "str:2 Oak",
+        "city": "str:Capital City"
+       }
+      },
+      "classes": {
+       "array": [
+        {
+         "object": "",
+         "props": {
+          "title": "str:Math",
+          "students": {
+           "array": [
+            "str:Al",
+            "str:Bea",
+            "str:Cal"
+           ],
+           "len": 3
+          }
+         }
+        }
+       ],
+       "len": 1
+      }
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  8,
+  9,
+  10,
+  12,
+  13,
+  14,
+  15,
+  17,
+  18,
+  19,
+  22,
+  23,
+  24,
+  26,
+  27,
+  29,
+  30,
+  32,
+  33,
+  34,
+  35
+ ],
+ "statementRuns": 22,
+ "functionCalls": 1,
+ "finalGlobals": {
+  "school": {
+   "object": "",
+   "props": {
+    "name": "str:Renamed",
+    "address": {
+     "object": "",
+     "props": {
+      "street": "str:2 Oak",
+      "city": "str:Capital City"
+     }
+    },
+    "classes": {
+     "array": [
+      {
+       "object": "",
+       "props": {
+        "title": "str:Math",
+        "students": {
+         "array": [
+          "str:Al",
+          "str:Bea",
+          "str:Cal"
+         ],
+         "len": 3
+        }
+       }
+      }
+     ],
+     "len": 1
+    }
+   }
+  },
+  "alias": {
+   "object": "",
+   "props": {
+    "name": "str:Renamed",
+    "address": {
+     "object": "",
+     "props": {
+      "street": "str:2 Oak",
+      "city": "str:Capital City"
+     }
+    },
+    "classes": {
+     "array": [
+      {
+       "object": "",
+       "props": {
+        "title": "str:Math",
+        "students": {
+         "array": [
+          "str:Al",
+          "str:Bea",
+          "str:Cal"
+         ],
+         "len": 3
+        }
+       }
+      }
+     ],
+     "len": 1
+    }
+   }
+  },
+  "shallow": {
+   "object": "",
+   "props": {
+    "name": "str:Copy",
+    "address": {
+     "object": "",
+     "props": {
+      "street": "str:1 Main",
+      "city": "str:Shelbyville"
+     }
+    },
+    "classes": {
+     "array": [
+      {
+       "object": "",
+       "props": {
+        "title": "str:Math",
+        "students": {
+         "array": [
+          "str:Al",
+          "str:Bea",
+          "str:Cal"
+         ],
+         "len": 3
+        }
+       }
+      }
+     ],
+     "len": 1
+    }
+   }
+  },
+  "cls": {
+   "object": "",
+   "props": {
+    "title": "str:Math",
+    "students": {
+     "array": [
+      "str:Al",
+      "str:Bea",
+      "str:Cal"
+     ],
+     "len": 3
+    }
+   }
+  },
+  "rename": "fn:rename",
+  "ret": {
+   "object": "",
+   "props": {
+    "name": "str:replaced"
+   }
+  },
+  "sameShape1": {
+   "object": "",
+   "props": {
+    "a": "num:1"
+   }
+  },
+  "sameShape2": {
+   "object": "",
+   "props": {
+    "a": "num:1"
+   }
+  }
+ },
+ "sourceSha256": "97d36cbceccf9cb7cfda3da932fc50e785e0a5dc80839b58c6c9c21457690e7f"
+}

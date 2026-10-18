@@ -1,0 +1,163 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "fetching /users/1"
+  },
+  {
+   "stream": "stdout",
+   "text": "loaded Ada knows 2 languages"
+  },
+  {
+   "stream": "stdout",
+   "text": "fetching /users/3"
+  },
+  {
+   "stream": "stdout",
+   "text": "status 404 not found"
+  },
+  {
+   "stream": "stdout",
+   "text": "fetching /users/2"
+  },
+  {
+   "stream": "stdout",
+   "text": "loaded Linus knows 1 languages"
+  },
+  {
+   "stream": "stdout",
+   "text": "users: [ 'Ada', 'Linus' ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:fetching",
+    "str:/users/1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:loaded",
+    "str:Ada",
+    "str:knows",
+    "num:2",
+    "str:languages"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:fetching",
+    "str:/users/3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:status",
+    "num:404",
+    "str:not found"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:fetching",
+    "str:/users/2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:loaded",
+    "str:Linus",
+    "str:knows",
+    "num:1",
+    "str:languages"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:users:",
+    {
+     "array": [
+      "str:Ada",
+      "str:Linus"
+     ],
+     "len": 2
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  4,
+  5,
+  6,
+  7,
+  8,
+  16,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  25,
+  26,
+  28,
+  30
+ ],
+ "statementRuns": 35,
+ "functionCalls": 14,
+ "finalGlobals": {
+  "db": {
+   "object": "",
+   "props": {
+    "/users/1": {
+     "object": "",
+     "props": {
+      "name": "str:Ada",
+      "langs": {
+       "array": [
+        "str:js",
+        "str:py"
+       ],
+       "len": 2
+      }
+     }
+    },
+    "/users/2": {
+     "object": "",
+     "props": {
+      "name": "str:Linus",
+      "langs": {
+       "array": [
+        "str:c"
+       ],
+       "len": 1
+      }
+     }
+    }
+   }
+  },
+  "fakeFetch": "fn:fakeFetch",
+  "users": {
+   "array": [
+    "str:Ada",
+    "str:Linus"
+   ],
+   "len": 2
+  },
+  "loadUsers": "fn:loadUsers"
+ },
+ "sourceSha256": "2e2219494df841f2dcf57b0996ea0d05084fc948d87d3095e2c32ee71c2acde3"
+}

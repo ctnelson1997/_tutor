@@ -1,0 +1,187 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Start"
+  },
+  {
+   "stream": "stdout",
+   "text": "End of script"
+  },
+  {
+   "stream": "stdout",
+   "text": "Got user: Leanne"
+  },
+  {
+   "stream": "stdout",
+   "text": "Failed: User 7 not found"
+  },
+  {
+   "stream": "stdout",
+   "text": "Post \"Promises are neat\" has 9 likes"
+  },
+  {
+   "stream": "stdout",
+   "text": "Done with user 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "Log: [ 'Leanne', 'error', 'Promises are neat' ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Start"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:End of script"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Got user:",
+    "str:Leanne"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Failed:",
+    "str:User 7 not found"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Post \"Promises are neat\" has 9 likes"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Done with user 1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Log:",
+    {
+     "array": [
+      "str:Leanne",
+      "str:error",
+      "str:Promises are neat"
+     ],
+     "len": 3
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  6,
+  13,
+  14,
+  15,
+  17,
+  21,
+  22,
+  26,
+  27,
+  29,
+  31,
+  32,
+  33,
+  36,
+  37,
+  41,
+  42,
+  45,
+  48,
+  49,
+  52
+ ],
+ "statementRuns": 24,
+ "functionCalls": 9,
+ "finalGlobals": {
+  "fakeDatabase": {
+   "object": "",
+   "props": {
+    "1": {
+     "object": "",
+     "props": {
+      "id": "num:1",
+      "name": "str:Leanne",
+      "postIds": {
+       "array": [
+        "num:11",
+        "num:12"
+       ],
+       "len": 2
+      }
+     }
+    },
+    "2": {
+     "object": "",
+     "props": {
+      "id": "num:2",
+      "name": "str:Ervin",
+      "postIds": {
+       "array": [
+        "num:21"
+       ],
+       "len": 1
+      }
+     }
+    }
+   }
+  },
+  "fakePosts": {
+   "object": "",
+   "props": {
+    "11": {
+     "object": "",
+     "props": {
+      "title": "str:Hello world",
+      "likes": "num:4"
+     }
+    },
+    "12": {
+     "object": "",
+     "props": {
+      "title": "str:Promises are neat",
+      "likes": "num:9"
+     }
+    },
+    "21": {
+     "object": "",
+     "props": {
+      "title": "str:My first post",
+      "likes": "num:1"
+     }
+    }
+   }
+  },
+  "fetchUser": "fn:fetchUser",
+  "fetchPost": "fn:fetchPost",
+  "log": {
+   "array": [
+    "str:Leanne",
+    "str:error",
+    "str:Promises are neat"
+   ],
+   "len": 3
+  }
+ },
+ "sourceSha256": "aaabe860422ed7b41104be9f28866b92b8aeab36a48d2faa4e5aa75278740c78"
+}

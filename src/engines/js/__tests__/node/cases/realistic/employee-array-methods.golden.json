@@ -1,0 +1,484 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Names: [ 'Alice', 'Bob', 'Carmen', 'Dan', 'Eve', 'Frank' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Engineers: Alice & Carmen"
+  },
+  {
+   "stream": "stdout",
+   "text": "Total payroll: 445000"
+  },
+  {
+   "stream": "stdout",
+   "text": "{"
+  },
+  {
+   "stream": "stdout",
+   "text": "  Engineering: [ 'Alice', 'Carmen' ],"
+  },
+  {
+   "stream": "stdout",
+   "text": "  Sales: [ 'Bob', 'Eve' ],"
+  },
+  {
+   "stream": "stdout",
+   "text": "  Marketing: [ 'Dan', 'Frank' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "}"
+  },
+  {
+   "stream": "stdout",
+   "text": "Highest paid: Carmen"
+  },
+  {
+   "stream": "stdout",
+   "text": "First veteran: Carmen"
+  },
+  {
+   "stream": "stdout",
+   "text": "Anyone under 50k? false"
+  },
+  {
+   "stream": "stdout",
+   "text": "Everyone over 50k? true"
+  },
+  {
+   "stream": "stdout",
+   "text": "1. Alice: 97850"
+  },
+  {
+   "stream": "stdout",
+   "text": "2. Bob: 56650"
+  },
+  {
+   "stream": "stdout",
+   "text": "3. Carmen: 108150"
+  },
+  {
+   "stream": "stdout",
+   "text": "4. Dan: 63860"
+  },
+  {
+   "stream": "stdout",
+   "text": "5. Eve: 72100"
+  },
+  {
+   "stream": "stdout",
+   "text": "6. Frank: 59740"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Names:",
+    {
+     "array": [
+      "str:Alice",
+      "str:Bob",
+      "str:Carmen",
+      "str:Dan",
+      "str:Eve",
+      "str:Frank"
+     ],
+     "len": 6
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Engineers:",
+    "str:Alice & Carmen"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Total payroll:",
+    "num:445000"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "Engineering": {
+       "array": [
+        "str:Alice",
+        "str:Carmen"
+       ],
+       "len": 2
+      },
+      "Sales": {
+       "array": [
+        "str:Bob",
+        "str:Eve"
+       ],
+       "len": 2
+      },
+      "Marketing": {
+       "array": [
+        "str:Dan",
+        "str:Frank"
+       ],
+       "len": 2
+      }
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Highest paid:",
+    "str:Carmen"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:First veteran:",
+    "str:Carmen"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Anyone under 50k?",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Everyone over 50k?",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:1. Alice: 97850"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:2. Bob: 56650"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:3. Carmen: 108150"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:4. Dan: 63860"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:5. Eve: 72100"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:6. Frank: 59740"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  11,
+  12,
+  14,
+  15,
+  17,
+  18,
+  20,
+  21,
+  22,
+  24,
+  25,
+  27,
+  29,
+  30,
+  32,
+  33,
+  34,
+  35,
+  37,
+  38,
+  39
+ ],
+ "statementRuns": 44,
+ "functionCalls": 64,
+ "finalGlobals": {
+  "employees": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:Alice",
+      "dept": "str:Engineering",
+      "salary": "num:95000",
+      "years": "num:5"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Bob",
+      "dept": "str:Sales",
+      "salary": "num:55000",
+      "years": "num:2"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Carmen",
+      "dept": "str:Engineering",
+      "salary": "num:105000",
+      "years": "num:8"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Dan",
+      "dept": "str:Marketing",
+      "salary": "num:62000",
+      "years": "num:3"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Eve",
+      "dept": "str:Sales",
+      "salary": "num:70000",
+      "years": "num:6"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Frank",
+      "dept": "str:Marketing",
+      "salary": "num:58000",
+      "years": "num:1"
+     }
+    }
+   ],
+   "len": 6
+  },
+  "names": {
+   "array": [
+    "str:Alice",
+    "str:Bob",
+    "str:Carmen",
+    "str:Dan",
+    "str:Eve",
+    "str:Frank"
+   ],
+   "len": 6
+  },
+  "engineers": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:Alice",
+      "dept": "str:Engineering",
+      "salary": "num:95000",
+      "years": "num:5"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Carmen",
+      "dept": "str:Engineering",
+      "salary": "num:105000",
+      "years": "num:8"
+     }
+    }
+   ],
+   "len": 2
+  },
+  "payroll": "num:445000",
+  "byDept": {
+   "object": "",
+   "props": {
+    "Engineering": {
+     "array": [
+      "str:Alice",
+      "str:Carmen"
+     ],
+     "len": 2
+    },
+    "Sales": {
+     "array": [
+      "str:Bob",
+      "str:Eve"
+     ],
+     "len": 2
+    },
+    "Marketing": {
+     "array": [
+      "str:Dan",
+      "str:Frank"
+     ],
+     "len": 2
+    }
+   }
+  },
+  "bySalary": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:Carmen",
+      "dept": "str:Engineering",
+      "salary": "num:105000",
+      "years": "num:8"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Alice",
+      "dept": "str:Engineering",
+      "salary": "num:95000",
+      "years": "num:5"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Eve",
+      "dept": "str:Sales",
+      "salary": "num:70000",
+      "years": "num:6"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Dan",
+      "dept": "str:Marketing",
+      "salary": "num:62000",
+      "years": "num:3"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Frank",
+      "dept": "str:Marketing",
+      "salary": "num:58000",
+      "years": "num:1"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Bob",
+      "dept": "str:Sales",
+      "salary": "num:55000",
+      "years": "num:2"
+     }
+    }
+   ],
+   "len": 6
+  },
+  "veteran": {
+   "object": "",
+   "props": {
+    "name": "str:Carmen",
+    "dept": "str:Engineering",
+    "salary": "num:105000",
+    "years": "num:8"
+   }
+  },
+  "raises": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:Alice",
+      "dept": "str:Engineering",
+      "salary": "num:97850",
+      "years": "num:5"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Bob",
+      "dept": "str:Sales",
+      "salary": "num:56650",
+      "years": "num:2"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Carmen",
+      "dept": "str:Engineering",
+      "salary": "num:108150",
+      "years": "num:8"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Dan",
+      "dept": "str:Marketing",
+      "salary": "num:63860",
+      "years": "num:3"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Eve",
+      "dept": "str:Sales",
+      "salary": "num:72100",
+      "years": "num:6"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Frank",
+      "dept": "str:Marketing",
+      "salary": "num:59740",
+      "years": "num:1"
+     }
+    }
+   ],
+   "len": 6
+  }
+ },
+ "sourceSha256": "27c2b54fd4dc69f182afb7dfe5138677ff0620f5cce2d9fb98243c1bc6c5df3c"
+}

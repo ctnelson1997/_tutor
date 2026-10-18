@@ -1,0 +1,169 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "string just a string false"
+  },
+  {
+   "stream": "stdout",
+   "text": "number 42 false"
+  },
+  {
+   "stream": "stdout",
+   "text": "object { code: 404, reason: 'not found' } false"
+  },
+  {
+   "stream": "stdout",
+   "text": "null null false"
+  },
+  {
+   "stream": "stdout",
+   "text": "array [ 1, 2 ] false"
+  },
+  {
+   "stream": "stdout",
+   "text": "string,number,object,null,array"
+  },
+  {
+   "stream": "stdout",
+   "text": "destructured: 500 failed with 500"
+  },
+  {
+   "stream": "stdout",
+   "text": "500"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:string",
+    "str:just a string",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:number",
+    "num:42",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:object",
+    {
+     "object": "",
+     "props": {
+      "code": "num:404",
+      "reason": "str:not found"
+     }
+    },
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:null",
+    "null",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:array",
+    {
+     "array": [
+      "num:1",
+      "num:2"
+     ],
+     "len": 2
+    },
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:string,number,object,null,array"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:destructured:",
+    "num:500",
+    "str:failed with 500"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:500"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  10,
+  11,
+  13,
+  15,
+  16,
+  17,
+  20,
+  23,
+  26,
+  28,
+  30,
+  31,
+  33
+ ],
+ "statementRuns": 30,
+ "functionCalls": 1,
+ "finalGlobals": {
+  "thrownValues": {
+   "array": [
+    "str:just a string",
+    "num:42",
+    {
+     "object": "",
+     "props": {
+      "code": "num:404",
+      "reason": "str:not found"
+     }
+    },
+    "null",
+    {
+     "array": [
+      "num:1",
+      "num:2"
+     ],
+     "len": 2
+    }
+   ],
+   "len": 5
+  },
+  "report": {
+   "array": [
+    "str:string",
+    "str:number",
+    "str:object",
+    "str:null",
+    "str:array"
+   ],
+   "len": 5
+  },
+  "fail": "fn:fail",
+  "lastCode": "num:500"
+ },
+ "sourceSha256": "e63a754110e41bfcc9ea3feb5c42f4e9d18074e950c77ccee7820770944fce6d"
+}

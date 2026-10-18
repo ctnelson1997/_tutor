@@ -1,0 +1,194 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "5! = 120"
+  },
+  {
+   "stream": "stdout",
+   "text": "10! = 3628800"
+  },
+  {
+   "stream": "stdout",
+   "text": "Fibonacci: ["
+  },
+  {
+   "stream": "stdout",
+   "text": "  0, 1,  1,  2, 3,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  5, 8, 13, 21"
+  },
+  {
+   "stream": "stdout",
+   "text": "]"
+  },
+  {
+   "stream": "stdout",
+   "text": "2^10 = 1024"
+  },
+  {
+   "stream": "stdout",
+   "text": "3^5 = 243"
+  },
+  {
+   "stream": "stdout",
+   "text": "Sum of digits of 98765: 35"
+  },
+  {
+   "stream": "stdout",
+   "text": "3"
+  },
+  {
+   "stream": "stdout",
+   "text": "2"
+  },
+  {
+   "stream": "stdout",
+   "text": "1"
+  },
+  {
+   "stream": "stdout",
+   "text": "Liftoff!"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:5! =",
+    "num:120"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:10! =",
+    "num:3628800"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Fibonacci:",
+    {
+     "array": [
+      "num:0",
+      "num:1",
+      "num:1",
+      "num:2",
+      "num:3",
+      "num:5",
+      "num:8",
+      "num:13",
+      "num:21"
+     ],
+     "len": 9
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:2^10 =",
+    "num:1024"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:3^5 =",
+    "num:243"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Sum of digits of 98765:",
+    "num:35"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Liftoff!"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  6,
+  10,
+  11,
+  15,
+  16,
+  17,
+  18,
+  20,
+  24,
+  25,
+  29,
+  30,
+  31,
+  33,
+  34,
+  37,
+  38,
+  39,
+  40,
+  41,
+  43,
+  44,
+  45,
+  46,
+  47
+ ],
+ "statementRuns": 440,
+ "functionCalls": 202,
+ "finalGlobals": {
+  "factorial": "fn:factorial",
+  "fibonacci": "fn:fibonacci",
+  "power": "fn:power",
+  "sumDigits": "fn:sumDigits",
+  "countdown": "fn:countdown",
+  "fibs": {
+   "array": [
+    "num:0",
+    "num:1",
+    "num:1",
+    "num:2",
+    "num:3",
+    "num:5",
+    "num:8",
+    "num:13",
+    "num:21"
+   ],
+   "len": 9
+  }
+ },
+ "sourceSha256": "22f3a0b87d1de09b0c93de283885aa8ffa978210acd149a6b067a2a2c64f8f3b"
+}

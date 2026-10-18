@@ -107,6 +107,7 @@ npm run dev:py       # Python dev server
 | `npm run test` | Run tests (Vitest) |
 | `npm run test:integration` | Build viewer-js then run integration tests against the real built `docs/viewer-js.html` |
 | `npm run test:java:golden` | Regenerate the Java engine's JDK goldens (needs JDK 21, see below) |
+| `npm run test:js:golden` | Regenerate the JS engine's Node goldens (needs Node 24, see below) |
 | `npm run lint` | Run ESLint |
 | `npm run preview` | Preview the production build locally |
 
@@ -126,6 +127,24 @@ Checks that fail today are listed in `known-failures.json`, each with the roadma
 | Print each step's frames and heap | `npx tsx scripts/java-viz.ts <case id \| file.java \| example:slug> [--final]` |
 | Measure snapshot size and time | `npx tsx scripts/java-payload.ts [--quick]` |
 
+### Testing the JS engine against Node
+
+The JS engine runs your code for real, but it instruments it first, and the instrumentation can change what you see. [`src/engines/js/__tests__/node/`](src/engines/js/__tests__/node/) holds a corpus of JavaScript programs: typical intro-course programs, targeted checks (console output, async code, generators, errors, limits, …), programs that don't parse, and every shipped example. Each program has a committed golden file that records what Node 24 did when it ran the program as a browser runs a worker's script, timers included: what its console printed (line by line, stdout and stderr), every uncaught exception and unhandled rejection, which lines ran (V8's block coverage), and the final value of each top-level name. `npm test` runs each program through JSTutor exactly as the app does, in a worker (a Node thread standing in for the Web Worker), and checks:
+- the console at the last step against Node's, text for text (JSTutor prints in Node's format, [#43](https://github.com/ctnelson1997/_tutor/issues/43));
+- that the run ends as Node's did: normally, with the same uncaught exception, at the step cap for an endless loop, or with V8's syntax error;
+- that every line that ran got a step, and that the last step shows the right final values;
+- the snapshots: references resolve, lines are in the file, no instrumentation names leak, only reachable objects are drawn, and no frame is left at the end.
+
+As for Java, checks that fail today are listed in `known-failures.json` with the roadmap issue ([#41](https://github.com/ctnelson1997/_tutor/issues/41)) that should fix them. They run as expected failures, and a fix that makes one pass turns the suite red until you delete the entry. The run ends with a summary in #41's terms: matches, layout-only differences, wrong output, wrong steps or state, failures, and parse errors.
+
+| Task | How |
+|---|---|
+| Add a program | Put `<name>.js` in `cases/<category>/`, then run `npm run test:js:golden -- <category>/<name>` and commit both |
+| Regenerate every golden | `npm run test:js:golden` (with Node 24; other versions are refused) |
+| Check goldens are current, writing nothing | `npm run test:js:golden -- --check` |
+| See every difference from Node, case by case | `npx tsx scripts/js-diff.ts [filter] [--issue=<n>]` |
+| Print each step's frames and heap, and what Node printed | `npx tsx scripts/js-viz.ts <case id | file.js | example:slug> [--final] [--steps=a-b]` |
+
 ---
 
 ## Project Structure
@@ -142,7 +161,8 @@ src/
 │   │   ├── runtime.ts          # Worker preamble: __capture__, serialization, heap registry
 │   │   ├── executor.ts         # instrument → worker → snapshots (no store coupling)
 │   │   ├── examples.ts         # Built-in JS example snippets
-│   │   └── security.ts         # Suspicious code pattern detection
+│   │   ├── security.ts         # Suspicious code pattern detection
+│   │   └── __tests__/node/     # Differential corpus: JS programs + Node 24 goldens, known-failures.json
 │   ├── py/                     # Python engine (Pyodide + sys.settrace)
 │   │   ├── index.ts            # LanguageEngine implementation
 │   │   ├── tracer.ts           # Python tracing script (sys.settrace) as a string
@@ -213,7 +233,7 @@ src/
 .env.java                       # Java build branding (VITE_APP_NAME=JavaTutor, etc.)
 viewer.html                     # HTML entry for the viewer-<lang> build (contains the __EXAMPLES__ placeholder)
 vite.config.ts                  # Build config — mode-based outDir + language targeting + singlefile viewer mode
-scripts/                        # Dev tools, run with tsx: java-golden.ts (JDK goldens), java-diff.ts, java-viz.ts, java-payload.ts
+scripts/                        # Dev tools, run with tsx: java-golden.ts (JDK goldens), java-diff.ts, java-viz.ts, java-payload.ts, js-golden.ts (Node goldens), js-diff.ts, js-viz.ts
 ```
 
 ---

@@ -1,0 +1,161 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "clicks: 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "byFives: 95"
+  },
+  {
+   "stream": "stdout",
+   "text": "after reset: 0 count is private: undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'U001', 'U002', 'ORD-001', 'U003', 'ORD-002' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'greeter #0', 'greeter #1', 'greeter #2' ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:clicks:",
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:byFives:",
+    "num:95"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:after reset:",
+    "num:0",
+    "str:count is private:",
+    "undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:U001",
+      "str:U002",
+      "str:ORD-001",
+      "str:U003",
+      "str:ORD-002"
+     ],
+     "len": 5
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:greeter #0",
+      "str:greeter #1",
+      "str:greeter #2"
+     ],
+     "len": 3
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  6,
+  7,
+  11,
+  12,
+  16,
+  20,
+  23,
+  26,
+  27,
+  28,
+  29,
+  30,
+  31,
+  32,
+  33,
+  34,
+  35,
+  36,
+  37,
+  40,
+  41,
+  42,
+  43,
+  44,
+  48,
+  49,
+  50,
+  51,
+  53,
+  54,
+  55,
+  57
+ ],
+ "statementRuns": 63,
+ "functionCalls": 25,
+ "finalGlobals": {
+  "makeCounter": "fn:makeCounter",
+  "clicks": {
+   "object": "",
+   "props": {
+    "increment": "fn:increment",
+    "decrement": "fn:decrement",
+    "reset": "fn:reset",
+    "getValue": "fn:getValue"
+   }
+  },
+  "byFives": {
+   "object": "",
+   "props": {
+    "increment": "fn:increment",
+    "decrement": "fn:decrement",
+    "reset": "fn:reset",
+    "getValue": "fn:getValue"
+   }
+  },
+  "makeIdGenerator": "fn:makeIdGenerator",
+  "userId": "fn:",
+  "orderId": "fn:",
+  "ids": {
+   "array": [
+    "str:U001",
+    "str:U002",
+    "str:ORD-001",
+    "str:U003",
+    "str:ORD-002"
+   ],
+   "len": 5
+  },
+  "greeters": {
+   "array": [
+    "fn:",
+    "fn:",
+    "fn:"
+   ],
+   "len": 3
+  }
+ },
+ "sourceSha256": "09cb5c796f4c8a78b5f29596c1533ca572c48f541c49484ada879f544555db1f"
+}

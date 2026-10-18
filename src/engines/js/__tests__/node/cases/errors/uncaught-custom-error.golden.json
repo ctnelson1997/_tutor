@@ -1,0 +1,91 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "70"
+  },
+  {
+   "stream": "stdout",
+   "text": "20"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ -30, -50 ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:70"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:20"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:-30",
+      "num:-50"
+     ],
+     "len": 2
+    }
+   ]
+  }
+ ],
+ "uncaught": [
+  {
+   "name": "InsufficientFundsError",
+   "message": "cannot withdraw 75; balance is 20",
+   "where": "script",
+   "consoleLines": 3
+  }
+ ],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  4,
+  5,
+  6,
+  7,
+  11,
+  14,
+  15,
+  17,
+  18,
+  19,
+  22,
+  23,
+  24,
+  25,
+  26
+ ],
+ "statementRuns": 20,
+ "functionCalls": 4,
+ "finalGlobals": {
+  "InsufficientFundsError": "fn:InsufficientFundsError",
+  "account": {
+   "object": "",
+   "props": {
+    "owner": "str:Kim",
+    "balance": "num:20",
+    "history": {
+     "array": [
+      "num:-30",
+      "num:-50"
+     ],
+     "len": 2
+    }
+   }
+  },
+  "withdraw": "fn:withdraw"
+ },
+ "sourceSha256": "5f6cff273e8a8f26f177fe3c6da79c14c98db094a2c18d57ff433d0c930b8a4d"
+}

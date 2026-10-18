@@ -1,0 +1,190 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "NaN NaN NaN"
+  },
+  {
+   "stream": "stdout",
+   "text": "NaN === NaN: false NaN == NaN: false"
+  },
+  {
+   "stream": "stdout",
+   "text": "self check: true"
+  },
+  {
+   "stream": "stdout",
+   "text": "Object.is: true"
+  },
+  {
+   "stream": "stdout",
+   "text": "isNaN(\"abc\"): true Number.isNaN(\"abc\"): false"
+  },
+  {
+   "stream": "stdout",
+   "text": "NaN < 1: false NaN > 1: false NaN >= NaN: false"
+  },
+  {
+   "stream": "stdout",
+   "text": "indexOf: -1 includes: true"
+  },
+  {
+   "stream": "stdout",
+   "text": "findIndex: 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "typeof NaN: number"
+  },
+  {
+   "stream": "stdout",
+   "text": "NaN [ 1, 3 ] NaN 2"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:NaN",
+    "num:NaN",
+    "num:NaN"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:NaN === NaN:",
+    "boolean:false",
+    "str:NaN == NaN:",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:self check:",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Object.is:",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:isNaN(\"abc\"):",
+    "boolean:true",
+    "str:Number.isNaN(\"abc\"):",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:NaN < 1:",
+    "boolean:false",
+    "str:NaN > 1:",
+    "boolean:false",
+    "str:NaN >= NaN:",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:indexOf:",
+    "num:-1",
+    "str:includes:",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:findIndex:",
+    "num:1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:typeof NaN:",
+    "str:number"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:NaN",
+    {
+     "array": [
+      "num:1",
+      "num:3"
+     ],
+     "len": 2
+    },
+    "num:NaN",
+    "num:2"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19
+ ],
+ "statementRuns": 18,
+ "functionCalls": 6,
+ "finalGlobals": {
+  "bad": "num:NaN",
+  "alsoBad": "num:NaN",
+  "half": "num:NaN",
+  "values": {
+   "array": [
+    "num:1",
+    "num:NaN",
+    "num:3"
+   ],
+   "len": 3
+  },
+  "sum": "num:NaN",
+  "clean": {
+   "array": [
+    "num:1",
+    "num:3"
+   ],
+   "len": 2
+  },
+  "max": "num:NaN",
+  "set": {
+   "set": [
+    "num:NaN",
+    "num:0"
+   ]
+  }
+ },
+ "sourceSha256": "0709f8fcce98e518e8bde9917ade3928aec3a6f12b28a101797bf4e56ca90b20"
+}

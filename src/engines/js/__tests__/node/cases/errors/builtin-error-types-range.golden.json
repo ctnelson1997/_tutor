@@ -1,0 +1,198 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "RangeError: Invalid array length"
+  },
+  {
+   "stream": "stdout",
+   "text": "true false true"
+  },
+  {
+   "stream": "stdout",
+   "text": "RangeError: toFixed() digits argument must be between 0 and 100"
+  },
+  {
+   "stream": "stdout",
+   "text": "true false true"
+  },
+  {
+   "stream": "stdout",
+   "text": "RangeError: Invalid count value: -2"
+  },
+  {
+   "stream": "stdout",
+   "text": "true false true"
+  },
+  {
+   "stream": "stdout",
+   "text": "TypeError: Cannot read properties of null (reading 'length')"
+  },
+  {
+   "stream": "stdout",
+   "text": "false true true"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'RangeError', 'RangeError', 'RangeError', 'TypeError' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "TypeError: custom type problem TypeError true"
+  },
+  {
+   "stream": "stdout",
+   "text": "\"\" Error"
+  },
+  {
+   "stream": "stdout",
+   "text": "true [object Error]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:RangeError: Invalid array length"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:false",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:RangeError: toFixed() digits argument must be between 0 and 100"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:false",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:RangeError: Invalid count value: -2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:false",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:TypeError: Cannot read properties of null (reading 'length')"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:false",
+    "boolean:true",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:RangeError",
+      "str:RangeError",
+      "str:RangeError",
+      "str:TypeError"
+     ],
+     "len": 4
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:TypeError: custom type problem",
+    "str:TypeError",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:\"\"",
+    "str:Error"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "str:[object Error]"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  9,
+  10,
+  12,
+  14,
+  15,
+  16,
+  19,
+  21,
+  22,
+  23,
+  24,
+  25,
+  26
+ ],
+ "statementRuns": 26,
+ "functionCalls": 4,
+ "finalGlobals": {
+  "attempts": {
+   "array": [
+    "fn:",
+    "fn:",
+    "fn:",
+    "fn:"
+   ],
+   "len": 4
+  },
+  "caught": {
+   "array": [
+    "str:RangeError",
+    "str:RangeError",
+    "str:RangeError",
+    "str:TypeError"
+   ],
+   "len": 4
+  },
+  "made": {
+   "error": "TypeError: custom type problem"
+  },
+  "plain": {
+   "error": "Error: "
+  },
+  "syntax": {
+   "error": "SyntaxError: odd"
+  }
+ },
+ "sourceSha256": "7e62c881c1b93b328723c418c468fbdddba46116f128cf76ab08c6f05fba8ec8"
+}

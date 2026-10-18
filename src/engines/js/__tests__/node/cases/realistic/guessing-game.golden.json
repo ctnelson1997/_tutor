@@ -1,0 +1,199 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "50 is too low"
+  },
+  {
+   "stream": "stdout",
+   "text": "75 is too high"
+  },
+  {
+   "stream": "stdout",
+   "text": "62 is too low"
+  },
+  {
+   "stream": "stdout",
+   "text": "68 is too low"
+  },
+  {
+   "stream": "stdout",
+   "text": "71 is too low"
+  },
+  {
+   "stream": "stdout",
+   "text": "Got it! 73 in 6 guesses"
+  },
+  {
+   "stream": "stdout",
+   "text": "Guesses: [ 50, 75, 62, 68, 71, 73 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Collatz from 7: 7 22 11 34 17 52 26 13 40 20 10 5 16 8 4 2 1 (16 steps)"
+  },
+  {
+   "stream": "stdout",
+   "text": "First number divisible by 3, 4 and 5: 60"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:50 is too low"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:75 is too high"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:62 is too low"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:68 is too low"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:71 is too low"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Got it! 73 in 6 guesses"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Guesses:",
+    {
+     "array": [
+      "num:50",
+      "num:75",
+      "num:62",
+      "num:68",
+      "num:71",
+      "num:73"
+     ],
+     "len": 6
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Collatz from 7:",
+    "str:7 22 11 34 17 52 26 13 40 20 10 5 16 8 4 2 1",
+    "str:(16 steps)"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:First number divisible by 3, 4 and 5:",
+    "num:60"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  19,
+  20,
+  22,
+  27,
+  29,
+  30,
+  31,
+  33,
+  34,
+  35,
+  36,
+  37,
+  38,
+  40,
+  41,
+  42,
+  43,
+  44,
+  45,
+  46,
+  47,
+  50
+ ],
+ "statementRuns": 293,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "secret": "num:73",
+  "low": "num:72",
+  "high": "num:74",
+  "guesses": "num:6",
+  "guessLog": {
+   "array": [
+    "num:50",
+    "num:75",
+    "num:62",
+    "num:68",
+    "num:71",
+    "num:73"
+   ],
+   "len": 6
+  },
+  "n": "num:1",
+  "steps": "num:16",
+  "sequence": {
+   "array": [
+    "num:7",
+    "num:22",
+    "num:11",
+    "num:34",
+    "num:17",
+    "num:52",
+    "num:26",
+    "num:13",
+    "num:40",
+    "num:20",
+    "num:10",
+    "num:5",
+    "num:16",
+    "num:8",
+    "num:4",
+    "num:2",
+    "num:1"
+   ],
+   "len": 17
+  },
+  "candidate": "num:60",
+  "found": "num:60"
+ },
+ "sourceSha256": "91d2d30e0367adfef3d8892e5fc94e1302d335ed9aa944f36943cc5d85559a99"
+}

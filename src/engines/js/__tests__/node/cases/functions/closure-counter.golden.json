@@ -1,0 +1,146 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "a: 2 b: 90"
+  },
+  {
+   "stream": "stdout",
+   "text": "count is not a property: undefined [ 'increment', 'decrement', 'peek' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "called 1 time"
+  },
+  {
+   "stream": "stdout",
+   "text": "called 2 times"
+  },
+  {
+   "stream": "stdout",
+   "text": "called 3 times"
+  },
+  {
+   "stream": "stdout",
+   "text": "called 1 time"
+  },
+  {
+   "stream": "stdout",
+   "text": "final a: 3"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:a:",
+    "num:2",
+    "str:b:",
+    "num:90"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:count is not a property:",
+    "undefined",
+    {
+     "array": [
+      "str:increment",
+      "str:decrement",
+      "str:peek"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:called 1 time"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:called 2 times"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:called 3 times"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:called 1 time"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:final a:",
+    "num:3"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  6,
+  7,
+  10,
+  11,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  24,
+  25,
+  26,
+  27,
+  30,
+  31,
+  32,
+  33,
+  34,
+  35,
+  36,
+  37
+ ],
+ "statementRuns": 39,
+ "functionCalls": 14,
+ "finalGlobals": {
+  "makeCounter": "fn:makeCounter",
+  "a": {
+   "object": "",
+   "props": {
+    "increment": "fn:increment",
+    "decrement": "fn:decrement",
+    "peek": "fn:peek"
+   }
+  },
+  "b": {
+   "object": "",
+   "props": {
+    "increment": "fn:increment",
+    "decrement": "fn:decrement",
+    "peek": "fn:peek"
+   }
+  },
+  "counterFn": "fn:counterFn",
+  "next": "fn:",
+  "other": "fn:",
+  "finalA": "num:3"
+ },
+ "sourceSha256": "3f72ed7ec4c3a151e9a887099bc4867eb1175c3a131ed29e0e430075de8c9ab1"
+}

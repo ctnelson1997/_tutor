@@ -1,0 +1,131 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "length 100000 first 0 last 99999"
+  },
+  {
+   "stream": "stdout",
+   "text": "total 4999950000"
+  },
+  {
+   "stream": "stdout",
+   "text": "tail [ 99997, 99998, 99999 ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:length",
+    "num:100000",
+    "str:first",
+    "num:0",
+    "str:last",
+    "num:99999"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:total",
+    "num:4999950000"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:tail",
+    {
+     "array": [
+      "num:99997",
+      "num:99998",
+      "num:99999"
+     ],
+     "len": 3
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7
+ ],
+ "statementRuns": 6,
+ "functionCalls": 10000,
+ "finalGlobals": {
+  "nums": {
+   "array": [
+    "num:0",
+    "num:1",
+    "num:2",
+    "num:3",
+    "num:4",
+    "num:5",
+    "num:6",
+    "num:7",
+    "num:8",
+    "num:9",
+    "num:10",
+    "num:11",
+    "num:12",
+    "num:13",
+    "num:14",
+    "num:15",
+    "num:16",
+    "num:17",
+    "num:18",
+    "num:19",
+    "num:20",
+    "num:21",
+    "num:22",
+    "num:23",
+    "num:24",
+    "num:25",
+    "num:26",
+    "num:27",
+    "num:28",
+    "num:29",
+    "num:30",
+    "num:31",
+    "num:32",
+    "num:33",
+    "num:34",
+    "num:35",
+    "num:36",
+    "num:37",
+    "num:38",
+    "num:39",
+    "num:40",
+    "num:41",
+    "num:42",
+    "num:43",
+    "num:44",
+    "num:45",
+    "num:46",
+    "num:47",
+    "num:48",
+    "num:49"
+   ],
+   "len": 100000
+  },
+  "total": "num:4999950000",
+  "tail": {
+   "array": [
+    "num:99997",
+    "num:99998",
+    "num:99999"
+   ],
+   "len": 3
+  }
+ },
+ "sourceSha256": "7d37f718c5b61703ac7e07ed20bd4cf824af34f73860dd58f01c912bed6f5fee"
+}

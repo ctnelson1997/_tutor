@@ -1,0 +1,2472 @@
+{
+  "$comment": [
+    "Checks in node-differential.test.ts that fail today, each tied to the JSTutor roadmap issue (#41) that should fix it.",
+    "Listed checks run as it.fails(): the suite stays green, and turns red when a fix makes one pass. Delete the entry then.",
+    "\"issues\": what the failure is waiting on, main issue first. \"reason\": the symptom, in a few words.",
+    "See the details of any case with: npx tsx scripts/js-diff.ts <case id>"
+  ],
+  "failures": {
+    "async/allsettled-mixed-requests": {
+      "output": {
+        "issues": [
+          45
+        ],
+        "reason": "output of promise callbacks and timers is lost"
+      },
+      "final-state": {
+        "issues": [
+          45
+        ],
+        "reason": "the last step comes before the callbacks ran"
+      }
+    },
+    "async/async-arrow": {
+      "output": {
+        "issues": [
+          45
+        ],
+        "reason": "output of promise callbacks and timers is lost"
+      },
+      "coverage": {
+        "issues": [
+          45
+        ],
+        "reason": "callbacks run after the worker replied, with no steps"
+      },
+      "final-state": {
+        "issues": [
+          45,
+          44
+        ],
+        "reason": "the last step comes before the callbacks ran; values drawn in a frame left on the stack"
+      },
+      "frames": {
+        "issues": [
+          44,
+          45
+        ],
+        "reason": "an async function's frame stays on the stack after await"
+      }
+    },
+    "async/async-await-return": {
+      "output": {
+        "issues": [
+          45
+        ],
+        "reason": "output of promise callbacks and timers is lost"
+      },
+      "coverage": {
+        "issues": [
+          45
+        ],
+        "reason": "callbacks run after the worker replied, with no steps"
+      },
+      "final-state": {
+        "issues": [
+          45,
+          44
+        ],
+        "reason": "the last step comes before the callbacks ran; values drawn in a frame left on the stack"
+      },
+      "frames": {
+        "issues": [
+          44,
+          45
+        ],
+        "reason": "an async function's frame stays on the stack after await"
+      }
+    },
+    "async/async-class-method": {
+      "output": {
+        "issues": [
+          45
+        ],
+        "reason": "output of promise callbacks and timers is lost"
+      },
+      "final-state": {
+        "issues": [
+          45,
+          44
+        ],
+        "reason": "the last step comes before the callbacks ran; values drawn in a frame left on the stack"
+      },
+      "frames": {
+        "issues": [
+          44,
+          45
+        ],
+        "reason": "an async function's frame stays on the stack after await"
+      }
+    },
+    "async/async-throw-then-catch": {
+      "output": {
+        "issues": [
+          45
+        ],
+        "reason": "output of promise callbacks and timers is lost"
+      },
+      "final-state": {
+        "issues": [
+          45
+        ],
+        "reason": "the last step comes before the callbacks ran"
+      }
+    },
+    "async/await-in-loop": {
+      "output": {
+        "issues": [
+          45
+        ],
+        "reason": "output of promise callbacks and timers is lost"
+      },
+      "coverage": {
+        "issues": [
+          45
+        ],
+        "reason": "callbacks run after the worker replied, with no steps"
+      },
+      "final-state": {
+        "issues": [
+          45,
+          44
+        ],
+        "reason": "the last step comes before the callbacks ran; values drawn in a frame left on the stack"
+      },
+      "frames": {
+        "issues": [
+          44,
+          45
+        ],
+        "reason": "an async function's frame stays on the stack after await"
+      }
+    },
+    "async/catch-rejection": {
+      "output": {
+        "issues": [
+          45
+        ],
+        "reason": "output of promise callbacks and timers is lost"
+      }
+    },
+    "async/fake-fetch": {
+      "output": {
+        "issues": [
+          45
+        ],
+        "reason": "output of promise callbacks and timers is lost"
+      },
+      "coverage": {
+        "issues": [
+          45
+        ],
+        "reason": "callbacks run after the worker replied, with no steps"
+      },
+      "final-state": {
+        "issues": [
+          45,
+          44
+        ],
+        "reason": "the last step comes before the callbacks ran; values drawn in a frame left on the stack"
+      },
+      "frames": {
+        "issues": [
+          44,
+          45
+        ],
+        "reason": "an async function's frame stays on the stack after await"
+      }
+    },
+    "async/fire-and-forget": {
+      "output": {
+        "issues": [
+          45
+        ],
+        "reason": "output of promise callbacks and timers is lost"
+      },
+      "coverage": {
+        "issues": [
+          45
+        ],
+        "reason": "callbacks run after the worker replied, with no steps"
+      },
+      "final-state": {
+        "issues": [
+          45,
+          44
+        ],
+        "reason": "the last step comes before the callbacks ran; values drawn in a frame left on the stack"
+      },
+      "frames": {
+        "issues": [
+          44,
+          45
+        ],
+        "reason": "an async function's frame stays on the stack after await"
+      }
+    },
+    "async/microtask-macrotask-order": {
+      "output": {
+        "issues": [
+          45
+        ],
+        "reason": "output of promise callbacks and timers is lost"
+      },
+      "coverage": {
+        "issues": [
+          45
+        ],
+        "reason": "callbacks run after the worker replied, with no steps"
+      },
+      "final-state": {
+        "issues": [
+          45,
+          44
+        ],
+        "reason": "the last step comes before the callbacks ran; values drawn in a frame left on the stack"
+      },
+      "frames": {
+        "issues": [
+          44,
+          45
+        ],
+        "reason": "an async function's frame stays on the stack after await"
+      }
+    },
+    "async/promise-all": {
+      "output": {
+        "issues": [
+          45
+        ],
+        "reason": "output of promise callbacks and timers is lost"
+      },
+      "final-state": {
+        "issues": [
+          45
+        ],
+        "reason": "the last step comes before the callbacks ran"
+      }
+    },
+    "async/promise-allsettled-any": {
+      "output": {
+        "issues": [
+          45
+        ],
+        "reason": "output of promise callbacks and timers is lost"
+      },
+      "final-state": {
+        "issues": [
+          45
+        ],
+        "reason": "the last step comes before the callbacks ran"
+      }
+    },
+    "async/promise-executor-order": {
+      "output": {
+        "issues": [
+          45
+        ],
+        "reason": "output of promise callbacks and timers is lost"
+      },
+      "coverage": {
+        "issues": [
+          45
+        ],
+        "reason": "callbacks run after the worker replied, with no steps"
+      },
+      "final-state": {
+        "issues": [
+          45
+        ],
+        "reason": "the last step comes before the callbacks ran"
+      }
+    },
+    "async/promise-race": {
+      "output": {
+        "issues": [
+          45
+        ],
+        "reason": "output of promise callbacks and timers is lost"
+      },
+      "final-state": {
+        "issues": [
+          45,
+          44
+        ],
+        "reason": "the last step comes before the callbacks ran; values drawn in a frame left on the stack"
+      },
+      "frames": {
+        "issues": [
+          44,
+          45
+        ],
+        "reason": "an async function's frame stays on the stack after await"
+      }
+    },
+    "async/promise-then-chain": {
+      "output": {
+        "issues": [
+          45
+        ],
+        "reason": "output of promise callbacks and timers is lost"
+      },
+      "final-state": {
+        "issues": [
+          45
+        ],
+        "reason": "the last step comes before the callbacks ran"
+      }
+    },
+    "async/setinterval-cleared": {
+      "output": {
+        "issues": [
+          45
+        ],
+        "reason": "output of promise callbacks and timers is lost"
+      },
+      "coverage": {
+        "issues": [
+          45
+        ],
+        "reason": "callbacks run after the worker replied, with no steps"
+      },
+      "final-state": {
+        "issues": [
+          45
+        ],
+        "reason": "the last step comes before the callbacks ran"
+      }
+    },
+    "async/setinterval-countdown": {
+      "output": {
+        "issues": [
+          45
+        ],
+        "reason": "output of promise callbacks and timers is lost"
+      },
+      "coverage": {
+        "issues": [
+          45
+        ],
+        "reason": "callbacks run after the worker replied, with no steps"
+      },
+      "final-state": {
+        "issues": [
+          45
+        ],
+        "reason": "the last step comes before the callbacks ran"
+      }
+    },
+    "async/settimeout-delays": {
+      "output": {
+        "issues": [
+          45
+        ],
+        "reason": "output of promise callbacks and timers is lost"
+      },
+      "coverage": {
+        "issues": [
+          45
+        ],
+        "reason": "callbacks run after the worker replied, with no steps"
+      },
+      "final-state": {
+        "issues": [
+          45
+        ],
+        "reason": "the last step comes before the callbacks ran"
+      }
+    },
+    "async/try-catch-await": {
+      "output": {
+        "issues": [
+          45
+        ],
+        "reason": "output of promise callbacks and timers is lost"
+      },
+      "frames": {
+        "issues": [
+          44,
+          45
+        ],
+        "reason": "an async function's frame stays on the stack after await"
+      }
+    },
+    "async/unhandled-rejection": {
+      "output": {
+        "issues": [
+          45
+        ],
+        "reason": "output of promise callbacks and timers is lost"
+      },
+      "ending": {
+        "issues": [
+          45
+        ],
+        "reason": "an unhandled rejection after the reply is never reported"
+      },
+      "frames": {
+        "issues": [
+          44,
+          45
+        ],
+        "reason": "an async function's frame stays on the stack after await"
+      }
+    },
+    "collections/array-concat-indexof-includes": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      },
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "NaN, -0, holes drawn as other values"
+      }
+    },
+    "collections/array-fill-aliasing-bug": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "holes lost or misprinted"
+      },
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "holes drawn as other values"
+      }
+    },
+    "collections/array-fill-at-join-reverse": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "collections/array-find-some-every": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "collections/array-flat-flatmap": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "printed differently from Node"
+      }
+    },
+    "collections/array-from": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "undefined lost or misprinted"
+      }
+    },
+    "collections/array-immutable-methods": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "holes, undefined lost or misprinted"
+      },
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "holes drawn as other values"
+      }
+    },
+    "collections/array-length-truncate": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "holes lost or misprinted"
+      },
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "holes drawn as other values"
+      }
+    },
+    "collections/array-named-properties": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "output written after the last step is missing"
+      }
+    },
+    "collections/array-push-pop-shift-unshift": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "collections/array-splice-slice": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "collections/copy-spread-structuredclone-json": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      },
+      "names": {
+        "issues": [
+          47,
+          43
+        ],
+        "reason": "an error message quotes a function's instrumented source"
+      }
+    },
+    "collections/iterators-entries": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "undefined lost or misprinted"
+      },
+      "final-state": {
+        "issues": [
+          44
+        ],
+        "reason": "values drawn in a frame left on the stack"
+      },
+      "frames": {
+        "issues": [
+          44
+        ],
+        "reason": "a generator's frame stays on the stack after it yields"
+      }
+    },
+    "collections/map-basics": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "Map lost or misprinted"
+      }
+    },
+    "collections/map-filter-reduce-chain": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "NaN lost or misprinted"
+      }
+    },
+    "collections/map-object-keys": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "Map lost or misprinted"
+      },
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "object Map keys drawn as other values"
+      },
+      "names": {
+        "issues": [
+          47,
+          43
+        ],
+        "reason": "a printed function shows its instrumented source"
+      }
+    },
+    "collections/object-groupby": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "output written after the last step is missing"
+      },
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "object Map keys drawn as other values"
+      }
+    },
+    "collections/set-dedupe-ops": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "Set, NaN lost or misprinted"
+      },
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "NaN, -0 drawn as other values"
+      }
+    },
+    "collections/sort-default-vs-comparator": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "undefined lost or misprinted"
+      }
+    },
+    "collections/sparse-array-holes": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "holes lost or misprinted"
+      },
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "holes drawn as other values"
+      }
+    },
+    "collections/strings-as-arrays": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "collections/two-d-array-grid": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "collections/typed-arrays": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "printed differently from Node"
+      }
+    },
+    "collections/weakmap-private-data": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "class names lost or misprinted"
+      }
+    },
+    "control-flow/comma-for-header": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "control-flow/continue-in-for-update": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      },
+      "final-state": {
+        "issues": [
+          44
+        ],
+        "reason": "values drawn in a frame left on the stack"
+      },
+      "frames": {
+        "issues": [
+          44
+        ],
+        "reason": "loop frames left on the stack after break or continue"
+      }
+    },
+    "control-flow/for-in-objects-arrays": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "control-flow/for-no-test-break": {
+      "final-state": {
+        "issues": [
+          44
+        ],
+        "reason": "values drawn in a frame left on the stack"
+      },
+      "frames": {
+        "issues": [
+          44
+        ],
+        "reason": "loop frames left on the stack after break or continue"
+      }
+    },
+    "control-flow/for-of-entries": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      },
+      "final-state": {
+        "issues": [
+          44
+        ],
+        "reason": "values drawn in a frame left on the stack"
+      },
+      "frames": {
+        "issues": [
+          44
+        ],
+        "reason": "loop frames left on the stack after break or continue"
+      }
+    },
+    "control-flow/for-of-iterables": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "control-flow/labeled-block": {
+      "coverage": {
+        "issues": [
+          46
+        ],
+        "reason": "a labeled statement's body takes no steps"
+      }
+    },
+    "control-flow/labeled-break-nested-for": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      },
+      "coverage": {
+        "issues": [
+          46
+        ],
+        "reason": "a labeled statement's body takes no steps"
+      }
+    },
+    "control-flow/labeled-while-do-while": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      },
+      "coverage": {
+        "issues": [
+          46
+        ],
+        "reason": "a labeled statement's body takes no steps"
+      }
+    },
+    "control-flow/loop-body-same-line": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "control-flow/nested-ternaries": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "control-flow/short-circuit-side-effects": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "control-flow/statements-sharing-line": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "control-flow/switch-block-scope": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "control-flow/switch-default-middle": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "control-flow/switch-fall-through": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "control-flow/switch-true": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "core/bigint-values": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "BigInt lost or misprinted"
+      }
+    },
+    "core/chained-assignment": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "core/coercion-arithmetic": {
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "NaN drawn as other values"
+      }
+    },
+    "core/coercion-comparisons": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "core/const-object-mutation": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "holes lost or misprinted"
+      },
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "holes drawn as other values"
+      }
+    },
+    "core/in-and-delete": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "holes lost or misprinted"
+      },
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "holes drawn as other values"
+      }
+    },
+    "core/increment-pre-post": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "printed differently from Node"
+      },
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "NaN drawn as other values"
+      }
+    },
+    "core/logical-short-circuit": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "core/loose-vs-strict-equality": {
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "NaN drawn as other values"
+      }
+    },
+    "core/nan-comparisons": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      },
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "NaN drawn as other values"
+      }
+    },
+    "core/negative-zero": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "printed differently from Node"
+      },
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "-0 drawn as other values"
+      }
+    },
+    "core/special-values-in-containers": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "holes, -0 lost or misprinted"
+      },
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "NaN, Infinity, -0 drawn as other values"
+      }
+    },
+    "core/tdz-reference-error": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "core/ternary-chains": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "core/truthiness": {
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "NaN, Infinity, -0 drawn as other values"
+      }
+    },
+    "core/typeof-operator": {
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "NaN drawn as other values"
+      }
+    },
+    "core/var-vs-let-loop-closures": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "core/void-and-comma": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "errors/break-return-in-try-finally": {
+      "final-state": {
+        "issues": [
+          44
+        ],
+        "reason": "values drawn in a frame left on the stack"
+      },
+      "frames": {
+        "issues": [
+          44
+        ],
+        "reason": "loop frames left on the stack after break or continue"
+      }
+    },
+    "errors/builtin-error-types-range": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "errors/custom-error-subclass": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "errors/foreach-callback-throw": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "errors/json-parse-optional-catch": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "errors/rethrow-selective": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "errors/throw-non-error-values": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "errors/uncaught-custom-error": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "errors/uncaught-in-class-method": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "errors/uncaught-through-calls": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "output written after the last step is missing"
+      }
+    },
+    "examples/higher-order-functions": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "examples/stack-array": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "functions/arguments-object": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "functions/arrow-vs-regular": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "functions/block-function-declarations": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "functions/call-apply-bind": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "functions/callbacks": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "NaN lost or misprinted"
+      },
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "NaN drawn as other values"
+      }
+    },
+    "functions/closure-counter": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "functions/closure-private-state": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "functions/constructor-prototype": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "printed differently from Node"
+      }
+    },
+    "functions/currying": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "functions/declarations-expressions-arrows": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "functions/default-params": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "functions/error-stack-first-line": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "printed differently from Node"
+      }
+    },
+    "functions/fn-tostring": {
+      "output": {
+        "issues": [
+          43,
+          47
+        ],
+        "reason": "a printed function shows its instrumented source"
+      },
+      "final-state": {
+        "issues": [
+          47
+        ],
+        "reason": "fn.toString() returns the instrumented source"
+      },
+      "names": {
+        "issues": [
+          47,
+          43
+        ],
+        "reason": "a printed function shows its instrumented source"
+      }
+    },
+    "functions/functions-in-collections": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "functions/higher-order-returning-functions": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "functions/iife-patterns": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      },
+      "coverage": {
+        "issues": [
+          46
+        ],
+        "reason": "a function behind ! or void runs with no steps"
+      }
+    },
+    "functions/loop-closures": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "functions/mutual-recursion": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "functions/rest-and-spread": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "generators/array-from-generator": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "generators/basic-yield-next": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "undefined lost or misprinted"
+      }
+    },
+    "generators/class-generator-iterator": {
+      "final-state": {
+        "issues": [
+          44
+        ],
+        "reason": "values drawn in a frame left on the stack"
+      },
+      "frames": {
+        "issues": [
+          44
+        ],
+        "reason": "a generator's frame stays on the stack after it yields"
+      }
+    },
+    "generators/custom-iterable-object": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      },
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "Symbol keys drawn as other values"
+      }
+    },
+    "generators/for-of-and-spread": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "generators/generator-return": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "undefined lost or misprinted"
+      },
+      "final-state": {
+        "issues": [
+          44
+        ],
+        "reason": "values drawn in a frame left on the stack"
+      },
+      "frames": {
+        "issues": [
+          44
+        ],
+        "reason": "a generator's frame stays on the stack after it yields"
+      }
+    },
+    "generators/hand-written-iterator": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      },
+      "final-state": {
+        "issues": [
+          44,
+          48
+        ],
+        "reason": "values drawn in a frame left on the stack; Symbol keys drawn as other values"
+      },
+      "frames": {
+        "issues": [
+          44
+        ],
+        "reason": "loop frames left on the stack after break or continue"
+      }
+    },
+    "generators/infinite-take": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "undefined lost or misprinted"
+      },
+      "final-state": {
+        "issues": [
+          44
+        ],
+        "reason": "values drawn in a frame left on the stack"
+      },
+      "frames": {
+        "issues": [
+          44
+        ],
+        "reason": "a generator's frame stays on the stack after it yields"
+      }
+    },
+    "generators/interleaved-and-throw": {
+      "frames": {
+        "issues": [
+          44
+        ],
+        "reason": "a generator's frame stays on the stack after it yields"
+      }
+    },
+    "generators/lazy-pipeline": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      },
+      "frames": {
+        "issues": [
+          44
+        ],
+        "reason": "a generator's frame stays on the stack after it yields"
+      }
+    },
+    "generators/next-sends-values": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "generators/yield-star-delegation": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "limits/endless-labeled-loop": {
+      "ending": {
+        "issues": [
+          46
+        ],
+        "reason": "a labeled endless loop has no loop guard: the worker is killed and every step lost"
+      }
+    },
+    "objects-classes/circular-mutual-reference": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "cycles lost or misprinted"
+      }
+    },
+    "objects-classes/circular-self-reference": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "cycles lost or misprinted"
+      }
+    },
+    "objects-classes/class-arrow-field": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "functions, class names lost or misprinted"
+      },
+      "coverage": {
+        "issues": [
+          46
+        ],
+        "reason": "an arrow function in a class field runs with no steps"
+      }
+    },
+    "objects-classes/class-basic-methods": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "class names lost or misprinted"
+      }
+    },
+    "objects-classes/class-expression": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "class names lost or misprinted"
+      }
+    },
+    "objects-classes/class-getters-setters": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "class names lost or misprinted"
+      }
+    },
+    "objects-classes/class-private-fields": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "class names lost or misprinted"
+      }
+    },
+    "objects-classes/class-static-block": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      },
+      "coverage": {
+        "issues": [
+          46
+        ],
+        "reason": "a static block runs with no steps"
+      }
+    },
+    "objects-classes/class-static-members": {
+      "output": {
+        "issues": [
+          43,
+          47
+        ],
+        "reason": "a printed function shows its instrumented source; functions lost or misprinted"
+      },
+      "names": {
+        "issues": [
+          47,
+          43
+        ],
+        "reason": "a printed function shows its instrumented source"
+      }
+    },
+    "objects-classes/constructor-function-prototype": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "class names lost or misprinted"
+      }
+    },
+    "objects-classes/define-property-nonenumerable": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "getters lost or misprinted"
+      },
+      "final-state": {
+        "issues": [
+          43,
+          47
+        ],
+        "reason": "printing calls a getter, which changes the count"
+      }
+    },
+    "objects-classes/derived-this-before-super": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "printed differently from Node"
+      }
+    },
+    "objects-classes/extends-builtins": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "Map lost or misprinted"
+      }
+    },
+    "objects-classes/getters-setters-literal": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "getters lost or misprinted"
+      }
+    },
+    "objects-classes/inheritance-super": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "output written after the last step is missing"
+      }
+    },
+    "objects-classes/instanceof-prototype-of": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "printed differently from Node"
+      }
+    },
+    "objects-classes/json-stringify-classes": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      },
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "NaN drawn as other values"
+      }
+    },
+    "objects-classes/method-chaining-this": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "output written after the last step is missing"
+      }
+    },
+    "objects-classes/nested-objects-references": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "output written after the last step is missing"
+      }
+    },
+    "objects-classes/object-create-prototype": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "objects-classes/object-freeze-seal": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "objects-classes/object-literal-shorthand": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "objects-classes/object-static-helpers": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "objects-classes/optional-chaining-nullish": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "objects-classes/property-order-integer-keys": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      },
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "Symbol keys drawn as other values"
+      }
+    },
+    "objects-classes/spread-destructuring-defaults": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "objects-classes/symbol-keys": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "Symbols lost or misprinted"
+      },
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "Symbol keys drawn as other values"
+      }
+    },
+    "objects-classes/symbol-toprimitive": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      },
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "Symbol keys drawn as other values"
+      }
+    },
+    "objects-classes/this-lost-in-callback": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "printed differently from Node"
+      }
+    },
+    "objects-classes/tostring-valueof": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "output/console-assert": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "console.assert not shown; stderr shown as stdout with a label"
+      }
+    },
+    "output/console-group-count": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "console.group/count/groupEnd/groupCollapsed/countReset not shown"
+      }
+    },
+    "output/console-levels": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "console.info/debug not shown; stderr shown as stdout with a label"
+      }
+    },
+    "output/console-table": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "console.table not shown"
+      }
+    },
+    "output/format-substitutions": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "-0, BigInt lost or misprinted"
+      }
+    },
+    "output/log-arrays-nested": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "holes, undefined lost or misprinted"
+      },
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "holes drawn as other values"
+      }
+    },
+    "output/log-circular": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "Map, cycles lost or misprinted"
+      }
+    },
+    "output/log-functions-classes": {
+      "output": {
+        "issues": [
+          43,
+          47
+        ],
+        "reason": "a printed function shows its instrumented source; functions, class names lost or misprinted"
+      },
+      "names": {
+        "issues": [
+          47,
+          43
+        ],
+        "reason": "a printed function shows its instrumented source"
+      }
+    },
+    "output/log-map-set": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "Map, Set lost or misprinted"
+      },
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "object Map keys drawn as other values"
+      }
+    },
+    "output/log-mixed-arguments": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "output/log-objects-nested": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "output written after the last step is missing"
+      }
+    },
+    "output/log-special-values": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "holes, -0 lost or misprinted"
+      },
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "NaN, Infinity, -0 drawn as other values"
+      }
+    },
+    "output/log-strings-quotes": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "printed differently from Node"
+      }
+    },
+    "output/log-symbol-bigint": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "BigInt, Symbols lost or misprinted"
+      },
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "Symbol keys drawn as other values"
+      }
+    },
+    "output/log-then-mutate": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "holes lost or misprinted"
+      },
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "holes drawn as other values"
+      }
+    },
+    "realistic/array-stats": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "realistic/async-await-weather": {
+      "output": {
+        "issues": [
+          45
+        ],
+        "reason": "output of promise callbacks and timers is lost"
+      },
+      "final-state": {
+        "issues": [
+          45,
+          44
+        ],
+        "reason": "the last step comes before the callbacks ran; values drawn in a frame left on the stack"
+      },
+      "frames": {
+        "issues": [
+          44,
+          45
+        ],
+        "reason": "an async function's frame stays on the stack after await"
+      }
+    },
+    "realistic/bank-account": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "realistic/bubble-sort": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "realistic/capitalize-words": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "realistic/countdown-timer": {
+      "output": {
+        "issues": [
+          45
+        ],
+        "reason": "output of promise callbacks and timers is lost"
+      },
+      "coverage": {
+        "issues": [
+          45
+        ],
+        "reason": "callbacks run after the worker replied, with no steps"
+      },
+      "final-state": {
+        "issues": [
+          45
+        ],
+        "reason": "the last step comes before the callbacks ran"
+      }
+    },
+    "realistic/counter-factory": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "realistic/destructuring-spread": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "realistic/employee-array-methods": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "realistic/fake-fetch-then": {
+      "output": {
+        "issues": [
+          45
+        ],
+        "reason": "output of promise callbacks and timers is lost"
+      },
+      "final-state": {
+        "issues": [
+          45
+        ],
+        "reason": "the last step comes before the callbacks ran"
+      }
+    },
+    "realistic/fizzbuzz": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "realistic/flatten-array": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "realistic/guessing-game": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "realistic/insertion-sort": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "realistic/inventory-manager": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "realistic/json-round-trip": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      },
+      "final-state": {
+        "issues": [
+          48
+        ],
+        "reason": "NaN, Infinity drawn as other values"
+      }
+    },
+    "realistic/letter-frequency-map": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "Map lost or misprinted"
+      },
+      "final-state": {
+        "issues": [
+          44
+        ],
+        "reason": "values drawn in a frame left on the stack"
+      },
+      "frames": {
+        "issues": [
+          44
+        ],
+        "reason": "loop frames left on the stack after break or continue"
+      }
+    },
+    "realistic/matrix-operations": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "realistic/once-and-memoize": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "realistic/prime-sieve": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "realistic/promise-all-orders": {
+      "output": {
+        "issues": [
+          45
+        ],
+        "reason": "output of promise callbacks and timers is lost"
+      },
+      "final-state": {
+        "issues": [
+          45
+        ],
+        "reason": "the last step comes before the callbacks ran"
+      }
+    },
+    "realistic/recursion-basics": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "realistic/remove-duplicates": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      },
+      "final-state": {
+        "issues": [
+          44
+        ],
+        "reason": "values drawn in a frame left on the stack"
+      },
+      "frames": {
+        "issues": [
+          44
+        ],
+        "reason": "loop frames left on the stack after break or continue"
+      }
+    },
+    "realistic/selection-sort": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "realistic/stack-queue": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "realistic/student-records": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "realistic/switch-days": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "realistic/temperature-conversion": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "realistic/tic-tac-toe": {
+      "final-state": {
+        "issues": [
+          44
+        ],
+        "reason": "values drawn in a frame left on the stack"
+      },
+      "frames": {
+        "issues": [
+          44
+        ],
+        "reason": "loop frames left on the stack after break or continue"
+      }
+    },
+    "realistic/tip-calculator": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "realistic/todo-list": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "realistic/towers-of-hanoi": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "realistic/traffic-light-state-machine": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "realistic/unique-visitors-set": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "Set lost or misprinted"
+      }
+    },
+    "realistic/word-count": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "strings-regex/char-codes-cipher": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "strings-regex/localecompare-sorting": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "strings-regex/matchall-iterator": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "strings-regex/named-groups-exec": {
+      "final-state": {
+        "issues": [
+          44
+        ],
+        "reason": "values drawn in a frame left on the stack"
+      },
+      "frames": {
+        "issues": [
+          44
+        ],
+        "reason": "loop frames left on the stack after break or continue"
+      }
+    },
+    "strings-regex/pad-repeat-trim": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "strings-regex/regex-test-match": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "strings-regex/replace-function-dollar": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "strings-regex/split-join-slice": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "strings-regex/string-comparison": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "strings-regex/tagged-templates-raw": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "strings-regex/text-stats": {
+      "output": {
+        "issues": [
+          43
+        ],
+        "reason": "laid out as JSON, not as Node prints"
+      }
+    },
+    "syntax-errors/await-in-non-async-function": {
+      "ending": {
+        "issues": [
+          50
+        ],
+        "reason": "parse error worded as Acorn's, not V8's, and not a compile error"
+      }
+    },
+    "syntax-errors/const-without-initializer": {
+      "ending": {
+        "issues": [
+          50
+        ],
+        "reason": "parse error worded as Acorn's, not V8's, and not a compile error"
+      }
+    },
+    "syntax-errors/invalid-assignment-target": {
+      "ending": {
+        "issues": [
+          50
+        ],
+        "reason": "parse error worded as Acorn's, not V8's, and not a compile error"
+      }
+    },
+    "syntax-errors/let-redeclaration": {
+      "ending": {
+        "issues": [
+          50
+        ],
+        "reason": "parse error worded as Acorn's, not V8's, and not a compile error"
+      }
+    },
+    "syntax-errors/missing-closing-brace": {
+      "ending": {
+        "issues": [
+          50
+        ],
+        "reason": "parse error worded as Acorn's, not V8's, and not a compile error"
+      }
+    },
+    "syntax-errors/missing-closing-paren": {
+      "ending": {
+        "issues": [
+          50
+        ],
+        "reason": "parse error worded as Acorn's, not V8's, and not a compile error"
+      }
+    },
+    "syntax-errors/misspelled-function-keyword": {
+      "ending": {
+        "issues": [
+          50
+        ],
+        "reason": "parse error worded as Acorn's, not V8's, and not a compile error"
+      }
+    },
+    "syntax-errors/object-missing-comma": {
+      "ending": {
+        "issues": [
+          50
+        ],
+        "reason": "parse error worded as Acorn's, not V8's, and not a compile error"
+      }
+    },
+    "syntax-errors/return-outside-function": {
+      "ending": {
+        "issues": [
+          50
+        ],
+        "reason": "parse error worded as Acorn's, not V8's, and not a compile error"
+      }
+    },
+    "syntax-errors/stray-else": {
+      "ending": {
+        "issues": [
+          50
+        ],
+        "reason": "parse error worded as Acorn's, not V8's, and not a compile error"
+      }
+    },
+    "syntax-errors/unterminated-string": {
+      "ending": {
+        "issues": [
+          50
+        ],
+        "reason": "parse error worded as Acorn's, not V8's, and not a compile error"
+      }
+    },
+    "syntax-errors/unterminated-template-literal": {
+      "ending": {
+        "issues": [
+          50
+        ],
+        "reason": "parse error worded as Acorn's, not V8's, and not a compile error"
+      }
+    }
+  }
+}

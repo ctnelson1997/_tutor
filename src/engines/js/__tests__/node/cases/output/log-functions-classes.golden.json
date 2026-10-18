@@ -1,0 +1,177 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[Function: greet] [Function: add] [Function (anonymous)]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[class Animal] [class Dog extends Animal]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Animal { name: 'Cat' } Dog { name: 'Rex', breed: 'lab' }"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ Animal { name: 'Cat' }, Dog { name: 'Rex', breed: 'lab' } ] { owner: 'Sam', pet: Dog { name: 'Rex', breed: 'lab' } }"
+  },
+  {
+   "stream": "stdout",
+   "text": "Rex makes a sound REX true"
+  },
+  {
+   "stream": "stdout",
+   "text": "[Function: max] [Function: push] [AsyncFunction: load] [GeneratorFunction: gen]"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ method: [Function: method], arrow: [Function: arrow] }"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "fn:greet",
+    "fn:add",
+    "fn:"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "fn:Animal",
+    "fn:Dog"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "Animal",
+     "props": {
+      "name": "str:Cat"
+     }
+    },
+    {
+     "object": "Dog",
+     "props": {
+      "name": "str:Rex",
+      "breed": "str:lab"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      {
+       "object": "Animal",
+       "props": {
+        "name": "str:Cat"
+       }
+      },
+      {
+       "object": "Dog",
+       "props": {
+        "name": "str:Rex",
+        "breed": "str:lab"
+       }
+      }
+     ],
+     "len": 2
+    },
+    {
+     "object": "",
+     "props": {
+      "owner": "str:Sam",
+      "pet": {
+       "object": "Dog",
+       "props": {
+        "name": "str:Rex",
+        "breed": "str:lab"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Rex makes a sound",
+    "str:REX",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "fn:max",
+    "fn:push",
+    "fn:load",
+    "fn:gen"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "method": "fn:method",
+      "arrow": "fn:arrow"
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  5,
+  6,
+  9,
+  12,
+  18,
+  19,
+  22,
+  25,
+  26,
+  27,
+  28,
+  29,
+  30,
+  31,
+  32,
+  33
+ ],
+ "statementRuns": 17,
+ "functionCalls": 6,
+ "finalGlobals": {
+  "greet": "fn:greet",
+  "add": "fn:add",
+  "anon": "fn:",
+  "Animal": "fn:Animal",
+  "Dog": "fn:Dog",
+  "rex": {
+   "object": "Dog",
+   "props": {
+    "name": "str:Rex",
+    "breed": "str:lab"
+   }
+  },
+  "pet": {
+   "object": "Animal",
+   "props": {
+    "name": "str:Cat"
+   }
+  }
+ },
+ "sourceSha256": "10011d75b9b2634026ab55224b635f450325a75b8fd59ccfb8bf599114ddb678"
+}

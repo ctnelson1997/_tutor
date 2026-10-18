@@ -1,0 +1,106 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "main start"
+  },
+  {
+   "stream": "stdout",
+   "text": "after calling main (sync)"
+  },
+  {
+   "stream": "stdout",
+   "text": "result 42"
+  },
+  {
+   "stream": "stdout",
+   "text": "is promise: true"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 21, 42 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "main done"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:main start"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:after calling main (sync)"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:result",
+    "num:42"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:is promise:",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:21",
+      "num:42"
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:main done"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  6,
+  7,
+  8,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  20,
+  21,
+  22,
+  23,
+  25
+ ],
+ "statementRuns": 23,
+ "functionCalls": 8,
+ "finalGlobals": {
+  "getNumber": "fn:getNumber",
+  "doubleIt": "fn:doubleIt",
+  "main": "fn:main",
+  "finalMessage": "str:main done"
+ },
+ "sourceSha256": "e525653772330a6a7dda40582c8ca3b3040c02c2cec58fe9afe65507968afb2d"
+}

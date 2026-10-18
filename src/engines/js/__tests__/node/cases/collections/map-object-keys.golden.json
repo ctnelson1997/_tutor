@@ -1,0 +1,424 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "3 90 undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "90 [ 'Alicia', 'Bob', 'Alice' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ '[object Object]' ] 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "Map(6) {"
+  },
+  {
+   "stream": "stdout",
+   "text": "  'the' => 3,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  'cat' => 1,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  'sat' => 1,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  'on' => 1,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  'mat' => 1,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  'end' => 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "}"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'the', 3 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Map(3) { 1 => [ 1, 4, 7 ], 2 => [ 2, 5 ], 0 => [ 3, 6 ] }"
+  },
+  {
+   "stream": "stdout",
+   "text": "function key null key undef key 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "Map(3) {"
+  },
+  {
+   "stream": "stdout",
+   "text": "  { name: 'Alicia' } => 90,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  { name: 'Bob' } => 85,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  { name: 'Alice' } => 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "}"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:3",
+    "num:90",
+    "undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:90",
+    {
+     "array": [
+      "str:Alicia",
+      "str:Bob",
+      "str:Alice"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:[object Object]"
+     ],
+     "len": 1
+    },
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "map": [
+      [
+       "str:the",
+       "num:3"
+      ],
+      [
+       "str:cat",
+       "num:1"
+      ],
+      [
+       "str:sat",
+       "num:1"
+      ],
+      [
+       "str:on",
+       "num:1"
+      ],
+      [
+       "str:mat",
+       "num:1"
+      ],
+      [
+       "str:end",
+       "num:1"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:the",
+      "num:3"
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "map": [
+      [
+       "num:1",
+       {
+        "array": [
+         "num:1",
+         "num:4",
+         "num:7"
+        ],
+        "len": 3
+       }
+      ],
+      [
+       "num:2",
+       {
+        "array": [
+         "num:2",
+         "num:5"
+        ],
+        "len": 2
+       }
+      ],
+      [
+       "num:0",
+       {
+        "array": [
+         "num:3",
+         "num:6"
+        ],
+        "len": 2
+       }
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:function key",
+    "str:null key",
+    "str:undef key",
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "map": [
+      [
+       {
+        "object": "",
+        "props": {
+         "name": "str:Alicia"
+        }
+       },
+       "num:90"
+      ],
+      [
+       {
+        "object": "",
+        "props": {
+         "name": "str:Bob"
+        }
+       },
+       "num:85"
+      ],
+      [
+       {
+        "object": "",
+        "props": {
+         "name": "str:Alice"
+        }
+       },
+       "num:0"
+      ]
+     ]
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  10,
+  11,
+  13,
+  14,
+  15,
+  16,
+  18,
+  19,
+  20,
+  21,
+  23,
+  24,
+  25,
+  27,
+  28,
+  29,
+  30,
+  31,
+  33,
+  35,
+  36,
+  37,
+  38
+ ],
+ "statementRuns": 58,
+ "functionCalls": 8,
+ "finalGlobals": {
+  "alice": {
+   "object": "",
+   "props": {
+    "name": "str:Alicia"
+   }
+  },
+  "bob": {
+   "object": "",
+   "props": {
+    "name": "str:Bob"
+   }
+  },
+  "scores": {
+   "map": [
+    [
+     {
+      "object": "",
+      "props": {
+       "name": "str:Alicia"
+      }
+     },
+     "num:90"
+    ],
+    [
+     {
+      "object": "",
+      "props": {
+       "name": "str:Bob"
+      }
+     },
+     "num:85"
+    ],
+    [
+     {
+      "object": "",
+      "props": {
+       "name": "str:Alice"
+      }
+     },
+     "num:0"
+    ]
+   ]
+  },
+  "plain": {
+   "object": "",
+   "props": {
+    "[object Object]": "num:2"
+   }
+  },
+  "text": "str:the cat sat on the mat the end",
+  "freq": {
+   "map": [
+    [
+     "str:the",
+     "num:3"
+    ],
+    [
+     "str:cat",
+     "num:1"
+    ],
+    [
+     "str:sat",
+     "num:1"
+    ],
+    [
+     "str:on",
+     "num:1"
+    ],
+    [
+     "str:mat",
+     "num:1"
+    ],
+    [
+     "str:end",
+     "num:1"
+    ]
+   ]
+  },
+  "top": {
+   "array": [
+    "str:the",
+    "num:3"
+   ],
+   "len": 2
+  },
+  "groups": {
+   "map": [
+    [
+     "num:1",
+     {
+      "array": [
+       "num:1",
+       "num:4",
+       "num:7"
+      ],
+      "len": 3
+     }
+    ],
+    [
+     "num:2",
+     {
+      "array": [
+       "num:2",
+       "num:5"
+      ],
+      "len": 2
+     }
+    ],
+    [
+     "num:0",
+     {
+      "array": [
+       "num:3",
+       "num:6"
+      ],
+      "len": 2
+     }
+    ]
+   ]
+  },
+  "fnKey": "fn:fnKey",
+  "weird": {
+   "map": [
+    [
+     "fn:fnKey",
+     "str:function key"
+    ],
+    [
+     "null",
+     "str:null key"
+    ],
+    [
+     "undefined",
+     "str:undef key"
+    ]
+   ]
+  }
+ },
+ "sourceSha256": "cf0b874a9c4cc967249561ed8650898ad9d88d34aca46e733bdf1c040cd831b8"
+}

@@ -1,0 +1,122 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "abc"
+  },
+  {
+   "stream": "stdout",
+   "text": "z 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "s 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ n: 20 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "4"
+  },
+  {
+   "stream": "stdout",
+   "text": "abcabac|"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:abc"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:z",
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:s",
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "n": "num:20"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:4"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:abcabac|"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12
+ ],
+ "statementRuns": 37,
+ "functionCalls": 8,
+ "finalGlobals": {
+  "order": {
+   "array": [
+    "str:a",
+    "str:b",
+    "str:c",
+    "str:a",
+    "str:b",
+    "str:a",
+    "str:c",
+    "str:|"
+   ],
+   "len": 8
+  },
+  "a": "fn:a",
+  "b": "fn:b",
+  "c": "fn:c",
+  "x": "num:1",
+  "y": "num:2",
+  "z": "num:3",
+  "s": "num:3",
+  "p": {
+   "object": "",
+   "props": {
+    "n": "num:20"
+   }
+  },
+  "both": "fn:both"
+ },
+ "sourceSha256": "97bc664b7de5aae7b5efbc63ad9b80f71e114da72d575575a6c447a59f46687c"
+}

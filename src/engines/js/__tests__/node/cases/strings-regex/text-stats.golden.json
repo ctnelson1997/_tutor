@@ -1,0 +1,169 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "word count 18"
+  },
+  {
+   "stream": "stdout",
+   "text": "a=2 anna=2 racecar=2 road=2 the=2 was=2"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'anna', 'racecar', 'wow', 'level' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "racecar 28 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "true"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:word count",
+    "num:18"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:a=2 anna=2 racecar=2 road=2 the=2 was=2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:anna",
+      "str:racecar",
+      "str:wow",
+      "str:level"
+     ],
+     "len": 4
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:racecar",
+    "num:28",
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  5,
+  6,
+  8,
+  9,
+  10,
+  12,
+  16,
+  19,
+  20,
+  22,
+  23,
+  25,
+  26,
+  27,
+  29,
+  30,
+  31,
+  32
+ ],
+ "statementRuns": 91,
+ "functionCalls": 70,
+ "finalGlobals": {
+  "text": "str:Anna saw a racecar. The racecar was red;\nAnna said: \"Wow, a level road!\" The road was long.",
+  "words": {
+   "array": [
+    "str:anna",
+    "str:saw",
+    "str:a",
+    "str:racecar",
+    "str:the",
+    "str:racecar",
+    "str:was",
+    "str:red",
+    "str:anna",
+    "str:said",
+    "str:wow",
+    "str:a",
+    "str:level",
+    "str:road",
+    "str:the",
+    "str:road",
+    "str:was",
+    "str:long"
+   ],
+   "len": 18
+  },
+  "freq": {
+   "object": "",
+   "props": {
+    "anna": "num:2",
+    "saw": "num:1",
+    "a": "num:2",
+    "racecar": "num:2",
+    "the": "num:2",
+    "was": "num:2",
+    "red": "num:1",
+    "said": "num:1",
+    "wow": "num:1",
+    "level": "num:1",
+    "road": "num:2",
+    "long": "num:1"
+   }
+  },
+  "top": {
+   "array": [
+    "str:a=2",
+    "str:anna=2",
+    "str:racecar=2",
+    "str:road=2",
+    "str:the=2",
+    "str:was=2"
+   ],
+   "len": 6
+  },
+  "isPalindrome": "fn:isPalindrome",
+  "palindromes": {
+   "array": [
+    "str:anna",
+    "str:racecar",
+    "str:wow",
+    "str:level"
+   ],
+   "len": 4
+  },
+  "longest": "str:racecar",
+  "vowels": "num:28",
+  "sentences": {
+   "array": [
+    "str:Anna saw a racecar",
+    "str:The racecar was red;\nAnna said: \"Wow, a level road",
+    "str:\" The road was long"
+   ],
+   "len": 3
+  }
+ },
+ "sourceSha256": "d42115d1095eccea84646a985d8313d82f794f79b2ccfe171b05fbd5fc797d7f"
+}

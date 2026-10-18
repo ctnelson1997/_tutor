@@ -1,0 +1,81 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[ '1:1', '2:1', '3:1', '4:1' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "stopped at n = 4 after 8 steps"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:1:1",
+      "str:2:1",
+      "str:3:1",
+      "str:4:1"
+     ],
+     "len": 4
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:stopped at n =",
+    "num:4",
+    "str:after",
+    "num:8",
+    "str:steps"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  8,
+  9,
+  10,
+  11,
+  14,
+  16,
+  17,
+  19,
+  20,
+  21,
+  22,
+  23,
+  24,
+  26,
+  27
+ ],
+ "statementRuns": 80,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "i": "num:4",
+  "log": {
+   "array": [
+    "str:1:1",
+    "str:2:1",
+    "str:3:1",
+    "str:4:1"
+   ],
+   "len": 4
+  },
+  "n": "num:4",
+  "steps": "num:8"
+ },
+ "sourceSha256": "e0dc20b1cd285016030bd7c5bc92195890dd4ca2cc7b122152daae48dd985dde"
+}

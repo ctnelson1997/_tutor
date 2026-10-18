@@ -1,0 +1,117 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "positive negative zero"
+  },
+  {
+   "stream": "stdout",
+   "text": "1 2 Fizz 4 Buzz Fizz 7 8 Fizz Buzz 11 Fizz 13 14 FizzBuzz"
+  },
+  {
+   "stream": "stdout",
+   "text": "r 2 calls [ 'test', 'a', 'a2' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "9 7 8"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:positive",
+    "str:negative",
+    "str:zero"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:1 2 Fizz 4 Buzz Fizz 7 8 Fizz Buzz 11 Fizz 13 14 FizzBuzz"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:r",
+    "num:2",
+    "str:calls",
+    {
+     "array": [
+      "str:test",
+      "str:a",
+      "str:a2"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:9",
+    "num:7",
+    "num:8"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  5,
+  8,
+  10,
+  11,
+  12,
+  14,
+  16,
+  17,
+  19,
+  20,
+  21,
+  22
+ ],
+ "statementRuns": 48,
+ "functionCalls": 24,
+ "finalGlobals": {
+  "sign": "fn:sign",
+  "fizz": "fn:fizz",
+  "out": {
+   "array": [
+    "str:1",
+    "str:2",
+    "str:Fizz",
+    "str:4",
+    "str:Buzz",
+    "str:Fizz",
+    "str:7",
+    "str:8",
+    "str:Fizz",
+    "str:Buzz",
+    "str:11",
+    "str:Fizz",
+    "str:13",
+    "str:14",
+    "str:FizzBuzz"
+   ],
+   "len": 15
+  },
+  "calls": {
+   "array": [
+    "str:test",
+    "str:a",
+    "str:a2"
+   ],
+   "len": 3
+  },
+  "pick": "fn:pick",
+  "r": "num:2",
+  "max3": "fn:max3"
+ },
+ "sourceSha256": "c5193b6daa4d321dddc46ab2e74ad0040ed811622d5871a0df849fbaca3190d4"
+}

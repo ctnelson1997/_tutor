@@ -1,0 +1,109 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "useTypo -> ReferenceError: totalScroe is not defined true"
+  },
+  {
+   "stream": "stdout",
+   "text": "useBeforeLet -> ReferenceError: Cannot access 'laterLet' before initialization true"
+  },
+  {
+   "stream": "stdout",
+   "text": "undefined object"
+  },
+  {
+   "stream": "stdout",
+   "text": "block TDZ: Cannot access 'shadow' before initialization"
+  },
+  {
+   "stream": "stdout",
+   "text": "ReferenceError unknown ReferenceError inner outer"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:useTypo",
+    "str:->",
+    "str:ReferenceError:",
+    "str:totalScroe is not defined",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:useBeforeLet",
+    "str:->",
+    "str:ReferenceError:",
+    "str:Cannot access 'laterLet' before initialization",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:undefined",
+    "str:object"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:block TDZ:",
+    "str:Cannot access 'shadow' before initialization"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:ReferenceError unknown ReferenceError inner",
+    "str:outer"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  5,
+  6,
+  10,
+  11,
+  12,
+  13,
+  14,
+  17,
+  19,
+  21,
+  22,
+  26,
+  27,
+  30,
+  32,
+  34,
+  35,
+  37
+ ],
+ "statementRuns": 22,
+ "functionCalls": 2,
+ "finalGlobals": {
+  "results": {
+   "array": [
+    "str:ReferenceError",
+    "str:unknown",
+    "str:ReferenceError",
+    "str:inner"
+   ],
+   "len": 4
+  },
+  "useTypo": "fn:useTypo",
+  "useBeforeLet": "fn:useBeforeLet",
+  "shadow": "str:outer"
+ },
+ "sourceSha256": "de8a76724029532eb0693e7fb648abf9e291c45e8c880c58ec73198d5e94501b"
+}

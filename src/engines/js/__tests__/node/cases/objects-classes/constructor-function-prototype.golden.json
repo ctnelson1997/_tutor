@@ -1,0 +1,177 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "(1, 2) (4, 6) 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "(1, 2) custom q true false"
+  },
+  {
+   "stream": "stdout",
+   "text": "(4, 6)"
+  },
+  {
+   "stream": "stdout",
+   "text": "(3, 6) true true"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'x', 'y' ] [ 'toString', 'move', 'scale' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "(2, 2) 1 true true"
+  },
+  {
+   "stream": "stdout",
+   "text": "Point { x: 1, y: 2 } Point3D { x: 2, y: 2, z: 1 }"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:(1, 2)",
+    "str:(4, 6)",
+    "num:5"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:(1, 2) custom q",
+    "boolean:true",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:(4, 6)"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:(3, 6)",
+    "boolean:true",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:x",
+      "str:y"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "str:toString",
+      "str:move",
+      "str:scale"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:(2, 2)",
+    "num:1",
+    "boolean:true",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "Point",
+     "props": {
+      "x": "num:1",
+      "y": "num:2"
+     }
+    },
+    {
+     "object": "Point3D",
+     "props": {
+      "x": "num:2",
+      "y": "num:2",
+      "z": "num:1"
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  6,
+  7,
+  9,
+  10,
+  11,
+  12,
+  14,
+  15,
+  18,
+  19,
+  20,
+  22,
+  23,
+  25,
+  26,
+  27,
+  29,
+  30,
+  32,
+  33,
+  36,
+  37,
+  39,
+  40,
+  41,
+  42,
+  43
+ ],
+ "statementRuns": 43,
+ "functionCalls": 16,
+ "finalGlobals": {
+  "Point": "fn:Point",
+  "p": {
+   "object": "Point",
+   "props": {
+    "x": "num:1",
+    "y": "num:2"
+   }
+  },
+  "q": {
+   "object": "Point",
+   "props": {
+    "x": "num:4",
+    "y": "num:6"
+   }
+  },
+  "Point3D": "fn:Point3D",
+  "r": {
+   "object": "Point3D",
+   "props": {
+    "x": "num:2",
+    "y": "num:2",
+    "z": "num:1"
+   }
+  }
+ },
+ "sourceSha256": "30473c968d64471a4585a98f75a2eaad558453168f9277057dd40043b4779979"
+}

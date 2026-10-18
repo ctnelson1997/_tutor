@@ -1,0 +1,176 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[ 'A', 'B', 'C', 'F' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Y N [ 'yes', 'no' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "teen 9"
+  },
+  {
+   "stream": "stdout",
+   "text": "nested: 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "zero or less"
+  },
+  {
+   "stream": "stdout",
+   "text": "0 items 1 item 2 items"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ -1, 0, 1 ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:A",
+      "str:B",
+      "str:C",
+      "str:F"
+     ],
+     "len": 4
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Y",
+    "str:N",
+    {
+     "array": [
+      "str:yes",
+      "str:no"
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:teen",
+    "num:9"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:nested:",
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:zero or less"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:0 items",
+    "str:1 item",
+    "str:2 items"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:-1",
+      "num:0",
+      "num:1"
+     ],
+     "len": 3
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  24,
+  25,
+  26
+ ],
+ "statementRuns": 23,
+ "functionCalls": 12,
+ "finalGlobals": {
+  "grade": "fn:grade",
+  "scores": {
+   "array": [
+    "num:95",
+    "num:85",
+    "num:72",
+    "num:40"
+   ],
+   "len": 4
+  },
+  "grades": {
+   "array": [
+    "str:A",
+    "str:B",
+    "str:C",
+    "str:F"
+   ],
+   "len": 4
+  },
+  "evaluated": {
+   "array": [
+    "str:yes",
+    "str:no"
+   ],
+   "len": 2
+  },
+  "pick": "fn:pick",
+  "age": "num:17",
+  "status": "str:teen",
+  "op": "fn:max",
+  "nested": "num:2",
+  "count": "num:0",
+  "label": "fn:label",
+  "sign": "fn:sign",
+  "signs": {
+   "array": [
+    "num:-1",
+    "num:0",
+    "num:1"
+   ],
+   "len": 3
+  }
+ },
+ "sourceSha256": "edae336ee80ba36931eaff8d323a5153cbf8a071c5aa107ffc82a27881f9350f"
+}

@@ -1,0 +1,27 @@
+// chained assignment runs right to left and shares one value (or one object); assignment as an expression
+let a, b, c;
+a = b = c = 5;
+console.log(a, b, c);
+c = 7;
+console.log(a, b, c);
+const left = {};
+const right = {};
+left.items = right.items = [];
+left.items.push('shared');
+console.log(left, right, left.items === right.items);
+let x = 1;
+let y = (x = x + 1) * 10;
+console.log(x, y);
+const box = { n: 0 };
+let count = box.n = box.n + 1;
+console.log(count, box);
+let p, q;
+p = (q = 3) + (q = 4);
+console.log(p, q);
+const arr = [0, 0, 0];
+let i = 0;
+arr[i] = i = 2;
+console.log(arr, i);
+let m = 10, n = 20;
+[m, n] = [n, m];
+console.log('swapped', m, n);

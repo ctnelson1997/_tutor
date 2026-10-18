@@ -1,0 +1,210 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Alice Dave alice bob carol Émile"
+  },
+  {
+   "stream": "stdout",
+   "text": "alice Alice bob carol Dave Émile"
+  },
+  {
+   "stream": "stdout",
+   "text": "Alice alice bob carol Dave Émile"
+  },
+  {
+   "stream": "stdout",
+   "text": "-1 1 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "0 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "file1.txt file10.txt file2.txt file20.txt"
+  },
+  {
+   "stream": "stdout",
+   "text": "file1.txt file2.txt file10.txt file20.txt"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'Kim, Jo', 'Lee, Ana', 'Lee, Sam' ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Alice Dave alice bob carol Émile"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:alice Alice bob carol Dave Émile"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Alice alice bob carol Dave Émile"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:-1",
+    "num:1",
+    "num:0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:0",
+    "num:0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:file1.txt file10.txt file2.txt file20.txt"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:file1.txt file2.txt file10.txt file20.txt"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:Kim, Jo",
+      "str:Lee, Ana",
+      "str:Lee, Sam"
+     ],
+     "len": 3
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  6,
+  7,
+  9,
+  10,
+  12,
+  13,
+  15,
+  16,
+  17,
+  19,
+  24,
+  25,
+  26
+ ],
+ "statementRuns": 16,
+ "functionCalls": 32,
+ "finalGlobals": {
+  "names": {
+   "array": [
+    "str:bob",
+    "str:Alice",
+    "str:carol",
+    "str:Dave",
+    "str:alice",
+    "str:Émile"
+   ],
+   "len": 6
+  },
+  "byCodeUnits": {
+   "array": [
+    "str:Alice",
+    "str:Dave",
+    "str:alice",
+    "str:bob",
+    "str:carol",
+    "str:Émile"
+   ],
+   "len": 6
+  },
+  "byLocale": {
+   "array": [
+    "str:alice",
+    "str:Alice",
+    "str:bob",
+    "str:carol",
+    "str:Dave",
+    "str:Émile"
+   ],
+   "len": 6
+  },
+  "caseless": {
+   "array": [
+    "str:Alice",
+    "str:alice",
+    "str:bob",
+    "str:carol",
+    "str:Dave",
+    "str:Émile"
+   ],
+   "len": 6
+  },
+  "files": {
+   "array": [
+    "str:file10.txt",
+    "str:file2.txt",
+    "str:file1.txt",
+    "str:file20.txt"
+   ],
+   "len": 4
+  },
+  "students": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "last": "str:Kim",
+      "first": "str:Jo"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "last": "str:Lee",
+      "first": "str:Ana"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "last": "str:Lee",
+      "first": "str:Sam"
+     }
+    }
+   ],
+   "len": 3
+  },
+  "roster": {
+   "array": [
+    "str:Kim, Jo",
+    "str:Lee, Ana",
+    "str:Lee, Sam"
+   ],
+   "len": 3
+  }
+ },
+ "sourceSha256": "28fca4d33b4b14efa17019905c2030ac6c247f761bfedc3cc44a4ce2935f4ce3"
+}

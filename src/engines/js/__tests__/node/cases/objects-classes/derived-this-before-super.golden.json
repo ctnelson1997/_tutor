@@ -1,0 +1,100 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Shape constructor circle"
+  },
+  {
+   "stream": "stdout",
+   "text": "13 Circle { kind: 'circle', r: 2 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "BadSquare start 3"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Shape constructor",
+    "str:circle"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:13",
+    {
+     "object": "Circle",
+     "props": {
+      "kind": "str:circle",
+      "r": "num:2"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:BadSquare start",
+    "num:3"
+   ]
+  }
+ ],
+ "uncaught": [
+  {
+   "name": "ReferenceError",
+   "message": "Must call super constructor in derived class before accessing 'this' or returning from derived constructor",
+   "where": "script",
+   "consoleLines": 3
+  }
+ ],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  4,
+  5,
+  10,
+  11,
+  14,
+  19,
+  20,
+  21,
+  24,
+  25,
+  26,
+  27,
+  28,
+  29
+ ],
+ "statementRuns": 14,
+ "functionCalls": 4,
+ "finalGlobals": {
+  "Shape": "fn:Shape",
+  "Circle": "fn:Circle",
+  "BadSquare": "fn:BadSquare",
+  "c": {
+   "object": "Circle",
+   "props": {
+    "kind": "str:circle",
+    "r": "num:2"
+   }
+  },
+  "shapes": {
+   "array": [
+    {
+     "object": "Circle",
+     "props": {
+      "kind": "str:circle",
+      "r": "num:2"
+     }
+    }
+   ],
+   "len": 1
+  },
+  "sq": "<uninitialized>"
+ },
+ "sourceSha256": "b2a3993623b8025195a037d58fb52a4483a4a4d49a9343086561078b669c6e96"
+}

@@ -1,0 +1,48 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "sum of 1..1000 = 500500"
+  },
+  {
+   "stream": "stdout",
+   "text": "matches formula: true"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:sum of 1..1000 =",
+    "num:500500"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:matches formula:",
+    "boolean:true"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  6,
+  7,
+  8,
+  9
+ ],
+ "statementRuns": 2006,
+ "functionCalls": 1001,
+ "finalGlobals": {
+  "sumTo": "fn:sumTo",
+  "total": "num:500500",
+  "expected": "num:500500"
+ },
+ "sourceSha256": "b68aa248553c9d66acf2d2ed100bca68ada0d189a2c2c244ae0dd4b8d96d251f"
+}

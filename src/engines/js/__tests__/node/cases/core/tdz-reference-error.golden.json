@@ -1,0 +1,155 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "ReferenceError: Cannot access 'early' before initialization"
+  },
+  {
+   "stream": "stdout",
+   "text": "now initialized"
+  },
+  {
+   "stream": "stdout",
+   "text": "call before init: Cannot access 'value' before initialization"
+  },
+  {
+   "stream": "stdout",
+   "text": "call after init: 42"
+  },
+  {
+   "stream": "stdout",
+   "text": "typeof in TDZ: Cannot access 'shadowed' before initialization"
+  },
+  {
+   "stream": "stdout",
+   "text": "block"
+  },
+  {
+   "stream": "stdout",
+   "text": "class TDZ: Cannot access 'Widget' before initialization"
+  },
+  {
+   "stream": "stdout",
+   "text": "typeof an undeclared name is fine: undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'ReferenceError', 'ReferenceError', 'typeof', 'class' ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:ReferenceError: Cannot access 'early' before initialization"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:now initialized"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:call before init:",
+    "str:Cannot access 'value' before initialization"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:call after init:",
+    "num:42"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:typeof in TDZ:",
+    "str:Cannot access 'shadowed' before initialization"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:block"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:class TDZ:",
+    "str:Cannot access 'Widget' before initialization"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:typeof an undeclared name is fine:",
+    "str:undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:ReferenceError",
+      "str:ReferenceError",
+      "str:typeof",
+      "str:class"
+     ],
+     "len": 4
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  4,
+  6,
+  7,
+  9,
+  10,
+  13,
+  16,
+  18,
+  19,
+  21,
+  22,
+  26,
+  28,
+  29,
+  31,
+  32,
+  36,
+  38,
+  39,
+  42,
+  43
+ ],
+ "statementRuns": 23,
+ "functionCalls": 2,
+ "finalGlobals": {
+  "caught": {
+   "array": [
+    "str:ReferenceError",
+    "str:ReferenceError",
+    "str:typeof",
+    "str:class"
+   ],
+   "len": 4
+  },
+  "early": "str:now initialized",
+  "readLater": "fn:readLater",
+  "value": "num:21",
+  "Widget": "fn:Widget"
+ },
+ "sourceSha256": "25d2820ace9ffac7a72a8771fcff514a6a792176924ae3426e78d724308a4e0a"
+}

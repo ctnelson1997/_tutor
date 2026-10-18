@@ -1,0 +1,223 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Loop: [ 4, 2, 6, 1, 5, 3 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Filter: [ 4, 2, 6, 1, 5, 3 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Set: [ 4, 2, 6, 1, 5, 3 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Values that repeat: [ 1, 2, 4, 6 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'a@x.com', 'b@x.com', 'c@x.com' ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Loop:",
+    {
+     "array": [
+      "num:4",
+      "num:2",
+      "num:6",
+      "num:1",
+      "num:5",
+      "num:3"
+     ],
+     "len": 6
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Filter:",
+    {
+     "array": [
+      "num:4",
+      "num:2",
+      "num:6",
+      "num:1",
+      "num:5",
+      "num:3"
+     ],
+     "len": 6
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Set:",
+    {
+     "array": [
+      "num:4",
+      "num:2",
+      "num:6",
+      "num:1",
+      "num:5",
+      "num:3"
+     ],
+     "len": 6
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Values that repeat:",
+    {
+     "array": [
+      "num:1",
+      "num:2",
+      "num:4",
+      "num:6"
+     ],
+     "len": 4
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:a@x.com",
+      "str:b@x.com",
+      "str:c@x.com"
+     ],
+     "len": 3
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  13,
+  14,
+  17,
+  19,
+  20,
+  22,
+  23,
+  25,
+  26,
+  27,
+  29,
+  30,
+  31
+ ],
+ "statementRuns": 89,
+ "functionCalls": 32,
+ "finalGlobals": {
+  "rolls": {
+   "array": [
+    "num:4",
+    "num:2",
+    "num:6",
+    "num:2",
+    "num:1",
+    "num:4",
+    "num:4",
+    "num:5",
+    "num:6",
+    "num:3",
+    "num:1"
+   ],
+   "len": 11
+  },
+  "uniqueLoop": {
+   "array": [
+    "num:4",
+    "num:2",
+    "num:6",
+    "num:1",
+    "num:5",
+    "num:3"
+   ],
+   "len": 6
+  },
+  "uniqueFilter": {
+   "array": [
+    "num:4",
+    "num:2",
+    "num:6",
+    "num:1",
+    "num:5",
+    "num:3"
+   ],
+   "len": 6
+  },
+  "uniqueSet": {
+   "array": [
+    "num:4",
+    "num:2",
+    "num:6",
+    "num:1",
+    "num:5",
+    "num:3"
+   ],
+   "len": 6
+  },
+  "duplicates": {
+   "array": [
+    "num:2",
+    "num:4",
+    "num:4",
+    "num:6",
+    "num:1"
+   ],
+   "len": 5
+  },
+  "duplicateValues": {
+   "array": [
+    "num:1",
+    "num:2",
+    "num:4",
+    "num:6"
+   ],
+   "len": 4
+  },
+  "emails": {
+   "array": [
+    "str:a@x.com",
+    "str:B@x.com",
+    "str:b@x.com",
+    "str:c@x.com",
+    "str:A@X.com"
+   ],
+   "len": 5
+  },
+  "uniqueEmails": {
+   "array": [
+    "str:a@x.com",
+    "str:b@x.com",
+    "str:c@x.com"
+   ],
+   "len": 3
+  }
+ },
+ "sourceSha256": "771c0420f5154e289f4df5e510dc009c87aad9d21f059cc36154acdfa2917f0f"
+}

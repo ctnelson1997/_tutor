@@ -1,0 +1,35 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "adult"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:adult"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  1,
+  2,
+  4,
+  6,
+  9,
+  11
+ ],
+ "statementRuns": 6,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "age": "num:20",
+  "category": "str:adult"
+ },
+ "sourceSha256": "c0865c945caa5094497bdd88b8455496d0b31875d22b8f0ed47d32e66212d29a"
+}

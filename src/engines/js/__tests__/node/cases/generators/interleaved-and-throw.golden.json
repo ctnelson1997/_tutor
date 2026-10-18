@@ -1,0 +1,134 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "A job 1; B job 1; A job 2; B job 2; A finished; B job 3; B finished"
+  },
+  {
+   "stream": "stdout",
+   "text": "0"
+  },
+  {
+   "stream": "stdout",
+   "text": "caught inside generator: bad input"
+  },
+  {
+   "stream": "stdout",
+   "text": "1"
+  },
+  {
+   "stream": "stdout",
+   "text": "caught inside generator: again"
+  },
+  {
+   "stream": "stdout",
+   "text": "2"
+  },
+  {
+   "stream": "stdout",
+   "text": "2"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:A job 1; B job 1; A job 2; B job 2; A finished; B job 3; B finished"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:caught inside generator:",
+    "str:bad input"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:caught inside generator:",
+    "str:again"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:2"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  6,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  17,
+  18,
+  21,
+  24,
+  25,
+  27,
+  29,
+  30,
+  35,
+  36,
+  37,
+  38,
+  39
+ ],
+ "statementRuns": 61,
+ "functionCalls": 3,
+ "finalGlobals": {
+  "worker": "fn:worker",
+  "queue": {
+   "array": [],
+   "len": 0
+  },
+  "log": {
+   "array": [
+    "str:A job 1",
+    "str:B job 1",
+    "str:A job 2",
+    "str:B job 2",
+    "str:A finished",
+    "str:B job 3",
+    "str:B finished"
+   ],
+   "len": 7
+  },
+  "resilient": "fn:resilient",
+  "r": {
+   "object": "",
+   "props": {}
+  }
+ },
+ "sourceSha256": "3d8bcedf895a6cbeee6e272d278070f111069a3afa87d77052381ecbfc29e0b5"
+}

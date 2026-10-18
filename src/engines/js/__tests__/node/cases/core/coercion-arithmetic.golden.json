@@ -1,0 +1,170 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "51 string"
+  },
+  {
+   "stream": "stdout",
+   "text": "4 number"
+  },
+  {
+   "stream": "stdout",
+   "text": "10 [object Object] \"\" 1,23"
+  },
+  {
+   "stream": "stdout",
+   "text": "2 1 NaN"
+  },
+  {
+   "stream": "stdout",
+   "text": "33 123"
+  },
+  {
+   "stream": "stdout",
+   "text": "42 0 NaN"
+  },
+  {
+   "stream": "stdout",
+   "text": "baNaNa [object Object]x 2.5 6"
+  },
+  {
+   "stream": "stdout",
+   "text": " ,1 [object Object]"
+  },
+  {
+   "stream": "stdout",
+   "text": "1,2,3 0 10 NaN"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:51",
+    "str:string"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:4",
+    "str:number"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:10",
+    "str:[object Object]",
+    "str:\"\"",
+    "str:1,23"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:2",
+    "num:1",
+    "num:NaN"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:33",
+    "str:123"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:42",
+    "num:0",
+    "num:NaN"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:baNaNa",
+    "str:[object Object]x",
+    "num:2.5",
+    "num:6"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:",
+    "str:,1",
+    "str:[object Object]"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:1,2,3",
+    "num:0",
+    "num:10",
+    "num:NaN"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  24,
+  25,
+  26,
+  27,
+  28
+ ],
+ "statementRuns": 27,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "a": "str:51",
+  "b": "num:4",
+  "c": "num:10",
+  "d": "str:[object Object]",
+  "e": "str:",
+  "f": "str:1,23",
+  "g": "num:2",
+  "h": "num:1",
+  "i": "num:NaN",
+  "j": "str:33",
+  "k": "str:123",
+  "l": "num:42",
+  "m": "num:0",
+  "n": "num:NaN",
+  "o": "str:baNaNa",
+  "p": "str:[object Object]x",
+  "q": "num:2.5",
+  "r": "num:6"
+ },
+ "sourceSha256": "425a284e61bc337c902a640aef5e2ba2f4dac4355e94fbc92db2843a551109a4"
+}

@@ -1,0 +1,265 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Grading Ava"
+  },
+  {
+   "stream": "stdout",
+   "text": "Ava: 91.8 (A)"
+  },
+  {
+   "stream": "stdout",
+   "text": "Grading Ben"
+  },
+  {
+   "stream": "stdout",
+   "text": "  skipping invalid score \"sixty\""
+  },
+  {
+   "stream": "stdout",
+   "text": "Ben: 78.0 (C)"
+  },
+  {
+   "stream": "stdout",
+   "text": "Grading Cara"
+  },
+  {
+   "stream": "stdout",
+   "text": "  skipping invalid score \"\""
+  },
+  {
+   "stream": "stdout",
+   "text": "Cara: 56.3 (F)"
+  },
+  {
+   "stream": "stdout",
+   "text": "Grading Dev"
+  },
+  {
+   "stream": "stdout",
+   "text": "  skipping invalid score \"105\""
+  },
+  {
+   "stream": "stdout",
+   "text": "Dev: 84.3 (B)"
+  },
+  {
+   "stream": "stdout",
+   "text": "Class average: 77.60"
+  },
+  {
+   "stream": "stdout",
+   "text": "3 of 4 students passed"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Grading Ava"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Ava: 91.8 (A)"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Grading Ben"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:  skipping invalid score \"sixty\""
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Ben: 78.0 (C)"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Grading Cara"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:  skipping invalid score \"\""
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Cara: 56.3 (F)"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Grading Dev"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:  skipping invalid score \"105\""
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Dev: 84.3 (B)"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Class average: 77.60"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:3 of 4 students passed"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  12,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  23,
+  25,
+  29,
+  30,
+  31,
+  33,
+  36,
+  43,
+  44,
+  45,
+  46,
+  47,
+  48,
+  49,
+  50,
+  53,
+  54,
+  55,
+  57,
+  58,
+  59,
+  60
+ ],
+ "statementRuns": 131,
+ "functionCalls": 16,
+ "finalGlobals": {
+  "letterGrade": "fn:letterGrade",
+  "parseScores": "fn:parseScores",
+  "average": "fn:average",
+  "roster": {
+   "object": "",
+   "props": {
+    "Ava": {
+     "array": [
+      "str:92",
+      "str:88",
+      "str:95.5"
+     ],
+     "len": 3
+    },
+    "Ben": {
+     "array": [
+      "str:75",
+      "str:sixty",
+      "str:81"
+     ],
+     "len": 3
+    },
+    "Cara": {
+     "array": [
+      "str:58",
+      "str:62",
+      "str:",
+      "str:49"
+     ],
+     "len": 4
+    },
+    "Dev": {
+     "array": [
+      "str:85",
+      "str:90",
+      "str:105",
+      "str:78"
+     ],
+     "len": 4
+    }
+   }
+  },
+  "report": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:Ava",
+      "avg": "num:91.8",
+      "grade": "str:A"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Ben",
+      "avg": "num:78",
+      "grade": "str:C"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Cara",
+      "avg": "num:56.3",
+      "grade": "str:F"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Dev",
+      "avg": "num:84.3",
+      "grade": "str:B"
+     }
+    }
+   ],
+   "len": 4
+  },
+  "classTotal": "num:310.40000000000003",
+  "classAverage": "num:77.60000000000001",
+  "passing": "num:3"
+ },
+ "sourceSha256": "22589ac90ad3d370e6f4ad199729076eb60eaa8b291599c6e07f4e076bd166bc"
+}

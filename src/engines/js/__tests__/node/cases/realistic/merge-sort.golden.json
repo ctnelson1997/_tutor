@@ -1,0 +1,128 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Input:  38 27 43 3 9 82 10 15"
+  },
+  {
+   "stream": "stdout",
+   "text": "Output: 3 9 10 15 27 38 43 82"
+  },
+  {
+   "stream": "stdout",
+   "text": "Merges performed: 7"
+  },
+  {
+   "stream": "stdout",
+   "text": "eegmorrst"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Input: ",
+    "str:38 27 43 3 9 82 10 15"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Output:",
+    "str:3 9 10 15 27 38 43 82"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Merges performed:",
+    "num:7"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:eegmorrst"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  13,
+  14,
+  17,
+  18,
+  22,
+  23,
+  25,
+  26,
+  27,
+  28,
+  31,
+  32,
+  33,
+  34,
+  35,
+  36,
+  37
+ ],
+ "statementRuns": 312,
+ "functionCalls": 47,
+ "finalGlobals": {
+  "mergeCount": "num:15",
+  "merge": "fn:merge",
+  "mergeSort": "fn:mergeSort",
+  "values": {
+   "array": [
+    "num:38",
+    "num:27",
+    "num:43",
+    "num:3",
+    "num:9",
+    "num:82",
+    "num:10",
+    "num:15"
+   ],
+   "len": 8
+  },
+  "sortedValues": {
+   "array": [
+    "num:3",
+    "num:9",
+    "num:10",
+    "num:15",
+    "num:27",
+    "num:38",
+    "num:43",
+    "num:82"
+   ],
+   "len": 8
+  },
+  "letters": {
+   "array": [
+    "str:e",
+    "str:e",
+    "str:g",
+    "str:m",
+    "str:o",
+    "str:r",
+    "str:r",
+    "str:s",
+    "str:t"
+   ],
+   "len": 9
+  }
+ },
+ "sourceSha256": "4e2508ae6181da4f543c065823e97a461f0db84547b4757202577deecfdd17d8"
+}

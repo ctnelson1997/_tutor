@@ -1,0 +1,116 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "negative at [ 1, 1 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "pairs: 00 11 20 22 31 33"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:negative at",
+    {
+     "array": [
+      "num:1",
+      "num:1"
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:pairs:",
+    "str:00 11 20 22 31 33"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  16,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  26,
+  27
+ ],
+ "statementRuns": 57,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "grid": {
+   "array": [
+    {
+     "array": [
+      "num:1",
+      "num:2",
+      "num:3"
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "num:4",
+      "num:-1",
+      "num:6"
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "num:7",
+      "num:8",
+      "num:9"
+     ],
+     "len": 3
+    }
+   ],
+   "len": 3
+  },
+  "found": {
+   "array": [
+    "num:1",
+    "num:1"
+   ],
+   "len": 2
+  },
+  "pairs": {
+   "array": [
+    "str:00",
+    "str:11",
+    "str:20",
+    "str:22",
+    "str:31",
+    "str:33"
+   ],
+   "len": 6
+  },
+  "lastRow": {
+   "array": [
+    "num:7",
+    "num:8",
+    "num:9"
+   ],
+   "len": 3
+  }
+ },
+ "sourceSha256": "6a7f5ae2c7c3dc008d712e33e21ac46ad634e44216b7ec0cb5b6cd4528c03cde"
+}

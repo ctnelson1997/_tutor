@@ -1,0 +1,109 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "collatz steps from 7: 16"
+  },
+  {
+   "stream": "stdout",
+   "text": "i 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "i 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "i 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "total 15"
+  },
+  {
+   "stream": "stdout",
+   "text": "tries 5"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:collatz steps from 7:",
+    "num:16"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:i",
+    "num:0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:i",
+    "num:1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:i",
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:total",
+    "num:15"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:tries",
+    "num:5"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  9,
+  11,
+  12,
+  13,
+  14,
+  17,
+  18,
+  19,
+  20,
+  22,
+  24,
+  25,
+  26,
+  27,
+  29
+ ],
+ "statementRuns": 92,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "n": "num:1",
+  "steps": "num:16",
+  "i": "num:3",
+  "total": "num:15",
+  "tries": "num:5"
+ },
+ "sourceSha256": "f62bdc9e207a1f32a21f032c1c268fd8d878ba427cfb55de6dab4943340fb699"
+}

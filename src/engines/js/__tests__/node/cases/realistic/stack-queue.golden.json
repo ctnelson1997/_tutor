@@ -1,0 +1,196 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "(a+b)*[c] -> balanced"
+  },
+  {
+   "stream": "stdout",
+   "text": "{[()]} -> balanced"
+  },
+  {
+   "stream": "stdout",
+   "text": "(] -> unbalanced"
+  },
+  {
+   "stream": "stdout",
+   "text": "((x) -> unbalanced"
+  },
+  {
+   "stream": "stdout",
+   "text": "f(g[1]{2}) -> balanced"
+  },
+  {
+   "stream": "stdout",
+   "text": "Went back from contact to about"
+  },
+  {
+   "stream": "stdout",
+   "text": "Served: [ 'Ana', 'Bo' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Still waiting: [ 'Cy', 'Di', 'Ed' ] size 3"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:(a+b)*[c] -> balanced"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:{[()]} -> balanced"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:(] -> unbalanced"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:((x) -> unbalanced"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:f(g[1]{2}) -> balanced"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Went back from",
+    "str:contact",
+    "str:to",
+    "str:about"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Served:",
+    {
+     "array": [
+      "str:Ana",
+      "str:Bo"
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Still waiting:",
+    {
+     "array": [
+      "str:Cy",
+      "str:Di",
+      "str:Ed"
+     ],
+     "len": 3
+    },
+    "str:size",
+    "num:3"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  4,
+  7,
+  10,
+  13,
+  16,
+  22,
+  25,
+  28,
+  31,
+  36,
+  37,
+  38,
+  39,
+  40,
+  41,
+  42,
+  43,
+  47,
+  50,
+  51,
+  52,
+  55,
+  56,
+  57,
+  58,
+  60,
+  61,
+  62,
+  63,
+  64,
+  66,
+  67,
+  68
+ ],
+ "statementRuns": 170,
+ "functionCalls": 70,
+ "finalGlobals": {
+  "Stack": "fn:Stack",
+  "Queue": "fn:Queue",
+  "isBalanced": "fn:isBalanced",
+  "tests": {
+   "array": [
+    "str:(a+b)*[c]",
+    "str:{[()]}",
+    "str:(]",
+    "str:((x)",
+    "str:f(g[1]{2})"
+   ],
+   "len": 5
+  },
+  "history": {
+   "object": "Stack",
+   "props": {
+    "items": {
+     "array": [
+      "str:home",
+      "str:about"
+     ],
+     "len": 2
+    }
+   }
+  },
+  "back": "str:contact",
+  "line": {
+   "object": "Queue",
+   "props": {
+    "items": {
+     "array": [
+      "str:Cy",
+      "str:Di",
+      "str:Ed"
+     ],
+     "len": 3
+    }
+   }
+  },
+  "served": {
+   "array": [
+    "str:Ana",
+    "str:Bo"
+   ],
+   "len": 2
+  }
+ },
+ "sourceSha256": "17491e037667ca255c13dccaac4216f9e668c9a78bd8852d53d97f22ec98b318"
+}

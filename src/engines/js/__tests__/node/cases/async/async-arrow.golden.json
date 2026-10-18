@@ -1,0 +1,116 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "IIFE started"
+  },
+  {
+   "stream": "stdout",
+   "text": "square(5) = 25"
+  },
+  {
+   "stream": "stdout",
+   "text": "addLater = 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "squares + 1: [ 2, 5, 10, 17 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "async reduce total: 10"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:IIFE started"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:square(5) =",
+    "num:25"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:addLater =",
+    "num:5"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:squares + 1:",
+    {
+     "array": [
+      "num:2",
+      "num:5",
+      "num:10",
+      "num:17"
+     ],
+     "len": 4
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:async reduce total:",
+    "num:10"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  15,
+  16,
+  19,
+  20,
+  21,
+  23
+ ],
+ "statementRuns": 23,
+ "functionCalls": 15,
+ "finalGlobals": {
+  "square": "fn:square",
+  "addLater": "fn:addLater",
+  "nums": {
+   "array": [
+    "num:1",
+    "num:2",
+    "num:3",
+    "num:4"
+   ],
+   "len": 4
+  },
+  "squares": {
+   "array": [
+    "num:2",
+    "num:5",
+    "num:10",
+    "num:17"
+   ],
+   "len": 4
+  }
+ },
+ "sourceSha256": "e276419a45e23159141bac3eb63588ccdc524f3b540fd81a221118e244309926"
+}

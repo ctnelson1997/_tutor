@@ -1,0 +1,141 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "0 y null default 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "calls: a,c,d,e,f,g,h,i"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ volume: 50, theme: '', name: 'guest' } 20 false"
+  },
+  {
+   "stream": "stdout",
+   "text": "no email unknown city undefined undefined"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:0",
+    "str:y",
+    "null",
+    "str:default",
+    "num:0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:calls:",
+    "str:a,c,d,e,f,g,h,i"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "volume": "num:50",
+      "theme": "str:",
+      "name": "str:guest"
+     }
+    },
+    "num:20",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:no email",
+    "str:unknown city",
+    "undefined",
+    "undefined"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  4,
+  5,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  24,
+  25,
+  26,
+  27
+ ],
+ "statementRuns": 38,
+ "functionCalls": 8,
+ "finalGlobals": {
+  "calls": {
+   "array": [
+    "str:a",
+    "str:c",
+    "str:d",
+    "str:e",
+    "str:f",
+    "str:g",
+    "str:h",
+    "str:i"
+   ],
+   "len": 8
+  },
+  "check": "fn:check",
+  "r1": "num:0",
+  "r2": "str:y",
+  "r3": "null",
+  "r4": "str:default",
+  "r5": "num:0",
+  "settings": {
+   "object": "",
+   "props": {
+    "volume": "num:50",
+    "theme": "str:",
+    "name": "str:guest"
+   }
+  },
+  "score": "num:20",
+  "user": {
+   "object": "",
+   "props": {
+    "profile": {
+     "object": "",
+     "props": {
+      "email": "null"
+     }
+    }
+   }
+  },
+  "email": "str:no email",
+  "city": "str:unknown city",
+  "shout": "undefined",
+  "missingCall": "undefined"
+ },
+ "sourceSha256": "b1721a91a5efb710ccdf772efccd1b0679de27024aac966a69301e892d515df0"
+}

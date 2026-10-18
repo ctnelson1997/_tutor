@@ -1,0 +1,395 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "6 number one string one not a number undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'b', 'a', 1, '1', NaN, true ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "true false false 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'b', 1, '1', NaN, true, 'a' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "string b => 20"
+  },
+  {
+   "stream": "stdout",
+   "text": "number 1 => number one"
+  },
+  {
+   "stream": "stdout",
+   "text": "string 1 => string one"
+  },
+  {
+   "stream": "stdout",
+   "text": "number NaN => not a number"
+  },
+  {
+   "stream": "stdout",
+   "text": "boolean true => yes"
+  },
+  {
+   "stream": "stdout",
+   "text": "string a => back"
+  },
+  {
+   "stream": "stdout",
+   "text": "Map(6) {"
+  },
+  {
+   "stream": "stdout",
+   "text": "  'b' => '20',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  1 => 'number one',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  '1' => 'STRING ONE',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  NaN => 'not a number',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  true => 'yes',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  'a' => 'BACK'"
+  },
+  {
+   "stream": "stdout",
+   "text": "}"
+  },
+  {
+   "stream": "stdout",
+   "text": "Map(3) { '2' => 'two', '10' => 'ten', 'z' => 1 } { '2': 'two', '10': 'ten', z: 1 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 10, 2, 'z' ] [ '2', '10', 'z' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "0 Map(0) {} 6"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:6",
+    "str:number one",
+    "str:string one",
+    "str:not a number",
+    "undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:b",
+      "str:a",
+      "num:1",
+      "str:1",
+      "num:NaN",
+      "boolean:true"
+     ],
+     "len": 6
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:false",
+    "boolean:false",
+    "num:5"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:b",
+      "num:1",
+      "str:1",
+      "num:NaN",
+      "boolean:true",
+      "str:a"
+     ],
+     "len": 6
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:string",
+    "str:b",
+    "str:=>",
+    "num:20"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:number",
+    "num:1",
+    "str:=>",
+    "str:number one"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:string",
+    "str:1",
+    "str:=>",
+    "str:string one"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:number",
+    "num:NaN",
+    "str:=>",
+    "str:not a number"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:boolean",
+    "boolean:true",
+    "str:=>",
+    "str:yes"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:string",
+    "str:a",
+    "str:=>",
+    "str:back"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "map": [
+      [
+       "str:b",
+       "str:20"
+      ],
+      [
+       "num:1",
+       "str:number one"
+      ],
+      [
+       "str:1",
+       "str:STRING ONE"
+      ],
+      [
+       "num:NaN",
+       "str:not a number"
+      ],
+      [
+       "boolean:true",
+       "str:yes"
+      ],
+      [
+       "str:a",
+       "str:BACK"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "map": [
+      [
+       "str:2",
+       "str:two"
+      ],
+      [
+       "str:10",
+       "str:ten"
+      ],
+      [
+       "str:z",
+       "num:1"
+      ]
+     ]
+    },
+    {
+     "object": "",
+     "props": {
+      "2": "str:two",
+      "10": "str:ten",
+      "z": "num:1"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:10",
+      "num:2",
+      "str:z"
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "str:2",
+      "str:10",
+      "str:z"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:0",
+    {
+     "map": []
+    },
+    "num:6"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  10,
+  11,
+  12,
+  13,
+  14,
+  16,
+  17,
+  19,
+  20,
+  22,
+  24,
+  25,
+  26,
+  27,
+  28,
+  29,
+  30,
+  31
+ ],
+ "statementRuns": 38,
+ "functionCalls": 6,
+ "finalGlobals": {
+  "m": {
+   "map": []
+  },
+  "obj": {
+   "object": "",
+   "props": {
+    "2": "str:two",
+    "10": "str:ten",
+    "z": "num:1"
+   }
+  },
+  "fromObj": {
+   "map": [
+    [
+     "str:2",
+     "str:two"
+    ],
+    [
+     "str:10",
+     "str:ten"
+    ],
+    [
+     "str:z",
+     "num:1"
+    ]
+   ]
+  },
+  "objMap": {
+   "map": [
+    [
+     "num:10",
+     "str:ten"
+    ],
+    [
+     "num:2",
+     "str:two"
+    ],
+    [
+     "str:z",
+     "num:1"
+    ]
+   ]
+  },
+  "cleared": {
+   "map": [
+    [
+     "str:b",
+     "str:20"
+    ],
+    [
+     "num:1",
+     "str:number one"
+    ],
+    [
+     "str:1",
+     "str:STRING ONE"
+    ],
+    [
+     "num:NaN",
+     "str:not a number"
+    ],
+    [
+     "boolean:true",
+     "str:yes"
+    ],
+    [
+     "str:a",
+     "str:BACK"
+    ]
+   ]
+  }
+ },
+ "sourceSha256": "4ca9585b36380245d1df264eae475cf7d3ed80ffe11cb8e4802b329d92717288"
+}
