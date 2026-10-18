@@ -1,0 +1,21 @@
+// console.log of arrays: empty, nested, sparse, mixed-type, long ones that wrap, and very deep nesting
+const empty = [];
+const nums = [1, 2, 3];
+const grid = [[1, 2], [3, 4], [5, 6]];
+const deep = [1, [2, [3, [4, [5, [6]]]]]];
+const mixed = [1, "two", true, null, undefined, { three: 3 }, [4]];
+const sparse = [1, , 3];
+sparse[6] = 7;
+const long = [];
+for (let i = 0; i < 30; i++) long.push(i * 1000);
+const words = ["alpha", "beta", "gamma", "delta", "epsilon", "zeta", "eta", "theta", "iota", "kappa"];
+const big = Array.from({ length: 120 }, (_, i) => i);
+console.log(empty);
+console.log(nums, grid);
+console.log(deep);
+console.log(mixed);
+console.log(sparse, sparse.length);
+console.log(long);
+console.log(words);
+console.log(big);
+console.log([[[]]], [[], []]);

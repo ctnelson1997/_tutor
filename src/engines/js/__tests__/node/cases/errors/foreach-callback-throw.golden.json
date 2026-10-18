@@ -1,0 +1,130 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "caught: negative at index 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "processed [ 6, 14 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "stopped with stop found 7"
+  },
+  {
+   "stream": "stdout",
+   "text": "map failed: Cannot read properties of null (reading 'toUpperCase')"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'xx', 'yy' ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:caught:",
+    "str:negative at index 2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:processed",
+    {
+     "array": [
+      "num:6",
+      "num:14"
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:stopped with",
+    "str:stop",
+    "str:found",
+    "num:7"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:map failed: Cannot read properties of null (reading 'toUpperCase')"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:xx",
+      "str:yy"
+     ],
+     "len": 2
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  6,
+  7,
+  8,
+  10,
+  13,
+  15,
+  17,
+  19,
+  20,
+  21,
+  22,
+  26,
+  31,
+  33,
+  36,
+  37,
+  38,
+  39
+ ],
+ "statementRuns": 25,
+ "functionCalls": 12,
+ "finalGlobals": {
+  "items": {
+   "array": [
+    "num:3",
+    "num:7",
+    "num:-1",
+    "num:9"
+   ],
+   "len": 4
+  },
+  "processed": {
+   "array": [
+    "num:6",
+    "num:14"
+   ],
+   "len": 2
+  },
+  "found": "num:7",
+  "safeMap": "fn:safeMap",
+  "mapped": "str:map failed: Cannot read properties of null (reading 'toUpperCase')",
+  "okMapped": {
+   "array": [
+    "str:xx",
+    "str:yy"
+   ],
+   "len": 2
+  }
+ },
+ "sourceSha256": "f96f78aabf6d4d8128320bbc2c6e74729567aa02a6ed10b24993b385eb9e7df4"
+}

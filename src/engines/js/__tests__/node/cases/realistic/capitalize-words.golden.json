@@ -1,0 +1,158 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "The Lord of the Rings and the Return of the King"
+  },
+  {
+   "stream": "stdout",
+   "text": "four three two one"
+  },
+  {
+   "stream": "stdout",
+   "text": "olleh dlrow morf sj"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'A.L.', 'A.M.T.', 'G.H.' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'LORD', 'RINGS', 'RETURN', 'KING' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Index of 'rings': 16 ends with King? true"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:The Lord of the Rings and the Return of the King"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:four three two one"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:olleh dlrow morf sj"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:A.L.",
+      "str:A.M.T.",
+      "str:G.H."
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:LORD",
+      "str:RINGS",
+      "str:RETURN",
+      "str:KING"
+     ],
+     "len": 4
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Index of 'rings':",
+    "num:16",
+    "str:ends with King?",
+    "boolean:true"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  16,
+  19,
+  23,
+  27,
+  28,
+  29,
+  30,
+  31,
+  33,
+  35,
+  39,
+  42,
+  43,
+  44,
+  45,
+  46,
+  47,
+  48,
+  49,
+  50,
+  51,
+  52
+ ],
+ "statementRuns": 94,
+ "functionCalls": 29,
+ "finalGlobals": {
+  "capitalize": "fn:capitalize",
+  "titleCase": "fn:titleCase",
+  "reverseWords": "fn:reverseWords",
+  "reverseEachWord": "fn:reverseEachWord",
+  "initials": "fn:initials",
+  "title": "str:the lord OF the rings and the return of the king",
+  "fixedTitle": "str:The Lord of the Rings and the Return of the King",
+  "people": {
+   "array": [
+    "str:ada lovelace",
+    "str:alan mathison turing",
+    "str:grace hopper"
+   ],
+   "len": 3
+  },
+  "allInitials": {
+   "array": [
+    "str:A.L.",
+    "str:A.M.T.",
+    "str:G.H."
+   ],
+   "len": 3
+  },
+  "longWords": {
+   "array": [
+    "str:LORD",
+    "str:RINGS",
+    "str:RETURN",
+    "str:KING"
+   ],
+   "len": 4
+  }
+ },
+ "sourceSha256": "d734f19e392ac674cf45133b5572d5568ba713689b4dc3b409de88adadc8afde"
+}

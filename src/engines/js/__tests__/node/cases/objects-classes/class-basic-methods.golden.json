@@ -1,0 +1,385 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "false true"
+  },
+  {
+   "stream": "stdout",
+   "text": "Ana: $120 Ben: $20"
+  },
+  {
+   "stream": "stdout",
+   "text": "["
+  },
+  {
+   "stream": "stdout",
+   "text": "  { type: 'deposit', amount: 50 },"
+  },
+  {
+   "stream": "stdout",
+   "text": "  { type: 'denied', amount: 500 },"
+  },
+  {
+   "stream": "stdout",
+   "text": "  { type: 'withdraw', amount: 30 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "]"
+  },
+  {
+   "stream": "stdout",
+   "text": "true [ 'constructor', 'deposit', 'withdraw', 'log', 'toString' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "function BankAccount"
+  },
+  {
+   "stream": "stdout",
+   "text": "80 false 60 80"
+  },
+  {
+   "stream": "stdout",
+   "text": "BankAccount {"
+  },
+  {
+   "stream": "stdout",
+   "text": "  owner: 'Ana',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  balance: 60,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  history: ["
+  },
+  {
+   "stream": "stdout",
+   "text": "    { type: 'deposit', amount: 50 },"
+  },
+  {
+   "stream": "stdout",
+   "text": "    { type: 'denied', amount: 500 },"
+  },
+  {
+   "stream": "stdout",
+   "text": "    { type: 'withdraw', amount: 30 },"
+  },
+  {
+   "stream": "stdout",
+   "text": "    { type: 'withdraw', amount: 60 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "  ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "} BankAccount {"
+  },
+  {
+   "stream": "stdout",
+   "text": "  owner: 'Ben',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  balance: 80,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  history: ["
+  },
+  {
+   "stream": "stdout",
+   "text": "    { type: 'deposit', amount: 20 },"
+  },
+  {
+   "stream": "stdout",
+   "text": "    { type: 'deposit', amount: 60 },"
+  },
+  {
+   "stream": "stdout",
+   "text": "    { type: 'denied', amount: 1000 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "  ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "}"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "boolean:false",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Ana: $120",
+    "str:Ben: $20"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      {
+       "object": "",
+       "props": {
+        "type": "str:deposit",
+        "amount": "num:50"
+       }
+      },
+      {
+       "object": "",
+       "props": {
+        "type": "str:denied",
+        "amount": "num:500"
+       }
+      },
+      {
+       "object": "",
+       "props": {
+        "type": "str:withdraw",
+        "amount": "num:30"
+       }
+      }
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    {
+     "array": [
+      "str:constructor",
+      "str:deposit",
+      "str:withdraw",
+      "str:log",
+      "str:toString"
+     ],
+     "len": 5
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:function",
+    "str:BankAccount"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:80",
+    "boolean:false",
+    "num:60",
+    "num:80"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "BankAccount",
+     "props": {
+      "owner": "str:Ana",
+      "balance": "num:60",
+      "history": {
+       "array": [
+        {
+         "object": "",
+         "props": {
+          "type": "str:deposit",
+          "amount": "num:50"
+         }
+        },
+        {
+         "object": "",
+         "props": {
+          "type": "str:denied",
+          "amount": "num:500"
+         }
+        },
+        {
+         "object": "",
+         "props": {
+          "type": "str:withdraw",
+          "amount": "num:30"
+         }
+        },
+        {
+         "object": "",
+         "props": {
+          "type": "str:withdraw",
+          "amount": "num:60"
+         }
+        }
+       ],
+       "len": 4
+      }
+     }
+    },
+    {
+     "object": "BankAccount",
+     "props": {
+      "owner": "str:Ben",
+      "balance": "num:80",
+      "history": {
+       "array": [
+        {
+         "object": "",
+         "props": {
+          "type": "str:deposit",
+          "amount": "num:20"
+         }
+        },
+        {
+         "object": "",
+         "props": {
+          "type": "str:deposit",
+          "amount": "num:60"
+         }
+        },
+        {
+         "object": "",
+         "props": {
+          "type": "str:denied",
+          "amount": "num:1000"
+         }
+        }
+       ],
+       "len": 3
+      }
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  4,
+  5,
+  6,
+  9,
+  10,
+  11,
+  14,
+  15,
+  16,
+  18,
+  19,
+  20,
+  23,
+  26,
+  30,
+  31,
+  32,
+  33,
+  34,
+  35,
+  36,
+  37,
+  38,
+  39,
+  40,
+  41
+ ],
+ "statementRuns": 50,
+ "functionCalls": 20,
+ "finalGlobals": {
+  "BankAccount": "fn:BankAccount",
+  "a": {
+   "object": "BankAccount",
+   "props": {
+    "owner": "str:Ana",
+    "balance": "num:60",
+    "history": {
+     "array": [
+      {
+       "object": "",
+       "props": {
+        "type": "str:deposit",
+        "amount": "num:50"
+       }
+      },
+      {
+       "object": "",
+       "props": {
+        "type": "str:denied",
+        "amount": "num:500"
+       }
+      },
+      {
+       "object": "",
+       "props": {
+        "type": "str:withdraw",
+        "amount": "num:30"
+       }
+      },
+      {
+       "object": "",
+       "props": {
+        "type": "str:withdraw",
+        "amount": "num:60"
+       }
+      }
+     ],
+     "len": 4
+    }
+   }
+  },
+  "b": {
+   "object": "BankAccount",
+   "props": {
+    "owner": "str:Ben",
+    "balance": "num:80",
+    "history": {
+     "array": [
+      {
+       "object": "",
+       "props": {
+        "type": "str:deposit",
+        "amount": "num:20"
+       }
+      },
+      {
+       "object": "",
+       "props": {
+        "type": "str:deposit",
+        "amount": "num:60"
+       }
+      },
+      {
+       "object": "",
+       "props": {
+        "type": "str:denied",
+        "amount": "num:1000"
+       }
+      }
+     ],
+     "len": 3
+    }
+   }
+  },
+  "transfer": "fn:transfer"
+ },
+ "sourceSha256": "f80dbf037b28495ff9d7cff4d31b58b6fd292951f3a28b5e2526f15956017072"
+}

@@ -1,0 +1,132 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "settled fast"
+  },
+  {
+   "stream": "stdout",
+   "text": "settled mid"
+  },
+  {
+   "stream": "stdout",
+   "text": "settled slow"
+  },
+  {
+   "stream": "stdout",
+   "text": "all resolved: [ 'slow', 'fast', 42, 'mid' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "settled b"
+  },
+  {
+   "stream": "stdout",
+   "text": "all rejected: failed: b"
+  },
+  {
+   "stream": "stdout",
+   "text": "settled a"
+  },
+  {
+   "stream": "stdout",
+   "text": "settled c"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:settled",
+    "str:fast"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:settled",
+    "str:mid"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:settled",
+    "str:slow"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:all resolved:",
+    {
+     "array": [
+      "str:slow",
+      "str:fast",
+      "num:42",
+      "str:mid"
+     ],
+     "len": 4
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:settled",
+    "str:b"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:all rejected:",
+    "str:failed: b"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:settled",
+    "str:a"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:settled",
+    "str:c"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  5,
+  6,
+  10,
+  11,
+  13,
+  14,
+  15,
+  18
+ ],
+ "statementRuns": 24,
+ "functionCalls": 20,
+ "finalGlobals": {
+  "after": "fn:after",
+  "ok": {
+   "array": [
+    "str:slow",
+    "str:fast",
+    "num:42",
+    "str:mid"
+   ],
+   "len": 4
+  }
+ },
+ "sourceSha256": "5967a601268e57fba973d7859ecef974261ab3744ca9ceef5cafe48e990a7fd7"
+}

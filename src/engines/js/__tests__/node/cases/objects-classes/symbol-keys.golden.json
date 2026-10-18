@@ -1,0 +1,237 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "false Symbol(id) id true"
+  },
+  {
+   "stream": "stdout",
+   "text": "101 202 global"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'name' ] {\"name\":\"Kim\"}"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'name' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'id', 'id', 'app.shared', 'Symbol.iterator' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "5 [ 'Kim', 101 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "101 202"
+  },
+  {
+   "stream": "stdout",
+   "text": "green unknown"
+  },
+  {
+   "stream": "stdout",
+   "text": "{"
+  },
+  {
+   "stream": "stdout",
+   "text": "  name: 'Kim',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  Symbol(id): 101,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  Symbol(id): 202,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  Symbol(app.shared): 'global',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  Symbol(Symbol.iterator): [GeneratorFunction (anonymous)]"
+  },
+  {
+   "stream": "stdout",
+   "text": "} { RED: Symbol(red), GREEN: Symbol(green) }"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "boolean:false",
+    "str:Symbol(id)",
+    "str:id",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:101",
+    "num:202",
+    "str:global"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:name"
+     ],
+     "len": 1
+    },
+    "str:{\"name\":\"Kim\"}"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:name"
+     ],
+     "len": 1
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:id",
+      "str:id",
+      "str:app.shared",
+      "str:Symbol.iterator"
+     ],
+     "len": 4
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:5",
+    {
+     "array": [
+      "str:Kim",
+      "num:101"
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:101",
+    "num:202"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:green",
+    "str:unknown"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:Kim",
+      "[Symbol(id)]": "num:202",
+      "[Symbol(app.shared)]": "str:global",
+      "[Symbol(Symbol.iterator)]": "fn:"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "RED": "sym:red",
+      "GREEN": "sym:green"
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  6,
+  12,
+  13,
+  14,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  24,
+  26,
+  27,
+  29,
+  31,
+  33,
+  34,
+  37,
+  38
+ ],
+ "statementRuns": 25,
+ "functionCalls": 7,
+ "finalGlobals": {
+  "id": "sym:id",
+  "id2": "sym:id",
+  "shared": "sym:app.shared",
+  "user": {
+   "object": "",
+   "props": {
+    "name": "str:Kim",
+    "[Symbol(id)]": "num:202",
+    "[Symbol(app.shared)]": "str:global",
+    "[Symbol(Symbol.iterator)]": "fn:"
+   }
+  },
+  "forIn": {
+   "array": [
+    "str:name"
+   ],
+   "len": 1
+  },
+  "copy": {
+   "object": "",
+   "props": {
+    "name": "str:Kim",
+    "[Symbol(id)]": "num:202",
+    "[Symbol(app.shared)]": "str:global",
+    "[Symbol(Symbol.iterator)]": "fn:"
+   }
+  },
+  "COLORS": {
+   "object": "",
+   "props": {
+    "RED": "sym:red",
+    "GREEN": "sym:green"
+   }
+  },
+  "colorName": "fn:colorName"
+ },
+ "sourceSha256": "6362d9eed123c1bc17483b407e0c5ae72ab70f04dc921817873e0533303bb83f"
+}

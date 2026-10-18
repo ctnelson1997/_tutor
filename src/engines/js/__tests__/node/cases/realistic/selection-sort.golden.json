@@ -1,0 +1,268 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "["
+  },
+  {
+   "stream": "stdout",
+   "text": "  'Ava',  'Ethan',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  'Liam', 'Maya',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  'Noah', 'Olivia',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  'Zoe'"
+  },
+  {
+   "stream": "stdout",
+   "text": "]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Pencil      $0.25"
+  },
+  {
+   "stream": "stdout",
+   "text": "Ruler       $1.75"
+  },
+  {
+   "stream": "stdout",
+   "text": "Notebook    $3.50"
+  },
+  {
+   "stream": "stdout",
+   "text": "Calculator  $12.00"
+  },
+  {
+   "stream": "stdout",
+   "text": "Backpack    $24.99"
+  },
+  {
+   "stream": "stdout",
+   "text": "Cheapest: Pencil, priciest: Backpack"
+  },
+  {
+   "stream": "stdout",
+   "text": "Same objects? true"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:Ava",
+      "str:Ethan",
+      "str:Liam",
+      "str:Maya",
+      "str:Noah",
+      "str:Olivia",
+      "str:Zoe"
+     ],
+     "len": 7
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Pencil      $0.25"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Ruler       $1.75"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Notebook    $3.50"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Calculator  $12.00"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Backpack    $24.99"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Cheapest: Pencil, priciest: Backpack"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Same objects?",
+    "boolean:true"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  11,
+  12,
+  15,
+  18,
+  19,
+  20,
+  22,
+  29,
+  30,
+  31,
+  33,
+  34,
+  35,
+  36
+ ],
+ "statementRuns": 101,
+ "functionCalls": 33,
+ "finalGlobals": {
+  "selectionSort": "fn:selectionSort",
+  "names": {
+   "array": [
+    "str:Maya",
+    "str:Liam",
+    "str:Zoe",
+    "str:Ethan",
+    "str:Ava",
+    "str:Noah",
+    "str:Olivia"
+   ],
+   "len": 7
+  },
+  "byName": {
+   "array": [
+    "str:Ava",
+    "str:Ethan",
+    "str:Liam",
+    "str:Maya",
+    "str:Noah",
+    "str:Olivia",
+    "str:Zoe"
+   ],
+   "len": 7
+  },
+  "products": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:Notebook",
+      "price": "num:3.5"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Backpack",
+      "price": "num:24.99"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Pencil",
+      "price": "num:0.25"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Calculator",
+      "price": "num:12"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Ruler",
+      "price": "num:1.75"
+     }
+    }
+   ],
+   "len": 5
+  },
+  "byPrice": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:Pencil",
+      "price": "num:0.25"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Ruler",
+      "price": "num:1.75"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Notebook",
+      "price": "num:3.5"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Calculator",
+      "price": "num:12"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Backpack",
+      "price": "num:24.99"
+     }
+    }
+   ],
+   "len": 5
+  },
+  "cheapest": {
+   "object": "",
+   "props": {
+    "name": "str:Pencil",
+    "price": "num:0.25"
+   }
+  },
+  "priciest": {
+   "object": "",
+   "props": {
+    "name": "str:Backpack",
+    "price": "num:24.99"
+   }
+  }
+ },
+ "sourceSha256": "42e0ce3fc14550b4a0cd257c1264c3a70abfbff988cb97e77ac2c565dc9c8381"
+}

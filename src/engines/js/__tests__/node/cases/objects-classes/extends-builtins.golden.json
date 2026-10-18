@@ -1,0 +1,294 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "3 3 3 true true"
+  },
+  {
+   "stream": "stdout",
+   "text": "true 6 Stack(3) [ 2, 4, 6 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "ValidationError email Email is required true true"
+  },
+  {
+   "stream": "stdout",
+   "text": "ValidationError: Email is required"
+  },
+  {
+   "stream": "stdout",
+   "text": "ok email"
+  },
+  {
+   "stream": "stdout",
+   "text": "["
+  },
+  {
+   "stream": "stdout",
+   "text": "  [ 'the', 3 ],"
+  },
+  {
+   "stream": "stdout",
+   "text": "  [ 'cat', 1 ],"
+  },
+  {
+   "stream": "stdout",
+   "text": "  [ 'and', 2 ],"
+  },
+  {
+   "stream": "stdout",
+   "text": "  [ 'hat', 1 ],"
+  },
+  {
+   "stream": "stdout",
+   "text": "  [ 'bat', 1 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "] 5 true"
+  },
+  {
+   "stream": "stdout",
+   "text": "CountingMap(5) {"
+  },
+  {
+   "stream": "stdout",
+   "text": "  'the' => 3,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  'cat' => 1,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  'and' => 2,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  'hat' => 1,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  'bat' => 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "} Stack(3) [ 1, 2, 3 ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:3",
+    "num:3",
+    "num:3",
+    "boolean:true",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "num:6",
+    {
+     "array": [
+      "num:2",
+      "num:4",
+      "num:6"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:ValidationError",
+    "str:email",
+    "str:Email is required",
+    "boolean:true",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:ValidationError: Email is required"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:ok",
+    "str:email"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      {
+       "array": [
+        "str:the",
+        "num:3"
+       ],
+       "len": 2
+      },
+      {
+       "array": [
+        "str:cat",
+        "num:1"
+       ],
+       "len": 2
+      },
+      {
+       "array": [
+        "str:and",
+        "num:2"
+       ],
+       "len": 2
+      },
+      {
+       "array": [
+        "str:hat",
+        "num:1"
+       ],
+       "len": 2
+      },
+      {
+       "array": [
+        "str:bat",
+        "num:1"
+       ],
+       "len": 2
+      }
+     ],
+     "len": 5
+    },
+    "num:5",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "map": [
+      [
+       "str:the",
+       "num:3"
+      ],
+      [
+       "str:cat",
+       "num:1"
+      ],
+      [
+       "str:and",
+       "num:2"
+      ],
+      [
+       "str:hat",
+       "num:1"
+      ],
+      [
+       "str:bat",
+       "num:1"
+      ]
+     ]
+    },
+    {
+     "array": [
+      "num:1",
+      "num:2",
+      "num:3"
+     ],
+     "len": 3
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  4,
+  7,
+  10,
+  11,
+  12,
+  13,
+  14,
+  18,
+  19,
+  20,
+  24,
+  25,
+  27,
+  29,
+  31,
+  32,
+  33,
+  35,
+  39,
+  40,
+  43,
+  44,
+  45,
+  46
+ ],
+ "statementRuns": 50,
+ "functionCalls": 18,
+ "finalGlobals": {
+  "Stack": "fn:Stack",
+  "s": {
+   "array": [
+    "num:1",
+    "num:2",
+    "num:3"
+   ],
+   "len": 3
+  },
+  "doubled": {
+   "array": [
+    "num:2",
+    "num:4",
+    "num:6"
+   ],
+   "len": 3
+  },
+  "ValidationError": "fn:ValidationError",
+  "check": "fn:check",
+  "failedField": "str:email",
+  "CountingMap": "fn:CountingMap",
+  "counts": {
+   "map": [
+    [
+     "str:the",
+     "num:3"
+    ],
+    [
+     "str:cat",
+     "num:1"
+    ],
+    [
+     "str:and",
+     "num:2"
+    ],
+    [
+     "str:hat",
+     "num:1"
+    ],
+    [
+     "str:bat",
+     "num:1"
+    ]
+   ]
+  }
+ },
+ "sourceSha256": "2aa7e78cf7b423dba56e56242d1d96297915a5d6138f063f6cbb14dcfc263cb1"
+}

@@ -1,0 +1,208 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Hello, friend!"
+  },
+  {
+   "stream": "stdout",
+   "text": "Hello, Sam!"
+  },
+  {
+   "stream": "stdout",
+   "text": "Hi, Sam!"
+  },
+  {
+   "stream": "stdout",
+   "text": "Hey, friend!"
+  },
+  {
+   "stream": "stdout",
+   "text": "Yo, null!"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'a' ] [ 'b' ] false"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ name: 'x', id: 100 } { name: 'y', id: 7 } { name: 'z', id: 200 } nextId called 2 times"
+  },
+  {
+   "stream": "stdout",
+   "text": "9 12"
+  },
+  {
+   "stream": "stdout",
+   "text": "lengths: 0 1 1 1"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Hello, friend!"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Hello, Sam!"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Hi, Sam!"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Hey, friend!"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Yo, null!"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:a"
+     ],
+     "len": 1
+    },
+    {
+     "array": [
+      "str:b"
+     ],
+     "len": 1
+    },
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:x",
+      "id": "num:100"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:y",
+      "id": "num:7"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:z",
+      "id": "num:200"
+     }
+    },
+    "str:nextId called",
+    "num:2",
+    "str:times"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:9",
+    "num:12"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:lengths:",
+    "num:0",
+    "num:1",
+    "num:1",
+    "num:1"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  5,
+  6,
+  7,
+  8,
+  9,
+  11,
+  12,
+  14,
+  15,
+  16,
+  17,
+  19,
+  20,
+  23,
+  25,
+  26,
+  27,
+  28,
+  30,
+  32,
+  33
+ ],
+ "statementRuns": 33,
+ "functionCalls": 14,
+ "finalGlobals": {
+  "greet": "fn:greet",
+  "addItem": "fn:addItem",
+  "first": {
+   "array": [
+    "str:a"
+   ],
+   "len": 1
+  },
+  "second": {
+   "array": [
+    "str:b"
+   ],
+   "len": 1
+  },
+  "calls": "num:2",
+  "nextId": "fn:nextId",
+  "makeUser": "fn:makeUser",
+  "u1": {
+   "object": "",
+   "props": {
+    "name": "str:x",
+    "id": "num:100"
+   }
+  },
+  "u2": {
+   "object": "",
+   "props": {
+    "name": "str:y",
+    "id": "num:7"
+   }
+  },
+  "u3": {
+   "object": "",
+   "props": {
+    "name": "str:z",
+    "id": "num:200"
+   }
+  },
+  "rect": "fn:rect"
+ },
+ "sourceSha256": "2f1bd20177f7c9055dfaaca3ec1b2dd6135b92b546cab846fc54fbae95991f56"
+}

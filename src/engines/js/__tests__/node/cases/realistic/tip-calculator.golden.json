@@ -1,0 +1,266 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Tip: $15.74"
+  },
+  {
+   "stream": "stdout",
+   "text": "Total: $103.19"
+  },
+  {
+   "stream": "stdout",
+   "text": "Person 1 pays $34.40"
+  },
+  {
+   "stream": "stdout",
+   "text": "Person 2 pays $34.40"
+  },
+  {
+   "stream": "stdout",
+   "text": "Person 3 pays $34.39"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ tip: 6.3, total: 48.3, shares: [ 12.08, 12.08, 12.07, 12.07 ] }"
+  },
+  {
+   "stream": "stdout",
+   "text": "Shares add up? true"
+  },
+  {
+   "stream": "stdout",
+   "text": "10% of $50 -> $5.00"
+  },
+  {
+   "stream": "stdout",
+   "text": "15% of $50 -> $7.50"
+  },
+  {
+   "stream": "stdout",
+   "text": "18% of $50 -> $9.00"
+  },
+  {
+   "stream": "stdout",
+   "text": "20% of $50 -> $10.00"
+  },
+  {
+   "stream": "stdout",
+   "text": "25% of $50 -> $12.50"
+  },
+  {
+   "stream": "stdout",
+   "text": "0.1 + 0.2 = 0.30000000000000004 but rounded: 0.30"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Tip: $15.74"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Total: $103.19"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Person 1 pays $34.40"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Person 2 pays $34.40"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Person 3 pays $34.39"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "tip": "num:6.3",
+      "total": "num:48.3",
+      "shares": {
+       "array": [
+        "num:12.08",
+        "num:12.08",
+        "num:12.07",
+        "num:12.07"
+       ],
+       "len": 4
+      }
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Shares add up?",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:10% of $50 -> $5.00"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:15% of $50 -> $7.50"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:18% of $50 -> $9.00"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:20% of $50 -> $10.00"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:25% of $50 -> $12.50"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:0.1 + 0.2 =",
+    "num:0.30000000000000004",
+    "str:but rounded:",
+    "str:0.30"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  19,
+  21,
+  24,
+  25,
+  26,
+  27,
+  29,
+  30,
+  31,
+  32,
+  34,
+  35,
+  36,
+  38
+ ],
+ "statementRuns": 68,
+ "functionCalls": 21,
+ "finalGlobals": {
+  "calculateTip": "fn:calculateTip",
+  "splitBill": "fn:splitBill",
+  "dinner": {
+   "object": "",
+   "props": {
+    "tip": "num:15.74",
+    "total": "num:103.19",
+    "shares": {
+     "array": [
+      "num:34.4",
+      "num:34.4",
+      "num:34.39"
+     ],
+     "len": 3
+    }
+   }
+  },
+  "lunch": {
+   "object": "",
+   "props": {
+    "tip": "num:6.3",
+    "total": "num:48.3",
+    "shares": {
+     "array": [
+      "num:12.08",
+      "num:12.08",
+      "num:12.07",
+      "num:12.07"
+     ],
+     "len": 4
+    }
+   }
+  },
+  "sumCheck": "num:48.300000000000004",
+  "tipTable": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "percent": "num:10",
+      "tip": "num:5"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "percent": "num:15",
+      "tip": "num:7.5"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "percent": "num:18",
+      "tip": "num:9"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "percent": "num:20",
+      "tip": "num:10"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "percent": "num:25",
+      "tip": "num:12.5"
+     }
+    }
+   ],
+   "len": 5
+  }
+ },
+ "sourceSha256": "51252108cefc3a3e2848565d391b1942e9609490a574c67dcaa4b933dda69236"
+}

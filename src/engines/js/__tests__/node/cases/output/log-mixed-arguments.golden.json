@@ -1,0 +1,180 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Name: Ada Age: 36 Active: true"
+  },
+  {
+   "stream": "stdout",
+   "text": "1 1 true true null undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "scores [ 90, 85 ] profile { name: 'Ada', age: 36 }"
+  },
+  {
+   "stream": "stdout",
+   "text": ""
+  },
+  {
+   "stream": "stdout",
+   "text": "37 Ada is 36 true"
+  },
+  {
+   "stream": "stdout",
+   "text": "a12 3a 10 [object Object] object"
+  },
+  {
+   "stream": "stdout",
+   "text": "Ada 36 true 2"
+  },
+  {
+   "stream": "stdout",
+   "text": ""
+  },
+  {
+   "stream": "stdout",
+   "text": "done"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Name:",
+    "str:Ada",
+    "str:Age:",
+    "num:36",
+    "str:Active:",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:1",
+    "str:1",
+    "boolean:true",
+    "str:true",
+    "null",
+    "undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:scores",
+    {
+     "array": [
+      "num:90",
+      "num:85"
+     ],
+     "len": 2
+    },
+    "str:profile",
+    {
+     "object": "",
+     "props": {
+      "name": "str:Ada",
+      "age": "num:36"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": []
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:37",
+    "str:Ada is 36",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:a12",
+    "str:3a",
+    "num:10",
+    "str:[object Object]",
+    "str:object"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Ada",
+    "num:36",
+    "boolean:true",
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:done"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16
+ ],
+ "statementRuns": 15,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "name": "str:Ada",
+  "age": "num:36",
+  "active": "boolean:true",
+  "scores": {
+   "array": [
+    "num:90",
+    "num:85"
+   ],
+   "len": 2
+  },
+  "profile": {
+   "object": "",
+   "props": {
+    "name": "str:Ada",
+    "age": "num:36"
+   }
+  },
+  "summary": {
+   "array": [
+    "str:Ada",
+    "num:36",
+    "boolean:true",
+    "num:2"
+   ],
+   "len": 4
+  }
+ },
+ "sourceSha256": "57b4b723f6cd08975085cde8062701deed8a5993787b34062ed07ccc36c505c8"
+}

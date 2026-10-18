@@ -1,0 +1,337 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[ 'b', 'c' ] [ 'a', 'd', 'e', 'f' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[] [ 'a', 'X', 'Y', 'd', 'e', 'f' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'e' ] [ 'a', 'X', 'Y', 'd', 'Q', 'f' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'Q', 'f' ] [ 'a', 'X', 'Y', 'd' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 20, 30 ] [ 40, 50 ] [] [ 10, 20, 30, 40, 50 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "10 99"
+  },
+  {
+   "stream": "stdout",
+   "text": "100 false"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'clean', 'nap' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 1, 2, 3 ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:b",
+      "str:c"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "str:a",
+      "str:d",
+      "str:e",
+      "str:f"
+     ],
+     "len": 4
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [],
+     "len": 0
+    },
+    {
+     "array": [
+      "str:a",
+      "str:X",
+      "str:Y",
+      "str:d",
+      "str:e",
+      "str:f"
+     ],
+     "len": 6
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:e"
+     ],
+     "len": 1
+    },
+    {
+     "array": [
+      "str:a",
+      "str:X",
+      "str:Y",
+      "str:d",
+      "str:Q",
+      "str:f"
+     ],
+     "len": 6
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:Q",
+      "str:f"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "str:a",
+      "str:X",
+      "str:Y",
+      "str:d"
+     ],
+     "len": 4
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:20",
+      "num:30"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "num:40",
+      "num:50"
+     ],
+     "len": 2
+    },
+    {
+     "array": [],
+     "len": 0
+    },
+    {
+     "array": [
+      "num:10",
+      "num:20",
+      "num:30",
+      "num:40",
+      "num:50"
+     ],
+     "len": 5
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:10",
+    "num:99"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:100",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:clean",
+      "str:nap"
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:1",
+      "num:2",
+      "num:3"
+     ],
+     "len": 3
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  12,
+  13,
+  14,
+  15,
+  16,
+  18,
+  19,
+  20,
+  21,
+  23,
+  24,
+  25,
+  27,
+  29,
+  30,
+  31,
+  33
+ ],
+ "statementRuns": 38,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "letters": {
+   "array": [
+    "str:a",
+    "str:X",
+    "str:Y",
+    "str:d"
+   ],
+   "len": 4
+  },
+  "removed": {
+   "array": [
+    "str:b",
+    "str:c"
+   ],
+   "len": 2
+  },
+  "none": {
+   "array": [],
+   "len": 0
+  },
+  "replaced": {
+   "array": [
+    "str:e"
+   ],
+   "len": 1
+  },
+  "tail": {
+   "array": [
+    "str:Q",
+    "str:f"
+   ],
+   "len": 2
+  },
+  "nums": {
+   "array": [
+    "num:10",
+    "num:20",
+    "num:30",
+    "num:40",
+    "num:50"
+   ],
+   "len": 5
+  },
+  "copy": {
+   "array": [
+    "num:99",
+    "num:20",
+    "num:30",
+    "num:40",
+    "num:50"
+   ],
+   "len": 5
+  },
+  "objs": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "id": "num:100"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "id": "num:2"
+     }
+    }
+   ],
+   "len": 2
+  },
+  "objCopy": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "id": "num:100"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "id": "num:2"
+     }
+    }
+   ],
+   "len": 2
+  },
+  "todo": {
+   "array": [
+    "str:clean",
+    "str:nap"
+   ],
+   "len": 2
+  },
+  "buggy": {
+   "array": [
+    "num:1",
+    "num:2",
+    "num:3"
+   ],
+   "len": 3
+  }
+ },
+ "sourceSha256": "3bf27e11efe6ac4a8d60ce1a3c1c6645218be19effa138523253fc168398c555"
+}

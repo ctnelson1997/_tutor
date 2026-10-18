@@ -1,0 +1,423 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[ [ 'x' ], [ 'x' ], [ 'x' ] ] true"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ [ 'x' ], [], [] ] false"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ [ 0, 5, 0 ], [ 0, 5, 0 ] ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ [ 0, 5, 0 ], [ 0, 0, 0 ] ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ { count: 1 }, { count: 1 } ] 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ [ 0, 0 ], [ 0, 9 ] ] [ 0, 0 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ <2 empty items> ] 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ [ 'taken', 'A2' ], [ 'B1', 'B2' ] ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      {
+       "array": [
+        "str:x"
+       ],
+       "len": 1
+      },
+      {
+       "array": [
+        "str:x"
+       ],
+       "len": 1
+      },
+      {
+       "array": [
+        "str:x"
+       ],
+       "len": 1
+      }
+     ],
+     "len": 3
+    },
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      {
+       "array": [
+        "str:x"
+       ],
+       "len": 1
+      },
+      {
+       "array": [],
+       "len": 0
+      },
+      {
+       "array": [],
+       "len": 0
+      }
+     ],
+     "len": 3
+    },
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      {
+       "array": [
+        "num:0",
+        "num:5",
+        "num:0"
+       ],
+       "len": 3
+      },
+      {
+       "array": [
+        "num:0",
+        "num:5",
+        "num:0"
+       ],
+       "len": 3
+      }
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      {
+       "array": [
+        "num:0",
+        "num:5",
+        "num:0"
+       ],
+       "len": 3
+      },
+      {
+       "array": [
+        "num:0",
+        "num:0",
+        "num:0"
+       ],
+       "len": 3
+      }
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      {
+       "object": "",
+       "props": {
+        "count": "num:1"
+       }
+      },
+      {
+       "object": "",
+       "props": {
+        "count": "num:1"
+       }
+      }
+     ],
+     "len": 2
+    },
+    "num:1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      {
+       "array": [
+        "num:0",
+        "num:0"
+       ],
+       "len": 2
+      },
+      {
+       "array": [
+        "num:0",
+        "num:9"
+       ],
+       "len": 2
+      }
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "num:0",
+      "num:0"
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "<hole>",
+      "<hole>"
+     ],
+     "len": 2
+    },
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      {
+       "array": [
+        "str:taken",
+        "str:A2"
+       ],
+       "len": 2
+      },
+      {
+       "array": [
+        "str:B1",
+        "str:B2"
+       ],
+       "len": 2
+      }
+     ],
+     "len": 2
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  6,
+  7,
+  8,
+  10,
+  11,
+  12,
+  14,
+  15,
+  16,
+  18,
+  19,
+  20,
+  22,
+  23,
+  24,
+  25,
+  27,
+  28,
+  29,
+  30,
+  31
+ ],
+ "statementRuns": 24,
+ "functionCalls": 13,
+ "finalGlobals": {
+  "bad": {
+   "array": [
+    {
+     "array": [
+      "str:x"
+     ],
+     "len": 1
+    },
+    {
+     "array": [
+      "str:x"
+     ],
+     "len": 1
+    },
+    {
+     "array": [
+      "str:x"
+     ],
+     "len": 1
+    }
+   ],
+   "len": 3
+  },
+  "good": {
+   "array": [
+    {
+     "array": [
+      "str:x"
+     ],
+     "len": 1
+    },
+    {
+     "array": [],
+     "len": 0
+    },
+    {
+     "array": [],
+     "len": 0
+    }
+   ],
+   "len": 3
+  },
+  "badGrid": {
+   "array": [
+    {
+     "array": [
+      "num:0",
+      "num:5",
+      "num:0"
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "num:0",
+      "num:5",
+      "num:0"
+     ],
+     "len": 3
+    }
+   ],
+   "len": 2
+  },
+  "goodGrid": {
+   "array": [
+    {
+     "array": [
+      "num:0",
+      "num:5",
+      "num:0"
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "num:0",
+      "num:0",
+      "num:0"
+     ],
+     "len": 3
+    }
+   ],
+   "len": 2
+  },
+  "sameObj": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "count": "num:1"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "count": "num:1"
+     }
+    }
+   ],
+   "len": 2
+  },
+  "rowTemplate": {
+   "array": [
+    "num:0",
+    "num:0"
+   ],
+   "len": 2
+  },
+  "copiedRows": {
+   "array": [
+    {
+     "array": [
+      "num:0",
+      "num:0"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "num:0",
+      "num:9"
+     ],
+     "len": 2
+    }
+   ],
+   "len": 2
+  },
+  "mapNoop": {
+   "array": [
+    "<hole>",
+    "<hole>"
+   ],
+   "len": 2
+  },
+  "seats": {
+   "array": [
+    {
+     "array": [
+      "str:taken",
+      "str:A2"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "str:B1",
+      "str:B2"
+     ],
+     "len": 2
+    }
+   ],
+   "len": 2
+  }
+ },
+ "sourceSha256": "05154d1f0815d152304133f0e0ce6ec5c7283fcb576b58bc86dae50d2811398e"
+}

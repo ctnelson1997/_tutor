@@ -1,0 +1,17 @@
+{
+ "console": [],
+ "calls": [],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": {
+  "message": "Invalid or unexpected token",
+  "line": 4,
+  "column": 15
+ },
+ "executedLines": [],
+ "statementRuns": 0,
+ "functionCalls": 0,
+ "finalGlobals": {},
+ "sourceSha256": "fd2a8a2f21897eeaece62cde4fe522959c3a2373b7f35718bfcb13c7c05c7f05"
+}

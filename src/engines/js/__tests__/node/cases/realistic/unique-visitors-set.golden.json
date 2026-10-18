@@ -1,0 +1,245 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Monday visits: 6 unique: 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "Tuesday visits: 5 unique: 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "Came both days: [ 'ana', 'cho' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Came either day: [ 'ana', 'ben', 'cho', 'dev', 'eli', 'fay' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Only Monday: [ 'ben', 'dev' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Returning visitors: Set(4) { 'ana', 'ben', 'cho', 'eli' }"
+  },
+  {
+   "stream": "stdout",
+   "text": "Tuesday after removing fay: 3 false"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Monday visits:",
+    "num:6",
+    "str:unique:",
+    "num:4"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Tuesday visits:",
+    "num:5",
+    "str:unique:",
+    "num:4"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Came both days:",
+    {
+     "array": [
+      "str:ana",
+      "str:cho"
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Came either day:",
+    {
+     "array": [
+      "str:ana",
+      "str:ben",
+      "str:cho",
+      "str:dev",
+      "str:eli",
+      "str:fay"
+     ],
+     "len": 6
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Only Monday:",
+    {
+     "array": [
+      "str:ben",
+      "str:dev"
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Returning visitors:",
+    {
+     "set": [
+      "str:ana",
+      "str:ben",
+      "str:cho",
+      "str:eli"
+     ]
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Tuesday after removing fay:",
+    "num:3",
+    "boolean:false"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  5,
+  6,
+  7,
+  8,
+  10,
+  11,
+  12,
+  14,
+  15,
+  17,
+  18,
+  19,
+  21,
+  22,
+  23,
+  24,
+  25,
+  26,
+  28,
+  31,
+  32,
+  33
+ ],
+ "statementRuns": 48,
+ "functionCalls": 4,
+ "finalGlobals": {
+  "monday": {
+   "array": [
+    "str:ana",
+    "str:ben",
+    "str:cho",
+    "str:ana",
+    "str:dev",
+    "str:ben"
+   ],
+   "len": 6
+  },
+  "tuesday": {
+   "array": [
+    "str:cho",
+    "str:eli",
+    "str:ana",
+    "str:fay",
+    "str:eli"
+   ],
+   "len": 5
+  },
+  "mondaySet": {
+   "set": [
+    "str:ana",
+    "str:ben",
+    "str:cho",
+    "str:dev"
+   ]
+  },
+  "tuesdaySet": {
+   "set": [
+    "str:cho",
+    "str:eli",
+    "str:ana"
+   ]
+  },
+  "both": {
+   "set": [
+    "str:ana",
+    "str:cho"
+   ]
+  },
+  "either": {
+   "set": [
+    "str:ana",
+    "str:ben",
+    "str:cho",
+    "str:dev",
+    "str:eli",
+    "str:fay"
+   ]
+  },
+  "onlyMonday": {
+   "array": [
+    "str:ben",
+    "str:dev"
+   ],
+   "len": 2
+  },
+  "returning": {
+   "set": [
+    "str:ana",
+    "str:ben",
+    "str:cho",
+    "str:eli"
+   ]
+  },
+  "seen": {
+   "set": [
+    "str:ana",
+    "str:ben",
+    "str:cho",
+    "str:dev",
+    "str:eli",
+    "str:fay"
+   ]
+  },
+  "log": {
+   "array": [
+    "str:ana",
+    "str:ben",
+    "str:cho",
+    "str:ana",
+    "str:dev",
+    "str:ben",
+    "str:cho",
+    "str:eli",
+    "str:ana",
+    "str:fay",
+    "str:eli"
+   ],
+   "len": 11
+  }
+ },
+ "sourceSha256": "13cdbaac08db6a13f163280f19d5cd3c71ca6723fae495dc7b3b6c2e85695a5b"
+}

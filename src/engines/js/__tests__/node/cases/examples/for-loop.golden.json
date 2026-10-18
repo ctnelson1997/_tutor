@@ -1,0 +1,33 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Sum: 15"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Sum:",
+    "num:15"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  1,
+  2,
+  3,
+  5
+ ],
+ "statementRuns": 8,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "sum": "num:15"
+ },
+ "sourceSha256": "70689bddf2cd4aefe28d9b66fc896a02dd43950d0d8cd51f9775b7f9116c831a"
+}

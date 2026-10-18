@@ -1,0 +1,244 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Ann Madison annie none"
+  },
+  {
+   "stream": "stdout",
+   "text": "Bob unknown no nick none"
+  },
+  {
+   "stream": "stdout",
+   "text": "Cy unknown no nick x"
+  },
+  {
+   "stream": "stdout",
+   "text": "100 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "100 100"
+  },
+  {
+   "stream": "stdout",
+   "text": "empty "
+  },
+  {
+   "stream": "stdout",
+   "text": "undefined undefined undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "undefined Bob 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ volume: 0, theme: 'dark', title: 'Untitled' }"
+  },
+  {
+   "stream": "stdout",
+   "text": "found undefined"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Ann",
+    "str:Madison",
+    "str:annie",
+    "str:none"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Bob",
+    "str:unknown",
+    "str:no nick",
+    "str:none"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Cy",
+    "str:unknown",
+    "str:no nick",
+    "str:x"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:100",
+    "num:0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:100",
+    "num:100"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:empty",
+    "str:"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "undefined",
+    "undefined",
+    "undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "undefined",
+    "str:Bob",
+    "num:1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "volume": "num:0",
+      "theme": "str:dark",
+      "title": "str:Untitled"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:found",
+    "undefined"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  8,
+  9,
+  10,
+  11,
+  12,
+  15,
+  16,
+  17,
+  19,
+  20,
+  22,
+  23,
+  24,
+  25,
+  26,
+  28,
+  29,
+  30,
+  31,
+  32,
+  34,
+  35
+ ],
+ "statementRuns": 32,
+ "functionCalls": 2,
+ "finalGlobals": {
+  "users": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:Ann",
+      "address": {
+       "object": "",
+       "props": {
+        "city": "str:Madison",
+        "zip": "str:53703"
+       }
+      },
+      "getNick": "fn:getNick"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Bob",
+      "address": "null",
+      "score": "num:0"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Cy",
+      "score": "undefined",
+      "tags": {
+       "array": [
+        "str:x"
+       ],
+       "len": 1
+      }
+     }
+    }
+   ],
+   "len": 3
+  },
+  "nobody": "null",
+  "calls": "num:1",
+  "count": "fn:count",
+  "result": "undefined",
+  "real": "str:Bob",
+  "settings": {
+   "object": "",
+   "props": {
+    "volume": "num:0",
+    "theme": "str:dark",
+    "title": "str:Untitled"
+   }
+  },
+  "deep": {
+   "object": "",
+   "props": {
+    "a": {
+     "object": "",
+     "props": {
+      "b": {
+       "object": "",
+       "props": {
+        "c": {
+         "array": [
+          {
+           "object": "",
+           "props": {
+            "d": "str:found"
+           }
+          }
+         ],
+         "len": 1
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "sourceSha256": "6bd110139078a3ac197d82d516e59505ec67d379d523faa3075e98d7a76fcc13"
+}

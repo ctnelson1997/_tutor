@@ -1,0 +1,98 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "inner returned x-done"
+  },
+  {
+   "stream": "stdout",
+   "text": "x-a x-b 1 2 h i y-a y-b"
+  },
+  {
+   "stream": "stdout",
+   "text": "final { value: 'y-done', done: true }"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:inner returned",
+    "str:x-done"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:x-a x-b 1 2 h i y-a y-b"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:final",
+    {
+     "object": "",
+     "props": {
+      "value": "str:y-done",
+      "done": "boolean:true"
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  5,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  24,
+  25
+ ],
+ "statementRuns": 34,
+ "functionCalls": 3,
+ "finalGlobals": {
+  "inner": "fn:inner",
+  "outer": "fn:outer",
+  "values": {
+   "array": [
+    "str:x-a",
+    "str:x-b",
+    "num:1",
+    "num:2",
+    "str:h",
+    "str:i",
+    "str:y-a",
+    "str:y-b"
+   ],
+   "len": 8
+  },
+  "it": {
+   "object": "",
+   "props": {}
+  },
+  "step": {
+   "object": "",
+   "props": {
+    "value": "str:y-done",
+    "done": "boolean:true"
+   }
+  }
+ },
+ "sourceSha256": "34b0e31bcb1969c74a2d91af331eea841186e20eee2c2ccadd120acf1940356c"
+}

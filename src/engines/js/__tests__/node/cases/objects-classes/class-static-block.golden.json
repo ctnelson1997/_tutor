@@ -1,0 +1,117 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "before class"
+  },
+  {
+   "stream": "stdout",
+   "text": "static block 1, retries = 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "static block 2, derived = 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "after class"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ a: 97, b: 98, c: 99 } 3 abc 6"
+  },
+  {
+   "stream": "stdout",
+   "text": "2 [ 'defaults', 'table', 'derived', 'hint' ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:before class"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:static block 1, retries =",
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:static block 2, derived =",
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:after class"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "a": "num:97",
+      "b": "num:98",
+      "c": "num:99"
+     }
+    },
+    "num:3",
+    "str:abc",
+    "num:6"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:2",
+    {
+     "array": [
+      "str:defaults",
+      "str:table",
+      "str:derived",
+      "str:hint"
+     ],
+     "len": 4
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  8,
+  9,
+  10,
+  11,
+  16,
+  17,
+  20,
+  23,
+  24,
+  26,
+  30,
+  33,
+  36,
+  37,
+  38
+ ],
+ "statementRuns": 18,
+ "functionCalls": 6,
+ "finalGlobals": {
+  "Config": "fn:Config",
+  "leaked": "fn:leaked",
+  "Registry": "fn:Registry"
+ },
+ "sourceSha256": "d78e3e265c19ae413090983ae0b556b98fd49fcbf34204dd4b51266794dfca60"
+}

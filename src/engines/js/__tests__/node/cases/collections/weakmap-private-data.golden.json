@@ -1,0 +1,190 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Pat visit #1 Pat visit #2 Quinn visit #1"
+  },
+  {
+   "stream": "stdout",
+   "text": "***-**-6789 [ 'name' ] {\"name\":\"Quinn\"}"
+  },
+  {
+   "stream": "stdout",
+   "text": "true false undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "12 12 12 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "true false"
+  },
+  {
+   "stream": "stdout",
+   "text": "first already first"
+  },
+  {
+   "stream": "stdout",
+   "text": "TypeError"
+  },
+  {
+   "stream": "stdout",
+   "text": "WeakMap { <items unknown> } WeakSet { <items unknown> } Person { name: 'Pat' }"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Pat visit #1",
+    "str:Pat visit #2",
+    "str:Quinn visit #1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:***-**-6789",
+    {
+     "array": [
+      "str:name"
+     ],
+     "len": 1
+    },
+    "str:{\"name\":\"Quinn\"}"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:false",
+    "undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:12",
+    "num:12",
+    "num:12",
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:first",
+    "str:already",
+    "str:first"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:TypeError"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "WeakMap",
+     "props": {}
+    },
+    {
+     "object": "WeakSet",
+     "props": {}
+    },
+    {
+     "object": "Person",
+     "props": {
+      "name": "str:Pat"
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  5,
+  6,
+  9,
+  10,
+  11,
+  14,
+  17,
+  18,
+  19,
+  20,
+  21,
+  23,
+  24,
+  26,
+  27,
+  28,
+  29,
+  30,
+  32,
+  33,
+  34,
+  36,
+  37,
+  38,
+  40,
+  42,
+  44
+ ],
+ "statementRuns": 43,
+ "functionCalls": 12,
+ "finalGlobals": {
+  "privateData": {
+   "object": "WeakMap",
+   "props": {}
+  },
+  "Person": "fn:Person",
+  "p": {
+   "object": "Person",
+   "props": {
+    "name": "str:Pat"
+   }
+  },
+  "q": {
+   "object": "Person",
+   "props": {
+    "name": "str:Quinn"
+   }
+  },
+  "cache": {
+   "object": "WeakMap",
+   "props": {}
+  },
+  "computeCount": "num:2",
+  "area": "fn:area",
+  "r1": {
+   "object": "",
+   "props": {
+    "w": "num:3",
+    "h": "num:4"
+   }
+  },
+  "seen": {
+   "object": "WeakSet",
+   "props": {}
+  },
+  "visitOnce": "fn:visitOnce"
+ },
+ "sourceSha256": "cbeb545cc13ac5ddacdf054512f9f24945ced63ee200f1844e23e8e96b2e45b7"
+}

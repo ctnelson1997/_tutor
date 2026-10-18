@@ -1,0 +1,167 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[ '#101 amy (admin)', '#102 max (guest)', '#100 zed (guest)' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "3 undefined [ 'count', 'roles' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "true #103 root (admin) 4 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "0 4 true [ 'level', 'count' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[class User] { count: 4, roles: [ 'admin', 'guest' ] }"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:#101 amy (admin)",
+      "str:#102 max (guest)",
+      "str:#100 zed (guest)"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:3",
+    "undefined",
+    {
+     "array": [
+      "str:count",
+      "str:roles"
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "str:#103 root (admin)",
+    "num:4",
+    "num:4"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:0",
+    "num:4",
+    "boolean:true",
+    {
+     "array": [
+      "str:level",
+      "str:count"
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "fn:User"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  8,
+  9,
+  10,
+  11,
+  14,
+  15,
+  18,
+  21,
+  25,
+  26,
+  27,
+  28,
+  29,
+  34,
+  35,
+  36,
+  37,
+  38
+ ],
+ "statementRuns": 38,
+ "functionCalls": 19,
+ "finalGlobals": {
+  "User": "fn:User",
+  "u1": {
+   "object": "User",
+   "props": {
+    "id": "num:100",
+    "name": "str:zed",
+    "role": "str:guest"
+   }
+  },
+  "u2": {
+   "object": "User",
+   "props": {
+    "id": "num:101",
+    "name": "str:amy",
+    "role": "str:admin"
+   }
+  },
+  "users": {
+   "array": [
+    {
+     "object": "User",
+     "props": {
+      "id": "num:101",
+      "name": "str:amy",
+      "role": "str:admin"
+     }
+    },
+    {
+     "object": "User",
+     "props": {
+      "id": "num:102",
+      "name": "str:max",
+      "role": "str:guest"
+     }
+    },
+    {
+     "object": "User",
+     "props": {
+      "id": "num:100",
+      "name": "str:zed",
+      "role": "str:guest"
+     }
+    }
+   ],
+   "len": 3
+  },
+  "Admin": "fn:Admin",
+  "ad": {
+   "object": "Admin",
+   "props": {
+    "id": "num:103",
+    "name": "str:root",
+    "role": "str:admin"
+   }
+  }
+ },
+ "sourceSha256": "c5daa3aefbb2859ef37c9b57580bc8493ed0580218ba1c8c979754902212c304"
+}

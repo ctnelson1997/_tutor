@@ -1,0 +1,132 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[ 10, 20, 30 ] { value: 'end', done: true }"
+  },
+  {
+   "stream": "stdout",
+   "text": "got 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "got 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "closed? true i = 3"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:10",
+      "num:20",
+      "num:30"
+     ],
+     "len": 3
+    },
+    {
+     "object": "",
+     "props": {
+      "value": "str:end",
+      "done": "boolean:true"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:got",
+    "num:1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:got",
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:closed?",
+    "boolean:true",
+    "str:i =",
+    "num:3"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  6,
+  7,
+  8,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  23,
+  25,
+  26,
+  29,
+  30,
+  33,
+  34,
+  37,
+  41,
+  42,
+  43,
+  45
+ ],
+ "statementRuns": 44,
+ "functionCalls": 10,
+ "finalGlobals": {
+  "makeCounter": "fn:makeCounter",
+  "counter": {
+   "object": "",
+   "props": {
+    "next": "fn:next",
+    "[Symbol(Symbol.iterator)]": "fn:[Symbol.iterator]"
+   }
+  },
+  "res": {
+   "object": "",
+   "props": {
+    "value": "str:end",
+    "done": "boolean:true"
+   }
+  },
+  "collected": {
+   "array": [
+    "num:10",
+    "num:20",
+    "num:30"
+   ],
+   "len": 3
+  },
+  "closed": "boolean:true",
+  "closable": {
+   "object": "",
+   "props": {
+    "i": "num:3",
+    "next": "fn:next",
+    "return": "fn:return",
+    "[Symbol(Symbol.iterator)]": "fn:[Symbol.iterator]"
+   }
+  }
+ },
+ "sourceSha256": "d5290372a82ecafe5565a3563dff67748efc6503c5889526098c259dd65546f6"
+}

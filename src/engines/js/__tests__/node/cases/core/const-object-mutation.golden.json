@@ -1,0 +1,196 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "{ name: 'Grace', tags: [ 'math', 'navy' ], age: 85 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "TypeError: Assignment to constant variable."
+  },
+  {
+   "stream": "stdout",
+   "text": "{ level: 1, inner: { level: 3 } } true false"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 1, <2 empty items>, 4 ] 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ x: 2 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "const in for-of gets a new binding each time: 10"
+  },
+  {
+   "stream": "stdout",
+   "text": "const in for-of gets a new binding each time: 20"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:Grace",
+      "tags": {
+       "array": [
+        "str:math",
+        "str:navy"
+       ],
+       "len": 2
+      },
+      "age": "num:85"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:TypeError: Assignment to constant variable."
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "level": "num:1",
+      "inner": {
+       "object": "",
+       "props": {
+        "level": "num:3"
+       }
+      }
+     }
+    },
+    "boolean:true",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:1",
+      "<hole>",
+      "<hole>",
+      "num:4"
+     ],
+     "len": 4
+    },
+    "num:4"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "x": "num:2"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:const in for-of gets a new binding each time:",
+    "num:10"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:const in for-of gets a new binding each time:",
+    "num:20"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  9,
+  11,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  24,
+  25,
+  26,
+  27,
+  28,
+  29
+ ],
+ "statementRuns": 26,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "user": {
+   "object": "",
+   "props": {
+    "name": "str:Grace",
+    "tags": {
+     "array": [
+      "str:math",
+      "str:navy"
+     ],
+     "len": 2
+    },
+    "age": "num:85"
+   }
+  },
+  "rebindError": "str:TypeError: Assignment to constant variable.",
+  "frozen": {
+   "object": "",
+   "props": {
+    "level": "num:1",
+    "inner": {
+     "object": "",
+     "props": {
+      "level": "num:3"
+     }
+    }
+   }
+  },
+  "list": {
+   "array": [
+    "num:1",
+    "<hole>",
+    "<hole>",
+    "num:4"
+   ],
+   "len": 4
+  },
+  "sealed": {
+   "object": "",
+   "props": {
+    "x": "num:2"
+   }
+  }
+ },
+ "sourceSha256": "05e24bcda9da1ed5fb31136534640140ed8b8386ca7ff3f8ce7b77d775e6c466"
+}

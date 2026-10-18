@@ -1,0 +1,203 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Name      |  Score"
+  },
+  {
+   "stream": "stdout",
+   "text": "------------------"
+  },
+  {
+   "stream": "stdout",
+   "text": "Alice.....|   93.5 #########"
+  },
+  {
+   "stream": "stdout",
+   "text": "Bob.......|    7.0 #"
+  },
+  {
+   "stream": "stdout",
+   "text": "Charlotte.|   45.3 #####"
+  },
+  {
+   "stream": "stdout",
+   "text": "00007 00042 00315"
+  },
+  {
+   "stream": "stdout",
+   "text": "abc abc123 true"
+  },
+  {
+   "stream": "stdout",
+   "text": "\"hello world \\n \" \"   \\t  hello world\""
+  },
+  {
+   "stream": "stdout",
+   "text": "\"hello world\" 11 20"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'yes', 'no', 'yes', 'maybe' ] 2"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Name      |  Score"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:------------------"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Alice.....|   93.5 #########"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Bob.......|    7.0 #"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Charlotte.|   45.3 #####"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:00007 00042 00315"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:abc",
+    "str:abc123",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:\"hello world \\n \"",
+    "str:\"   \\t  hello world\""
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:\"hello world\"",
+    "num:11",
+    "num:20"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:yes",
+      "str:no",
+      "str:yes",
+      "str:maybe"
+     ],
+     "len": 4
+    },
+    "num:2"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  16,
+  17,
+  18,
+  20,
+  21,
+  22,
+  23,
+  25,
+  26,
+  27
+ ],
+ "statementRuns": 21,
+ "functionCalls": 11,
+ "finalGlobals": {
+  "rows": {
+   "array": [
+    {
+     "array": [
+      "str:Alice",
+      "num:93.5"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "str:Bob",
+      "num:7"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "str:Charlotte",
+      "num:45.25"
+     ],
+     "len": 2
+    }
+   ],
+   "len": 3
+  },
+  "header": "str:Name      |  Score",
+  "ids": {
+   "array": [
+    "str:00007",
+    "str:00042",
+    "str:00315"
+   ],
+   "len": 3
+  },
+  "messy": "str:   \t  hello world \n ",
+  "cleaned": "str:hello world",
+  "inputs": {
+   "array": [
+    "str:  yes",
+    "str:NO ",
+    "str: Yes ",
+    "str:maybe"
+   ],
+   "len": 4
+  },
+  "answers": {
+   "array": [
+    "str:yes",
+    "str:no",
+    "str:yes",
+    "str:maybe"
+   ],
+   "len": 4
+  }
+ },
+ "sourceSha256": "52ef470afa3dac91009cd7224b8d0e1a8195e6b90517a7bfb90ac60cf110afe2"
+}

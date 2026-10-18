@@ -1,0 +1,39 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "starting"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:starting"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": true,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6
+ ],
+ "statementRuns": 5,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "count": "num:1",
+  "log": {
+   "array": [
+    "str:start"
+   ],
+   "len": 1
+  }
+ },
+ "sourceSha256": "32c414ad297210f7456a2ebdb80ddeb1afef54197807385bf7bd3621b3e39b7b"
+}

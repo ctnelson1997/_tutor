@@ -1,0 +1,144 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "click"
+  },
+  {
+   "stream": "stdout",
+   "text": "save start draft"
+  },
+  {
+   "stream": "stdout",
+   "text": "click handler returns"
+  },
+  {
+   "stream": "stdout",
+   "text": "result handled"
+  },
+  {
+   "stream": "stdout",
+   "text": "save start final"
+  },
+  {
+   "stream": "stdout",
+   "text": "pending is a Promise"
+  },
+  {
+   "stream": "stdout",
+   "text": "save done draft"
+  },
+  {
+   "stream": "stdout",
+   "text": "save done final"
+  },
+  {
+   "stream": "stdout",
+   "text": "final length 5"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:click"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:save start draft"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:click handler returns"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:result handled"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:save start final"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:pending is a Promise"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:save done draft"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:save done final"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:final length 5"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  4,
+  5,
+  8,
+  9,
+  10,
+  11,
+  14,
+  15,
+  16,
+  17,
+  19,
+  20,
+  21,
+  22,
+  23
+ ],
+ "statementRuns": 36,
+ "functionCalls": 15,
+ "finalGlobals": {
+  "events": {
+   "array": [
+    "str:click",
+    "str:save start draft",
+    "str:click handler returns",
+    "str:result handled",
+    "str:save start final",
+    "str:pending is a Promise",
+    "str:save done draft",
+    "str:save done final",
+    "str:final length 5"
+   ],
+   "len": 9
+  },
+  "log": "fn:log",
+  "saveLater": "fn:saveLater",
+  "handleClick": "fn:handleClick",
+  "r": "str:handled",
+  "pending": {
+   "promise": true
+  }
+ },
+ "sourceSha256": "711f69bec245d8ad264b89b22c0db5a221038b26b1db2a1656646f7dbc344b2f"
+}

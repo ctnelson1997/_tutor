@@ -1,0 +1,32 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "128"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:128"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  1,
+  2,
+  3,
+  5
+ ],
+ "statementRuns": 10,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "n": "num:128"
+ },
+ "sourceSha256": "6226482fd0e9850ebb8dc0cdb0bba236a742948972cde690dc0863683b329b15"
+}

@@ -1,0 +1,17 @@
+{
+ "console": [],
+ "calls": [],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": {
+  "message": "Invalid left-hand side in assignment",
+  "line": 5,
+  "column": 0
+ },
+ "executedLines": [],
+ "statementRuns": 0,
+ "functionCalls": 0,
+ "finalGlobals": {},
+ "sourceSha256": "fc55c907ec1402478ae9f8ba2a49b077c33de7f06f5c70232ee2d0685515d1d8"
+}

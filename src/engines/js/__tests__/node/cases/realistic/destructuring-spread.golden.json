@@ -1,0 +1,305 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "swapped: 7 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "10 20 [ 30, 40, 50 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Kim is 21 and lives in Madison; email: none"
+  },
+  {
+   "stream": "stdout",
+   "text": "sum: 6 20"
+  },
+  {
+   "stream": "stdout",
+   "text": "Milo the cat, age 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "Rex the dog, age 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ theme: 'dark', fontSize: 18, notifications: true, updated: true }"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 0, 5, 1, 4, 9 ] [ 0, 5, 1, 4, 9, 100 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "theme=dark&fontSize=18&notifications=true&updated=true"
+  },
+  {
+   "stream": "stdout",
+   "text": "dark { fontSize: 18, notifications: true, updated: true }"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:swapped:",
+    "num:7",
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:10",
+    "num:20",
+    {
+     "array": [
+      "num:30",
+      "num:40",
+      "num:50"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Kim is 21 and lives in Madison; email: none"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:sum:",
+    "num:6",
+    "num:20"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Milo the cat, age 3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Rex the dog, age 5"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "theme": "str:dark",
+      "fontSize": "num:18",
+      "notifications": "boolean:true",
+      "updated": "boolean:true"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:0",
+      "num:5",
+      "num:1",
+      "num:4",
+      "num:9"
+     ],
+     "len": 5
+    },
+    {
+     "array": [
+      "num:0",
+      "num:5",
+      "num:1",
+      "num:4",
+      "num:9",
+      "num:100"
+     ],
+     "len": 6
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:theme=dark&fontSize=18&notifications=true&updated=true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:dark",
+    {
+     "object": "",
+     "props": {
+      "fontSize": "num:18",
+      "notifications": "boolean:true",
+      "updated": "boolean:true"
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  7,
+  8,
+  10,
+  11,
+  12,
+  15,
+  16,
+  17,
+  19,
+  22,
+  24,
+  25,
+  27,
+  28,
+  29,
+  30,
+  32,
+  33,
+  34,
+  35,
+  36,
+  38,
+  39,
+  40,
+  41
+ ],
+ "statementRuns": 39,
+ "functionCalls": 8,
+ "finalGlobals": {
+  "point": {
+   "array": [
+    "num:3",
+    "num:7"
+   ],
+   "len": 2
+  },
+  "x": "num:7",
+  "y": "num:3",
+  "first": "num:10",
+  "second": "num:20",
+  "others": {
+   "array": [
+    "num:30",
+    "num:40",
+    "num:50"
+   ],
+   "len": 3
+  },
+  "user": {
+   "object": "",
+   "props": {
+    "name": "str:Kim",
+    "age": "num:21",
+    "address": {
+     "object": "",
+     "props": {
+      "city": "str:Madison",
+      "zip": "str:53703"
+     }
+    }
+   }
+  },
+  "name": "str:Kim",
+  "years": "num:21",
+  "city": "str:Madison",
+  "email": "str:none",
+  "sumAll": "fn:sumAll",
+  "describePet": "fn:describePet",
+  "defaults": {
+   "object": "",
+   "props": {
+    "theme": "str:light",
+    "fontSize": "num:14",
+    "notifications": "boolean:true"
+   }
+  },
+  "prefs": {
+   "object": "",
+   "props": {
+    "fontSize": "num:18",
+    "theme": "str:dark"
+   }
+  },
+  "settings": {
+   "object": "",
+   "props": {
+    "theme": "str:dark",
+    "fontSize": "num:18",
+    "notifications": "boolean:true",
+    "updated": "boolean:true"
+   }
+  },
+  "nums": {
+   "array": [
+    "num:5",
+    "num:1",
+    "num:4"
+   ],
+   "len": 3
+  },
+  "more": {
+   "array": [
+    "num:0",
+    "num:5",
+    "num:1",
+    "num:4",
+    "num:9"
+   ],
+   "len": 5
+  },
+  "copy": {
+   "array": [
+    "num:0",
+    "num:5",
+    "num:1",
+    "num:4",
+    "num:9",
+    "num:100"
+   ],
+   "len": 6
+  },
+  "pairs": {
+   "array": [
+    "str:theme=dark",
+    "str:fontSize=18",
+    "str:notifications=true",
+    "str:updated=true"
+   ],
+   "len": 4
+  },
+  "theme": "str:dark",
+  "rest": {
+   "object": "",
+   "props": {
+    "fontSize": "num:18",
+    "notifications": "boolean:true",
+    "updated": "boolean:true"
+   }
+  }
+ },
+ "sourceSha256": "148e9081b5e0c84c7fab21493d9381ebe4136ee3d3cf3f60e9c0b29359bde1bb"
+}

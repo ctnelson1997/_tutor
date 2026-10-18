@@ -1,0 +1,274 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Todo 9 not found"
+  },
+  {
+   "stream": "stdout",
+   "text": "Removed: Call grandma"
+  },
+  {
+   "stream": "stdout",
+   "text": "--- all (4) ---"
+  },
+  {
+   "stream": "stdout",
+   "text": "[x] 1. Buy groceries"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ ] 2. Finish lab 3 !"
+  },
+  {
+   "stream": "stdout",
+   "text": "[x] 4. Read chapter 5 !"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ ] 5. Do laundry"
+  },
+  {
+   "stream": "stdout",
+   "text": "--- open (2) ---"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ ] 2. Finish lab 3 !"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ ] 5. Do laundry"
+  },
+  {
+   "stream": "stdout",
+   "text": "--- done (2) ---"
+  },
+  {
+   "stream": "stdout",
+   "text": "[x] 1. Buy groceries"
+  },
+  {
+   "stream": "stdout",
+   "text": "[x] 4. Read chapter 5 !"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ total: 4, done: 2, highPriorityOpen: [ 'Finish lab 3' ] }"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Todo 9 not found"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Removed:",
+    "str:Call grandma"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:--- all (4) ---"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:[x] 1. Buy groceries"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:[ ] 2. Finish lab 3 !"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:[x] 4. Read chapter 5 !"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:[ ] 5. Do laundry"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:--- open (2) ---"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:[ ] 2. Finish lab 3 !"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:[ ] 5. Do laundry"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:--- done (2) ---"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:[x] 1. Buy groceries"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:[x] 4. Read chapter 5 !"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "total": "num:4",
+      "done": "num:2",
+      "highPriorityOpen": {
+       "array": [
+        "str:Finish lab 3"
+       ],
+       "len": 1
+      }
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  6,
+  7,
+  8,
+  12,
+  13,
+  14,
+  16,
+  21,
+  22,
+  23,
+  29,
+  30,
+  31,
+  32,
+  34,
+  35,
+  36,
+  37,
+  38,
+  42,
+  43,
+  44,
+  45,
+  46,
+  47,
+  48,
+  49,
+  50,
+  51,
+  52,
+  53,
+  54,
+  55,
+  60
+ ],
+ "statementRuns": 109,
+ "functionCalls": 53,
+ "finalGlobals": {
+  "todos": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "id": "num:1",
+      "title": "str:Buy groceries",
+      "priority": "str:normal",
+      "done": "boolean:true"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "id": "num:2",
+      "title": "str:Finish lab 3",
+      "priority": "str:high",
+      "done": "boolean:false"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "id": "num:4",
+      "title": "str:Read chapter 5",
+      "priority": "str:high",
+      "done": "boolean:true"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "id": "num:5",
+      "title": "str:Do laundry",
+      "priority": "str:normal",
+      "done": "boolean:false"
+     }
+    }
+   ],
+   "len": 4
+  },
+  "nextId": "num:6",
+  "addTodo": "fn:addTodo",
+  "completeTodo": "fn:completeTodo",
+  "removeTodo": "fn:removeTodo",
+  "listTodos": "fn:listTodos",
+  "removed": {
+   "object": "",
+   "props": {
+    "id": "num:3",
+    "title": "str:Call grandma",
+    "priority": "str:normal",
+    "done": "boolean:false"
+   }
+  },
+  "summary": {
+   "object": "",
+   "props": {
+    "total": "num:4",
+    "done": "num:2",
+    "highPriorityOpen": {
+     "array": [
+      "str:Finish lab 3"
+     ],
+     "len": 1
+    }
+   }
+  }
+ },
+ "sourceSha256": "dad1ac83ccf5c8927b18cd5cdfc8fb714d91d96e3b7b6274b43555469298d085"
+}

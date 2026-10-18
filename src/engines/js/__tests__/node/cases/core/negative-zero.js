@@ -1,0 +1,21 @@
+// -0 held in variables, arrays and objects: ===, Object.is, 1/-0, printing, and where -0 comes from
+const negZero = -0;
+const fromMath = Math.round(-0.4);
+const fromMultiply = 0 * -5;
+const plainZero = 0;
+console.log(negZero, fromMath, fromMultiply);
+console.log('=== 0:', negZero === plainZero, 'Object.is:', Object.is(negZero, plainZero));
+console.log('1 / -0:', 1 / negZero, '1 / 0:', 1 / plainZero);
+console.log('String(-0):', String(negZero), 'template:', `${negZero}`, 'JSON:', JSON.stringify(negZero));
+console.log('toFixed:', negZero.toFixed(1), 'sign is -0:', Object.is(Math.sign(negZero), -0));
+const inArray = [negZero, 0];
+const inObject = { value: negZero };
+console.log(inArray, inObject);
+console.log('indexOf(-0):', [0].indexOf(negZero), 'includes:', [0].includes(negZero));
+const isNegZero = x => x === 0 && 1 / x < 0;
+console.log(isNegZero(negZero), isNegZero(plainZero), isNegZero(fromMath));
+const min = Math.min(0, -0);
+console.log('Math.min(0, -0) is -0:', Object.is(min, -0));
+let product = -1;
+product *= 0;
+console.log('product:', product);

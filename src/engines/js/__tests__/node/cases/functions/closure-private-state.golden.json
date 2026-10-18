@@ -1,0 +1,123 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Insufficient funds: balance is 120"
+  },
+  {
+   "stream": "stdout",
+   "text": "RangeError Deposit must be positive"
+  },
+  {
+   "stream": "stdout",
+   "text": "balance: 120 fake property: 1000000"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'deposit 50 -> 150', 'withdraw 30 -> 120' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "2 3"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Insufficient funds: balance is 120"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:RangeError",
+    "str:Deposit must be positive"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:balance:",
+    "num:120",
+    "str:fake property:",
+    "num:1000000"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:deposit 50 -> 150",
+      "str:withdraw 30 -> 120"
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:2",
+    "num:3"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  6,
+  8,
+  11,
+  12,
+  13,
+  14,
+  17,
+  18,
+  19,
+  20,
+  26,
+  27,
+  28,
+  30,
+  32,
+  35,
+  37,
+  39,
+  40,
+  41,
+  42,
+  43,
+  44
+ ],
+ "statementRuns": 30,
+ "functionCalls": 11,
+ "finalGlobals": {
+  "createAccount": "fn:createAccount",
+  "acct": {
+   "object": "",
+   "props": {
+    "owner": "str:Mia",
+    "deposit": "fn:deposit",
+    "withdraw": "fn:withdraw",
+    "getBalance": "fn:getBalance",
+    "getHistory": "fn:getHistory",
+    "balance": "num:1000000"
+   }
+  },
+  "copyOfHistory": {
+   "array": [
+    "str:deposit 50 -> 150",
+    "str:withdraw 30 -> 120",
+    "str:tampered"
+   ],
+   "len": 3
+  }
+ },
+ "sourceSha256": "a191a1a7e2997cd3906fc78dbac7d71aaaf8be11bda7fc0a86a693a268fc596d"
+}

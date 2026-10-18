@@ -1,0 +1,57 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "1"
+  },
+  {
+   "stream": "stdout",
+   "text": "2"
+  },
+  {
+   "stream": "stdout",
+   "text": "3"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:3"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  9,
+  10,
+  11,
+  12
+ ],
+ "statementRuns": 12,
+ "functionCalls": 3,
+ "finalGlobals": {
+  "makeCounter": "fn:makeCounter",
+  "counter": "fn:increment"
+ },
+ "sourceSha256": "4afb8e936e5144c8d246b23a73498fc99650c00f74deb39bee3cff5f6a8be9f5"
+}

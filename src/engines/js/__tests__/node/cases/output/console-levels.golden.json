@@ -1,0 +1,200 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Checking 4 readings"
+  },
+  {
+   "stream": "stdout",
+   "text": "ok 72"
+  },
+  {
+   "stream": "stdout",
+   "text": "checked 72"
+  },
+  {
+   "stream": "stderr",
+   "text": "High reading: 105"
+  },
+  {
+   "stream": "stdout",
+   "text": "checked 105"
+  },
+  {
+   "stream": "stdout",
+   "text": "ok 64"
+  },
+  {
+   "stream": "stdout",
+   "text": "checked 64"
+  },
+  {
+   "stream": "stderr",
+   "text": "Invalid reading: -5 { t: -5 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "checked -5"
+  },
+  {
+   "stream": "stderr",
+   "text": "sensor offline"
+  },
+  {
+   "stream": "stderr",
+   "text": "1 warning(s)"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ warnings: 1, errors: 1 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "summary: 1 1"
+  }
+ ],
+ "calls": [
+  {
+   "method": "info",
+   "args": [
+    "str:Checking",
+    "num:4",
+    "str:readings"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:ok",
+    "num:72"
+   ]
+  },
+  {
+   "method": "debug",
+   "args": [
+    "str:checked",
+    "num:72"
+   ]
+  },
+  {
+   "method": "warn",
+   "args": [
+    "str:High reading:",
+    "num:105"
+   ]
+  },
+  {
+   "method": "debug",
+   "args": [
+    "str:checked",
+    "num:105"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:ok",
+    "num:64"
+   ]
+  },
+  {
+   "method": "debug",
+   "args": [
+    "str:checked",
+    "num:64"
+   ]
+  },
+  {
+   "method": "error",
+   "args": [
+    "str:Invalid reading:",
+    "num:-5",
+    {
+     "object": "",
+     "props": {
+      "t": "num:-5"
+     }
+    }
+   ]
+  },
+  {
+   "method": "debug",
+   "args": [
+    "str:checked",
+    "num:-5"
+   ]
+  },
+  {
+   "method": "error",
+   "args": [
+    "str:sensor offline"
+   ]
+  },
+  {
+   "method": "warn",
+   "args": [
+    "str:%s warning(s)",
+    "num:1"
+   ]
+  },
+  {
+   "method": "info",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "warnings": "num:1",
+      "errors": "num:1"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:summary:",
+    "num:1",
+    "num:1"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  14,
+  16,
+  18,
+  19,
+  20,
+  21
+ ],
+ "statementRuns": 26,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "temps": {
+   "array": [
+    "num:72",
+    "num:105",
+    "num:64",
+    "num:-5"
+   ],
+   "len": 4
+  },
+  "warnings": "num:1",
+  "errors": "num:1"
+ },
+ "sourceSha256": "8f4a6e07bb42ff4031ccb62bb8476dc06500f2f0b4ba4fab3e5880dcc8032bb2"
+}

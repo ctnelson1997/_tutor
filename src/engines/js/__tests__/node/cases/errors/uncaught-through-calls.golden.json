@@ -1,0 +1,98 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "starting"
+  },
+  {
+   "stream": "stdout",
+   "text": "processed order 1 running sum 19"
+  },
+  {
+   "stream": "stdout",
+   "text": "processAll cleanup, sum was 19"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:starting"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:processed order",
+    "num:1",
+    "str:running sum",
+    "num:19"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:processAll cleanup, sum was",
+    "num:19"
+   ]
+  }
+ ],
+ "uncaught": [
+  {
+   "name": "Error",
+   "message": "order 2 has invalid quantity 0",
+   "where": "script",
+   "consoleLines": 3
+  }
+ ],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  6,
+  7,
+  9,
+  13,
+  14,
+  18,
+  20,
+  21,
+  22,
+  23,
+  26,
+  31,
+  32,
+  33
+ ],
+ "statementRuns": 22,
+ "functionCalls": 5,
+ "finalGlobals": {
+  "orders": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "id": "num:1",
+      "qty": "num:2"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "id": "num:2",
+      "qty": "num:0"
+     }
+    }
+   ],
+   "len": 2
+  },
+  "processedCount": "num:1",
+  "checkQuantity": "fn:checkQuantity",
+  "priceOrder": "fn:priceOrder",
+  "processAll": "fn:processAll",
+  "grandTotal": "<uninitialized>"
+ },
+ "sourceSha256": "1a49a08fe9d37cd495b1c192cede1e0dc83104fcac1a46e31d39c433f090451d"
+}

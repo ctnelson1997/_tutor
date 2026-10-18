@@ -1,0 +1,148 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "ERROR db connection refused"
+  },
+  {
+   "stream": "stdout",
+   "text": "2024-05-06 14:32:07 0 ERROR"
+  },
+  {
+   "stream": "stdout",
+   "text": "[{\"major\":1,\"minor\":2,\"patch\":\"3\"},{\"major\":10,\"minor\":0,\"patch\":\"none\"},null]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Ada Lovelace"
+  },
+  {
+   "stream": "stdout",
+   "text": "is false"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:ERROR",
+    "str:db",
+    "str:connection refused"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:2024-05-06",
+    "str:14:32:07",
+    "num:0",
+    "str:ERROR"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:[{\"major\":1,\"minor\":2,\"patch\":\"3\"},{\"major\":10,\"minor\":0,\"patch\":\"none\"},null]"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Ada Lovelace"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:is",
+    "boolean:false"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  5,
+  6,
+  7,
+  8,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  19,
+  20,
+  22,
+  24,
+  25,
+  26,
+  27
+ ],
+ "statementRuns": 27,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "logLine": "str:2024-05-06 14:32:07 ERROR [db] connection refused",
+  "logRe": {
+   "regexp": "/^(?<date>\\d{4}-\\d{2}-\\d{2}) (?<time>[\\d:]+) (?<level>[A-Z]+) \\[(?<module>\\w+)\\] (?<msg>.*)$/"
+  },
+  "m": {
+   "array": [
+    "str:2024-05-06 14:32:07 ERROR [db] connection refused",
+    "str:2024-05-06",
+    "str:14:32:07",
+    "str:ERROR",
+    "str:db",
+    "str:connection refused"
+   ],
+   "len": 6
+  },
+  "date": "str:2024-05-06",
+  "time": "str:14:32:07",
+  "versionRe": {
+   "regexp": "/v(?<major>\\d+)\\.(?<minor>\\d+)(?:\\.(?<patch>\\d+))?/"
+  },
+  "versions": {
+   "array": [
+    "str:v1.2.3",
+    "str:release v10.0",
+    "str:none here"
+   ],
+   "len": 3
+  },
+  "parsed": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "major": "num:1",
+      "minor": "num:2",
+      "patch": "str:3"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "major": "num:10",
+      "minor": "num:0",
+      "patch": "str:none"
+     }
+    },
+    "null"
+   ],
+   "len": 3
+  },
+  "swapped": "str:Ada Lovelace",
+  "repeatedWord": {
+   "regexp": "/\\b(?<word>\\w+) \\k<word>\\b/"
+  }
+ },
+ "sourceSha256": "2d6620561d459cb8f14770d3cf4469f173321f09c492f27700ac5cbcd59c3fd4"
+}

@@ -1,0 +1,112 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "defaulting for zz"
+  },
+  {
+   "stream": "stdout",
+   "text": "rethrowing TypeError"
+  },
+  {
+   "stream": "stdout",
+   "text": "outer caught bad key type"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 1, 0, -1, 2 ] true"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:defaulting for",
+    "str:zz"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:rethrowing",
+    "str:TypeError"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:outer caught",
+    "str:bad key type"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:1",
+      "num:0",
+      "num:-1",
+      "num:2"
+     ],
+     "len": 4
+    },
+    "boolean:true"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  4,
+  5,
+  6,
+  10,
+  13,
+  14,
+  15,
+  20,
+  22,
+  23,
+  24,
+  26,
+  27,
+  31,
+  32,
+  33,
+  35,
+  37,
+  38,
+  39,
+  42
+ ],
+ "statementRuns": 36,
+ "functionCalls": 9,
+ "finalGlobals": {
+  "NotFoundError": "fn:NotFoundError",
+  "store": {
+   "object": "",
+   "props": {
+    "a": "num:1",
+    "b": "num:2"
+   }
+  },
+  "lookup": "fn:lookup",
+  "lookupOrDefault": "fn:lookupOrDefault",
+  "rethrown": {
+   "error": "TypeError: bad key type"
+  },
+  "values": {
+   "array": [
+    "num:1",
+    "num:0",
+    "num:-1",
+    "num:2"
+   ],
+   "len": 4
+  }
+ },
+ "sourceSha256": "4652f957806720dff1c55e42d321c83c58527c8c0e75c35c1d21a5e9718268a3"
+}

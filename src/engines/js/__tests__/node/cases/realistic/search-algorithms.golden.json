@@ -1,0 +1,182 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "target 42: index 6, linear took 7, binary took 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "target 3: index 0, linear took 1, binary took 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "target 95: index 11, linear took 12, binary took 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "target 50: index -1, linear took 12, binary took 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "Recursive search for 71: 9"
+  },
+  {
+   "stream": "stdout",
+   "text": "indexOf agrees: true"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:target 42: index 6, linear took 7, binary took 3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:target 3: index 0, linear took 1, binary took 3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:target 95: index 11, linear took 12, binary took 4"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:target 50: index -1, linear took 12, binary took 4"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Recursive search for 71:",
+    "num:9"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:indexOf agrees:",
+    "boolean:true"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  5,
+  6,
+  7,
+  10,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  25,
+  28,
+  32,
+  33,
+  34,
+  35,
+  36,
+  39,
+  40,
+  41,
+  42,
+  43,
+  44,
+  45,
+  46,
+  48,
+  49
+ ],
+ "statementRuns": 285,
+ "functionCalls": 20,
+ "finalGlobals": {
+  "linearSearch": "fn:linearSearch",
+  "binarySearch": "fn:binarySearch",
+  "binarySearchRecursive": "fn:binarySearchRecursive",
+  "sorted": {
+   "array": [
+    "num:3",
+    "num:8",
+    "num:15",
+    "num:21",
+    "num:27",
+    "num:34",
+    "num:42",
+    "num:56",
+    "num:63",
+    "num:71",
+    "num:88",
+    "num:95"
+   ],
+   "len": 12
+  },
+  "targets": {
+   "array": [
+    "num:42",
+    "num:3",
+    "num:95",
+    "num:50"
+   ],
+   "len": 4
+  },
+  "results": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "target": "num:42",
+      "linear": "num:7",
+      "binary": "num:3",
+      "found": "num:6"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "target": "num:3",
+      "linear": "num:1",
+      "binary": "num:3",
+      "found": "num:0"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "target": "num:95",
+      "linear": "num:12",
+      "binary": "num:4",
+      "found": "num:11"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "target": "num:50",
+      "linear": "num:12",
+      "binary": "num:4",
+      "found": "num:-1"
+     }
+    }
+   ],
+   "len": 4
+  }
+ },
+ "sourceSha256": "78df846f579a976586c1c8144c7cbdf8b0914d8ec035193e3d0891977a9c5396"
+}

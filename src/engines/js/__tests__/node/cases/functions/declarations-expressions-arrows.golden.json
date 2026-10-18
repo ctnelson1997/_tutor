@@ -1,0 +1,127 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "declaration before its line: 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "TypeError: multiply is not a function"
+  },
+  {
+   "stream": "stdout",
+   "text": "3 12 6 25"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ x: 1, y: 2 } nothing 21"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 9, 18, 3 ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:declaration before its line:",
+    "num:5"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:TypeError:",
+    "str:multiply is not a function"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:3",
+    "num:12",
+    "num:6",
+    "num:25"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "x": "num:1",
+      "y": "num:2"
+     }
+    },
+    "str:nothing",
+    "num:21"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:9",
+      "num:18",
+      "num:3"
+     ],
+     "len": 3
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  4,
+  6,
+  9,
+  11,
+  12,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  22,
+  23,
+  24,
+  25,
+  26
+ ],
+ "statementRuns": 21,
+ "functionCalls": 15,
+ "finalGlobals": {
+  "add": "fn:add",
+  "multiply": "fn:multiply",
+  "subtract": "fn:subtract",
+  "square": "fn:square",
+  "makePoint": "fn:makePoint",
+  "noArgs": "fn:noArgs",
+  "block": "fn:block",
+  "results": {
+   "array": [
+    "num:9",
+    "num:18",
+    "num:3"
+   ],
+   "len": 3
+  },
+  "point": {
+   "object": "",
+   "props": {
+    "x": "num:3",
+    "y": "num:4"
+   }
+  }
+ },
+ "sourceSha256": "93a7b51f63ae726c28238df2f7bae8e5011f677d7c862df4fad030b57bfb693c"
+}

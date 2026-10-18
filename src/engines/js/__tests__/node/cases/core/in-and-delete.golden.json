@@ -1,0 +1,265 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "true false true true"
+  },
+  {
+   "stream": "stdout",
+   "text": "false true"
+  },
+  {
+   "stream": "stdout",
+   "text": "true true { make: 'Toyota', owner: undefined } false"
+  },
+  {
+   "stream": "stdout",
+   "text": "true false true true"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'a', <1 empty item>, 'c', 'd' ] 4 false undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "forEach skips holes:"
+  },
+  {
+   "stream": "stdout",
+   "text": "  0 a"
+  },
+  {
+   "stream": "stdout",
+   "text": "  2 c"
+  },
+  {
+   "stream": "stdout",
+   "text": "  3 d"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'A', <1 empty item>, 'C', 'D' ] [ '0', '2', '3' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "delete frozen: false { locked: true }"
+  },
+  {
+   "stream": "stdout",
+   "text": "{} { value: 1 }"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:false",
+    "boolean:true",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:false",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:true",
+    {
+     "object": "",
+     "props": {
+      "make": "str:Toyota",
+      "owner": "undefined"
+     }
+    },
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:false",
+    "boolean:true",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:a",
+      "<hole>",
+      "str:c",
+      "str:d"
+     ],
+     "len": 4
+    },
+    "num:4",
+    "boolean:false",
+    "undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:forEach skips holes:"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str: ",
+    "num:0",
+    "str:a"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str: ",
+    "num:2",
+    "str:c"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str: ",
+    "num:3",
+    "str:d"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:A",
+      "<hole>",
+      "str:C",
+      "str:D"
+     ],
+     "len": 4
+    },
+    {
+     "array": [
+      "str:0",
+      "str:2",
+      "str:3"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:delete frozen:",
+    "boolean:false",
+    {
+     "object": "",
+     "props": {
+      "locked": "boolean:true"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {}
+    },
+    {
+     "object": "",
+     "props": {
+      "value": "num:1"
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21
+ ],
+ "statementRuns": 20,
+ "functionCalls": 6,
+ "finalGlobals": {
+  "car": {
+   "object": "",
+   "props": {
+    "make": "str:Toyota",
+    "owner": "undefined"
+   }
+  },
+  "deletedYear": "boolean:true",
+  "deletedMissing": "boolean:true",
+  "arr": {
+   "array": [
+    "str:a",
+    "<hole>",
+    "str:c",
+    "str:d"
+   ],
+   "len": 4
+  },
+  "mapped": {
+   "array": [
+    "str:A",
+    "<hole>",
+    "str:C",
+    "str:D"
+   ],
+   "len": 4
+  },
+  "frozen": {
+   "object": "",
+   "props": {
+    "locked": "boolean:true"
+   }
+  },
+  "nested": {
+   "object": "",
+   "props": {}
+  },
+  "innerRef": {
+   "object": "",
+   "props": {
+    "value": "num:1"
+   }
+  }
+ },
+ "sourceSha256": "93354d26ddf2d3db0112881e74da1a5bfdc830d84be05802766b94e257868e38"
+}

@@ -1,0 +1,34 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "5! = 120"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:5! =",
+    "num:120"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  6,
+  7
+ ],
+ "statementRuns": 12,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "factorial": "fn:factorial",
+  "result": "num:120"
+ },
+ "sourceSha256": "48ed44dce04507a69795ec6acf117b6308d29af2fca3c13511ff04a1752d343c"
+}

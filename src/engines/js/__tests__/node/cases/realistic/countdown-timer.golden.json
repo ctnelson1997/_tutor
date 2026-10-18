@@ -1,0 +1,168 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Countdown starting"
+  },
+  {
+   "stream": "stdout",
+   "text": "Synchronous code finished"
+  },
+  {
+   "stream": "stdout",
+   "text": "promise callback"
+  },
+  {
+   "stream": "stdout",
+   "text": "microtask callback"
+  },
+  {
+   "stream": "stdout",
+   "text": "timeout callback"
+  },
+  {
+   "stream": "stdout",
+   "text": "T-minus 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "T-minus 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "T-minus 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "Liftoff!"
+  },
+  {
+   "stream": "stdout",
+   "text": "Events: [ 'sync', 'promise', 'timeout', 3, 2, 1, 'liftoff' ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Countdown starting"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Synchronous code finished"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:promise callback"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:microtask callback"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:timeout callback"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:T-minus 3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:T-minus 2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:T-minus 1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Liftoff!"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Events:",
+    {
+     "array": [
+      "str:sync",
+      "str:promise",
+      "str:timeout",
+      "num:3",
+      "num:2",
+      "num:1",
+      "str:liftoff"
+     ],
+     "len": 7
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  20,
+  21,
+  23,
+  24,
+  25,
+  27,
+  28,
+  29,
+  31,
+  32,
+  33
+ ],
+ "statementRuns": 32,
+ "functionCalls": 7,
+ "finalGlobals": {
+  "events": {
+   "array": [
+    "str:sync",
+    "str:promise",
+    "str:timeout",
+    "num:3",
+    "num:2",
+    "num:1",
+    "str:liftoff"
+   ],
+   "len": 7
+  },
+  "remaining": "num:0",
+  "intervalId": "num:1",
+  "cancelled": "num:2"
+ },
+ "sourceSha256": "e8c37d111491d055a3f0a513f98c4c034984813348ebe495861d9ce0f35b37a5"
+}

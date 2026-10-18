@@ -1,0 +1,216 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "42 150 Lee has 150"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'owner', 'summary' ] {\"owner\":\"Lee\",\"summary\":\"Lee has 150\"}"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'owner', 'id', 'balance', 'summary' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ value: 42, writable: false, enumerable: false, configurable: false }"
+  },
+  {
+   "stream": "stdout",
+   "text": "false true"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ owner: 'Lee', summary: 'Lee has 150' } 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "TypeError"
+  },
+  {
+   "stream": "stdout",
+   "text": "42"
+  },
+  {
+   "stream": "stdout",
+   "text": "10 4 [ '0', '1', '2', '3' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ owner: 'Lee', summary: [Getter] } 3"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:42",
+    "num:150",
+    "str:Lee has 150"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:owner",
+      "str:summary"
+     ],
+     "len": 2
+    },
+    "str:{\"owner\":\"Lee\",\"summary\":\"Lee has 150\"}"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:owner",
+      "str:id",
+      "str:balance",
+      "str:summary"
+     ],
+     "len": 4
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "value": "num:42",
+      "writable": "boolean:false",
+      "enumerable": "boolean:false",
+      "configurable": "boolean:false"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:false",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "owner": "str:Lee",
+      "summary": "str:Lee has 150"
+     }
+    },
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:TypeError"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:42"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:10",
+    "num:4",
+    {
+     "array": [
+      "str:0",
+      "str:1",
+      "str:2",
+      "str:3"
+     ],
+     "len": 4
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "owner": "str:Lee",
+      "summary": "<getter>"
+     }
+    },
+    "num:3"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  9,
+  10,
+  12,
+  13,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  24,
+  26,
+  27,
+  30,
+  32,
+  34,
+  35,
+  37,
+  38,
+  39,
+  40,
+  41
+ ],
+ "statementRuns": 30,
+ "functionCalls": 8,
+ "finalGlobals": {
+  "account": {
+   "object": "",
+   "props": {
+    "owner": "str:Lee",
+    "summary": "<getter>"
+   }
+  },
+  "reads": "num:3",
+  "spread": {
+   "object": "",
+   "props": {
+    "owner": "str:Lee",
+    "summary": "str:Lee has 150"
+   }
+  },
+  "arr": {
+   "array": [
+    "num:1",
+    "num:2",
+    "num:3",
+    "num:4"
+   ],
+   "len": 4
+  }
+ },
+ "sourceSha256": "d8c83d4267cf8b0588a4ae327b341ead53a6f9b22d0d48741bc2849aa986e18a"
+}

@@ -1,0 +1,207 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "alice 90"
+  },
+  {
+   "stream": "stdout",
+   "text": "bob 72"
+  },
+  {
+   "stream": "stdout",
+   "text": "carol 85"
+  },
+  {
+   "stream": "stdout",
+   "text": "total 247"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ '0:string', '1:string', '2:string', 'extra:string' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "all: [ 'name', 'legs', 'kind' ] own: [ 'name', 'legs' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "order: 1 2 b a "
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:alice",
+    "num:90"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:bob",
+    "num:72"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:carol",
+    "num:85"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:total",
+    "num:247"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:0:string",
+      "str:1:string",
+      "str:2:string",
+      "str:extra:string"
+     ],
+     "len": 4
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:all:",
+    {
+     "array": [
+      "str:name",
+      "str:legs",
+      "str:kind"
+     ],
+     "len": 3
+    },
+    "str:own:",
+    {
+     "array": [
+      "str:name",
+      "str:legs"
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:order:",
+    "str:1 2 b a "
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  8,
+  10,
+  11,
+  12,
+  13,
+  14,
+  16,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  24,
+  25,
+  26,
+  28,
+  30,
+  31,
+  32,
+  33
+ ],
+ "statementRuns": 43,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "scores": {
+   "object": "",
+   "props": {
+    "alice": "num:90",
+    "bob": "num:72",
+    "carol": "num:85"
+   }
+  },
+  "total": "num:247",
+  "arr": {
+   "array": [
+    "num:10",
+    "num:20",
+    "num:30"
+   ],
+   "len": 3
+  },
+  "keys": {
+   "array": [
+    "str:0:string",
+    "str:1:string",
+    "str:2:string",
+    "str:extra:string"
+   ],
+   "len": 4
+  },
+  "base": {
+   "object": "",
+   "props": {
+    "kind": "str:animal",
+    "legs": "num:4"
+   }
+  },
+  "dog": {
+   "object": "",
+   "props": {
+    "name": "str:Rex",
+    "legs": "num:3"
+   }
+  },
+  "own": {
+   "array": [
+    "str:name",
+    "str:legs"
+   ],
+   "len": 2
+  },
+  "all": {
+   "array": [
+    "str:name",
+    "str:legs",
+    "str:kind"
+   ],
+   "len": 3
+  },
+  "obj": {
+   "object": "",
+   "props": {
+    "1": "str:one",
+    "2": "str:two",
+    "b": "num:1",
+    "a": "num:2"
+   }
+  },
+  "order": "str:1 2 b a "
+ },
+ "sourceSha256": "f03bdaf71fe07e9bd83baa2514d3b45d502edc0f3bf60afde25ca3198f8a8c8e"
+}

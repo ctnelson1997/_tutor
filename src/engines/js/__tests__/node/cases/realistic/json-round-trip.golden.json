@@ -1,0 +1,387 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Compact length: 181"
+  },
+  {
+   "stream": "stdout",
+   "text": "{\"course\":\"CS 220\",\"semester\":\"Fall\",\"students\":[{\"name\":\"Lena\",\"scores\":[88,92],\"active\":true},{\"name\":\"Omar\",\"scores\":[75,81],\"active\":false,\"notes\":null}],\"created\":\"2024-09-03\"}"
+  },
+  {
+   "stream": "stdout",
+   "text": "{"
+  },
+  {
+   "stream": "stdout",
+   "text": "  \"name\": \"Lena\","
+  },
+  {
+   "stream": "stdout",
+   "text": "  \"scores\": ["
+  },
+  {
+   "stream": "stdout",
+   "text": "    88,"
+  },
+  {
+   "stream": "stdout",
+   "text": "    92"
+  },
+  {
+   "stream": "stdout",
+   "text": "  ],"
+  },
+  {
+   "stream": "stdout",
+   "text": "  \"active\": true"
+  },
+  {
+   "stream": "stdout",
+   "text": "}"
+  },
+  {
+   "stream": "stdout",
+   "text": "Original students: 2 copy: 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "Same object? false"
+  },
+  {
+   "stream": "stdout",
+   "text": "{\"course\":\"CS 220\",\"semester\":\"Fall\",\"students\":[{\"name\":\"Lena\",\"active\":true},{\"name\":\"Omar\",\"active\":false,\"notes\":null}],\"created\":\"2024-09-03\"}"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 2024, 9, 3 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "{\"n\":null,\"inf\":null,\"list\":[null,1]}"
+  },
+  {
+   "stream": "stdout",
+   "text": "88 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "Parse failed: SyntaxError"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Compact length:",
+    "num:181"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:{\"course\":\"CS 220\",\"semester\":\"Fall\",\"students\":[{\"name\":\"Lena\",\"scores\":[88,92],\"active\":true},{\"name\":\"Omar\",\"scores\":[75,81],\"active\":false,\"notes\":null}],\"created\":\"2024-09-03\"}"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:{\n  \"name\": \"Lena\",\n  \"scores\": [\n    88,\n    92\n  ],\n  \"active\": true\n}"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Original students:",
+    "num:2",
+    "str:copy:",
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Same object?",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:{\"course\":\"CS 220\",\"semester\":\"Fall\",\"students\":[{\"name\":\"Lena\",\"active\":true},{\"name\":\"Omar\",\"active\":false,\"notes\":null}],\"created\":\"2024-09-03\"}"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:2024",
+      "num:9",
+      "num:3"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:{\"n\":null,\"inf\":null,\"list\":[null,1]}"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:88",
+    "num:0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Parse failed:",
+    "str:SyntaxError"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  12,
+  13,
+  14,
+  16,
+  17,
+  19,
+  20,
+  21,
+  22,
+  24,
+  25,
+  27,
+  28,
+  30,
+  31,
+  33,
+  34,
+  35,
+  38,
+  40
+ ],
+ "statementRuns": 21,
+ "functionCalls": 32,
+ "finalGlobals": {
+  "gradebook": {
+   "object": "",
+   "props": {
+    "course": "str:CS 220",
+    "semester": "str:Fall",
+    "students": {
+     "array": [
+      {
+       "object": "",
+       "props": {
+        "name": "str:Lena",
+        "scores": {
+         "array": [
+          "num:88",
+          "num:92"
+         ],
+         "len": 2
+        },
+        "active": "boolean:true"
+       }
+      },
+      {
+       "object": "",
+       "props": {
+        "name": "str:Omar",
+        "scores": {
+         "array": [
+          "num:75",
+          "num:81"
+         ],
+         "len": 2
+        },
+        "active": "boolean:false",
+        "notes": "null"
+       }
+      }
+     ],
+     "len": 2
+    },
+    "created": "str:2024-09-03"
+   }
+  },
+  "json": "str:{\"course\":\"CS 220\",\"semester\":\"Fall\",\"students\":[{\"name\":\"Lena\",\"scores\":[88,92],\"active\":true},{\"name\":\"Omar\",\"scores\":[75,81],\"active\":false,\"notes\":null}],\"created\":\"2024-09-03\"}",
+  "pretty": "str:{\n  \"name\": \"Lena\",\n  \"scores\": [\n    88,\n    92\n  ],\n  \"active\": true\n}",
+  "parsed": {
+   "object": "",
+   "props": {
+    "course": "str:CS 220",
+    "semester": "str:Fall",
+    "students": {
+     "array": [
+      {
+       "object": "",
+       "props": {
+        "name": "str:Lena",
+        "scores": {
+         "array": [
+          "num:88",
+          "num:92"
+         ],
+         "len": 2
+        },
+        "active": "boolean:true"
+       }
+      },
+      {
+       "object": "",
+       "props": {
+        "name": "str:Omar",
+        "scores": {
+         "array": [
+          "num:75",
+          "num:81"
+         ],
+         "len": 2
+        },
+        "active": "boolean:false",
+        "notes": "null"
+       }
+      },
+      {
+       "object": "",
+       "props": {
+        "name": "str:Ivy",
+        "scores": {
+         "array": [
+          "num:99"
+         ],
+         "len": 1
+        },
+        "active": "boolean:true"
+       }
+      }
+     ],
+     "len": 3
+    },
+    "created": "str:2024-09-03"
+   }
+  },
+  "noScores": "str:{\"course\":\"CS 220\",\"semester\":\"Fall\",\"students\":[{\"name\":\"Lena\",\"active\":true},{\"name\":\"Omar\",\"active\":false,\"notes\":null}],\"created\":\"2024-09-03\"}",
+  "withDate": {
+   "object": "",
+   "props": {
+    "course": "str:CS 220",
+    "semester": "str:Fall",
+    "students": {
+     "array": [
+      {
+       "object": "",
+       "props": {
+        "name": "str:Lena",
+        "scores": {
+         "array": [
+          "num:88",
+          "num:92"
+         ],
+         "len": 2
+        },
+        "active": "boolean:true"
+       }
+      },
+      {
+       "object": "",
+       "props": {
+        "name": "str:Omar",
+        "scores": {
+         "array": [
+          "num:75",
+          "num:81"
+         ],
+         "len": 2
+        },
+        "active": "boolean:false",
+        "notes": "null"
+       }
+      }
+     ],
+     "len": 2
+    },
+    "created": {
+     "array": [
+      "num:2024",
+      "num:9",
+      "num:3"
+     ],
+     "len": 3
+    }
+   }
+  },
+  "tricky": {
+   "object": "",
+   "props": {
+    "f": "fn:f",
+    "u": "undefined",
+    "n": "num:NaN",
+    "inf": "num:Infinity",
+    "list": {
+     "array": [
+      "undefined",
+      "num:1"
+     ],
+     "len": 2
+    }
+   }
+  },
+  "deepCopy": {
+   "object": "",
+   "props": {
+    "course": "str:CS 220",
+    "semester": "str:Fall",
+    "students": {
+     "array": [
+      {
+       "object": "",
+       "props": {
+        "name": "str:Lena",
+        "scores": {
+         "array": [
+          "num:0",
+          "num:92"
+         ],
+         "len": 2
+        },
+        "active": "boolean:true"
+       }
+      },
+      {
+       "object": "",
+       "props": {
+        "name": "str:Omar",
+        "scores": {
+         "array": [
+          "num:75",
+          "num:81"
+         ],
+         "len": 2
+        },
+        "active": "boolean:false",
+        "notes": "null"
+       }
+      }
+     ],
+     "len": 2
+    },
+    "created": "str:2024-09-03"
+   }
+  }
+ },
+ "sourceSha256": "acddfb247fbefc25d6507ba2e631ed87f644541939e20ebd76cf211bdfbc3dd2"
+}

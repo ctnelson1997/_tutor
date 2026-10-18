@@ -4,7 +4,8 @@ function sameValue(a: RuntimeValue | undefined, b: RuntimeValue | undefined): bo
   if (a === b) return true;
   if (!a || !b || a.type !== b.type) return false;
   if (a.type === 'ref') return b.type === 'ref' && a.heapId === b.heapId;
-  return b.type !== 'ref' && a.value === b.value && a.display === b.display;
+  // (Object.is: a NaN is the same as a NaN, -0 isn't 0.)
+  return b.type !== 'ref' && Object.is(a.value, b.value) && a.display === b.display;
 }
 
 /**
@@ -40,7 +41,7 @@ function shareFrame(old: StackFrame | undefined, next: StackFrame): StackFrame {
 }
 
 function shareProperty(old: Property | undefined, next: Property): Property {
-  return old && old.key === next.key && sameValue(old.value, next.value) ? old : next;
+  return old && old.key === next.key && sameValue(old.value, next.value) && sameValue(old.keyValue, next.keyValue) ? old : next;
 }
 
 function shareConsoleLine(old: ConsoleLine | undefined, next: ConsoleLine): ConsoleLine {

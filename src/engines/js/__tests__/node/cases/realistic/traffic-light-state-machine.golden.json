@@ -1,0 +1,243 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "red --timer--> green (t=25)"
+  },
+  {
+   "stream": "stdout",
+   "text": "green --timer--> yellow (t=55)"
+  },
+  {
+   "stream": "stdout",
+   "text": "yellow --timer--> red (t=60)"
+  },
+  {
+   "stream": "stdout",
+   "text": "red --emergency--> flashing (t=85)"
+  },
+  {
+   "stream": "stdout",
+   "text": "  ignored \"timer\" while flashing"
+  },
+  {
+   "stream": "stdout",
+   "text": "flashing --reset--> red (t=85)"
+  },
+  {
+   "stream": "stdout",
+   "text": "red --timer--> green (t=110)"
+  },
+  {
+   "stream": "stdout",
+   "text": "Final state: green"
+  },
+  {
+   "stream": "stdout",
+   "text": "Accepted 6 of 7 events"
+  },
+  {
+   "stream": "stdout",
+   "text": "History: red > green > yellow > red > flashing > red > green"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ red: 3, green: 2, yellow: 1, flashing: 1 }"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:red --timer--> green (t=25)"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:green --timer--> yellow (t=55)"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:yellow --timer--> red (t=60)"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:red --emergency--> flashing (t=85)"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:  ignored \"timer\" while flashing"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:flashing --reset--> red (t=85)"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:red --timer--> green (t=110)"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Final state:",
+    "str:green"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Accepted",
+    "num:6",
+    "str:of",
+    "num:7",
+    "str:events"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:History:",
+    "str:red > green > yellow > red > flashing > red > green"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "red": "num:3",
+      "green": "num:2",
+      "yellow": "num:1",
+      "flashing": "num:1"
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  9,
+  11,
+  12,
+  13,
+  16,
+  17,
+  18,
+  19,
+  21,
+  22,
+  23,
+  24,
+  25,
+  28,
+  29,
+  30,
+  31,
+  33,
+  34,
+  35,
+  36,
+  37,
+  38
+ ],
+ "statementRuns": 73,
+ "functionCalls": 14,
+ "finalGlobals": {
+  "transitions": {
+   "object": "",
+   "props": {
+    "green": {
+     "object": "",
+     "props": {
+      "timer": "str:yellow",
+      "emergency": "str:flashing"
+     }
+    },
+    "yellow": {
+     "object": "",
+     "props": {
+      "timer": "str:red",
+      "emergency": "str:flashing"
+     }
+    },
+    "red": {
+     "object": "",
+     "props": {
+      "timer": "str:green",
+      "emergency": "str:flashing"
+     }
+    },
+    "flashing": {
+     "object": "",
+     "props": {
+      "reset": "str:red"
+     }
+    }
+   }
+  },
+  "durations": {
+   "object": "",
+   "props": {
+    "green": "num:30",
+    "yellow": "num:5",
+    "red": "num:25",
+    "flashing": "num:0"
+   }
+  },
+  "state": "str:green",
+  "clock": "num:110",
+  "history": {
+   "array": [
+    "str:red",
+    "str:green",
+    "str:yellow",
+    "str:red",
+    "str:flashing",
+    "str:red",
+    "str:green"
+   ],
+   "len": 7
+  },
+  "send": "fn:send",
+  "events": {
+   "array": [
+    "str:timer",
+    "str:timer",
+    "str:timer",
+    "str:emergency",
+    "str:timer",
+    "str:reset",
+    "str:timer"
+   ],
+   "len": 7
+  },
+  "accepted": "num:6",
+  "visits": {
+   "object": "",
+   "props": {
+    "red": "num:3",
+    "green": "num:2",
+    "yellow": "num:1",
+    "flashing": "num:1"
+   }
+  }
+ },
+ "sourceSha256": "5d13bfe399212e2999d5dad47d929807619c57ee03cb50dcc4359c0cb08f0972"
+}

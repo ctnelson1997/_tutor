@@ -1,0 +1,159 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "9007199254740993n 18446744073709551616n 9007199254740993n 3n -1n"
+  },
+  {
+   "stream": "stdout",
+   "text": "bigint true false true false"
+  },
+  {
+   "stream": "stdout",
+   "text": "18446744073709551616 10000000000000000 9007199254740993"
+  },
+  {
+   "stream": "stdout",
+   "text": "TypeError: Cannot mix BigInt and other types, use explicit conversions"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ id: 1, balance: 123456789012345678901234567889n } [ 1n, -2n, 0n ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "false falsy true 11"
+  },
+  {
+   "stream": "stdout",
+   "text": "25! = 15511210043330985984000000n"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "bigint:9007199254740993",
+    "bigint:18446744073709551616",
+    "bigint:9007199254740993",
+    "bigint:3",
+    "bigint:-1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:bigint",
+    "boolean:true",
+    "boolean:false",
+    "boolean:true",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:18446744073709551616",
+    "str:10000000000000000",
+    "str:9007199254740993"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:TypeError:",
+    "str:Cannot mix BigInt and other types, use explicit conversions"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "id": "num:1",
+      "balance": "bigint:123456789012345678901234567889"
+     }
+    },
+    {
+     "array": [
+      "bigint:1",
+      "bigint:-2",
+      "bigint:0"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:false",
+    "str:falsy",
+    "boolean:true",
+    "num:11"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:25! =",
+    "bigint:15511210043330985984000000"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  12,
+  14,
+  15,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  24,
+  26
+ ],
+ "statementRuns": 45,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "a": "bigint:9007199254740993",
+  "b": "bigint:18446744073709551616",
+  "c": "bigint:9007199254740993",
+  "quotient": "bigint:3",
+  "remainder": "bigint:-1",
+  "mixError": "str:Cannot mix BigInt and other types, use explicit conversions",
+  "account": {
+   "object": "",
+   "props": {
+    "id": "num:1",
+    "balance": "bigint:123456789012345678901234567889"
+   }
+  },
+  "list": {
+   "array": [
+    "bigint:1",
+    "bigint:-2",
+    "bigint:0"
+   ],
+   "len": 3
+  },
+  "factorial": "bigint:15511210043330985984000000"
+ },
+ "sourceSha256": "fcfbd7e5fa34a276cf1fbe25e5810d711390e8ced1a0e002294da6f66e73b293"
+}

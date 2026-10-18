@@ -1,0 +1,282 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "-10 C = 14 F (freezing)"
+  },
+  {
+   "stream": "stdout",
+   "text": "0 C = 32 F (freezing)"
+  },
+  {
+   "stream": "stdout",
+   "text": "10 C = 50 F (cold)"
+  },
+  {
+   "stream": "stdout",
+   "text": "20 C = 68 F (nice)"
+  },
+  {
+   "stream": "stdout",
+   "text": "30 C = 86 F (hot)"
+  },
+  {
+   "stream": "stdout",
+   "text": "40 C = 104 F (hot)"
+  },
+  {
+   "stream": "stdout",
+   "text": "Fahrenheit: [ 98.6, 212, 32, -40, 70 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Celsius: [ 37, 100, 0, -40, 21.11 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Default table has 5 rows"
+  },
+  {
+   "stream": "stdout",
+   "text": "Hottest reading: 100 C is hot"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:-10 C = 14 F (freezing)"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:0 C = 32 F (freezing)"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:10 C = 50 F (cold)"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:20 C = 68 F (nice)"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:30 C = 86 F (hot)"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:40 C = 104 F (hot)"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Fahrenheit:",
+    {
+     "array": [
+      "num:98.6",
+      "num:212",
+      "num:32",
+      "num:-40",
+      "num:70"
+     ],
+     "len": 5
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Celsius:",
+    {
+     "array": [
+      "num:37",
+      "num:100",
+      "num:0",
+      "num:-40",
+      "num:21.11"
+     ],
+     "len": 5
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Default table has 5 rows"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Hottest reading: 100 C is hot"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  7,
+  11,
+  12,
+  13,
+  14,
+  18,
+  19,
+  20,
+  21,
+  23,
+  26,
+  27,
+  28,
+  31,
+  32,
+  33,
+  34,
+  35,
+  36,
+  37,
+  38
+ ],
+ "statementRuns": 101,
+ "functionCalls": 36,
+ "finalGlobals": {
+  "toFahrenheit": "fn:toFahrenheit",
+  "toCelsius": "fn:toCelsius",
+  "describe": "fn:describe",
+  "makeTable": "fn:makeTable",
+  "table": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "c": "num:-10",
+      "f": "num:14",
+      "feel": "str:freezing"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "c": "num:0",
+      "f": "num:32",
+      "feel": "str:freezing"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "c": "num:10",
+      "f": "num:50",
+      "feel": "str:cold"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "c": "num:20",
+      "f": "num:68",
+      "feel": "str:nice"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "c": "num:30",
+      "f": "num:86",
+      "feel": "str:hot"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "c": "num:40",
+      "f": "num:104",
+      "feel": "str:hot"
+     }
+    }
+   ],
+   "len": 6
+  },
+  "readingsF": {
+   "array": [
+    "num:98.6",
+    "num:212",
+    "num:32",
+    "num:-40",
+    "num:70"
+   ],
+   "len": 5
+  },
+  "readingsC": {
+   "array": [
+    "num:37",
+    "num:100",
+    "num:0",
+    "num:-40",
+    "num:21.11"
+   ],
+   "len": 5
+  },
+  "defaultTable": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "c": "num:0",
+      "f": "num:32",
+      "feel": "str:freezing"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "c": "num:10",
+      "f": "num:50",
+      "feel": "str:cold"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "c": "num:20",
+      "f": "num:68",
+      "feel": "str:nice"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "c": "num:30",
+      "f": "num:86",
+      "feel": "str:hot"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "c": "num:40",
+      "f": "num:104",
+      "feel": "str:hot"
+     }
+    }
+   ],
+   "len": 5
+  },
+  "hottest": "num:100"
+ },
+ "sourceSha256": "1333dd5b4eebaa4fbd82be099860c744ba410d9cd2461f04a543ced5a2a671a6"
+}

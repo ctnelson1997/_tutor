@@ -1,0 +1,129 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "before setup: undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "after setup: number 1 made inside setup"
+  },
+  {
+   "stream": "stdout",
+   "text": "globalThis.counter: 42 in globalThis: true"
+  },
+  {
+   "stream": "stdout",
+   "text": "84"
+  },
+  {
+   "stream": "stdout",
+   "text": "let is not on globalThis: undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "typo created a global: oops"
+  },
+  {
+   "stream": "stdout",
+   "text": "delete a created global: true undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "43 declared with let"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:before setup:",
+    "str:undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:after setup:",
+    "str:number",
+    "num:1",
+    "str:made inside setup"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:globalThis.counter:",
+    "num:42",
+    "str:in globalThis:",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:84"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:let is not on globalThis:",
+    "undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:typo created a global:",
+    "str:oops"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:delete a created global:",
+    "boolean:true",
+    "str:undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:43",
+    "str:declared with let"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  6,
+  7,
+  8,
+  9,
+  10,
+  12,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21
+ ],
+ "statementRuns": 16,
+ "functionCalls": 2,
+ "finalGlobals": {
+  "setup": "fn:setup",
+  "readGlobal": "fn:readGlobal",
+  "declared": "str:declared with let",
+  "total": "num:43"
+ },
+ "sourceSha256": "7e0ee7c518834f3c5ac1c7e5b4f840530f2502317dad5808c29a79bfb2494e62"
+}

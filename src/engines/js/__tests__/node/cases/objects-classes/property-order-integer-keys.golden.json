@@ -1,0 +1,358 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "["
+  },
+  {
+   "stream": "stdout",
+   "text": "  '0',     '2',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  '10',    '4294967294',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  'zebra', 'apple',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  '-1',    '01',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  '1.5',   '4294967295'"
+  },
+  {
+   "stream": "stdout",
+   "text": "]"
+  },
+  {
+   "stream": "stdout",
+   "text": "{\"0\":\"zero\",\"2\":\"two\",\"10\":\"ten\",\"4294967294\":\"max index\",\"zebra\":1,\"apple\":2,\"-1\":\"minus one\",\"01\":\"leading zero\",\"1.5\":\"one and a half\",\"4294967295\":\"not an index\"}"
+  },
+  {
+   "stream": "stdout",
+   "text": "0 -> zero"
+  },
+  {
+   "stream": "stdout",
+   "text": "2 -> two"
+  },
+  {
+   "stream": "stdout",
+   "text": "10 -> ten"
+  },
+  {
+   "stream": "stdout",
+   "text": "4294967294 -> max index"
+  },
+  {
+   "stream": "stdout",
+   "text": "zebra -> 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "apple -> 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "-1 -> minus one"
+  },
+  {
+   "stream": "stdout",
+   "text": "01 -> leading zero"
+  },
+  {
+   "stream": "stdout",
+   "text": "1.5 -> one and a half"
+  },
+  {
+   "stream": "stdout",
+   "text": "4294967295 -> not an index"
+  },
+  {
+   "stream": "stdout",
+   "text": "0,2,10,4294967294,apple,-1,01,1.5,4294967295,zebra"
+  },
+  {
+   "stream": "stdout",
+   "text": "11"
+  },
+  {
+   "stream": "stdout",
+   "text": "["
+  },
+  {
+   "stream": "stdout",
+   "text": "  [ '1', 'a' ],"
+  },
+  {
+   "stream": "stdout",
+   "text": "  [ '2', 'b' ],"
+  },
+  {
+   "stream": "stdout",
+   "text": "  [ '3', 'c' ],"
+  },
+  {
+   "stream": "stdout",
+   "text": "  [ 'b', 'B' ],"
+  },
+  {
+   "stream": "stdout",
+   "text": "  [ 'a', 'A' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "]"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ '1': 'a', '2': 'b', '3': 'c', b: 'B', a: 'A' }"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:0",
+      "str:2",
+      "str:10",
+      "str:4294967294",
+      "str:zebra",
+      "str:apple",
+      "str:-1",
+      "str:01",
+      "str:1.5",
+      "str:4294967295"
+     ],
+     "len": 10
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:{\"0\":\"zero\",\"2\":\"two\",\"10\":\"ten\",\"4294967294\":\"max index\",\"zebra\":1,\"apple\":2,\"-1\":\"minus one\",\"01\":\"leading zero\",\"1.5\":\"one and a half\",\"4294967295\":\"not an index\"}"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:0",
+    "str:->",
+    "str:zero"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:2",
+    "str:->",
+    "str:two"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:10",
+    "str:->",
+    "str:ten"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:4294967294",
+    "str:->",
+    "str:max index"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:zebra",
+    "str:->",
+    "num:1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:apple",
+    "str:->",
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:-1",
+    "str:->",
+    "str:minus one"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:01",
+    "str:->",
+    "str:leading zero"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:1.5",
+    "str:->",
+    "str:one and a half"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:4294967295",
+    "str:->",
+    "str:not an index"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:0,2,10,4294967294,apple,-1,01,1.5,4294967295,zebra"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:11"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      {
+       "array": [
+        "str:1",
+        "str:a"
+       ],
+       "len": 2
+      },
+      {
+       "array": [
+        "str:2",
+        "str:b"
+       ],
+       "len": 2
+      },
+      {
+       "array": [
+        "str:3",
+        "str:c"
+       ],
+       "len": 2
+      },
+      {
+       "array": [
+        "str:b",
+        "str:B"
+       ],
+       "len": 2
+      },
+      {
+       "array": [
+        "str:a",
+        "str:A"
+       ],
+       "len": 2
+      }
+     ],
+     "len": 5
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "1": "str:a",
+      "2": "str:b",
+      "3": "str:c",
+      "b": "str:B",
+      "a": "str:A"
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  16,
+  17,
+  18,
+  19,
+  21,
+  22,
+  23,
+  24,
+  26,
+  27,
+  28
+ ],
+ "statementRuns": 33,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "obj": {
+   "object": "",
+   "props": {
+    "0": "str:zero",
+    "2": "str:two",
+    "10": "str:ten",
+    "4294967294": "str:max index",
+    "apple": "num:2",
+    "-1": "str:minus one",
+    "01": "str:leading zero",
+    "1.5": "str:one and a half",
+    "4294967295": "str:not an index",
+    "zebra": "str:back",
+    "[Symbol(tag)]": "str:symbol"
+   }
+  },
+  "sym": "sym:tag",
+  "scores": {
+   "object": "",
+   "props": {
+    "1": "str:a",
+    "2": "str:b",
+    "3": "str:c",
+    "b": "str:B",
+    "a": "str:A"
+   }
+  }
+ },
+ "sourceSha256": "f9810ece2ba7fbd2a189c5a884f290935cfc03ad1dac2f4858f85812f6283fdd"
+}

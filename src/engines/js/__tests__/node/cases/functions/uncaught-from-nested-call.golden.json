@@ -1,0 +1,105 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "starting"
+  },
+  {
+   "stream": "stdout",
+   "text": "added tea running total 6"
+  },
+  {
+   "stream": "stdout",
+   "text": "added cake running total 11"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:starting"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:added",
+    "str:tea",
+    "str:running total",
+    "num:6"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:added",
+    "str:cake",
+    "str:running total",
+    "num:11"
+   ]
+  }
+ ],
+ "uncaught": [
+  {
+   "name": "RangeError",
+   "message": "quantity must be a positive integer, got 0",
+   "where": "script",
+   "consoleLines": 3
+  }
+ ],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  6,
+  9,
+  12,
+  13,
+  14,
+  15,
+  19,
+  24,
+  25,
+  26
+ ],
+ "statementRuns": 21,
+ "functionCalls": 7,
+ "finalGlobals": {
+  "validate": "fn:validate",
+  "lineTotal": "fn:lineTotal",
+  "orderTotal": "fn:orderTotal",
+  "order": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:tea",
+      "qty": "num:2",
+      "price": "num:3"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:cake",
+      "qty": "num:1",
+      "price": "num:5"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:jam",
+      "qty": "num:0",
+      "price": "num:4"
+     }
+    }
+   ],
+   "len": 3
+  },
+  "total": "<uninitialized>"
+ },
+ "sourceSha256": "439f5d029f0be8c946d63251795727911bd56e5ed6541df614c909c8b27905d3"
+}

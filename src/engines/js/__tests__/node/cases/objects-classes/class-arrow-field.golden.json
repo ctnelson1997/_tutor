@@ -1,0 +1,210 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "save arrow: 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "save arrow: 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "this is undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "save method"
+  },
+  {
+   "stream": "stdout",
+   "text": "other method"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'save arrow: 3', 'load arrow: 1' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'clicks', 'name', 'handleArrow' ] false"
+  },
+  {
+   "stream": "stdout",
+   "text": "false true"
+  },
+  {
+   "stream": "stdout",
+   "text": "save arrow: 4 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "Clicker {"
+  },
+  {
+   "stream": "stdout",
+   "text": "  clicks: 4,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  name: 'save',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  handleArrow: [Function: handleArrow]"
+  },
+  {
+   "stream": "stdout",
+   "text": "}"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:save arrow: 1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:save arrow: 2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:this is undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:save method"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:other method"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:save arrow: 3",
+      "str:load arrow: 1"
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:clicks",
+      "str:name",
+      "str:handleArrow"
+     ],
+     "len": 3
+    },
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:false",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:save arrow: 4",
+    "num:4"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "Clicker",
+     "props": {
+      "clicks": "num:4",
+      "name": "str:save",
+      "handleArrow": "fn:handleArrow"
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  6,
+  7,
+  10,
+  13,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  24,
+  25,
+  27,
+  28,
+  29,
+  30,
+  31,
+  32,
+  33,
+  34
+ ],
+ "statementRuns": 33,
+ "functionCalls": 16,
+ "finalGlobals": {
+  "Clicker": "fn:Clicker",
+  "btn": {
+   "object": "Clicker",
+   "props": {
+    "clicks": "num:4",
+    "name": "str:save",
+    "handleArrow": "fn:handleArrow"
+   }
+  },
+  "arrow": "fn:handleArrow",
+  "method": "fn:handleMethod",
+  "bound": "fn:bound handleMethod",
+  "listeners": {
+   "array": [
+    "fn:handleArrow",
+    "fn:handleArrow"
+   ],
+   "len": 2
+  },
+  "results": {
+   "array": [
+    "str:save arrow: 3",
+    "str:load arrow: 1"
+   ],
+   "len": 2
+  },
+  "detached": {
+   "object": "",
+   "props": {
+    "run": "fn:handleArrow",
+    "name": "str:detached"
+   }
+  }
+ },
+ "sourceSha256": "1767e5b233d106f970d8e739f26f0ec3f5df809ce324e75a9b1962c6ead740c6"
+}

@@ -1,0 +1,88 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "sqrt 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "second handler: negative: -1"
+  },
+  {
+   "stream": "stdout",
+   "text": "caught RangeError negative: -4"
+  },
+  {
+   "stream": "stdout",
+   "text": "caught thrown: thrown inside then"
+  },
+  {
+   "stream": "stdout",
+   "text": "recovered with 0"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:sqrt",
+    "num:4"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:second handler:",
+    "str:negative: -1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:caught",
+    "str:RangeError",
+    "str:negative: -4"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:caught thrown:",
+    "str:thrown inside then"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:recovered with",
+    "num:0"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  5,
+  8,
+  12,
+  15,
+  16,
+  20,
+  25,
+  26,
+  28
+ ],
+ "statementRuns": 17,
+ "functionCalls": 12,
+ "finalGlobals": {
+  "check": "fn:check",
+  "thrown": {
+   "promise": true
+  }
+ },
+ "sourceSha256": "d35a34db2ccc69ae8f7f8a15b374f280ff962b76d837ac5fcedd6e0273bf8977"
+}

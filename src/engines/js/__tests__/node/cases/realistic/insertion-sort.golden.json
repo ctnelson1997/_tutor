@@ -1,0 +1,234 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "i=1: [11 12 13 5 6 7 1 9]"
+  },
+  {
+   "stream": "stdout",
+   "text": "i=2: [11 12 13 5 6 7 1 9]"
+  },
+  {
+   "stream": "stdout",
+   "text": "i=3: [5 11 12 13 6 7 1 9]"
+  },
+  {
+   "stream": "stdout",
+   "text": "i=4: [5 6 11 12 13 7 1 9]"
+  },
+  {
+   "stream": "stdout",
+   "text": "i=5: [5 6 7 11 12 13 1 9]"
+  },
+  {
+   "stream": "stdout",
+   "text": "i=6: [1 5 6 7 11 12 13 9]"
+  },
+  {
+   "stream": "stdout",
+   "text": "i=7: [1 5 6 7 9 11 12 13]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Before: 12,11,13,5,6,7,1,9"
+  },
+  {
+   "stream": "stdout",
+   "text": "After: 1,5,6,7,9,11,12,13"
+  },
+  {
+   "stream": "stdout",
+   "text": "Sorted correctly? true"
+  },
+  {
+   "stream": "stdout",
+   "text": "i=1: [apple pear fig banana]"
+  },
+  {
+   "stream": "stdout",
+   "text": "i=2: [apple fig pear banana]"
+  },
+  {
+   "stream": "stdout",
+   "text": "i=3: [apple banana fig pear]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'apple', 'banana', 'fig', 'pear' ] true"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:i=1: [11 12 13 5 6 7 1 9]"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:i=2: [11 12 13 5 6 7 1 9]"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:i=3: [5 11 12 13 6 7 1 9]"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:i=4: [5 6 11 12 13 7 1 9]"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:i=5: [5 6 7 11 12 13 1 9]"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:i=6: [1 5 6 7 11 12 13 9]"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:i=7: [1 5 6 7 9 11 12 13]"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Before:",
+    "str:12,11,13,5,6,7,1,9"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:After:",
+    "str:1,5,6,7,9,11,12,13"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Sorted correctly?",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:i=1: [apple pear fig banana]"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:i=2: [apple fig pear banana]"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:i=3: [apple banana fig pear]"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:apple",
+      "str:banana",
+      "str:fig",
+      "str:pear"
+     ],
+     "len": 4
+    },
+    "boolean:true"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  10,
+  11,
+  13,
+  16,
+  17,
+  18,
+  19,
+  20,
+  22,
+  23,
+  25,
+  26,
+  27
+ ],
+ "statementRuns": 110,
+ "functionCalls": 10,
+ "finalGlobals": {
+  "insertionSort": "fn:insertionSort",
+  "data": {
+   "array": [
+    "num:1",
+    "num:5",
+    "num:6",
+    "num:7",
+    "num:9",
+    "num:11",
+    "num:12",
+    "num:13"
+   ],
+   "len": 8
+  },
+  "original": {
+   "array": [
+    "num:12",
+    "num:11",
+    "num:13",
+    "num:5",
+    "num:6",
+    "num:7",
+    "num:1",
+    "num:9"
+   ],
+   "len": 8
+  },
+  "isSorted": "boolean:true",
+  "words": {
+   "array": [
+    "str:apple",
+    "str:banana",
+    "str:fig",
+    "str:pear"
+   ],
+   "len": 4
+  },
+  "returned": {
+   "array": [
+    "str:apple",
+    "str:banana",
+    "str:fig",
+    "str:pear"
+   ],
+   "len": 4
+  }
+ },
+ "sourceSha256": "c82a6e8914d9a62a713aafbdfc77923bcf5a9762aa5a4c5257dcebf9459ec27a"
+}

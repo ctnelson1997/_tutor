@@ -1,0 +1,268 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Monday: weekday"
+  },
+  {
+   "stream": "stdout",
+   "text": "Saturday: weekend"
+  },
+  {
+   "stream": "stdout",
+   "text": "Funday: not a day"
+  },
+  {
+   "stream": "stdout",
+   "text": "SUNDAY: weekend"
+  },
+  {
+   "stream": "stdout",
+   "text": "friday: weekday"
+  },
+  {
+   "stream": "stdout",
+   "text": "January has 31 days"
+  },
+  {
+   "stream": "stdout",
+   "text": "February has 28 days"
+  },
+  {
+   "stream": "stdout",
+   "text": "April has 30 days"
+  },
+  {
+   "stream": "stdout",
+   "text": "September has 30 days"
+  },
+  {
+   "stream": "stdout",
+   "text": "December has 31 days"
+  },
+  {
+   "stream": "stdout",
+   "text": "Total: 150"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 9, 3, 18, 2, 'cannot divide by zero', 'unknown operator %' ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Monday: weekday"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Saturday: weekend"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Funday: not a day"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:SUNDAY: weekend"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:friday: weekday"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:January has 31 days"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:February has 28 days"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:April has 30 days"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:September has 30 days"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:December has 31 days"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Total:",
+    "num:150"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:9",
+      "num:3",
+      "num:18",
+      "num:2",
+      "str:cannot divide by zero",
+      "str:unknown operator %"
+     ],
+     "len": 6
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  6,
+  12,
+  14,
+  19,
+  20,
+  22,
+  23,
+  28,
+  29,
+  31,
+  33,
+  37,
+  39,
+  41,
+  43,
+  45,
+  46,
+  48,
+  52,
+  53,
+  54,
+  57,
+  58,
+  59,
+  60,
+  61,
+  62,
+  64,
+  66,
+  67,
+  68
+ ],
+ "statementRuns": 76,
+ "functionCalls": 22,
+ "finalGlobals": {
+  "dayType": "fn:dayType",
+  "daysInMonth": "fn:daysInMonth",
+  "calculator": "fn:calculator",
+  "days": {
+   "array": [
+    "str:Monday",
+    "str:Saturday",
+    "str:Funday",
+    "str:SUNDAY",
+    "str:friday"
+   ],
+   "len": 5
+  },
+  "months": {
+   "array": [
+    "str:January",
+    "str:February",
+    "str:April",
+    "str:September",
+    "str:December"
+   ],
+   "len": 5
+  },
+  "totalDays": "num:150",
+  "ops": {
+   "array": [
+    {
+     "array": [
+      "str:+",
+      "num:6",
+      "num:3"
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "str:-",
+      "num:6",
+      "num:3"
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "str:*",
+      "num:6",
+      "num:3"
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "str:/",
+      "num:6",
+      "num:3"
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "str:/",
+      "num:1",
+      "num:0"
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "str:%",
+      "num:7",
+      "num:2"
+     ],
+     "len": 3
+    }
+   ],
+   "len": 6
+  },
+  "answers": {
+   "array": [
+    "num:9",
+    "num:3",
+    "num:18",
+    "num:2",
+    "str:cannot divide by zero",
+    "str:unknown operator %"
+   ],
+   "len": 6
+  }
+ },
+ "sourceSha256": "c262e39a21ef71d49a16224ca5fb181a6891c111d1e0298d0df91f97963e40ac"
+}

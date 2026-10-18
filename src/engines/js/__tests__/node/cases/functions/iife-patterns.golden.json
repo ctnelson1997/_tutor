@@ -1,0 +1,160 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "6 undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "7"
+  },
+  {
+   "stream": "stdout",
+   "text": "module value: 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ env: 'test', debug: true }"
+  },
+  {
+   "stream": "stdout",
+   "text": "bang IIFE ran"
+  },
+  {
+   "stream": "stdout",
+   "text": "void IIFE named named"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 1, 4, 9, 16, 25 ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:6",
+    "str:undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:7"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:module value:",
+    "num:1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "env": "str:test",
+      "debug": "boolean:true"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:bang IIFE ran"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:void IIFE named",
+    "str:named"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:1",
+      "num:4",
+      "num:9",
+      "num:16",
+      "num:25"
+     ],
+     "len": 5
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  6,
+  7,
+  8,
+  9,
+  10,
+  12,
+  13,
+  15,
+  19,
+  23,
+  24,
+  25,
+  26,
+  27,
+  28,
+  30,
+  31,
+  32,
+  34,
+  35,
+  37,
+  38,
+  39,
+  40,
+  42
+ ],
+ "statementRuns": 37,
+ "functionCalls": 14,
+ "finalGlobals": {
+  "result": "num:6",
+  "sum": "num:7",
+  "counterModule": {
+   "object": "",
+   "props": {
+    "up": "fn:up",
+    "down": "fn:down",
+    "value": "<getter>"
+   }
+  },
+  "config": {
+   "object": "",
+   "props": {
+    "env": "str:test",
+    "debug": "boolean:true"
+   }
+  },
+  "squares": {
+   "array": [
+    "num:1",
+    "num:4",
+    "num:9",
+    "num:16",
+    "num:25"
+   ],
+   "len": 5
+  }
+ },
+ "sourceSha256": "d1d4ab1f3d770e26e371b11fa2fd48cddd0dd188b930697095bcda5b5df77c7b"
+}

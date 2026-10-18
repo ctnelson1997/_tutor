@@ -1,0 +1,316 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "first: 1 rest: [ 2, 3, 4 ] rest is array: true"
+  },
+  {
+   "stream": "stdout",
+   "text": "10"
+  },
+  {
+   "stream": "stdout",
+   "text": "first: 10 rest: [] rest is array: true"
+  },
+  {
+   "stream": "stdout",
+   "text": "10"
+  },
+  {
+   "stream": "stdout",
+   "text": "first: 4 rest: [ 8, 15, 16, 23, 42 ] rest is array: true"
+  },
+  {
+   "stream": "stdout",
+   "text": "42 108"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 0, 4, 8, 99 ] [ 'h', 'e', 'y' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ theme: 'light', size: 14, bold: true } { theme: 'light', size: 20, bold: true }"
+  },
+  {
+   "stream": "stdout",
+   "text": "4 [ 8, 15, 16, 23, 42 ] light { size: 14, bold: true }"
+  },
+  {
+   "stream": "stdout",
+   "text": "fruits: 2 item(s) -> apple|pear"
+  },
+  {
+   "stream": "stdout",
+   "text": "none: 0 item(s) -> "
+  },
+  {
+   "stream": "stdout",
+   "text": "lengths ignore the rest parameter: 1 1"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:first:",
+    "num:1",
+    "str:rest:",
+    {
+     "array": [
+      "num:2",
+      "num:3",
+      "num:4"
+     ],
+     "len": 3
+    },
+    "str:rest is array:",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:10"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:first:",
+    "num:10",
+    "str:rest:",
+    {
+     "array": [],
+     "len": 0
+    },
+    "str:rest is array:",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:10"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:first:",
+    "num:4",
+    "str:rest:",
+    {
+     "array": [
+      "num:8",
+      "num:15",
+      "num:16",
+      "num:23",
+      "num:42"
+     ],
+     "len": 5
+    },
+    "str:rest is array:",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:42",
+    "num:108"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:0",
+      "num:4",
+      "num:8",
+      "num:99"
+     ],
+     "len": 4
+    },
+    {
+     "array": [
+      "str:h",
+      "str:e",
+      "str:y"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "theme": "str:light",
+      "size": "num:14",
+      "bold": "boolean:true"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "theme": "str:light",
+      "size": "num:20",
+      "bold": "boolean:true"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:4",
+    {
+     "array": [
+      "num:8",
+      "num:15",
+      "num:16",
+      "num:23",
+      "num:42"
+     ],
+     "len": 5
+    },
+    "str:light",
+    {
+     "object": "",
+     "props": {
+      "size": "num:14",
+      "bold": "boolean:true"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:fruits: 2 item(s) -> apple|pear"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:none: 0 item(s) -> "
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:lengths ignore the rest parameter:",
+    "num:1",
+    "num:1"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  24
+ ],
+ "statementRuns": 25,
+ "functionCalls": 13,
+ "finalGlobals": {
+  "sum": "fn:sum",
+  "nums": {
+   "array": [
+    "num:4",
+    "num:8",
+    "num:15",
+    "num:16",
+    "num:23",
+    "num:42"
+   ],
+   "len": 6
+  },
+  "more": {
+   "array": [
+    "num:0",
+    "num:4",
+    "num:8",
+    "num:99"
+   ],
+   "len": 4
+  },
+  "letters": {
+   "array": [
+    "str:h",
+    "str:e",
+    "str:y"
+   ],
+   "len": 3
+  },
+  "defaults": {
+   "object": "",
+   "props": {
+    "theme": "str:light",
+    "size": "num:12"
+   }
+  },
+  "prefs": {
+   "object": "",
+   "props": {
+    "theme": "str:light",
+    "size": "num:14",
+    "bold": "boolean:true"
+   }
+  },
+  "copy": {
+   "object": "",
+   "props": {
+    "theme": "str:light",
+    "size": "num:20",
+    "bold": "boolean:true"
+   }
+  },
+  "head": "num:4",
+  "tail": {
+   "array": [
+    "num:8",
+    "num:15",
+    "num:16",
+    "num:23",
+    "num:42"
+   ],
+   "len": 5
+  },
+  "theme": "str:light",
+  "others": {
+   "object": "",
+   "props": {
+    "size": "num:14",
+    "bold": "boolean:true"
+   }
+  },
+  "logAll": "fn:logAll"
+ },
+ "sourceSha256": "861cac47f09815ca8207f1933c3158c0d72f620d35d59b3d5fe125b7a595f11c"
+}

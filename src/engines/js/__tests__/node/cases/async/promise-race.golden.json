@@ -1,0 +1,76 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "race of resolved: already"
+  },
+  {
+   "stream": "stdout",
+   "text": "winner: hare"
+  },
+  {
+   "stream": "stdout",
+   "text": "second: quick data"
+  },
+  {
+   "stream": "stdout",
+   "text": "first: error: timed out"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:race of resolved:",
+    "str:already"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:winner:",
+    "str:hare"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:second:",
+    "str:quick data"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:first:",
+    "str:error: timed out"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  6,
+  8,
+  9,
+  10,
+  11,
+  15,
+  17,
+  20,
+  21,
+  22
+ ],
+ "statementRuns": 17,
+ "functionCalls": 27,
+ "finalGlobals": {
+  "wait": "fn:wait",
+  "failAfter": "fn:failAfter",
+  "winner": "str:hare",
+  "withTimeout": "fn:withTimeout"
+ },
+ "sourceSha256": "792d29ec05e3532b695e544f6214052d2e7c2d06235dc5658599e43dbfe64756"
+}

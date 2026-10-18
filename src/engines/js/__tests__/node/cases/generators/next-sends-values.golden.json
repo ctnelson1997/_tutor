@@ -1,0 +1,218 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "generator started"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ value: 0, done: false }"
+  },
+  {
+   "stream": "stdout",
+   "text": "received 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "received 10"
+  },
+  {
+   "stream": "stdout",
+   "text": "5 15"
+  },
+  {
+   "stream": "stdout",
+   "text": "received -3"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ value: 12, done: false }"
+  },
+  {
+   "stream": "stdout",
+   "text": "received undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ value: 'final 12', done: true }"
+  },
+  {
+   "stream": "stdout",
+   "text": "What is your name? | Hi Ada! Hobby? | Ada likes math"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:generator started"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "value": "num:0",
+      "done": "boolean:false"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:received",
+    "num:5"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:received",
+    "num:10"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:5",
+    "num:15"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:received",
+    "num:-3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "value": "num:12",
+      "done": "boolean:false"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:received",
+    "undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "value": "str:final 12",
+      "done": "boolean:true"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:What is your name?",
+    "str:|",
+    "str:Hi Ada! Hobby?",
+    "str:|",
+    "str:Ada likes math"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  11,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  26,
+  27,
+  28,
+  31,
+  32,
+  33,
+  34,
+  35
+ ],
+ "statementRuns": 38,
+ "functionCalls": 2,
+ "finalGlobals": {
+  "accumulator": "fn:accumulator",
+  "acc": {
+   "object": "",
+   "props": {}
+  },
+  "r0": {
+   "object": "",
+   "props": {
+    "value": "num:0",
+    "done": "boolean:false"
+   }
+  },
+  "r1": {
+   "object": "",
+   "props": {
+    "value": "num:5",
+    "done": "boolean:false"
+   }
+  },
+  "r2": {
+   "object": "",
+   "props": {
+    "value": "num:15",
+    "done": "boolean:false"
+   }
+  },
+  "r3": {
+   "object": "",
+   "props": {
+    "value": "num:12",
+    "done": "boolean:false"
+   }
+  },
+  "r4": {
+   "object": "",
+   "props": {
+    "value": "str:final 12",
+    "done": "boolean:true"
+   }
+  },
+  "conversation": "fn:conversation",
+  "chat": {
+   "object": "",
+   "props": {}
+  },
+  "q1": "str:What is your name?",
+  "q2": "str:Hi Ada! Hobby?",
+  "summary": "str:Ada likes math"
+ },
+ "sourceSha256": "846982effd2c8ba820651868eedcca123e51e3887b547cde3fe19d06c173f6aa"
+}

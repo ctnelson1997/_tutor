@@ -1,0 +1,17 @@
+{
+ "console": [],
+ "calls": [],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": {
+  "message": "Identifier 'count' has already been declared",
+  "line": 7,
+  "column": 4
+ },
+ "executedLines": [],
+ "statementRuns": 0,
+ "functionCalls": 0,
+ "finalGlobals": {},
+ "sourceSha256": "77050cc9d4b16265bca1bd5404bad3788d9f1c037c571aeff78c76459e49cee0"
+}

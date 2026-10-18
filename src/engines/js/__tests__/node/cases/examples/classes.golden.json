@@ -1,0 +1,59 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Cat says meow"
+  },
+  {
+   "stream": "stdout",
+   "text": "Dog says woof"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Cat says meow"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Dog says woof"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  7,
+  11,
+  12,
+  13,
+  14
+ ],
+ "statementRuns": 10,
+ "functionCalls": 4,
+ "finalGlobals": {
+  "Animal": "fn:Animal",
+  "cat": {
+   "object": "Animal",
+   "props": {
+    "name": "str:Cat",
+    "sound": "str:meow"
+   }
+  },
+  "dog": {
+   "object": "Animal",
+   "props": {
+    "name": "str:Dog",
+    "sound": "str:woof"
+   }
+  }
+ },
+ "sourceSha256": "8e007e5eba3cc93829e896792e37ad817c62a6538c2e4177ca88e05fa0bdca7e"
+}

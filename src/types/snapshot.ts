@@ -1,7 +1,8 @@
 // ── Primitive values ──
 
 export interface PrimitiveValue {
-  type: 'number' | 'string' | 'boolean' | 'null' | 'undefined' | 'symbol' | 'bigint';
+  /** `empty` is an array's hole (JS, #48): no element at that index, not even undefined. */
+  type: 'number' | 'string' | 'boolean' | 'null' | 'undefined' | 'symbol' | 'bigint' | 'empty';
   value: string | number | boolean | null;
   /**
    * The text to show, when the engine renders the value itself, e.g. Java's
@@ -25,6 +26,12 @@ export type RuntimeValue = PrimitiveValue | HeapRef;
 export interface Property {
   key: string;
   value: RuntimeValue;
+  /**
+   * The key itself, when it is a value rather than a name: a Map's key (JS,
+   * #48), drawn as values are, so an object key is a reference to its object.
+   * `key` is then only text that tells the entries apart.
+   */
+  keyValue?: RuntimeValue;
 }
 
 export type CommonHeapObjectType =
@@ -98,6 +105,12 @@ export interface ExecutionSnapshot {
    */
   console?: ConsoleLine[];
   condition?: ConditionResult;
+  /**
+   * Why this step happens when nothing on the stack called it: the first step
+   * of a callback the event loop runs after the script (JS, #45), such as
+   * `setTimeout callback`, `promise callback` or `resumed after await`.
+   */
+  label?: string;
 }
 
 // ── Execution result from the worker ──
@@ -108,11 +121,12 @@ export interface ExecutionSnapshot {
  *   limit      the run hit the step cap or the time limit
  *   error      the engine stopped it: a construct it can't run yet, or an
  *              internal failure
- *   compile    the program doesn't compile (Java): nothing ran, `message` and
- *              `line` are the first error, `lines` has every error's line, and
- *              `stderr` lists them all as javac does
- * `kind` is absent for failures before anything ran (a parse error, the engine
- * failing to load, the worker timing out).
+ *   compile    the program doesn't compile (Java) or parse (JS, #50): nothing
+ *              ran, `message` and `line` are the first error, `lines` has every
+ *              error's line, and `stderr` lists them all as javac or the
+ *              browser's console does
+ * `kind` is absent for failures before anything ran (a Python syntax error,
+ * the engine failing to load, the worker timing out).
  */
 export interface RunError {
   message: string;

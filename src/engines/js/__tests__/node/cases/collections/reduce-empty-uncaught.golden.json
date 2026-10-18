@@ -1,0 +1,140 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "ann safe total 17.5"
+  },
+  {
+   "stream": "stdout",
+   "text": "bob safe total 7"
+  },
+  {
+   "stream": "stdout",
+   "text": "cy safe total 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "ann total 17.5"
+  },
+  {
+   "stream": "stdout",
+   "text": "bob total 7"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:ann",
+    "str:safe total",
+    "num:17.5"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:bob",
+    "str:safe total",
+    "num:7"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:cy",
+    "str:safe total",
+    "num:0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:ann",
+    "str:total",
+    "num:17.5"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:bob",
+    "str:total",
+    "num:7"
+   ]
+  }
+ ],
+ "uncaught": [
+  {
+   "name": "TypeError",
+   "message": "Reduce of empty array with no initial value",
+   "where": "script",
+   "consoleLines": 5
+  }
+ ],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  7,
+  8,
+  9,
+  10,
+  12,
+  13,
+  14
+ ],
+ "statementRuns": 16,
+ "functionCalls": 6,
+ "finalGlobals": {
+  "carts": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "owner": "str:ann",
+      "items": {
+       "array": [
+        "num:3",
+        "num:4.5",
+        "num:10"
+       ],
+       "len": 3
+      }
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "owner": "str:bob",
+      "items": {
+       "array": [
+        "num:7"
+       ],
+       "len": 1
+      }
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "owner": "str:cy",
+      "items": {
+       "array": [],
+       "len": 0
+      }
+     }
+    }
+   ],
+   "len": 3
+  },
+  "totals": {
+   "object": "",
+   "props": {
+    "ann": "num:17.5",
+    "bob": "num:7"
+   }
+  }
+ },
+ "sourceSha256": "4d9b182bc82e717e6bb6235e882f128271cda7baffb6fcd2ff1d97bc2065a1f4"
+}

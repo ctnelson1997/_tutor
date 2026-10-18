@@ -1,0 +1,166 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "playing intro"
+  },
+  {
+   "stream": "stdout",
+   "text": "playing verse"
+  },
+  {
+   "stream": "stdout",
+   "text": "playing chorus"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'intro', 'verse', 'chorus' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "intro chorus outro"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ value: 'intro', done: false } { value: 'verse', done: false }"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:playing",
+    "str:intro"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:playing",
+    "str:verse"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:playing",
+    "str:chorus"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:intro",
+      "str:verse",
+      "str:chorus"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:intro",
+    "str:chorus",
+    "str:outro"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "value": "str:intro",
+      "done": "boolean:false"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "value": "str:verse",
+      "done": "boolean:false"
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  5,
+  6,
+  7,
+  9,
+  10,
+  12,
+  18,
+  19,
+  22,
+  23,
+  25,
+  26,
+  27,
+  29,
+  30,
+  31,
+  32
+ ],
+ "statementRuns": 54,
+ "functionCalls": 18,
+ "finalGlobals": {
+  "playlist": {
+   "object": "",
+   "props": {
+    "songs": {
+     "array": [
+      "str:intro",
+      "str:verse",
+      "str:chorus",
+      "str:outro"
+     ],
+     "len": 4
+    },
+    "[Symbol(Symbol.iterator)]": "fn:[Symbol.iterator]"
+   }
+  },
+  "copy": {
+   "array": [
+    "str:intro",
+    "str:verse",
+    "str:chorus"
+   ],
+   "len": 3
+  },
+  "first": "str:intro",
+  "third": "str:chorus",
+  "fourth": "str:outro",
+  "it": {
+   "object": "",
+   "props": {
+    "next": "fn:next"
+   }
+  },
+  "r1": {
+   "object": "",
+   "props": {
+    "value": "str:intro",
+    "done": "boolean:false"
+   }
+  },
+  "r2": {
+   "object": "",
+   "props": {
+    "value": "str:verse",
+    "done": "boolean:false"
+   }
+  }
+ },
+ "sourceSha256": "57415872eb0a8d929257f3deda308494e680d5aa085b1d4632d11ccc0d38987b"
+}

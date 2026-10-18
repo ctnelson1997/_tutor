@@ -1,0 +1,105 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Original:  Meet me at Noon!"
+  },
+  {
+   "stream": "stdout",
+   "text": "Encrypted: Phhw ph dw Qrrq!"
+  },
+  {
+   "stream": "stdout",
+   "text": "Decrypted: Meet me at Noon!"
+  },
+  {
+   "stream": "stdout",
+   "text": "ROT13: Uryyb, Jbeyq -> Hello, World"
+  },
+  {
+   "stream": "stdout",
+   "text": "Round trip ok? true"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Original: ",
+    "str:Meet me at Noon!"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Encrypted:",
+    "str:Phhw ph dw Qrrq!"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Decrypted:",
+    "str:Meet me at Noon!"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:ROT13:",
+    "str:Uryyb, Jbeyq",
+    "str:->",
+    "str:Hello, World"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Round trip ok?",
+    "boolean:true"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  5,
+  7,
+  8,
+  10,
+  14,
+  15,
+  16,
+  18,
+  22,
+  25,
+  26,
+  27,
+  28,
+  29,
+  30,
+  31,
+  32,
+  33,
+  34,
+  35
+ ],
+ "statementRuns": 296,
+ "functionCalls": 61,
+ "finalGlobals": {
+  "shiftChar": "fn:shiftChar",
+  "encrypt": "fn:encrypt",
+  "decrypt": "fn:decrypt",
+  "secret": "str:Meet me at Noon!",
+  "key": "num:3",
+  "encrypted": "str:Phhw ph dw Qrrq!",
+  "decrypted": "str:Meet me at Noon!",
+  "rot13": "str:Uryyb, Jbeyq",
+  "roundTrip": "boolean:true"
+ },
+ "sourceSha256": "c0c65c5a79ce65d785be045538b36bdebd47a431b32dcacfcddfe8ab86e64eef"
+}

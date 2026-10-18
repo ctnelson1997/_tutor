@@ -107,6 +107,7 @@ npm run dev:py       # Python dev server
 | `npm run test` | Run tests (Vitest) |
 | `npm run test:integration` | Build viewer-js then run integration tests against the real built `docs/viewer-js.html` |
 | `npm run test:java:golden` | Regenerate the Java engine's JDK goldens (needs JDK 21, see below) |
+| `npm run test:js:golden` | Regenerate the JS engine's Node goldens (needs Node 24, see below) |
 | `npm run lint` | Run ESLint |
 | `npm run preview` | Preview the production build locally |
 
@@ -126,6 +127,25 @@ Checks that fail today are listed in `known-failures.json`, each with the roadma
 | Print each step's frames and heap | `npx tsx scripts/java-viz.ts <case id \| file.java \| example:slug> [--final]` |
 | Measure snapshot size and time | `npx tsx scripts/java-payload.ts [--quick]` |
 
+### Testing the JS engine against Node
+
+The JS engine runs your code for real, but it instruments it first, and the instrumentation can change what you see. [`src/engines/js/__tests__/node/`](src/engines/js/__tests__/node/) holds a corpus of JavaScript programs: typical intro-course programs, targeted checks (console output, async code, generators, errors, limits, …), programs that don't parse, and every shipped example. Each program has a committed golden file that records what Node 24 did when it ran the program as a browser runs a worker's script, timers included: what its console printed (line by line, stdout and stderr), every uncaught exception and unhandled rejection, which lines ran (V8's block coverage), and the final value of each top-level name. `npm test` runs each program through JSTutor exactly as the app does, in a worker (a Node thread standing in for the Web Worker), and checks:
+- the console at the last step against Node's, text for text (JSTutor prints in Node's format, [#43](https://github.com/ctnelson1997/_tutor/issues/43));
+- that the run ends as Node's did: normally, with the same uncaught exception, at the step cap for an endless loop, or with V8's syntax error;
+- that every line that ran got a step, and that the last step shows the right final values;
+- the snapshots: references resolve, lines are in the file, no instrumentation names leak, only reachable objects are drawn, and no frame is left at the end.
+
+As for Java, checks that fail today are listed in `known-failures.json` with the roadmap issue ([#41](https://github.com/ctnelson1997/_tutor/issues/41)) that should fix them. They run as expected failures, and a fix that makes one pass turns the suite red until you delete the entry. The run ends with a summary in #41's terms: matches, layout-only differences, wrong output, wrong steps or state, failures, and parse errors.
+
+| Task | How |
+|---|---|
+| Add a program | Put `<name>.js` in `cases/<category>/`, then run `npm run test:js:golden -- <category>/<name>` and commit both |
+| Regenerate every golden | `npm run test:js:golden` (with Node 24; other versions are refused) |
+| Check goldens are current, writing nothing | `npm run test:js:golden -- --check` |
+| See every difference from Node, case by case | `npx tsx scripts/js-diff.ts [filter] [--issue=<n>]` |
+| Print each step's frames and heap, and what Node printed | `npx tsx scripts/js-viz.ts <case id \| file.js \| example:slug> [--final] [--steps=a-b]` |
+| Measure the reply's size and time | `npx tsx scripts/js-payload.ts [--quick]` |
+
 ---
 
 ## Project Structure
@@ -142,7 +162,8 @@ src/
 │   │   ├── runtime.ts          # Worker preamble: __capture__, serialization, heap registry
 │   │   ├── executor.ts         # instrument → worker → snapshots (no store coupling)
 │   │   ├── examples.ts         # Built-in JS example snippets
-│   │   └── security.ts         # Suspicious code pattern detection
+│   │   ├── security.ts         # Suspicious code pattern detection
+│   │   └── __tests__/node/     # Differential corpus: JS programs + Node 24 goldens, known-failures.json
 │   ├── py/                     # Python engine (Pyodide + sys.settrace)
 │   │   ├── index.ts            # LanguageEngine implementation
 │   │   ├── tracer.ts           # Python tracing script (sys.settrace) as a string
@@ -213,7 +234,7 @@ src/
 .env.java                       # Java build branding (VITE_APP_NAME=JavaTutor, etc.)
 viewer.html                     # HTML entry for the viewer-<lang> build (contains the __EXAMPLES__ placeholder)
 vite.config.ts                  # Build config — mode-based outDir + language targeting + singlefile viewer mode
-scripts/                        # Dev tools, run with tsx: java-golden.ts (JDK goldens), java-diff.ts, java-viz.ts, java-payload.ts
+scripts/                        # Dev tools, run with tsx: java-golden.ts (JDK goldens), java-diff.ts, java-viz.ts, java-payload.ts, js-golden.ts (Node goldens), js-diff.ts, js-viz.ts, js-payload.ts
 ```
 
 ---
@@ -224,7 +245,7 @@ scripts/                        # Dev tools, run with tsx: java-golden.ts (JDK g
 
 **Branding via env vars** — app name, colors, domain, and tagline are defined in `.env.js` / `.env.py` / `.env.java` and flow through `src/config/branding.ts` to all components. No hardcoded "JSTutor" strings exist in the UI code.
 
-**JS engine: Native JS in disposable Web Workers** — code runs as real JavaScript in blob-URL workers, so the full Web API surface is available. A fresh worker is created for each run; no shared state can leak between executions. Its steps follow pythontutor.com, as the Python and Java engines' do: a capture before each statement, a step at each condition with the variables it sees, a step entering each function call and one returning (with the value, or `undefined` at the closing brace), and the final state last.
+**JS engine: Native JS in disposable Web Workers** — code runs as real JavaScript in blob-URL workers, so the full Web API surface is available. A fresh worker is created for each run; no shared state can leak between executions. Its steps follow pythontutor.com, as the Python and Java engines' do: a capture before each statement, a step at each condition with the variables it sees, a step entering each function call and one returning (with the value, or `undefined` at the closing brace), and the final state last. A frame is on the stack only while its code runs: a loop's goes at `break` or `continue`, and a generator's or async function's leaves at each `yield` or `await` and comes back when it resumes. Asynchronous code runs before the visualization ends: promise callbacks, `await` continuations and timers take steps in the order Node runs them, each callback's first step labeled (`setTimeout callback`, `promise callback`, `resumed after await`) with its frame alone under Global. Timers run by virtual time, so a 2-second `setTimeout` takes no time, and a rejected promise nothing handles ends the run as Node ends it. The console prints what `node` prints (`[ 1, 2, 3 ]`, `Map(1) { 1 => 'a' }`, `[ 1, <1 empty item>, 3 ]`, `Point { x: 1 }`, `[Function: greet]`), with printf-style `%s`/`%d`/`%o` and every console method (`table`, `group`, `count`, `assert`, `dir`, `time`); `console.error` and `console.warn` go to stderr, shown in red in program order. Printing never calls the program's getters or `toJSON`. Every place code can run is visualized: labeled loops, class fields holding arrow functions, `static {}` blocks, and callbacks wherever they are written (`new Promise(…)`, `a.map(f).filter(g)`, `!function () {…}()`); syntax the engine doesn't know yet stops the program with a message naming it, rather than running unseen. Each step shares what didn't change with the steps before it, so even 5,000 steps of an insertion sort take under 2 MB to send from the worker. Values are drawn as what they are: `NaN`, `Infinity` and `-0` as themselves, an array's holes as `empty`, Symbol keys as `[Symbol(id)]`, and an object used as a Map key as an arrow to that object. A program that doesn't parse gets the browser's own message and line (`SyntaxError: missing ) after argument list`), marked in the editor and listed on the console with a caret under the mistake. The program can't tell it is being traced: `fn.toString()` returns the function as written, and a stack trace names its own functions and lines (`at divide (main.js:2)`). Chrome's DevTools would show the same values in their own style.
 
 **Python engine: Pyodide + sys.settrace** — CPython compiled to WebAssembly runs in a persistent module Web Worker. Python's built-in `sys.settrace()` intercepts call/line/return events to build snapshots without needing an AST transformer. Pyodide is loaded eagerly from CDN at page load to minimize wait time on first run.
 

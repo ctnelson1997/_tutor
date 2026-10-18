@@ -1,0 +1,52 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Hi, I'm Alice"
+  },
+  {
+   "stream": "stdout",
+   "text": "Alice is 26"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Hi, I'm Alice"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Alice",
+    "str:is",
+    "num:26"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  1,
+  5,
+  9,
+  10,
+  11
+ ],
+ "statementRuns": 5,
+ "functionCalls": 1,
+ "finalGlobals": {
+  "person": {
+   "object": "",
+   "props": {
+    "name": "str:Alice",
+    "age": "num:26",
+    "greet": "fn:greet"
+   }
+  }
+ },
+ "sourceSha256": "ff62019d8aed03edaf37029f60a2d09fa5554851109e242171693722135d6158"
+}

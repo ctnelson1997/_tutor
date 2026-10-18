@@ -1,0 +1,176 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "9007199254740991 9007199254740992 9007199254740992 9007199254740994"
+  },
+  {
+   "stream": "stdout",
+   "text": "plusOne === plusTwo: true"
+  },
+  {
+   "stream": "stdout",
+   "text": "safe? true false"
+  },
+  {
+   "stream": "stdout",
+   "text": "2 ** 53: 9007199254740992 2 ** 53 + 1: 9007199254740992"
+  },
+  {
+   "stream": "stdout",
+   "text": "-9007199254740991 -9007199254740992"
+  },
+  {
+   "stream": "stdout",
+   "text": "counter 0 9007199254740990"
+  },
+  {
+   "stream": "stdout",
+   "text": "counter 1 9007199254740991"
+  },
+  {
+   "stream": "stdout",
+   "text": "counter 2 9007199254740992"
+  },
+  {
+   "stream": "stdout",
+   "text": "counter 3 9007199254740992"
+  },
+  {
+   "stream": "stdout",
+   "text": "12345678901234567000 12345678901234567000"
+  },
+  {
+   "stream": "stdout",
+   "text": "9007199254740992 9007199254740992 true"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:9007199254740991",
+    "num:9007199254740992",
+    "num:9007199254740992",
+    "num:9007199254740994"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:plusOne === plusTwo:",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:safe?",
+    "boolean:true",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:2 ** 53:",
+    "num:9007199254740992",
+    "str:2 ** 53 + 1:",
+    "num:9007199254740992"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:-9007199254740991",
+    "num:-9007199254740992"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:counter",
+    "num:0",
+    "num:9007199254740990"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:counter",
+    "num:1",
+    "num:9007199254740991"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:counter",
+    "num:2",
+    "num:9007199254740992"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:counter",
+    "num:3",
+    "num:9007199254740992"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:12345678901234567000",
+    "str:12345678901234567000"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:9007199254740992",
+    "num:9007199254740992",
+    "boolean:true"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  17,
+  18,
+  19,
+  20,
+  21
+ ],
+ "statementRuns": 25,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "max": "num:9007199254740991",
+  "plusOne": "num:9007199254740992",
+  "plusTwo": "num:9007199254740992",
+  "plusThree": "num:9007199254740994",
+  "min": "num:-9007199254740991",
+  "counter": "num:9007199254740992",
+  "big": "num:12345678901234567000",
+  "parsed": "num:9007199254740992",
+  "fromJson": "num:9007199254740992"
+ },
+ "sourceSha256": "31494b333da54673d8cdff7036e5e3cd419d68a08476bb76b22b804495689842"
+}

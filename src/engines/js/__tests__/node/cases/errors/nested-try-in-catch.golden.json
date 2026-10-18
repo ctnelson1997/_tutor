@@ -1,0 +1,90 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "backup value"
+  },
+  {
+   "stream": "stdout",
+   "text": "primary | caught p1 | backup | inner finally | outer finally"
+  },
+  {
+   "stream": "stdout",
+   "text": "both failed (b2)"
+  },
+  {
+   "stream": "stdout",
+   "text": "primary | caught p2 | backup | backup failed b2 | inner finally | outer finally"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:backup value"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:primary | caught p1 | backup | inner finally | outer finally"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:both failed (b2)"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:primary | caught p2 | backup | backup failed b2 | inner finally | outer finally"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  6,
+  7,
+  9,
+  11,
+  12,
+  14,
+  15,
+  17,
+  20,
+  24,
+  25,
+  26,
+  27,
+  29,
+  31,
+  33,
+  35,
+  36
+ ],
+ "statementRuns": 29,
+ "functionCalls": 6,
+ "finalGlobals": {
+  "steps": {
+   "array": [
+    "str:primary",
+    "str:caught p2",
+    "str:backup",
+    "str:backup failed b2",
+    "str:inner finally",
+    "str:outer finally"
+   ],
+   "len": 6
+  },
+  "recover": "fn:recover",
+  "ok": "str:backup value",
+  "final": "str:both failed (b2)"
+ },
+ "sourceSha256": "36051ff8676dab5abbe164e2660686a6c327c5234e5439ed480b5f34852635c5"
+}

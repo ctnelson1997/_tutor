@@ -1,0 +1,196 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "true true false true"
+  },
+  {
+   "stream": "stdout",
+   "text": "true false"
+  },
+  {
+   "stream": "stdout",
+   "text": "true true true"
+  },
+  {
+   "stream": "stdout",
+   "text": "false true object"
+  },
+  {
+   "stream": "stdout",
+   "text": "true true"
+  },
+  {
+   "stream": "stdout",
+   "text": "Car Vehicle"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'Car', 'Vehicle', 'Object' ] [ 'Array', 'Object' ] []"
+  },
+  {
+   "stream": "stdout",
+   "text": "true false"
+  },
+  {
+   "stream": "stdout",
+   "text": "true false Truck"
+  },
+  {
+   "stream": "stdout",
+   "text": "[Object: null prototype] { x: 1 } false true"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:true",
+    "boolean:false",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:true",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:false",
+    "boolean:true",
+    "str:object"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Car",
+    "str:Vehicle"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:Car",
+      "str:Vehicle",
+      "str:Object"
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "str:Array",
+      "str:Object"
+     ],
+     "len": 2
+    },
+    {
+     "array": [],
+     "len": 0
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:false",
+    "str:Truck"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "x": "num:1"
+     }
+    },
+    "boolean:false",
+    "boolean:true"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  5,
+  6,
+  7,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  17,
+  18,
+  19,
+  20,
+  21,
+  23,
+  25,
+  29,
+  32,
+  34,
+  35,
+  36,
+  37
+ ],
+ "statementRuns": 39,
+ "functionCalls": 5,
+ "finalGlobals": {
+  "Vehicle": "fn:Vehicle",
+  "Car": "fn:Car",
+  "Truck": "fn:Truck",
+  "car": {
+   "object": "Truck",
+   "props": {}
+  },
+  "plain": {
+   "object": "",
+   "props": {}
+  },
+  "nullProto": {
+   "object": "",
+   "props": {
+    "x": "num:1"
+   }
+  },
+  "chain": "fn:chain",
+  "Even": "fn:Even"
+ },
+ "sourceSha256": "8ab8ab5c9eacb037223306e42529930b014d8e25019874af1c2fe94129dd5d35"
+}

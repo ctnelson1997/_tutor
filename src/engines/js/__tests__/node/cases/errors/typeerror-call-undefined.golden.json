@@ -1,0 +1,136 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "TypeError: calculator.subtract is not a function"
+  },
+  {
+   "stream": "stdout",
+   "text": "TypeError: callback is not a function"
+  },
+  {
+   "stream": "stdout",
+   "text": "TypeError: notFn is not a function"
+  },
+  {
+   "stream": "stdout",
+   "text": "TypeError: Assignment to constant variable."
+  },
+  {
+   "stream": "stdout",
+   "text": "TypeError: Cannot read properties of undefined (reading 'deep')"
+  },
+  {
+   "stream": "stdout",
+   "text": "TypeError: calculator.add is not a constructor"
+  },
+  {
+   "stream": "stdout",
+   "text": "6 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "5"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:TypeError: calculator.subtract is not a function"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:TypeError: callback is not a function"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:TypeError: notFn is not a function"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:TypeError: Assignment to constant variable."
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:TypeError: Cannot read properties of undefined (reading 'deep')"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:TypeError: calculator.add is not a constructor"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:6",
+    "num:1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:5"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  4,
+  8,
+  11,
+  13,
+  14,
+  18,
+  19,
+  20,
+  21,
+  23,
+  24,
+  25,
+  27,
+  28,
+  29,
+  31,
+  32,
+  33,
+  34
+ ],
+ "statementRuns": 35,
+ "functionCalls": 13,
+ "finalGlobals": {
+  "calculator": {
+   "object": "",
+   "props": {
+    "add": "fn:add"
+   }
+  },
+  "messages": {
+   "array": [
+    "str:TypeError",
+    "str:TypeError",
+    "str:TypeError",
+    "str:TypeError",
+    "str:TypeError",
+    "str:TypeError"
+   ],
+   "len": 6
+  },
+  "record": "fn:record"
+ },
+ "sourceSha256": "e102474820b51eac814fa44346e4530d5d7e317a7644c047b5549a501ade326c"
+}

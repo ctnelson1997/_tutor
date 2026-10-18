@@ -231,6 +231,24 @@ html, body, #root {
   color: #b02a37;
 }
 
+/* An array's hole (JS, #48): no element there, not even undefined */
+.value-empty {
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* What started a step the stack didn't call: a callback the event loop ran (JS, #45) */
+.step-label {
+  margin-left: 0.5rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 0.6rem;
+  background-color: rgba(13, 110, 253, 0.12);
+  color: #0a58ca;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: none;
+}
+
 /* Sub-line highlight for specific expressions (e.g. for-loop parts) */
 .cm-current-step-highlight {
   background-color: rgba(34, 139, 34, 0.22);

@@ -1,0 +1,122 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "120 fact"
+  },
+  {
+   "stream": "stdout",
+   "text": "fact outside: undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "3 2 1 liftoff"
+  },
+  {
+   "stream": "stdout",
+   "text": "assigning to its own name is ignored: function"
+  },
+  {
+   "stream": "stdout",
+   "text": "0 1 1 2 3 5 8 13"
+  },
+  {
+   "stream": "stdout",
+   "text": "10"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:120",
+    "str:fact"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:fact outside:",
+    "str:undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:3 2 1 liftoff"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:assigning to its own name is ignored:",
+    "str:function"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:0 1 1 2 3 5 8 13"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:10"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  5,
+  6,
+  7,
+  8,
+  9,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  18,
+  19,
+  20,
+  21,
+  23,
+  24,
+  26,
+  27,
+  28,
+  30
+ ],
+ "statementRuns": 143,
+ "functionCalls": 115,
+ "finalGlobals": {
+  "factorial": "fn:fact",
+  "countdown": "null",
+  "saved": "fn:tick",
+  "tryRename": "fn:self",
+  "fibs": {
+   "array": [
+    "num:0",
+    "num:1",
+    "num:1",
+    "num:2",
+    "num:3",
+    "num:5",
+    "num:8",
+    "num:13"
+   ],
+   "len": 8
+  },
+  "fib": "fn:f",
+  "anonymous": "fn:anonymous"
+ },
+ "sourceSha256": "d736a12864ee23a7a2a44413edc240f8ae385aeaf109c5bb5aec2d33352ef431"
+}

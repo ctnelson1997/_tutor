@@ -1,0 +1,181 @@
+{
+ "console": [
+  {
+   "stream": "stderr",
+   "text": "Assertion failed: insufficient funds: 50 < 80"
+  },
+  {
+   "stream": "stderr",
+   "text": "Assertion failed: expected odd, got 80"
+  },
+  {
+   "stream": "stderr",
+   "text": "Assertion failed { balance: 50, withdraw: 80 }"
+  },
+  {
+   "stream": "stderr",
+   "text": "Assertion failed"
+  },
+  {
+   "stream": "stderr",
+   "text": "Assertion failed: zero is falsy"
+  },
+  {
+   "stream": "stderr",
+   "text": "Assertion failed: empty string is falsy"
+  },
+  {
+   "stream": "stderr",
+   "text": "Assertion failed: check 2 failed"
+  },
+  {
+   "stream": "stdout",
+   "text": "after asserts [ true, true, false ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "assert",
+   "args": [
+    "boolean:true",
+    "str:balance is negative"
+   ]
+  },
+  {
+   "method": "assert",
+   "args": [
+    "boolean:false",
+    "str:insufficient funds:",
+    "num:50",
+    "str:<",
+    "num:80"
+   ]
+  },
+  {
+   "method": "assert",
+   "args": [
+    "boolean:false",
+    "str:expected odd, got %d",
+    "num:80"
+   ]
+  },
+  {
+   "method": "assert",
+   "args": [
+    "boolean:false",
+    {
+     "object": "",
+     "props": {
+      "balance": "num:50",
+      "withdraw": "num:80"
+     }
+    }
+   ]
+  },
+  {
+   "method": "assert",
+   "args": [
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "assert",
+   "args": [
+    "num:0",
+    "str:zero is falsy"
+   ]
+  },
+  {
+   "method": "assert",
+   "args": [
+    "str:",
+    "str:empty string is falsy"
+   ]
+  },
+  {
+   "method": "assert",
+   "args": [
+    {
+     "array": [],
+     "len": 0
+    },
+    "str:empty array is truthy, so this never prints"
+   ]
+  },
+  {
+   "method": "assert",
+   "args": [
+    "boolean:true",
+    "str:check",
+    "num:0",
+    "str:failed"
+   ]
+  },
+  {
+   "method": "assert",
+   "args": [
+    "boolean:true",
+    "str:check",
+    "num:1",
+    "str:failed"
+   ]
+  },
+  {
+   "method": "assert",
+   "args": [
+    "boolean:false",
+    "str:check",
+    "num:2",
+    "str:failed"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:after asserts",
+    {
+     "array": [
+      "boolean:true",
+      "boolean:true",
+      "boolean:false"
+     ],
+     "len": 3
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14
+ ],
+ "statementRuns": 13,
+ "functionCalls": 6,
+ "finalGlobals": {
+  "balance": "num:50",
+  "withdraw": "num:80",
+  "checks": {
+   "array": [
+    "boolean:true",
+    "boolean:true",
+    "boolean:false"
+   ],
+   "len": 3
+  }
+ },
+ "sourceSha256": "624a41222c9e986f8544ee00c71de5b6d458bd804291ed61eb7899ef9f0435d3"
+}

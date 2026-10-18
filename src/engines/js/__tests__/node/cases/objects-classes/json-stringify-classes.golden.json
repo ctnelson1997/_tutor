@@ -1,0 +1,285 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "{\"name\":\"pen\",\"price\":1.5,\"tags\":[\"office\"]}"
+  },
+  {
+   "stream": "stdout",
+   "text": "{\"name\":\"ink\",\"price\":null,\"tags\":[]}"
+  },
+  {
+   "stream": "stdout",
+   "text": "{\"id\":7,\"count\":2,\"items\":[{\"name\":\"pen\",\"price\":1.5,\"tags\":[\"office\"]},{\"name\":\"ink\",\"price\":null,\"tags\":[]}]}"
+  },
+  {
+   "stream": "stdout",
+   "text": "{"
+  },
+  {
+   "stream": "stdout",
+   "text": "  \"id\": 7,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  \"count\": 2,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  \"items\": ["
+  },
+  {
+   "stream": "stdout",
+   "text": "    {"
+  },
+  {
+   "stream": "stdout",
+   "text": "      \"name\": \"pen\","
+  },
+  {
+   "stream": "stdout",
+   "text": "      \"price\": 1.5,"
+  },
+  {
+   "stream": "stdout",
+   "text": "      \"tags\": ["
+  },
+  {
+   "stream": "stdout",
+   "text": "        \"office\""
+  },
+  {
+   "stream": "stdout",
+   "text": "      ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "    },"
+  },
+  {
+   "stream": "stdout",
+   "text": "    {"
+  },
+  {
+   "stream": "stdout",
+   "text": "      \"name\": \"ink\","
+  },
+  {
+   "stream": "stdout",
+   "text": "      \"price\": null,"
+  },
+  {
+   "stream": "stdout",
+   "text": "      \"tags\": []"
+  },
+  {
+   "stream": "stdout",
+   "text": "    }"
+  },
+  {
+   "stream": "stdout",
+   "text": "  ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "}"
+  },
+  {
+   "stream": "stdout",
+   "text": "{\"name\":\"pen\",\"tags\":[\"office\"]}"
+  },
+  {
+   "stream": "stdout",
+   "text": "{\"a\":10,\"b\":\"two\",\"c\":[30,\"four\"]}"
+  },
+  {
+   "stream": "stdout",
+   "text": "[null,null,null,{},\"1970-01-01T00:00:00.000Z\",0,null]"
+  },
+  {
+   "stream": "stdout",
+   "text": "false { name: 'pen', price: 1.5, tags: [ 'office' ] } 1.35"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:{\"name\":\"pen\",\"price\":1.5,\"tags\":[\"office\"]}"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:{\"name\":\"ink\",\"price\":null,\"tags\":[]}"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:{\"id\":7,\"count\":2,\"items\":[{\"name\":\"pen\",\"price\":1.5,\"tags\":[\"office\"]},{\"name\":\"ink\",\"price\":null,\"tags\":[]}]}"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:{\n  \"id\": 7,\n  \"count\": 2,\n  \"items\": [\n    {\n      \"name\": \"pen\",\n      \"price\": 1.5,\n      \"tags\": [\n        \"office\"\n      ]\n    },\n    {\n      \"name\": \"ink\",\n      \"price\": null,\n      \"tags\": []\n    }\n  ]\n}"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:{\"name\":\"pen\",\"tags\":[\"office\"]}"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:{\"a\":10,\"b\":\"two\",\"c\":[30,\"four\"]}"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:[null,null,null,{},\"1970-01-01T00:00:00.000Z\",0,null]"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:false",
+    {
+     "object": "",
+     "props": {
+      "name": "str:pen",
+      "price": "num:1.5",
+      "tags": {
+       "array": [
+        "str:office"
+       ],
+       "len": 1
+      }
+     }
+    },
+    "num:1.35"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  5,
+  6,
+  7,
+  8,
+  9,
+  18,
+  19,
+  20,
+  23,
+  27,
+  28,
+  29,
+  30,
+  31,
+  32,
+  33,
+  34,
+  35,
+  38,
+  39,
+  40,
+  41
+ ],
+ "statementRuns": 28,
+ "functionCalls": 14,
+ "finalGlobals": {
+  "Product": "fn:Product",
+  "Order": "fn:Order",
+  "p1": {
+   "object": "Product",
+   "props": {
+    "name": "str:pen",
+    "price": "num:1.5",
+    "tags": {
+     "array": [
+      "str:office"
+     ],
+     "len": 1
+    },
+    "createdBy": "undefined",
+    "discount": "fn:"
+   }
+  },
+  "p2": {
+   "object": "Product",
+   "props": {
+    "name": "str:ink",
+    "price": "num:NaN",
+    "tags": {
+     "array": [],
+     "len": 0
+    },
+    "createdBy": "undefined",
+    "discount": "fn:"
+   }
+  },
+  "order": {
+   "object": "Order",
+   "props": {
+    "id": "num:7",
+    "items": {
+     "array": [
+      {
+       "object": "Product",
+       "props": {
+        "name": "str:pen",
+        "price": "num:1.5",
+        "tags": {
+         "array": [
+          "str:office"
+         ],
+         "len": 1
+        },
+        "createdBy": "undefined",
+        "discount": "fn:"
+       }
+      },
+      {
+       "object": "Product",
+       "props": {
+        "name": "str:ink",
+        "price": "num:NaN",
+        "tags": {
+         "array": [],
+         "len": 0
+        },
+        "createdBy": "undefined",
+        "discount": "fn:"
+       }
+      }
+     ],
+     "len": 2
+    },
+    "secret": "str:hide me"
+   }
+  },
+  "replaced": "str:{\"a\":10,\"b\":\"two\",\"c\":[30,\"four\"]}",
+  "back": {
+   "object": "",
+   "props": {
+    "name": "str:pen",
+    "price": "num:1.5",
+    "tags": {
+     "array": [
+      "str:office"
+     ],
+     "len": 1
+    }
+   }
+  }
+ },
+ "sourceSha256": "fd58d35035968f4e746680a56cf5095c25acdd7f162f4d9e0b02d7e05fee08e5"
+}

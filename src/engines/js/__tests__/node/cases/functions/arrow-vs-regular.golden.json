@@ -1,0 +1,146 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "prototype: object undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "true"
+  },
+  {
+   "stream": "stdout",
+   "text": "TypeError: Arrow is not a constructor"
+  },
+  {
+   "stream": "stdout",
+   "text": "42 42 2 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ wrapped: true } undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "arrow property reads the enclosing method this: holder"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:prototype:",
+    "str:object",
+    "str:undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:TypeError:",
+    "str:Arrow is not a constructor"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:42",
+    "num:42",
+    "num:2",
+    "num:1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "wrapped": "boolean:true"
+     }
+    },
+    "undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:arrow property reads the enclosing method this:",
+    "str:holder"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  5,
+  6,
+  7,
+  8,
+  10,
+  12,
+  14,
+  16,
+  18,
+  19,
+  21,
+  23,
+  24,
+  27,
+  28,
+  29,
+  30,
+  31,
+  34,
+  37,
+  38
+ ],
+ "statementRuns": 23,
+ "functionCalls": 11,
+ "finalGlobals": {
+  "Regular": "fn:Regular",
+  "Arrow": "fn:Arrow",
+  "r": {
+   "object": "Regular",
+   "props": {
+    "made": "boolean:true"
+   }
+  },
+  "obj": {
+   "object": "",
+   "props": {
+    "value": "num:42",
+    "regular": "fn:regular",
+    "arrowInside": "fn:arrowInside",
+    "argsRegular": "fn:argsRegular",
+    "argsArrowInside": "fn:argsArrowInside"
+   }
+  },
+  "objectReturn": "fn:objectReturn",
+  "blockReturn": "fn:blockReturn",
+  "holder": {
+   "object": "",
+   "props": {
+    "label": "str:holder",
+    "make": "fn:make"
+   }
+  },
+  "made": {
+   "object": "",
+   "props": {
+    "label": "str:inner",
+    "read": "fn:read"
+   }
+  }
+ },
+ "sourceSha256": "fd35889ea8ddd14574c95e3ce9d3ee61b16444aa2724ae74b12e7dc5495d89e0"
+}

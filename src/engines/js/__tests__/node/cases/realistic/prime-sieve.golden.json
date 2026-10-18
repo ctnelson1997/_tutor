@@ -1,0 +1,227 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Trial division: 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47"
+  },
+  {
+   "stream": "stdout",
+   "text": "Sieve:          2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47"
+  },
+  {
+   "stream": "stdout",
+   "text": "Count: 15 Match: true"
+  },
+  {
+   "stream": "stdout",
+   "text": "Twin primes: [[3,5],[5,7],[11,13],[17,19],[29,31],[41,43]]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Factors of 360: [ 2, 2, 2, 3, 3, 5 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Factors of 91: [ 7, 13 ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Trial division:",
+    "str:2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Sieve:         ",
+    "str:2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Count:",
+    "num:15",
+    "str:Match:",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Twin primes:",
+    "str:[[3,5],[5,7],[11,13],[17,19],[29,31],[41,43]]"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Factors of 360:",
+    {
+     "array": [
+      "num:2",
+      "num:2",
+      "num:2",
+      "num:3",
+      "num:3",
+      "num:5"
+     ],
+     "len": 6
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Factors of 91:",
+    {
+     "array": [
+      "num:7",
+      "num:13"
+     ],
+     "len": 2
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  5,
+  7,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  21,
+  25,
+  26,
+  27,
+  28,
+  29,
+  30,
+  32,
+  34,
+  37,
+  38,
+  39,
+  40,
+  42,
+  43,
+  44,
+  45,
+  47,
+  48,
+  49,
+  50,
+  53,
+  54,
+  55
+ ],
+ "statementRuns": 525,
+ "functionCalls": 53,
+ "finalGlobals": {
+  "isPrime": "fn:isPrime",
+  "sieve": "fn:sieve",
+  "primeFactors": "fn:primeFactors",
+  "limit": "num:50",
+  "trialPrimes": {
+   "array": [
+    "num:2",
+    "num:3",
+    "num:5",
+    "num:7",
+    "num:11",
+    "num:13",
+    "num:17",
+    "num:19",
+    "num:23",
+    "num:29",
+    "num:31",
+    "num:37",
+    "num:41",
+    "num:43",
+    "num:47"
+   ],
+   "len": 15
+  },
+  "sievePrimes": {
+   "array": [
+    "num:2",
+    "num:3",
+    "num:5",
+    "num:7",
+    "num:11",
+    "num:13",
+    "num:17",
+    "num:19",
+    "num:23",
+    "num:29",
+    "num:31",
+    "num:37",
+    "num:41",
+    "num:43",
+    "num:47"
+   ],
+   "len": 15
+  },
+  "twinPrimes": {
+   "array": [
+    {
+     "array": [
+      "num:3",
+      "num:5"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "num:5",
+      "num:7"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "num:11",
+      "num:13"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "num:17",
+      "num:19"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "num:29",
+      "num:31"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "num:41",
+      "num:43"
+     ],
+     "len": 2
+    }
+   ],
+   "len": 6
+  }
+ },
+ "sourceSha256": "3a0ccb37b41f1875aa137a684ccddc7bf4801e8eaac8ff0564c7074123a7767e"
+}

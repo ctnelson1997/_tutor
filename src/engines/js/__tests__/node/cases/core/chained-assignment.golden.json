@@ -1,0 +1,214 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "5 5 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "5 5 7"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ items: [ 'shared' ] } { items: [ 'shared' ] } true"
+  },
+  {
+   "stream": "stdout",
+   "text": "2 20"
+  },
+  {
+   "stream": "stdout",
+   "text": "1 { n: 1 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "7 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 2, 0, 0 ] 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "swapped 20 10"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:5",
+    "num:5",
+    "num:5"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:5",
+    "num:5",
+    "num:7"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "items": {
+       "array": [
+        "str:shared"
+       ],
+       "len": 1
+      }
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "items": {
+       "array": [
+        "str:shared"
+       ],
+       "len": 1
+      }
+     }
+    },
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:2",
+    "num:20"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:1",
+    {
+     "object": "",
+     "props": {
+      "n": "num:1"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:7",
+    "num:4"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:2",
+      "num:0",
+      "num:0"
+     ],
+     "len": 3
+    },
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:swapped",
+    "num:20",
+    "num:10"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  24,
+  25,
+  26,
+  27
+ ],
+ "statementRuns": 26,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "a": "num:5",
+  "b": "num:5",
+  "c": "num:7",
+  "left": {
+   "object": "",
+   "props": {
+    "items": {
+     "array": [
+      "str:shared"
+     ],
+     "len": 1
+    }
+   }
+  },
+  "right": {
+   "object": "",
+   "props": {
+    "items": {
+     "array": [
+      "str:shared"
+     ],
+     "len": 1
+    }
+   }
+  },
+  "x": "num:2",
+  "y": "num:20",
+  "box": {
+   "object": "",
+   "props": {
+    "n": "num:1"
+   }
+  },
+  "count": "num:1",
+  "p": "num:7",
+  "q": "num:4",
+  "arr": {
+   "array": [
+    "num:2",
+    "num:0",
+    "num:0"
+   ],
+   "len": 3
+  },
+  "i": "num:2",
+  "m": "num:20",
+  "n": "num:10"
+ },
+ "sourceSha256": "dc743a097fa6594837fb848e84a307d09575602b015b50ef35565686c9d5a2aa"
+}

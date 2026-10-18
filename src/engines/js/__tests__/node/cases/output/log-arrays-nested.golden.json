@@ -1,0 +1,658 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 1, 2, 3 ] [ [ 1, 2 ], [ 3, 4 ], [ 5, 6 ] ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 1, [ 2, [ 3, [Array] ] ] ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 1, 'two', true, null, undefined, { three: 3 }, [ 4 ] ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 1, <1 empty item>, 3, <3 empty items>, 7 ] 7"
+  },
+  {
+   "stream": "stdout",
+   "text": "["
+  },
+  {
+   "stream": "stdout",
+   "text": "      0,  1000,  2000,  3000,  4000,"
+  },
+  {
+   "stream": "stdout",
+   "text": "   5000,  6000,  7000,  8000,  9000,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  10000, 11000, 12000, 13000, 14000,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  15000, 16000, 17000, 18000, 19000,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  20000, 21000, 22000, 23000, 24000,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  25000, 26000, 27000, 28000, 29000"
+  },
+  {
+   "stream": "stdout",
+   "text": "]"
+  },
+  {
+   "stream": "stdout",
+   "text": "["
+  },
+  {
+   "stream": "stdout",
+   "text": "  'alpha',   'beta',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  'gamma',   'delta',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  'epsilon', 'zeta',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  'eta',     'theta',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  'iota',    'kappa'"
+  },
+  {
+   "stream": "stdout",
+   "text": "]"
+  },
+  {
+   "stream": "stdout",
+   "text": "["
+  },
+  {
+   "stream": "stdout",
+   "text": "   0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  96, 97, 98, 99,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  ... 20 more items"
+  },
+  {
+   "stream": "stdout",
+   "text": "]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ [ [] ] ] [ [], [] ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [],
+     "len": 0
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:1",
+      "num:2",
+      "num:3"
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      {
+       "array": [
+        "num:1",
+        "num:2"
+       ],
+       "len": 2
+      },
+      {
+       "array": [
+        "num:3",
+        "num:4"
+       ],
+       "len": 2
+      },
+      {
+       "array": [
+        "num:5",
+        "num:6"
+       ],
+       "len": 2
+      }
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:1",
+      {
+       "array": [
+        "num:2",
+        {
+         "array": [
+          "num:3",
+          {
+           "array": [
+            "num:4",
+            {
+             "array": [
+              "num:5",
+              "<deep>"
+             ],
+             "len": 2
+            }
+           ],
+           "len": 2
+          }
+         ],
+         "len": 2
+        }
+       ],
+       "len": 2
+      }
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:1",
+      "str:two",
+      "boolean:true",
+      "null",
+      "undefined",
+      {
+       "object": "",
+       "props": {
+        "three": "num:3"
+       }
+      },
+      {
+       "array": [
+        "num:4"
+       ],
+       "len": 1
+      }
+     ],
+     "len": 7
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:1",
+      "<hole>",
+      "num:3",
+      "<hole>",
+      "<hole>",
+      "<hole>",
+      "num:7"
+     ],
+     "len": 7
+    },
+    "num:7"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:0",
+      "num:1000",
+      "num:2000",
+      "num:3000",
+      "num:4000",
+      "num:5000",
+      "num:6000",
+      "num:7000",
+      "num:8000",
+      "num:9000",
+      "num:10000",
+      "num:11000",
+      "num:12000",
+      "num:13000",
+      "num:14000",
+      "num:15000",
+      "num:16000",
+      "num:17000",
+      "num:18000",
+      "num:19000",
+      "num:20000",
+      "num:21000",
+      "num:22000",
+      "num:23000",
+      "num:24000",
+      "num:25000",
+      "num:26000",
+      "num:27000",
+      "num:28000",
+      "num:29000"
+     ],
+     "len": 30
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:alpha",
+      "str:beta",
+      "str:gamma",
+      "str:delta",
+      "str:epsilon",
+      "str:zeta",
+      "str:eta",
+      "str:theta",
+      "str:iota",
+      "str:kappa"
+     ],
+     "len": 10
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:0",
+      "num:1",
+      "num:2",
+      "num:3",
+      "num:4",
+      "num:5",
+      "num:6",
+      "num:7",
+      "num:8",
+      "num:9",
+      "num:10",
+      "num:11",
+      "num:12",
+      "num:13",
+      "num:14",
+      "num:15",
+      "num:16",
+      "num:17",
+      "num:18",
+      "num:19",
+      "num:20",
+      "num:21",
+      "num:22",
+      "num:23",
+      "num:24",
+      "num:25",
+      "num:26",
+      "num:27",
+      "num:28",
+      "num:29",
+      "num:30",
+      "num:31",
+      "num:32",
+      "num:33",
+      "num:34",
+      "num:35",
+      "num:36",
+      "num:37",
+      "num:38",
+      "num:39",
+      "num:40",
+      "num:41",
+      "num:42",
+      "num:43",
+      "num:44",
+      "num:45",
+      "num:46",
+      "num:47",
+      "num:48",
+      "num:49"
+     ],
+     "len": 120
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      {
+       "array": [
+        {
+         "array": [],
+         "len": 0
+        }
+       ],
+       "len": 1
+      }
+     ],
+     "len": 1
+    },
+    {
+     "array": [
+      {
+       "array": [],
+       "len": 0
+      },
+      {
+       "array": [],
+       "len": 0
+      }
+     ],
+     "len": 2
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21
+ ],
+ "statementRuns": 50,
+ "functionCalls": 120,
+ "finalGlobals": {
+  "empty": {
+   "array": [],
+   "len": 0
+  },
+  "nums": {
+   "array": [
+    "num:1",
+    "num:2",
+    "num:3"
+   ],
+   "len": 3
+  },
+  "grid": {
+   "array": [
+    {
+     "array": [
+      "num:1",
+      "num:2"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "num:3",
+      "num:4"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "num:5",
+      "num:6"
+     ],
+     "len": 2
+    }
+   ],
+   "len": 3
+  },
+  "deep": {
+   "array": [
+    "num:1",
+    {
+     "array": [
+      "num:2",
+      {
+       "array": [
+        "num:3",
+        {
+         "array": [
+          "num:4",
+          {
+           "array": [
+            "num:5",
+            "<deep>"
+           ],
+           "len": 2
+          }
+         ],
+         "len": 2
+        }
+       ],
+       "len": 2
+      }
+     ],
+     "len": 2
+    }
+   ],
+   "len": 2
+  },
+  "mixed": {
+   "array": [
+    "num:1",
+    "str:two",
+    "boolean:true",
+    "null",
+    "undefined",
+    {
+     "object": "",
+     "props": {
+      "three": "num:3"
+     }
+    },
+    {
+     "array": [
+      "num:4"
+     ],
+     "len": 1
+    }
+   ],
+   "len": 7
+  },
+  "sparse": {
+   "array": [
+    "num:1",
+    "<hole>",
+    "num:3",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "num:7"
+   ],
+   "len": 7
+  },
+  "long": {
+   "array": [
+    "num:0",
+    "num:1000",
+    "num:2000",
+    "num:3000",
+    "num:4000",
+    "num:5000",
+    "num:6000",
+    "num:7000",
+    "num:8000",
+    "num:9000",
+    "num:10000",
+    "num:11000",
+    "num:12000",
+    "num:13000",
+    "num:14000",
+    "num:15000",
+    "num:16000",
+    "num:17000",
+    "num:18000",
+    "num:19000",
+    "num:20000",
+    "num:21000",
+    "num:22000",
+    "num:23000",
+    "num:24000",
+    "num:25000",
+    "num:26000",
+    "num:27000",
+    "num:28000",
+    "num:29000"
+   ],
+   "len": 30
+  },
+  "words": {
+   "array": [
+    "str:alpha",
+    "str:beta",
+    "str:gamma",
+    "str:delta",
+    "str:epsilon",
+    "str:zeta",
+    "str:eta",
+    "str:theta",
+    "str:iota",
+    "str:kappa"
+   ],
+   "len": 10
+  },
+  "big": {
+   "array": [
+    "num:0",
+    "num:1",
+    "num:2",
+    "num:3",
+    "num:4",
+    "num:5",
+    "num:6",
+    "num:7",
+    "num:8",
+    "num:9",
+    "num:10",
+    "num:11",
+    "num:12",
+    "num:13",
+    "num:14",
+    "num:15",
+    "num:16",
+    "num:17",
+    "num:18",
+    "num:19",
+    "num:20",
+    "num:21",
+    "num:22",
+    "num:23",
+    "num:24",
+    "num:25",
+    "num:26",
+    "num:27",
+    "num:28",
+    "num:29",
+    "num:30",
+    "num:31",
+    "num:32",
+    "num:33",
+    "num:34",
+    "num:35",
+    "num:36",
+    "num:37",
+    "num:38",
+    "num:39",
+    "num:40",
+    "num:41",
+    "num:42",
+    "num:43",
+    "num:44",
+    "num:45",
+    "num:46",
+    "num:47",
+    "num:48",
+    "num:49"
+   ],
+   "len": 120
+  }
+ },
+ "sourceSha256": "8f157a4deba1101de9b6c6b617614d125da5e354398e09b0f593975cc1d81bca"
+}

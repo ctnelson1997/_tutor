@@ -1,0 +1,145 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "function add(a, b) { return a + b; }"
+  },
+  {
+   "stream": "stdout",
+   "text": "(x) => x * 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "function named(n) { return n; }"
+  },
+  {
+   "stream": "stdout",
+   "text": "greet() { return 'hi'; }"
+  },
+  {
+   "stream": "stdout",
+   "text": "class Animal { speak() { return '...'; } }"
+  },
+  {
+   "stream": "stdout",
+   "text": "(x) => x * 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "true"
+  },
+  {
+   "stream": "stdout",
+   "text": "function max() { [native code] }"
+  },
+  {
+   "stream": "stdout",
+   "text": "function () { [native code] }"
+  },
+  {
+   "stream": "stdout",
+   "text": "length of add source: 36"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:function add(a, b) { return a + b; }"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:(x) => x * 2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:function named(n) { return n; }"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:greet() { return 'hi'; }"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:class Animal { speak() { return '...'; } }"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:(x) => x * 2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:function max() { [native code] }"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:function () { [native code] }"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:length of add source:",
+    "num:36"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  5,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18
+ ],
+ "statementRuns": 15,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "add": "fn:add",
+  "arrow": "fn:arrow",
+  "expr": "fn:named",
+  "obj": {
+   "object": "",
+   "props": {
+    "greet": "fn:greet"
+   }
+  },
+  "Animal": "fn:Animal",
+  "source": "str:function add(a, b) { return a + b; }",
+  "sourceLength": "num:36"
+ },
+ "sourceSha256": "e98520cbfb904626513fb9312cf23681ff59ec97f7ff4b4658ad6cb004b93e4a"
+}

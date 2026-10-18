@@ -1,0 +1,316 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "<ref *1> { name: 'self', me: [Circular *1] }"
+  },
+  {
+   "stream": "stdout",
+   "text": "<ref *1> { name: 'a', peer: { name: 'b', peer: [Circular *1] } }"
+  },
+  {
+   "stream": "stdout",
+   "text": "<ref *1> { name: 'b', peer: { name: 'a', peer: [Circular *1] } }"
+  },
+  {
+   "stream": "stdout",
+   "text": "<ref *1> [ 1, 2, [Circular *1] ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "<ref *1> {"
+  },
+  {
+   "stream": "stdout",
+   "text": "  name: 'p',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  children: [ { name: 'c', parent: [Circular *1] } ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "}"
+  },
+  {
+   "stream": "stdout",
+   "text": "["
+  },
+  {
+   "stream": "stdout",
+   "text": "  <ref *1> { name: 'self', me: [Circular *1] },"
+  },
+  {
+   "stream": "stdout",
+   "text": "  <ref *2> { name: 'a', peer: { name: 'b', peer: [Circular *2] } }"
+  },
+  {
+   "stream": "stdout",
+   "text": "]"
+  },
+  {
+   "stream": "stdout",
+   "text": "<ref *1> Map(1) { 'ring' => [Circular *1] }"
+  },
+  {
+   "stream": "stdout",
+   "text": "JSON.stringify threw TypeError"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:self",
+      "me": "<circular>"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:a",
+      "peer": {
+       "object": "",
+       "props": {
+        "name": "str:b",
+        "peer": "<circular>"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:b",
+      "peer": {
+       "object": "",
+       "props": {
+        "name": "str:a",
+        "peer": "<circular>"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:1",
+      "num:2",
+      "<circular>"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:p",
+      "children": {
+       "array": [
+        {
+         "object": "",
+         "props": {
+          "name": "str:c",
+          "parent": "<circular>"
+         }
+        }
+       ],
+       "len": 1
+      }
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      {
+       "object": "",
+       "props": {
+        "name": "str:self",
+        "me": "<circular>"
+       }
+      },
+      {
+       "object": "",
+       "props": {
+        "name": "str:a",
+        "peer": {
+         "object": "",
+         "props": {
+          "name": "str:b",
+          "peer": "<circular>"
+         }
+        }
+       }
+      }
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "map": [
+      [
+       "str:ring",
+       "<circular>"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:JSON.stringify threw",
+    "str:TypeError"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  23,
+  25,
+  27
+ ],
+ "statementRuns": 23,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "node": {
+   "object": "",
+   "props": {
+    "name": "str:self",
+    "me": "<circular>"
+   }
+  },
+  "a": {
+   "object": "",
+   "props": {
+    "name": "str:a",
+    "peer": {
+     "object": "",
+     "props": {
+      "name": "str:b",
+      "peer": "<circular>"
+     }
+    }
+   }
+  },
+  "b": {
+   "object": "",
+   "props": {
+    "name": "str:b",
+    "peer": {
+     "object": "",
+     "props": {
+      "name": "str:a",
+      "peer": "<circular>"
+     }
+    }
+   }
+  },
+  "arr": {
+   "array": [
+    "num:1",
+    "num:2",
+    "<circular>"
+   ],
+   "len": 3
+  },
+  "parent": {
+   "object": "",
+   "props": {
+    "name": "str:p",
+    "children": {
+     "array": [
+      {
+       "object": "",
+       "props": {
+        "name": "str:c",
+        "parent": "<circular>"
+       }
+      }
+     ],
+     "len": 1
+    }
+   }
+  },
+  "child": {
+   "object": "",
+   "props": {
+    "name": "str:c",
+    "parent": {
+     "object": "",
+     "props": {
+      "name": "str:p",
+      "children": {
+       "array": [
+        "<circular>"
+       ],
+       "len": 1
+      }
+     }
+    }
+   }
+  },
+  "ring": {
+   "map": [
+    [
+     "str:ring",
+     "<circular>"
+    ]
+   ]
+  },
+  "jsonError": "str:TypeError"
+ },
+ "sourceSha256": "3051d8390abd5db4e746fc28748d4f68b963d6e2ddd0d1041e1f8942a2df6799"
+}

@@ -1,0 +1,17 @@
+{
+ "console": [],
+ "calls": [],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": {
+  "message": "Illegal return statement",
+  "line": 6,
+  "column": 2
+ },
+ "executedLines": [],
+ "statementRuns": 0,
+ "functionCalls": 0,
+ "finalGlobals": {},
+ "sourceSha256": "932558092d14360c29cfa8aa6bebe1e660c2e7ba11bd0ec4ec48b316b0aaa3b5"
+}

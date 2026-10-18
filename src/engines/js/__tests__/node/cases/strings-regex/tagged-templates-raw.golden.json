@@ -1,0 +1,137 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "parts: 3 values: 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "The [tea] costs $[3.50] today"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 4, 6, 'a\\\\tb\\\\n' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "C:\\new\\temp\\file.txt 20"
+  },
+  {
+   "stream": "stdout",
+   "text": "\\d+\\.\\d+ true"
+  },
+  {
+   "stream": "stdout",
+   "text": "x=2\\n"
+  },
+  {
+   "stream": "stdout",
+   "text": "hi TEA, total 7!"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:parts:",
+    "num:3",
+    "str:values:",
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:The [tea] costs $[3.50] today"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:4",
+      "num:6",
+      "str:a\\tb\\n"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:C:\\new\\temp\\file.txt",
+    "num:20"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:\\d+\\.\\d+",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:x=2\\n"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:hi TEA, total 7!"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  5,
+  6,
+  7,
+  9,
+  12,
+  13,
+  14,
+  15,
+  18,
+  20,
+  21,
+  23,
+  24,
+  25,
+  26,
+  27,
+  29,
+  31,
+  32
+ ],
+ "statementRuns": 27,
+ "functionCalls": 9,
+ "finalGlobals": {
+  "highlight": "fn:highlight",
+  "item": "str:tea",
+  "price": "num:3.5",
+  "line": "str:The [tea] costs $[3.50] today",
+  "inspectRaw": "fn:inspectRaw",
+  "rawInfo": {
+   "array": [
+    "num:4",
+    "num:6",
+    "str:a\\tb\\n"
+   ],
+   "len": 3
+  },
+  "path": "str:C:\\new\\temp\\file.txt",
+  "pattern": "str:\\d+\\.\\d+",
+  "upper": "fn:upper",
+  "shout": "str:hi TEA, total 7!"
+ },
+ "sourceSha256": "d191df80febc7ef54c8f11f622e3123a55fbafb5a93d98ab2641c53d9b53f849"
+}

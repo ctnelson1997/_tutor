@@ -1,0 +1,120 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "10 10 7"
+  },
+  {
+   "stream": "stdout",
+   "text": "true false 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'label' ] {\"label\":\"counter\"} undefined undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "false 7 true"
+  },
+  {
+   "stream": "stdout",
+   "text": "Counter { label: 'counter' } 8"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:10",
+    "num:10",
+    "num:7"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:false",
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:label"
+     ],
+     "len": 1
+    },
+    "str:{\"label\":\"counter\"}",
+    "undefined",
+    "undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:false",
+    "num:7",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "Counter",
+     "props": {
+      "label": "str:counter"
+     }
+    },
+    "num:8"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  8,
+  9,
+  10,
+  13,
+  16,
+  17,
+  20,
+  21,
+  24,
+  27,
+  30,
+  33,
+  37,
+  38,
+  39,
+  40,
+  41,
+  42,
+  43,
+  44
+ ],
+ "statementRuns": 38,
+ "functionCalls": 21,
+ "finalGlobals": {
+  "Counter": "fn:Counter",
+  "c": {
+   "object": "Counter",
+   "props": {
+    "label": "str:counter"
+   }
+  },
+  "d": {
+   "object": "Counter",
+   "props": {
+    "label": "str:counter"
+   }
+  }
+ },
+ "sourceSha256": "366bacaeca9f92e8d9446c3bb71717ca9a1a227044e7f4f22012ee4c409ef06b"
+}

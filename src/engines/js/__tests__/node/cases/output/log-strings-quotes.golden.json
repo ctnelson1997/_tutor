@@ -1,0 +1,209 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "hello it's say \"hi\" it's \"both\" it's \"all\" `three`"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'hello', \"it's\", 'say \"hi\"', `it's \"both\"`, 'it\\'s \"all\" `three`' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ single: \"it's\", double: 'say \"hi\"', both: `it's \"both\"` }"
+  },
+  {
+   "stream": "stdout",
+   "text": "tab\there"
+  },
+  {
+   "stream": "stdout",
+   "text": "new line\\backslash"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'tab\\there\\nnew line\\\\backslash' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "café 😀 [ 'café 😀' ] 7"
+  },
+  {
+   "stream": "stdout",
+   "text": " [ '' ] { empty: '' }"
+  },
+  {
+   "stream": "stdout",
+   "text": "   padded    [ '   padded   ' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "{\"q\":\"say \\\"hi\\\"\"}"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ \"it's\": 1, 'key with space': 2 }"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:hello",
+    "str:it's",
+    "str:say \"hi\"",
+    "str:it's \"both\"",
+    "str:it's \"all\" `three`"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:hello",
+      "str:it's",
+      "str:say \"hi\"",
+      "str:it's \"both\"",
+      "str:it's \"all\" `three`"
+     ],
+     "len": 5
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "single": "str:it's",
+      "double": "str:say \"hi\"",
+      "both": "str:it's \"both\""
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:tab\there\nnew line\\backslash"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:tab\there\nnew line\\backslash"
+     ],
+     "len": 1
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:café 😀",
+    {
+     "array": [
+      "str:café 😀"
+     ],
+     "len": 1
+    },
+    "num:7"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:",
+    {
+     "array": [
+      "str:"
+     ],
+     "len": 1
+    },
+    {
+     "object": "",
+     "props": {
+      "empty": "str:"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:   padded   ",
+    {
+     "array": [
+      "str:   padded   "
+     ],
+     "len": 1
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:{\"q\":\"say \\\"hi\\\"\"}"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "it's": "num:1",
+      "key with space": "num:2"
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19
+ ],
+ "statementRuns": 18,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "plain": "str:hello",
+  "single": "str:it's",
+  "double": "str:say \"hi\"",
+  "both": "str:it's \"both\"",
+  "all": "str:it's \"all\" `three`",
+  "escapes": "str:tab\there\nnew line\\backslash",
+  "unicode": "str:café 😀",
+  "quotes": {
+   "object": "",
+   "props": {
+    "it's": "num:1",
+    "key with space": "num:2"
+   }
+  }
+ },
+ "sourceSha256": "8cb431ca76de1b19f597299a909f562643fabc2af82d4cedf6c568575612cc75"
+}

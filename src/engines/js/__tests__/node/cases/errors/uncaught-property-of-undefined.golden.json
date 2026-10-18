@@ -1,0 +1,102 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "0 Ana MADISON"
+  },
+  {
+   "stream": "stdout",
+   "text": "1 Ben AUSTIN"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:0",
+    "str:Ana",
+    "str:MADISON"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:1",
+    "str:Ben",
+    "str:AUSTIN"
+   ]
+  }
+ ],
+ "uncaught": [
+  {
+   "name": "TypeError",
+   "message": "Cannot read properties of undefined (reading 'city')",
+   "where": "script",
+   "consoleLines": 2
+  }
+ ],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  8,
+  11,
+  15,
+  16,
+  17,
+  18,
+  23,
+  24
+ ],
+ "statementRuns": 17,
+ "functionCalls": 4,
+ "finalGlobals": {
+  "users": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:Ana",
+      "address": {
+       "object": "",
+       "props": {
+        "city": "str:Madison"
+       }
+      }
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Ben",
+      "address": {
+       "object": "",
+       "props": {
+        "city": "str:Austin"
+       }
+      }
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Cy"
+     }
+    }
+   ],
+   "len": 3
+  },
+  "cities": {
+   "array": [
+    "str:MADISON",
+    "str:AUSTIN"
+   ],
+   "len": 2
+  },
+  "cityOf": "fn:cityOf",
+  "collectCities": "fn:collectCities",
+  "count": "<uninitialized>"
+ },
+ "sourceSha256": "09e11288e103fa79a88ea73a2863a93b302e439cb3d6d530efd378ff64ebde78"
+}

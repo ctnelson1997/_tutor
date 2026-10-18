@@ -1,0 +1,252 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[ 'Ann', 'Bo', 'Cy', 'Di' ] 3 115 [ 'Cy', 'Ann', 'Di', 'Bo' ] { name: 'Bo', age: 17 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "0 x 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "1 y 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'ok: 2.5', 'error: division by zero' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'a0', 'b1', 'c2' ] [ 1, NaN, NaN ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:Ann",
+      "str:Bo",
+      "str:Cy",
+      "str:Di"
+     ],
+     "len": 4
+    },
+    "num:3",
+    "num:115",
+    {
+     "array": [
+      "str:Cy",
+      "str:Ann",
+      "str:Di",
+      "str:Bo"
+     ],
+     "len": 4
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Bo",
+      "age": "num:17"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:0",
+    "str:x",
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:1",
+    "str:y",
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:ok: 2.5",
+      "str:error: division by zero"
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:a0",
+      "str:b1",
+      "str:c2"
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "num:1",
+      "num:NaN",
+      "num:NaN"
+     ],
+     "len": 3
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  15,
+  16,
+  19,
+  20,
+  23,
+  24,
+  25,
+  27,
+  29,
+  31,
+  33,
+  34,
+  35,
+  36,
+  37,
+  38
+ ],
+ "statementRuns": 31,
+ "functionCalls": 34,
+ "finalGlobals": {
+  "people": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:Ann",
+      "age": "num:31"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Bo",
+      "age": "num:17"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Cy",
+      "age": "num:45"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Di",
+      "age": "num:22"
+     }
+    }
+   ],
+   "len": 4
+  },
+  "names": {
+   "array": [
+    "str:Ann",
+    "str:Bo",
+    "str:Cy",
+    "str:Di"
+   ],
+   "len": 4
+  },
+  "adults": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:Ann",
+      "age": "num:31"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Cy",
+      "age": "num:45"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Di",
+      "age": "num:22"
+     }
+    }
+   ],
+   "len": 3
+  },
+  "totalAge": "num:115",
+  "byAge": {
+   "array": [
+    "str:Cy",
+    "str:Ann",
+    "str:Di",
+    "str:Bo"
+   ],
+   "len": 4
+  },
+  "firstTeen": {
+   "object": "",
+   "props": {
+    "name": "str:Bo",
+    "age": "num:17"
+   }
+  },
+  "myForEach": "fn:myForEach",
+  "divide": "fn:divide",
+  "outcomes": {
+   "array": [
+    "str:ok: 2.5",
+    "str:error: division by zero"
+   ],
+   "len": 2
+  },
+  "report": "fn:report",
+  "indexes": {
+   "array": [
+    "str:a0",
+    "str:b1",
+    "str:c2"
+   ],
+   "len": 3
+  },
+  "parsed": {
+   "array": [
+    "num:1",
+    "num:NaN",
+    "num:NaN"
+   ],
+   "len": 3
+  }
+ },
+ "sourceSha256": "d3408607122dc288aaafba90b3d5f9b2b1e5cb409c8a8115dee213b17bbad660"
+}

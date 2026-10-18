@@ -1,0 +1,164 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "0.30000000000000004 false true"
+  },
+  {
+   "stream": "stdout",
+   "text": "1e+21 100000000000000000000 1e-7 0.000001"
+  },
+  {
+   "stream": "stdout",
+   "text": "1e+21 123456789 1.1805916207174113e+21"
+  },
+  {
+   "stream": "stdout",
+   "text": "0.30 1.00 3 1234.6"
+  },
+  {
+   "stream": "stdout",
+   "text": "11111111 ff -1010 0.1"
+  },
+  {
+   "stream": "stdout",
+   "text": "123.5 0.00012 1e+21"
+  },
+  {
+   "stream": "stdout",
+   "text": "8 31 12 3.14 12"
+  },
+  {
+   "stream": "stdout",
+   "text": "0.3333333333333333 0.6666666666666666 33.333333333333336 5e-324 1.7976931348623157e+308"
+  },
+  {
+   "stream": "stdout",
+   "text": "$20.00 1010 10 3.3000000000000003"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:0.30000000000000004",
+    "boolean:false",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:1e+21",
+    "num:100000000000000000000",
+    "num:1e-7",
+    "num:0.000001"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:1e+21",
+    "str:123456789",
+    "num:1.1805916207174113e+21"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:0.30",
+    "str:1.00",
+    "str:3",
+    "str:1234.6"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:11111111",
+    "str:ff",
+    "str:-1010",
+    "str:0.1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:123.5",
+    "str:0.00012",
+    "str:1e+21"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:8",
+    "num:31",
+    "num:12",
+    "num:3.14",
+    "num:12"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:0.3333333333333333",
+    "num:0.6666666666666666",
+    "num:33.333333333333336",
+    "num:5e-324",
+    "num:1.7976931348623157e+308"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:$20.00",
+    "str:1010",
+    "num:10",
+    "num:3.3000000000000003"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21
+ ],
+ "statementRuns": 20,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "sum": "num:0.30000000000000004",
+  "big": "num:1e+21",
+  "almostBig": "num:100000000000000000000",
+  "tiny": "num:1e-7",
+  "notTiny": "num:0.000001",
+  "price": "num:19.999",
+  "display": "str:$20.00",
+  "binary": "str:1010",
+  "backToNumber": "num:10",
+  "third": "num:0.3333333333333333",
+  "scaled": "num:3.3000000000000003"
+ },
+ "sourceSha256": "922a7da88ec85f3eee44e254442294bf45c8f79fcfa7f0fa956076d39945a8a8"
+}

@@ -1,0 +1,314 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[ 1, 2, 3 ] undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 1, 2, 3, <3 empty items> ] 6 false"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'x', 'y', 'z' ] []"
+  },
+  {
+   "stream": "stdout",
+   "text": "[] 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "100 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "50 undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'a', 'b', 'c' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'a', 'b', 'c', 'e' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "he 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "RangeError"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 1, 2, 3, <3 empty items> ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:1",
+      "num:2",
+      "num:3"
+     ],
+     "len": 3
+    },
+    "undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:1",
+      "num:2",
+      "num:3",
+      "<hole>",
+      "<hole>",
+      "<hole>"
+     ],
+     "len": 6
+    },
+    "num:6",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:x",
+      "str:y",
+      "str:z"
+     ],
+     "len": 3
+    },
+    {
+     "array": [],
+     "len": 0
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [],
+     "len": 0
+    },
+    "num:0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:100",
+    "num:1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:50",
+    "undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:a",
+      "str:b",
+      "str:c"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:a",
+      "str:b",
+      "str:c",
+      "str:e"
+     ],
+     "len": 4
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:he",
+    "num:5"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:RangeError"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:1",
+      "num:2",
+      "num:3",
+      "<hole>",
+      "<hole>",
+      "<hole>"
+     ],
+     "len": 6
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  16,
+  17,
+  18,
+  19,
+  20,
+  22,
+  23,
+  24,
+  25,
+  26,
+  28,
+  29,
+  30,
+  31,
+  33,
+  35,
+  37
+ ],
+ "statementRuns": 29,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "nums": {
+   "array": [
+    "num:1",
+    "num:2",
+    "num:3",
+    "<hole>",
+    "<hole>",
+    "<hole>"
+   ],
+   "len": 6
+  },
+  "shared": {
+   "array": [],
+   "len": 0
+  },
+  "ref": {
+   "array": [],
+   "len": 0
+  },
+  "other": {
+   "array": [],
+   "len": 0
+  },
+  "big": {
+   "array": [
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>",
+    "<hole>"
+   ],
+   "len": 50
+  },
+  "stack": {
+   "array": [
+    "str:a",
+    "str:b",
+    "str:c",
+    "str:e"
+   ],
+   "len": 4
+  },
+  "s": "str:hello",
+  "chars": {
+   "array": [
+    "str:h",
+    "str:e"
+   ],
+   "len": 2
+  }
+ },
+ "sourceSha256": "d4ec6d68d715c0e1215a710c24d1ef0a63277e9be89bb125e9b17483fa63e1b8"
+}

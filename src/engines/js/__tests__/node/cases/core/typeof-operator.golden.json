@@ -1,0 +1,294 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "number   number"
+  },
+  {
+   "stream": "stdout",
+   "text": "nan      number"
+  },
+  {
+   "stream": "stdout",
+   "text": "string   string"
+  },
+  {
+   "stream": "stdout",
+   "text": "boolean  boolean"
+  },
+  {
+   "stream": "stdout",
+   "text": "undef    undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "nul      object"
+  },
+  {
+   "stream": "stdout",
+   "text": "array    object"
+  },
+  {
+   "stream": "stdout",
+   "text": "object   object"
+  },
+  {
+   "stream": "stdout",
+   "text": "func     function"
+  },
+  {
+   "stream": "stdout",
+   "text": "arrow    function"
+  },
+  {
+   "stream": "stdout",
+   "text": "klass    function"
+  },
+  {
+   "stream": "stdout",
+   "text": "symbol   symbol"
+  },
+  {
+   "stream": "stdout",
+   "text": "big      bigint"
+  },
+  {
+   "stream": "stdout",
+   "text": "regex    object"
+  },
+  {
+   "stream": "stdout",
+   "text": "undeclared: undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "typeof typeof: string"
+  },
+  {
+   "stream": "stdout",
+   "text": "Array.isArray: true null check: true"
+  },
+  {
+   "stream": "stdout",
+   "text": "null array object"
+  },
+  {
+   "stream": "stdout",
+   "text": "Symbol(id) id"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:number  ",
+    "str:number"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:nan     ",
+    "str:number"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:string  ",
+    "str:string"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:boolean ",
+    "str:boolean"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:undef   ",
+    "str:undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:nul     ",
+    "str:object"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:array   ",
+    "str:object"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:object  ",
+    "str:object"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:func    ",
+    "str:function"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:arrow   ",
+    "str:function"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:klass   ",
+    "str:function"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:symbol  ",
+    "str:symbol"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:big     ",
+    "str:bigint"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:regex   ",
+    "str:object"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:undeclared:",
+    "str:undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:typeof typeof:",
+    "str:string"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Array.isArray:",
+    "boolean:true",
+    "str:null check:",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:null",
+    "str:array",
+    "str:object"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Symbol(id)",
+    "str:id"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  18,
+  19,
+  20,
+  21,
+  23,
+  24,
+  25,
+  26,
+  27,
+  28,
+  29
+ ],
+ "statementRuns": 38,
+ "functionCalls": 3,
+ "finalGlobals": {
+  "samples": {
+   "object": "",
+   "props": {
+    "number": "num:42",
+    "nan": "num:NaN",
+    "string": "str:hi",
+    "boolean": "boolean:false",
+    "undef": "undefined",
+    "nul": "null",
+    "array": {
+     "array": [
+      "num:1",
+      "num:2"
+     ],
+     "len": 2
+    },
+    "object": {
+     "object": "",
+     "props": {
+      "a": "num:1"
+     }
+    },
+    "func": "fn:func",
+    "arrow": "fn:arrow",
+    "klass": "fn:Point",
+    "symbol": "sym:id",
+    "big": "bigint:10",
+    "regex": {
+     "regexp": "/ab+c/"
+    }
+   }
+  },
+  "kinds": {
+   "object": "",
+   "props": {
+    "number": "str:number",
+    "nan": "str:number",
+    "string": "str:string",
+    "boolean": "str:boolean",
+    "undef": "str:undefined",
+    "nul": "str:object",
+    "array": "str:object",
+    "object": "str:object",
+    "func": "str:function",
+    "arrow": "str:function",
+    "klass": "str:function",
+    "symbol": "str:symbol",
+    "big": "str:bigint",
+    "regex": "str:object"
+   }
+  },
+  "describe": "fn:describe",
+  "sym": "sym:id"
+ },
+ "sourceSha256": "84390903f2bb3e9e7ec4fd3bcbb9b4a6e615ed9eb2436b09836de67a4f0307b2"
+}

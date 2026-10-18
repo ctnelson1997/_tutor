@@ -6,7 +6,8 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist', '.env.*', 'docs/**', 'docs-*/**']),
+  // The Node differential corpus (#42) is students' programs, some deliberately unparseable.
+  globalIgnores(['dist', '.env.*', 'docs/**', 'docs-*/**', 'src/engines/js/__tests__/node/cases/**']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

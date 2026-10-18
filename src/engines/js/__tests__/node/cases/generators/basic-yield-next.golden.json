@@ -1,0 +1,177 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "start 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "3 false"
+  },
+  {
+   "stream": "stdout",
+   "text": "between calls, total = 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ value: 2, done: false } total 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "done"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ value: 1, done: false } { value: undefined, done: true }"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ value: undefined, done: true }"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:start",
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:3",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:between calls, total =",
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "value": "num:2",
+      "done": "boolean:false"
+     }
+    },
+    "str:total",
+    "num:5"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:done"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "value": "num:1",
+      "done": "boolean:false"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "value": "undefined",
+      "done": "boolean:true"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "value": "undefined",
+      "done": "boolean:true"
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  5,
+  6,
+  8,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  24
+ ],
+ "statementRuns": 23,
+ "functionCalls": 1,
+ "finalGlobals": {
+  "countdown": "fn:countdown",
+  "gen": {
+   "object": "",
+   "props": {}
+  },
+  "total": "num:5",
+  "first": {
+   "object": "",
+   "props": {
+    "value": "num:3",
+    "done": "boolean:false"
+   }
+  },
+  "second": {
+   "object": "",
+   "props": {
+    "value": "num:2",
+    "done": "boolean:false"
+   }
+  },
+  "third": {
+   "object": "",
+   "props": {
+    "value": "num:1",
+    "done": "boolean:false"
+   }
+  },
+  "fourth": {
+   "object": "",
+   "props": {
+    "value": "undefined",
+    "done": "boolean:true"
+   }
+  },
+  "fifth": {
+   "object": "",
+   "props": {
+    "value": "undefined",
+    "done": "boolean:true"
+   }
+  }
+ },
+ "sourceSha256": "c80a99b4654f46927922a83d8b872111d39bee4c044b951bea49f12cee9034ac"
+}

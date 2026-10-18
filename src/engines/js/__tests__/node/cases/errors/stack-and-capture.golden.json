@@ -1,0 +1,140 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "NotFoundError: z not found"
+  },
+  {
+   "stream": "stdout",
+   "text": "true true z"
+  },
+  {
+   "stream": "stdout",
+   "text": "Custom: made by hand"
+  },
+  {
+   "stream": "stdout",
+   "text": "Error: first message | Error: first message | Error: changed later"
+  },
+  {
+   "stream": "stdout",
+   "text": "NotFoundError: z not found"
+  },
+  {
+   "stream": "stdout",
+   "text": "    at find (file:///main.js:10:38)"
+  },
+  {
+   "stream": "stdout",
+   "text": "    at file:///main.js:15:3"
+  },
+  {
+   "stream": "stdout",
+   "text": "    at Script.runInContext (node:vm:149:12)"
+  },
+  {
+   "stream": "stdout",
+   "text": "    at recordGolden (C:\\Users\\ctnelson2\\Documents\\tutors\\_tutor\\src\\engines\\js\\__tests__\\node\\record.ts:202:12)"
+  },
+  {
+   "stream": "stdout",
+   "text": "    at async recordOne (C:\\Users\\ctnelson2\\Documents\\tutors\\_tutor\\scripts\\js-golden.ts:51:36)"
+  },
+  {
+   "stream": "stdout",
+   "text": "    at async main (C:\\Users\\ctnelson2\\Documents\\tutors\\_tutor\\scripts\\js-golden.ts:89:27) {"
+  },
+  {
+   "stream": "stdout",
+   "text": "  what: 'z'"
+  },
+  {
+   "stream": "stdout",
+   "text": "}"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:NotFoundError: z not found"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:true",
+    "str:z"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Custom: made by hand"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Error: first message",
+    "str:|",
+    "str:Error: first message",
+    "str:|",
+    "str:Error: changed later"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "error": "NotFoundError: z not found"
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  4,
+  5,
+  6,
+  10,
+  13,
+  15,
+  17,
+  19,
+  20,
+  21,
+  22,
+  23,
+  24,
+  25,
+  26,
+  27,
+  28
+ ],
+ "statementRuns": 18,
+ "functionCalls": 2,
+ "finalGlobals": {
+  "NotFoundError": "fn:NotFoundError",
+  "find": "fn:find",
+  "caught": {
+   "error": "NotFoundError: z not found"
+  },
+  "holder": {
+   "object": "",
+   "props": {
+    "name": "str:Custom",
+    "message": "str:made by hand"
+   }
+  },
+  "early": {
+   "error": "Error: changed later"
+  },
+  "firstLine": "str:Error: first message"
+ },
+ "sourceSha256": "f1d085943508aa7be48e310e010749be5248188b861e6fe1ded6a3cbd4fbcc2b"
+}

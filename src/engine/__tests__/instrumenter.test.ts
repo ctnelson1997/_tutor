@@ -25,11 +25,156 @@ describe('instrument', () => {
     expect(out).toContain('__capture__');
   });
 
-  it('injects multiple captures for multiple statements', () => {
+  it('injects multiple captures for multiple statements, and ends the script with __endScript__', () => {
     const out = instrument('let x = 1;\nlet y = 2;');
     const count = (out.match(/__capture__/g) || []).length;
-    // At least one per statement plus the initial capture
-    expect(count).toBeGreaterThanOrEqual(3);
+    // One per statement; the script's last step is __endScript__'s (#45)
+    expect(count).toBeGreaterThanOrEqual(2);
+    expect(out).toContain('__endScript__(2)');
+  });
+
+  // ── #44: frames leave with their code ──
+
+  it("keeps each function's frame and leaves it in a finally", () => {
+    const out = instrument(`function f(a) {
+  if (a) throw new Error("x");
+  return a;
+}`);
+    expect(out).toContain('var __fr__ = __pushFrame__("f"');
+    expect(out).toMatch(/finally \{\s*__leave__\(__fr__\);\s*\}/);
+    expect(out).not.toContain('__popThrowingFrame__');
+  });
+
+  it('leaves a loop frame in a finally, so break and continue pop it', () => {
+    const forOf = instrument(`for (const x of [1, 2]) {
+  if (x) continue;
+  break;
+}`);
+    expect(forOf).toContain('const __bf__ = __pushFrame__("for...of"');
+    expect(forOf).toMatch(/finally \{\s*__leave__\(__bf__\);\s*\}/);
+    const whileLet = instrument(`let n = 0;
+while (n < 3) {
+  let m = n;
+  n++;
+}`);
+    expect(whileLet).toMatch(/const __bf__ = __pushFrame__\("while"[^]*try \{\s*while/);
+    expect(whileLet).not.toMatch(/__popFrame__\(\);/);
+  });
+
+  it("suspends a generator's or async function's frame at yield and await, and resumes it in catch and finally", () => {
+    const out = instrument(`async function f() {
+  try {
+    await g();
+  } catch (e) {
+    log(e);
+  } finally {
+    done();
+  }
+  const inner = () => 1;
+}
+function* h() {
+  yield 1;
+  const v = yield;
+  yield* [v];
+}`);
+    expect(out).toContain('__resume__(__fr__, await __suspend__(__fr__, g()))');
+    expect(out).toMatch(/catch \(e\) \{\s*__resume__\(__fr__\);/);
+    expect(out).toMatch(/finally \{\s*__resume__\(__fr__\);\s*__capture__/);
+    expect(out).toContain('__resume__(__fr__, yield __suspend__(__fr__, 1))');
+    expect(out).toContain('__resume__(__fr__, yield __suspend__(__fr__, undefined))');
+    expect(out).toContain('__resume__(__fr__, yield* __suspend__(__fr__, [v]))');
+  });
+
+  it('leaves plain functions without suspension calls, and nested functions to themselves', () => {
+    const out = instrument(`function plain() {
+  try { a(); } catch (e) {}
+}
+async function outer() {
+  const f = function () { try { b(); } catch (e) {} };
+  await f();
+}`);
+    const plain = out.slice(out.indexOf('function plain'), out.indexOf('async function outer'));
+    expect(plain).not.toContain('__resume__');
+    const nested = out.slice(out.indexOf('const f = function'), out.indexOf('__capture__(6'));
+    expect(nested).not.toContain('__resume__');
+  });
+
+  // ── #46: every place code can appear ──
+
+  /** The function, of the instrumented output, whose frame is named name. */
+  const frameOf = (out: string, name: string) => out.includes(`__pushFrame__("${name}"`);
+
+  it('instruments a labeled loop: its guard and the steps in its body', () => {
+    const out = instrument(`outer: for (let i = 0; i < 3; i++) {
+  inner: while (true) {
+    break outer;
+  }
+}`);
+    // the preamble's declaration, and each loop's guard
+    expect((out.match(/__loopCount/g) || []).length).toBe(3);
+    expect(out).toMatch(/__capture__\(3,/);
+    expect(out).toMatch(/outer: for/);
+  });
+
+  it("instruments class fields' functions and static blocks (with a frame of their own)", () => {
+    const out = instrument(`class Button {
+  clicks = 0;
+  handle = () => {
+    this.clicks++;
+  };
+  static registry = [];
+  static {
+    Button.registry.push("made");
+  }
+}`);
+    expect(frameOf(out, 'handle')).toBe(true);
+    expect(frameOf(out, '<static_initializer>')).toBe(true);
+    expect(out).toMatch(/__capture__\(4,/);
+    expect(out).toMatch(/__capture__\(8,/);
+  });
+
+  it('reaches functions behind !, void, new, await, member chains, sequences, tagged templates and default values', () => {
+    const out = instrument(`!function bang() {
+  a();
+}();
+void (function v() {
+  b();
+})();
+const p = new Promise(function executor(resolve) {
+  resolve(1);
+});
+const doubled = [1, 2].map(function m(x) {
+  return x * 2;
+}).filter(function f(x) {
+  return x > 2;
+});
+const s = (0, function seq() {
+  return 1;
+})();
+tag\`\${(function t() {
+  return 1;
+})()}\`;
+function withDefault(cb = function d() {
+  return 0;
+}) {}
+async function later() {
+  await (async function aw() {
+    return 1;
+  })();
+}`);
+    for (const name of ['bang', 'v', 'executor', 'm', 'f', 'seq', 't', 'd', 'aw']) expect(frameOf(out, name), name).toBe(true);
+  });
+
+  it('names anonymous functions as JavaScript does: assignments, properties, defaults, class fields', () => {
+    const out = instrument(`let assigned;
+assigned = () => 1;
+const obj = { method: () => 2, ["computed"]: () => 3 };
+function f(cb = () => 4) {}
+class C { field = () => 5; }
+const Named = class {
+  constructor() {}
+};`);
+    for (const name of ['assigned', 'method', 'cb', 'field', 'Named']) expect(frameOf(out, name), name).toBe(true);
   });
 
   // ── Eval blocking ──
@@ -118,8 +263,8 @@ describe('instrument', () => {
   it('does not insert pre-call capture for statements without calls', () => {
     const out = instrument('let x = 1;\nlet y = 2;');
     const captures = (out.match(/__capture__/g) || []).length;
-    // initial capture + 1 per statement = 3, no pre-call captures
-    expect(captures).toBe(3);
+    // 1 per statement = 2 (and __endScript__ for the last step), no pre-call captures
+    expect(captures).toBe(2);
   });
 
   it('does not insert pre-call capture for function definitions containing calls', () => {
@@ -211,7 +356,7 @@ describe('instrument', () => {
   it('creates block scope frame for for-loop with let', () => {
     const out = instrument('for (let i = 0; i < 3; i++) { let x = i; }');
     expect(out).toContain('__pushFrame__');
-    expect(out).toContain('__popFrame__');
+    expect(out).toContain('__leave__');
   });
 
   // ── Destructuring ──

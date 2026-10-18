@@ -1,0 +1,438 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Map(0) {} Set(0) {}"
+  },
+  {
+   "stream": "stdout",
+   "text": "Map(2) { 'ann' => 30, 'bob' => 25 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "Map(3) {"
+  },
+  {
+   "stream": "stdout",
+   "text": "  { id: 1 } => 'object key',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  42 => [ 1, 2 ],"
+  },
+  {
+   "stream": "stdout",
+   "text": "  'nested' => Map(1) { 'inner' => Set(2) { 1, 2 } }"
+  },
+  {
+   "stream": "stdout",
+   "text": "}"
+  },
+  {
+   "stream": "stdout",
+   "text": "Set(3) { 'red', 'green', 'blue' } 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "Set(5) { 1, '1', [ 1 ], { one: 1 }, null }"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ fruit: Set(2) { 'apple', 'pear' }, counts: Map(1) { 'apple' => 3 } }"
+  },
+  {
+   "stream": "stdout",
+   "text": "["
+  },
+  {
+   "stream": "stdout",
+   "text": "  Map(2) { 'ann' => 30, 'bob' => 25 },"
+  },
+  {
+   "stream": "stdout",
+   "text": "  Set(3) { 'red', 'green', 'blue' }"
+  },
+  {
+   "stream": "stdout",
+   "text": "]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'ann', 'bob' ] [ [ 'ann', 30 ], [ 'bob', 25 ] ] [ 'red', 'green', 'blue' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Map(1) { 'ann' => 30 } Set(4) { 'red', 'green', 'blue', 'yellow' } WeakMap { <items unknown> } WeakSet { <items unknown> }"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "map": []
+    },
+    {
+     "set": []
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "map": [
+      [
+       "str:ann",
+       "num:30"
+      ],
+      [
+       "str:bob",
+       "num:25"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "map": [
+      [
+       {
+        "object": "",
+        "props": {
+         "id": "num:1"
+        }
+       },
+       "str:object key"
+      ],
+      [
+       "num:42",
+       {
+        "array": [
+         "num:1",
+         "num:2"
+        ],
+        "len": 2
+       }
+      ],
+      [
+       "str:nested",
+       {
+        "map": [
+         [
+          "str:inner",
+          {
+           "set": [
+            "num:1",
+            "num:2"
+           ]
+          }
+         ]
+        ]
+       }
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "set": [
+      "str:red",
+      "str:green",
+      "str:blue"
+     ]
+    },
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "set": [
+      "num:1",
+      "str:1",
+      {
+       "array": [
+        "num:1"
+       ],
+       "len": 1
+      },
+      {
+       "object": "",
+       "props": {
+        "one": "num:1"
+       }
+      },
+      "null"
+     ]
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "fruit": {
+       "set": [
+        "str:apple",
+        "str:pear"
+       ]
+      },
+      "counts": {
+       "map": [
+        [
+         "str:apple",
+         "num:3"
+        ]
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      {
+       "map": [
+        [
+         "str:ann",
+         "num:30"
+        ],
+        [
+         "str:bob",
+         "num:25"
+        ]
+       ]
+      },
+      {
+       "set": [
+        "str:red",
+        "str:green",
+        "str:blue"
+       ]
+      }
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:ann",
+      "str:bob"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      {
+       "array": [
+        "str:ann",
+        "num:30"
+       ],
+       "len": 2
+      },
+      {
+       "array": [
+        "str:bob",
+        "num:25"
+       ],
+       "len": 2
+      }
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "str:red",
+      "str:green",
+      "str:blue"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "map": [
+      [
+       "str:ann",
+       "num:30"
+      ]
+     ]
+    },
+    {
+     "set": [
+      "str:red",
+      "str:green",
+      "str:blue",
+      "str:yellow"
+     ]
+    },
+    {
+     "object": "WeakMap",
+     "props": {}
+    },
+    {
+     "object": "WeakSet",
+     "props": {}
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23
+ ],
+ "statementRuns": 22,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "emptyMap": {
+   "map": []
+  },
+  "emptySet": {
+   "set": []
+  },
+  "ages": {
+   "map": [
+    [
+     "str:ann",
+     "num:30"
+    ]
+   ]
+  },
+  "keyObj": {
+   "object": "",
+   "props": {
+    "id": "num:1"
+   }
+  },
+  "lookup": {
+   "map": [
+    [
+     {
+      "object": "",
+      "props": {
+       "id": "num:1"
+      }
+     },
+     "str:object key"
+    ],
+    [
+     "num:42",
+     {
+      "array": [
+       "num:1",
+       "num:2"
+      ],
+      "len": 2
+     }
+    ],
+    [
+     "str:nested",
+     {
+      "map": [
+       [
+        "str:inner",
+        {
+         "set": [
+          "num:1",
+          "num:2"
+         ]
+        }
+       ]
+      ]
+     }
+    ]
+   ]
+  },
+  "colors": {
+   "set": [
+    "str:red",
+    "str:green",
+    "str:blue",
+    "str:yellow"
+   ]
+  },
+  "mixedSet": {
+   "set": [
+    "num:1",
+    "str:1",
+    {
+     "array": [
+      "num:1"
+     ],
+     "len": 1
+    },
+    {
+     "object": "",
+     "props": {
+      "one": "num:1"
+     }
+    },
+    "null"
+   ]
+  },
+  "inventory": {
+   "object": "",
+   "props": {
+    "fruit": {
+     "set": [
+      "str:apple",
+      "str:pear"
+     ]
+    },
+    "counts": {
+     "map": [
+      [
+       "str:apple",
+       "num:3"
+      ]
+     ]
+    }
+   }
+  }
+ },
+ "sourceSha256": "a39af67410d58fae2742cc6996f92f6a8429aa8494d3959a0137f51b952b92b5"
+}

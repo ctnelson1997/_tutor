@@ -1,0 +1,21 @@
+// the in operator (own, inherited, array indexes) and delete (object properties; array elements leave holes)
+const car = { make: 'Toyota', year: 2020, owner: undefined };
+console.log('make' in car, 'model' in car, 'owner' in car, 'toString' in car);
+console.log(car.hasOwnProperty('toString'), Object.hasOwn(car, 'owner'));
+const deletedYear = delete car.year;
+const deletedMissing = delete car.missing;
+console.log(deletedYear, deletedMissing, car, 'year' in car);
+const arr = ['a', 'b', 'c', 'd'];
+console.log(0 in arr, 4 in arr, '2' in arr, 'length' in arr);
+delete arr[1];
+console.log(arr, arr.length, 1 in arr, arr[1]);
+console.log('forEach skips holes:');
+arr.forEach((v, i) => console.log(' ', i, v));
+const mapped = arr.map(v => v.toUpperCase());
+console.log(mapped, Object.keys(arr));
+const frozen = Object.freeze({ locked: true });
+console.log('delete frozen:', delete frozen.locked, frozen);
+const nested = { inner: { value: 1 } };
+const innerRef = nested.inner;
+delete nested.inner;
+console.log(nested, innerRef);

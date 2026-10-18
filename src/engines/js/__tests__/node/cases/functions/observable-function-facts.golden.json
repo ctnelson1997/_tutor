@@ -1,0 +1,188 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "function area(width, height = 1, ...rest) {"
+  },
+  {
+   "stream": "stdout",
+   "text": "  return width * height + rest.length;"
+  },
+  {
+   "stream": "stdout",
+   "text": "}"
+  },
+  {
+   "stream": "stdout",
+   "text": "(s) => s * s 12"
+  },
+  {
+   "stream": "stdout",
+   "text": "circle(r) {"
+  },
+  {
+   "stream": "stdout",
+   "text": "    return 3 * r * r;"
+  },
+  {
+   "stream": "stdout",
+   "text": "  }"
+  },
+  {
+   "stream": "stdout",
+   "text": "get unit() {"
+  },
+  {
+   "stream": "stdout",
+   "text": "    return 1;"
+  },
+  {
+   "stream": "stdout",
+   "text": "  }"
+  },
+  {
+   "stream": "stdout",
+   "text": "make(size) {"
+  },
+  {
+   "stream": "stdout",
+   "text": "    return new Box(size);"
+  },
+  {
+   "stream": "stdout",
+   "text": "  }"
+  },
+  {
+   "stream": "stdout",
+   "text": "class Box {"
+  },
+  {
+   "stream": "stdout",
+   "text": "1 1 1 area square circle make"
+  },
+  {
+   "stream": "stdout",
+   "text": "3 0 true"
+  },
+  {
+   "stream": "stdout",
+   "text": "function max() { [native code] } function function parseInt() { [native code] }"
+  },
+  {
+   "stream": "stdout",
+   "text": "2,3,4 named"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:function area(width, height = 1, ...rest) {\n  return width * height + rest.length;\n}"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:(s) => s * s",
+    "num:12"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:circle(r) {\n    return 3 * r * r;\n  }"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:get unit() {\n    return 1;\n  }"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:make(size) {\n    return new Box(size);\n  }"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:class Box {"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:1",
+    "num:1",
+    "num:1",
+    "str:area",
+    "str:square",
+    "str:circle",
+    "str:make"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:3",
+    "num:0",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:function max() { [native code] }",
+    "str:function",
+    "str:function parseInt() { [native code] }"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:2,3,4",
+    "str:named"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  5,
+  6,
+  16,
+  19,
+  20,
+  24,
+  26,
+  27,
+  28,
+  29,
+  30,
+  31,
+  32,
+  33,
+  34,
+  35
+ ],
+ "statementRuns": 17,
+ "functionCalls": 7,
+ "finalGlobals": {
+  "area": "fn:area",
+  "square": "fn:square",
+  "shapes": {
+   "object": "",
+   "props": {
+    "circle": "fn:circle",
+    "unit": "<getter>"
+   }
+  },
+  "Box": "fn:Box",
+  "count": "fn:count"
+ },
+ "sourceSha256": "57099b75179fbf58b16d7f21d3881d2b05417b64f5473691870c39a114ca3d33"
+}

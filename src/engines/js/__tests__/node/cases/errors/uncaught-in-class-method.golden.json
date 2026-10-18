@@ -1,0 +1,109 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "removed 2 apple"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ [ 'apple', 3 ], [ 'pear', 2 ] ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "removed 1 apple"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:removed",
+    "num:2",
+    "str:apple"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      {
+       "array": [
+        "str:apple",
+        "num:3"
+       ],
+       "len": 2
+      },
+      {
+       "array": [
+        "str:pear",
+        "num:2"
+       ],
+       "len": 2
+      }
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:removed",
+    "num:1",
+    "str:apple"
+   ]
+  }
+ ],
+ "uncaught": [
+  {
+   "name": "RangeError",
+   "message": "only 2 pear left, tried to remove 3",
+   "where": "script",
+   "consoleLines": 3
+  }
+ ],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  4,
+  7,
+  8,
+  11,
+  12,
+  13,
+  15,
+  18,
+  19,
+  20,
+  25,
+  26,
+  27,
+  28,
+  29
+ ],
+ "statementRuns": 27,
+ "functionCalls": 8,
+ "finalGlobals": {
+  "Inventory": "fn:Inventory",
+  "inv": {
+   "object": "Inventory",
+   "props": {
+    "stock": {
+     "map": [
+      [
+       "str:apple",
+       "num:2"
+      ],
+      [
+       "str:pear",
+       "num:2"
+      ]
+     ]
+    }
+   }
+  }
+ },
+ "sourceSha256": "32d8ce664a50e156de5a1d65d5bc1947a09eb6a960415311e9533cefa6fa1ab5"
+}

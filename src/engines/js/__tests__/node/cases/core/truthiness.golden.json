@@ -1,0 +1,182 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "truthy: ' ' '0' 'false' [] {} [0] -1 Infinity function"
+  },
+  {
+   "stream": "stdout",
+   "text": "falsy: 0 -0 0n '' null undefined NaN"
+  },
+  {
+   "stream": "stdout",
+   "text": "true true false true false"
+  },
+  {
+   "stream": "stdout",
+   "text": "anonymous none 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "[] == false: true but [] is truthy: true"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:truthy:",
+    "str:' ' '0' 'false' [] {} [0] -1 Infinity function"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:falsy:",
+    "str:0 -0 0n '' null undefined NaN"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:true",
+    "boolean:false",
+    "boolean:true",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:anonymous",
+    "str:none",
+    "num:0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:[] == false:",
+    "boolean:true",
+    "str:but [] is truthy:",
+    "boolean:true"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  10,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23
+ ],
+ "statementRuns": 48,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "values": {
+   "array": [
+    "num:0",
+    "num:-0",
+    "bigint:0",
+    "str:",
+    "str: ",
+    "str:0",
+    "str:false",
+    "null",
+    "undefined",
+    "num:NaN",
+    {
+     "array": [],
+     "len": 0
+    },
+    {
+     "object": "",
+     "props": {}
+    },
+    {
+     "array": [
+      "num:0"
+     ],
+     "len": 1
+    },
+    "num:-1",
+    "num:Infinity",
+    "fn:"
+   ],
+   "len": 16
+  },
+  "labels": {
+   "array": [
+    "str:0",
+    "str:-0",
+    "str:0n",
+    "str:''",
+    "str:' '",
+    "str:'0'",
+    "str:'false'",
+    "str:null",
+    "str:undefined",
+    "str:NaN",
+    "str:[]",
+    "str:{}",
+    "str:[0]",
+    "str:-1",
+    "str:Infinity",
+    "str:function"
+   ],
+   "len": 16
+  },
+  "truthy": {
+   "array": [
+    "str:' '",
+    "str:'0'",
+    "str:'false'",
+    "str:[]",
+    "str:{}",
+    "str:[0]",
+    "str:-1",
+    "str:Infinity",
+    "str:function"
+   ],
+   "len": 9
+  },
+  "falsy": {
+   "array": [
+    "str:0",
+    "str:-0",
+    "str:0n",
+    "str:''",
+    "str:null",
+    "str:undefined",
+    "str:NaN"
+   ],
+   "len": 7
+  },
+  "name": "str:",
+  "display": "str:anonymous",
+  "count": "num:0",
+  "shown": "str:none",
+  "kept": "num:0",
+  "emptyArrayEqualsFalse": "boolean:true"
+ },
+ "sourceSha256": "b920c60c804bdcd9198c3483e5322499b4922b7db2fa35c941a985f2cd03be83"
+}

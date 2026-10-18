@@ -1,0 +1,183 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "2 x T-shirt @ $15.99 = $31.98"
+  },
+  {
+   "stream": "stdout",
+   "text": "4 x Socks @ $4.50 = $18.00"
+  },
+  {
+   "stream": "stdout",
+   "text": "1 x Hat @ $12.00 = $12.00"
+  },
+  {
+   "stream": "stdout",
+   "text": "Subtotal: $61.98"
+  },
+  {
+   "stream": "stdout",
+   "text": "Discount: -$6.20"
+  },
+  {
+   "stream": "stdout",
+   "text": "Tax:      $4.46"
+  },
+  {
+   "stream": "stdout",
+   "text": "Total:    $60.24"
+  },
+  {
+   "stream": "stdout",
+   "text": "Items in cart: 7"
+  },
+  {
+   "stream": "stdout",
+   "text": "FIVEOFF would save 5 and BOGUS 0"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:2 x T-shirt @ $15.99 = $31.98"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:4 x Socks @ $4.50 = $18.00"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:1 x Hat @ $12.00 = $12.00"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Subtotal: $61.98"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Discount: -$6.20"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Tax:      $4.46"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Total:    $60.24"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Items in cart:",
+    "num:7"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:FIVEOFF would save",
+    "num:5",
+    "str:and BOGUS",
+    "num:0"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  6,
+  7,
+  8,
+  10,
+  15,
+  16,
+  17,
+  22,
+  26,
+  28,
+  30,
+  32,
+  36,
+  37,
+  38,
+  39,
+  40,
+  41,
+  43,
+  44,
+  46,
+  47,
+  48,
+  49,
+  50,
+  51,
+  52,
+  53,
+  54,
+  55,
+  56
+ ],
+ "statementRuns": 48,
+ "functionCalls": 28,
+ "finalGlobals": {
+  "cart": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:T-shirt",
+      "price": "num:15.99",
+      "qty": "num:2"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Socks",
+      "price": "num:4.5",
+      "qty": "num:4"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Hat",
+      "price": "num:12",
+      "qty": "num:1"
+     }
+    }
+   ],
+   "len": 3
+  },
+  "TAX_RATE": "num:0.08",
+  "addItem": "fn:addItem",
+  "removeItem": "fn:removeItem",
+  "subtotal": "fn:subtotal",
+  "discountFor": "fn:discountFor",
+  "sub": "num:61.980000000000004",
+  "discount": "num:6.198",
+  "tax": "num:4.462560000000001",
+  "total": "num:60.24456000000001",
+  "itemCount": "num:7"
+ },
+ "sourceSha256": "6626a7a3b2e74999b20da918678f0443b44b6b309d29286c32eec5a2b22ca49e"
+}

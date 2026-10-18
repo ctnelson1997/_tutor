@@ -1,0 +1,317 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "root"
+  },
+  {
+   "stream": "stdout",
+   "text": "  visit: 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "  a"
+  },
+  {
+   "stream": "stdout",
+   "text": "    visit: 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "    a1"
+  },
+  {
+   "stream": "stdout",
+   "text": "      visit: 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "  b"
+  },
+  {
+   "stream": "stdout",
+   "text": "    visit: 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "  unlabeled group"
+  },
+  {
+   "stream": "stdout",
+   "text": "  {"
+  },
+  {
+   "stream": "stdout",
+   "text": "    multi: 'line object that is long enough',"
+  },
+  {
+   "stream": "stdout",
+   "text": "    to: [ 'wrap', 'across', 'several', 'lines', 'here' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "  }"
+  },
+  {
+   "stream": "stdout",
+   "text": "  collapsed"
+  },
+  {
+   "stream": "stdout",
+   "text": "    inside collapsed"
+  },
+  {
+   "stream": "stdout",
+   "text": "    "
+  },
+  {
+   "stream": "stdout",
+   "text": "default: 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "default: 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "visit: 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "visit: 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "back at top level"
+  }
+ ],
+ "calls": [
+  {
+   "method": "group",
+   "args": [
+    "str:root"
+   ]
+  },
+  {
+   "method": "count",
+   "args": [
+    "str:visit"
+   ]
+  },
+  {
+   "method": "group",
+   "args": [
+    "str:a"
+   ]
+  },
+  {
+   "method": "count",
+   "args": [
+    "str:visit"
+   ]
+  },
+  {
+   "method": "group",
+   "args": [
+    "str:a1"
+   ]
+  },
+  {
+   "method": "count",
+   "args": [
+    "str:visit"
+   ]
+  },
+  {
+   "method": "groupEnd",
+   "args": []
+  },
+  {
+   "method": "groupEnd",
+   "args": []
+  },
+  {
+   "method": "group",
+   "args": [
+    "str:b"
+   ]
+  },
+  {
+   "method": "count",
+   "args": [
+    "str:visit"
+   ]
+  },
+  {
+   "method": "groupEnd",
+   "args": []
+  },
+  {
+   "method": "groupEnd",
+   "args": []
+  },
+  {
+   "method": "group",
+   "args": []
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:unlabeled group"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "multi": "str:line object that is long enough",
+      "to": {
+       "array": [
+        "str:wrap",
+        "str:across",
+        "str:several",
+        "str:lines",
+        "str:here"
+       ],
+       "len": 5
+      }
+     }
+    }
+   ]
+  },
+  {
+   "method": "groupCollapsed",
+   "args": [
+    "str:collapsed"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:inside collapsed"
+   ]
+  },
+  {
+   "method": "log",
+   "args": []
+  },
+  {
+   "method": "groupEnd",
+   "args": []
+  },
+  {
+   "method": "groupEnd",
+   "args": []
+  },
+  {
+   "method": "groupEnd",
+   "args": []
+  },
+  {
+   "method": "count",
+   "args": []
+  },
+  {
+   "method": "count",
+   "args": []
+  },
+  {
+   "method": "count",
+   "args": [
+    "str:visit"
+   ]
+  },
+  {
+   "method": "countReset",
+   "args": [
+    "str:visit"
+   ]
+  },
+  {
+   "method": "count",
+   "args": [
+    "str:visit"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:back at top level"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  4,
+  5,
+  6,
+  7,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  24
+ ],
+ "statementRuns": 36,
+ "functionCalls": 4,
+ "finalGlobals": {
+  "tree": {
+   "object": "",
+   "props": {
+    "name": "str:root",
+    "children": {
+     "array": [
+      {
+       "object": "",
+       "props": {
+        "name": "str:a",
+        "children": {
+         "array": [
+          {
+           "object": "",
+           "props": {
+            "name": "str:a1",
+            "children": "<deep>"
+           }
+          }
+         ],
+         "len": 1
+        }
+       }
+      },
+      {
+       "object": "",
+       "props": {
+        "name": "str:b",
+        "children": {
+         "array": [],
+         "len": 0
+        }
+       }
+      }
+     ],
+     "len": 2
+    }
+   }
+  },
+  "show": "fn:show"
+ },
+ "sourceSha256": "3729110a5aac7333a2992c79bcb0c83cc5df9f0ae1226b41265e6f5e26f0cb8b"
+}

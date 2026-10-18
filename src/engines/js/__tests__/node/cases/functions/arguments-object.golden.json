@@ -1,0 +1,216 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "length: 4 declared: 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "a, b: 1 two arguments[2]: [ 3 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 1, 'two', [ 3 ], { four: 4 } ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "length: 1 declared: 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "a, b: only one undefined arguments[2]: undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'only one' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'changed via arguments', 'changed via param' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "with a default parameter, no aliasing: original"
+  },
+  {
+   "stream": "stdout",
+   "text": "outer arg seen from arrow"
+  },
+  {
+   "stream": "stdout",
+   "text": "5 0"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:length:",
+    "num:4",
+    "str:declared:",
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:a, b:",
+    "num:1",
+    "str:two",
+    "str:arguments[2]:",
+    {
+     "array": [
+      "num:3"
+     ],
+     "len": 1
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:1",
+      "str:two",
+      {
+       "array": [
+        "num:3"
+       ],
+       "len": 1
+      },
+      {
+       "object": "",
+       "props": {
+        "four": "num:4"
+       }
+      }
+     ],
+     "len": 4
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:length:",
+    "num:1",
+    "str:declared:",
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:a, b:",
+    "str:only one",
+    "undefined",
+    "str:arguments[2]:",
+    "undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:only one"
+     ],
+     "len": 1
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:changed via arguments",
+      "str:changed via param"
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:with a default parameter, no aliasing:",
+    "str:original"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:outer arg seen from arrow"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:5",
+    "num:0"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  5,
+  7,
+  8,
+  9,
+  11,
+  12,
+  13,
+  14,
+  16,
+  18,
+  19,
+  21,
+  23,
+  24,
+  26,
+  28,
+  29,
+  30,
+  31,
+  33,
+  35,
+  36
+ ],
+ "statementRuns": 31,
+ "functionCalls": 8,
+ "finalGlobals": {
+  "describeArgs": "fn:describeArgs",
+  "all": {
+   "array": [
+    "num:1",
+    "str:two",
+    {
+     "array": [
+      "num:3"
+     ],
+     "len": 1
+    },
+    {
+     "object": "",
+     "props": {
+      "four": "num:4"
+     }
+    }
+   ],
+   "len": 4
+  },
+  "aliasing": "fn:aliasing",
+  "noAlias": "fn:noAlias",
+  "outer": "fn:outer",
+  "average": "fn:average",
+  "avg": "num:5"
+ },
+ "sourceSha256": "51a20f561f75d43a0c66798900203d3022723acea1ec40f509d649ac496df74e"
+}

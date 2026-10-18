@@ -1,0 +1,141 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "before: undefined undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "square(4) before its declaration: 16"
+  },
+  {
+   "stream": "stdout",
+   "text": "after: 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "typeof later before assignment: undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "typeof later after: function later"
+  },
+  {
+   "stream": "stdout",
+   "text": "inner x before its var: undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "inner outer"
+  },
+  {
+   "stream": "stdout",
+   "text": "redeclared count: 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "total: 16"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:before:",
+    "str:undefined",
+    "undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:square(4) before its declaration:",
+    "num:16"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:after:",
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:typeof later before assignment:",
+    "str:undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:typeof later after:",
+    "str:function",
+    "str:later"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:inner x before its var:",
+    "undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:inner",
+    "str:outer"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:redeclared count:",
+    "num:4"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:total:",
+    "num:16"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  8,
+  11,
+  12,
+  13,
+  16,
+  17,
+  18,
+  20,
+  21,
+  23,
+  24,
+  25,
+  26
+ ],
+ "statementRuns": 19,
+ "functionCalls": 4,
+ "finalGlobals": {
+  "count": "num:4",
+  "square": "fn:square",
+  "later": "fn:later",
+  "shadow": "fn:shadow",
+  "x": "str:outer",
+  "total": "num:16"
+ },
+ "sourceSha256": "ad549e68ffe69aef6e8b9c791a4512f7b7421953ebf2c65e2ecbe0ba191a5a6d"
+}

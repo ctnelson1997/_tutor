@@ -1,0 +1,151 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "RequiredError name name is required"
+  },
+  {
+   "stream": "stdout",
+   "text": "true true true"
+  },
+  {
+   "stream": "stdout",
+   "text": "RequiredError: name is required"
+  },
+  {
+   "stream": "stdout",
+   "text": "ValidationError age age must be positive"
+  },
+  {
+   "stream": "stdout",
+   "text": "false true true"
+  },
+  {
+   "stream": "stdout",
+   "text": "ValidationError: age must be positive"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ true, 'name', 'age' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "email is required [ 'name', 'field' ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:RequiredError",
+    "str:name",
+    "str:name is required"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:true",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:RequiredError: name is required"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:ValidationError",
+    "str:age",
+    "str:age must be positive"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:false",
+    "boolean:true",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:ValidationError: age must be positive"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "boolean:true",
+      "str:name",
+      "str:age"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:email is required",
+    {
+     "array": [
+      "str:name",
+      "str:field"
+     ],
+     "len": 2
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  4,
+  5,
+  6,
+  12,
+  13,
+  18,
+  19,
+  20,
+  23,
+  24,
+  26,
+  28,
+  29,
+  30,
+  31,
+  34,
+  35,
+  36
+ ],
+ "statementRuns": 37,
+ "functionCalls": 8,
+ "finalGlobals": {
+  "ValidationError": "fn:ValidationError",
+  "RequiredError": "fn:RequiredError",
+  "validate": "fn:validate",
+  "results": {
+   "array": [
+    "boolean:true",
+    "str:name",
+    "str:age"
+   ],
+   "len": 3
+  },
+  "lastError": {
+   "error": "RequiredError: email is required"
+  }
+ },
+ "sourceSha256": "fc263ef4704c2719418eff8b05fa0d0ba7917c975ef9267ccb01409e67211c58"
+}

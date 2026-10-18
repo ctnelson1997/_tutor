@@ -1,0 +1,121 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "1: before new Promise"
+  },
+  {
+   "stream": "stdout",
+   "text": "2: executor before resolve"
+  },
+  {
+   "stream": "stdout",
+   "text": "3: executor after resolve (still runs)"
+  },
+  {
+   "stream": "stdout",
+   "text": "4: after new Promise"
+  },
+  {
+   "stream": "stdout",
+   "text": "5: end of script"
+  },
+  {
+   "stream": "stdout",
+   "text": "6: then got first"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'executor start', 'executor end', 'then first' ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:1: before new Promise"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:2: executor before resolve"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:3: executor after resolve (still runs)"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:4: after new Promise"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:5: end of script"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:6: then got",
+    "str:first"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:executor start",
+      "str:executor end",
+      "str:then first"
+     ],
+     "len": 3
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  12,
+  13,
+  14,
+  15,
+  16,
+  18
+ ],
+ "statementRuns": 15,
+ "functionCalls": 2,
+ "finalGlobals": {
+  "order": {
+   "array": [
+    "str:executor start",
+    "str:executor end",
+    "str:then first"
+   ],
+   "len": 3
+  },
+  "p": {
+   "promise": true
+  }
+ },
+ "sourceSha256": "2cd01e3d4eaeb260256c2be1d94f0f13cf7883546ebb409e21833a7f69a8723d"
+}

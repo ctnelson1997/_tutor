@@ -1,0 +1,398 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Distinct letters: 15"
+  },
+  {
+   "stream": "stdout",
+   "text": "s ######## 8"
+  },
+  {
+   "stream": "stdout",
+   "text": "i ##### 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "p #### 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "e ### 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "n ### 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "Has 'z'? false count of 'r': 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "m: mississippi, many"
+  },
+  {
+   "stream": "stdout",
+   "text": "r: river, runs"
+  },
+  {
+   "stream": "stdout",
+   "text": "p: past"
+  },
+  {
+   "stream": "stdout",
+   "text": "s: sleepy"
+  },
+  {
+   "stream": "stdout",
+   "text": "t: towns"
+  },
+  {
+   "stream": "stdout",
+   "text": "Map(4) { 'a' => 2, 'e' => 3, 'i' => 5, 'u' => 1 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ a: 2, e: 3, i: 5, u: 1 }"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Distinct letters:",
+    "num:15"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:s ######## 8"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:i ##### 5"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:p #### 4"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:e ### 3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:n ### 3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Has 'z'?",
+    "boolean:false",
+    "str:count of 'r':",
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:m: mississippi, many"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:r: river, runs"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:p: past"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:s: sleepy"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:t: towns"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "map": [
+      [
+       "str:a",
+       "num:2"
+      ],
+      [
+       "str:e",
+       "num:3"
+      ],
+      [
+       "str:i",
+       "num:5"
+      ],
+      [
+       "str:u",
+       "num:1"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "a": "num:2",
+      "e": "num:3",
+      "i": "num:5",
+      "u": "num:1"
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  8,
+  10,
+  13,
+  14,
+  16,
+  18,
+  19,
+  20,
+  21,
+  22,
+  24,
+  26,
+  27,
+  30,
+  31,
+  32,
+  34,
+  35,
+  36,
+  37
+ ],
+ "statementRuns": 147,
+ "functionCalls": 45,
+ "finalGlobals": {
+  "text": "str:Mississippi river runs past many sleepy towns",
+  "freq": {
+   "map": [
+    [
+     "str:m",
+     "num:2"
+    ],
+    [
+     "str:i",
+     "num:5"
+    ],
+    [
+     "str:s",
+     "num:8"
+    ],
+    [
+     "str:p",
+     "num:4"
+    ],
+    [
+     "str:r",
+     "num:3"
+    ],
+    [
+     "str:v",
+     "num:1"
+    ],
+    [
+     "str:e",
+     "num:3"
+    ],
+    [
+     "str:u",
+     "num:1"
+    ],
+    [
+     "str:n",
+     "num:3"
+    ],
+    [
+     "str:a",
+     "num:2"
+    ],
+    [
+     "str:t",
+     "num:2"
+    ],
+    [
+     "str:y",
+     "num:2"
+    ],
+    [
+     "str:l",
+     "num:1"
+    ],
+    [
+     "str:o",
+     "num:1"
+    ],
+    [
+     "str:w",
+     "num:1"
+    ]
+   ]
+  },
+  "top": {
+   "array": [
+    {
+     "array": [
+      "str:s",
+      "num:8"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "str:i",
+      "num:5"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "str:p",
+      "num:4"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "str:e",
+      "num:3"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "str:n",
+      "num:3"
+     ],
+     "len": 2
+    }
+   ],
+   "len": 5
+  },
+  "wordsByLetter": {
+   "map": [
+    [
+     "str:m",
+     {
+      "array": [
+       "str:mississippi",
+       "str:many"
+      ],
+      "len": 2
+     }
+    ],
+    [
+     "str:r",
+     {
+      "array": [
+       "str:river",
+       "str:runs"
+      ],
+      "len": 2
+     }
+    ],
+    [
+     "str:p",
+     {
+      "array": [
+       "str:past"
+      ],
+      "len": 1
+     }
+    ],
+    [
+     "str:s",
+     {
+      "array": [
+       "str:sleepy"
+      ],
+      "len": 1
+     }
+    ],
+    [
+     "str:t",
+     {
+      "array": [
+       "str:towns"
+      ],
+      "len": 1
+     }
+    ]
+   ]
+  },
+  "vowels": {
+   "map": [
+    [
+     "str:a",
+     "num:2"
+    ],
+    [
+     "str:e",
+     "num:3"
+    ],
+    [
+     "str:i",
+     "num:5"
+    ],
+    [
+     "str:u",
+     "num:1"
+    ]
+   ]
+  },
+  "asObject": {
+   "object": "",
+   "props": {
+    "a": "num:2",
+    "e": "num:3",
+    "i": "num:5",
+    "u": "num:1"
+   }
+  }
+ },
+ "sourceSha256": "8aec85951990ea3bd57f80ee31c8c2c8b8092267f42c1395f480bd20343da5e0"
+}

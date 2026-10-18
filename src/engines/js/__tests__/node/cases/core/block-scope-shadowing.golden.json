@@ -1,0 +1,187 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "block 1 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "block 2 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "block 2 changed"
+  },
+  {
+   "stream": "stdout",
+   "text": "block 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "global 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "inner block: inner 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "param"
+  },
+  {
+   "stream": "stdout",
+   "text": "iteration 1 block total 10 running 10"
+  },
+  {
+   "stream": "stdout",
+   "text": "iteration 2 block total 20 running 30"
+  },
+  {
+   "stream": "stdout",
+   "text": "iteration 3 block total 30 running 60"
+  },
+  {
+   "stream": "stdout",
+   "text": "outer total untouched: 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "if block leaked via var global"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:block 1",
+    "num:1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:block 2",
+    "num:1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:block 2 changed"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:block 1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:global",
+    "num:0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:inner block:",
+    "str:inner 0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:param"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:iteration",
+    "num:1",
+    "str:block total",
+    "num:10",
+    "str:running",
+    "num:10"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:iteration",
+    "num:2",
+    "str:block total",
+    "num:20",
+    "str:running",
+    "num:30"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:iteration",
+    "num:3",
+    "str:block total",
+    "num:30",
+    "str:running",
+    "num:60"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:outer total untouched:",
+    "num:0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:if block leaked via var",
+    "str:global"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  5,
+  6,
+  7,
+  9,
+  10,
+  11,
+  12,
+  14,
+  16,
+  20,
+  21,
+  23,
+  25,
+  27,
+  28,
+  29,
+  30,
+  31,
+  33,
+  35,
+  36,
+  37,
+  39
+ ],
+ "statementRuns": 31,
+ "functionCalls": 1,
+ "finalGlobals": {
+  "name": "str:global",
+  "level": "num:0",
+  "shadowParam": "fn:shadowParam",
+  "total": "num:0"
+ },
+ "sourceSha256": "015f142571833a36cf190f429025aa70643a9a43177261a6530a87b559ef64eb"
+}

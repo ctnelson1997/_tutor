@@ -1,0 +1,146 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "5 -> 10 -> 20 -> 30"
+  },
+  {
+   "stream": "stdout",
+   "text": "indexOf(20): 2 indexOf(99): -1"
+  },
+  {
+   "stream": "stdout",
+   "text": "removed 20? true removed 99? false"
+  },
+  {
+   "stream": "stdout",
+   "text": "30 -> 10 -> 5 length 3"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:5 -> 10 -> 20 -> 30"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:indexOf(20):",
+    "num:2",
+    "str:indexOf(99):",
+    "num:-1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:removed 20?",
+    "boolean:true",
+    "str:removed 99?",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:30 -> 10 -> 5",
+    "str:length",
+    "num:3"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  4,
+  5,
+  11,
+  12,
+  16,
+  17,
+  18,
+  20,
+  21,
+  22,
+  24,
+  26,
+  30,
+  31,
+  32,
+  33,
+  37,
+  38,
+  43,
+  44,
+  45,
+  47,
+  48,
+  49,
+  50,
+  54,
+  55,
+  56,
+  57,
+  59,
+  63,
+  64,
+  65,
+  66,
+  67,
+  68,
+  69,
+  71,
+  75,
+  76,
+  77,
+  78,
+  79,
+  81,
+  85,
+  86,
+  87,
+  88,
+  89,
+  90,
+  91,
+  92,
+  93,
+  94
+ ],
+ "statementRuns": 115,
+ "functionCalls": 16,
+ "finalGlobals": {
+  "Node": "fn:Node",
+  "LinkedList": "fn:LinkedList",
+  "list": {
+   "object": "LinkedList",
+   "props": {
+    "head": {
+     "object": "Node",
+     "props": {
+      "value": "num:30",
+      "next": {
+       "object": "Node",
+       "props": {
+        "value": "num:10",
+        "next": {
+         "object": "Node",
+         "props": {
+          "value": "num:5",
+          "next": "null"
+         }
+        }
+       }
+      }
+     }
+    },
+    "length": "num:3"
+   }
+  }
+ },
+ "sourceSha256": "2f0f18c5a1828636905863c6b68b9898368b4a9af6441e24a85113e9196e11ab"
+}

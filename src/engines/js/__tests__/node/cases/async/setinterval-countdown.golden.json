@@ -1,0 +1,110 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "countdown started"
+  },
+  {
+   "stream": "stdout",
+   "text": "T-minus 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "check at 75ms, remaining: 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "T-minus 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "T-minus 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "liftoff after 3 ticks"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:countdown started"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:T-minus",
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:check at 75ms, remaining:",
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:T-minus",
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:T-minus",
+    "num:1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:liftoff after",
+    "num:3",
+    "str:ticks"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  13,
+  14,
+  15
+ ],
+ "statementRuns": 19,
+ "functionCalls": 4,
+ "finalGlobals": {
+  "countdown": {
+   "object": "",
+   "props": {
+    "remaining": "num:0",
+    "ticks": {
+     "array": [
+      "num:3",
+      "num:2",
+      "num:1"
+     ],
+     "len": 3
+    }
+   }
+  },
+  "timerId": "num:1",
+  "tick": "fn:tick"
+ },
+ "sourceSha256": "d5feb5f6fe1f22305df626d91d4e810ddfd81b80483599afc71b924d5c0349bf"
+}

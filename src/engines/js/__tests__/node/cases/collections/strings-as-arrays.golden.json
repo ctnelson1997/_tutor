@@ -1,0 +1,278 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "h o 5 undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "hello"
+  },
+  {
+   "stream": "stdout",
+   "text": "Jello"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'j', 'e', 'l', 'l', 'o' ] jello"
+  },
+  {
+   "stream": "stdout",
+   "text": "olleh"
+  },
+  {
+   "stream": "stdout",
+   "text": "5 5 4 [ 'h', 'i', '👋', '!' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "false true"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'e', 'u', 'a', 'i', 'o' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'A', 'B', 'C' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "3"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 2, 3 ] [ 'a', 'b' ] [ 'abc' ] []"
+  },
+  {
+   "stream": "stdout",
+   "text": "aaabnn [ '0', '1', '2' ] string hello"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:h",
+    "str:o",
+    "num:5",
+    "undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:hello"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Jello"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:j",
+      "str:e",
+      "str:l",
+      "str:l",
+      "str:o"
+     ],
+     "len": 5
+    },
+    "str:jello"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:olleh"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:5",
+    "num:5",
+    "num:4",
+    {
+     "array": [
+      "str:h",
+      "str:i",
+      "str:👋",
+      "str:!"
+     ],
+     "len": 4
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:false",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:e",
+      "str:u",
+      "str:a",
+      "str:i",
+      "str:o"
+     ],
+     "len": 5
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:A",
+      "str:B",
+      "str:C"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:2",
+      "num:3"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "str:a",
+      "str:b"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "str:abc"
+     ],
+     "len": 1
+    },
+    {
+     "array": [],
+     "len": 0
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:aaabnn",
+    {
+     "array": [
+      "str:0",
+      "str:1",
+      "str:2"
+     ],
+     "len": 3
+    },
+    "str:string",
+    "str:hello"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  9,
+  10,
+  11,
+  12,
+  14,
+  15,
+  16,
+  18,
+  19,
+  20,
+  21,
+  23,
+  24,
+  25,
+  27,
+  28,
+  29,
+  30,
+  32,
+  33,
+  34
+ ],
+ "statementRuns": 41,
+ "functionCalls": 12,
+ "finalGlobals": {
+  "word": "str:hello",
+  "fixed": "str:Jello",
+  "chars": {
+   "array": [
+    "str:j",
+    "str:e",
+    "str:l",
+    "str:l",
+    "str:o"
+   ],
+   "len": 5
+  },
+  "emoji": "str:hi👋!",
+  "vowels": {
+   "array": [
+    "str:e",
+    "str:u",
+    "str:a",
+    "str:i",
+    "str:o"
+   ],
+   "len": 5
+  },
+  "upper": {
+   "array": [
+    "str:A",
+    "str:B",
+    "str:C"
+   ],
+   "len": 3
+  },
+  "count": "num:3",
+  "indexes": {
+   "array": [
+    "num:2",
+    "num:3"
+   ],
+   "len": 2
+  },
+  "sortedLetters": "str:aaabnn"
+ },
+ "sourceSha256": "75748c482c4f9873519b580f48303d673c63c460910864fb2528158ece175f7f"
+}

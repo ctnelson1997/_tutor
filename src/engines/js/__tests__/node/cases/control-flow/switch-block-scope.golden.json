@@ -1,0 +1,150 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[ 12.57, 12, 25 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "unknown shape hexagon"
+  },
+  {
+   "stream": "stdout",
+   "text": "start -> running"
+  },
+  {
+   "stream": "stdout",
+   "text": "pause -> paused"
+  },
+  {
+   "stream": "stdout",
+   "text": "start -> running"
+  },
+  {
+   "stream": "stdout",
+   "text": "stop -> done"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:12.57",
+      "num:12",
+      "num:25"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:unknown shape hexagon"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:start",
+    "str:->",
+    "str:running"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:pause",
+    "str:->",
+    "str:paused"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:start",
+    "str:->",
+    "str:running"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:stop",
+    "str:->",
+    "str:done"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  5,
+  6,
+  9,
+  10,
+  13,
+  14,
+  17,
+  20,
+  21,
+  22,
+  24,
+  26,
+  28,
+  29,
+  30,
+  31,
+  32,
+  33,
+  34,
+  36
+ ],
+ "statementRuns": 34,
+ "functionCalls": 4,
+ "finalGlobals": {
+  "area": "fn:area",
+  "shapes": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "kind": "str:circle",
+      "r": "num:2"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "kind": "str:rect",
+      "w": "num:3",
+      "h": "num:4"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "kind": "str:square",
+      "side": "num:5"
+     }
+    }
+   ],
+   "len": 3
+  },
+  "areas": {
+   "array": [
+    "num:12.57",
+    "num:12",
+    "num:25"
+   ],
+   "len": 3
+  },
+  "state": "str:done"
+ },
+ "sourceSha256": "630498bdaea90d0b5c2b07e2fd672a286d4a2dea64c6d664808ca31dff2c06f1"
+}

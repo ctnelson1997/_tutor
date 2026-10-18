@@ -1,0 +1,127 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "10 15"
+  },
+  {
+   "stream": "stdout",
+   "text": "21 22"
+  },
+  {
+   "stream": "stdout",
+   "text": "initialized first initialized first"
+  },
+  {
+   "stream": "stdout",
+   "text": "computed 16 cached 16 computed 25"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 14, 21, 8 ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:10",
+    "num:15"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:21",
+    "num:22"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:initialized first",
+    "str:initialized first"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:computed 16",
+    "str:cached 16",
+    "str:computed 25"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:14",
+      "num:21",
+      "num:8"
+     ],
+     "len": 3
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  20,
+  23,
+  24,
+  26,
+  27,
+  28,
+  29,
+  30,
+  33,
+  34,
+  35,
+  36
+ ],
+ "statementRuns": 35,
+ "functionCalls": 30,
+ "finalGlobals": {
+  "multiplier": "fn:multiplier",
+  "double": "fn:",
+  "triple": "fn:",
+  "compose": "fn:compose",
+  "pipe": "fn:pipe",
+  "addOne": "fn:addOne",
+  "doubleThenAdd": "fn:",
+  "addThenDouble": "fn:",
+  "once": "fn:once",
+  "init": "fn:",
+  "memoize": "fn:memoize",
+  "slowSquare": "fn:",
+  "transforms": {
+   "array": [
+    "num:14",
+    "num:21",
+    "num:8"
+   ],
+   "len": 3
+  }
+ },
+ "sourceSha256": "d5c1c68e9ff1b9577cdda084369e95a4bd4905eb982c58aaa14dd5422d3b3a02"
+}

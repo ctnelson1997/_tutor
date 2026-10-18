@@ -1,0 +1,247 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "\"apple\" < \"banana\": true"
+  },
+  {
+   "stream": "stdout",
+   "text": "\"Zebra\" < \"apple\": true"
+  },
+  {
+   "stream": "stdout",
+   "text": "\"10\" < \"9\": true"
+  },
+  {
+   "stream": "stdout",
+   "text": "\"abc\" < \"abcd\": true"
+  },
+  {
+   "stream": "stdout",
+   "text": "\"\" < \"a\": true"
+  },
+  {
+   "stream": "stdout",
+   "text": "\"a\" < \"A\": false"
+  },
+  {
+   "stream": "stdout",
+   "text": "false true false false false"
+  },
+  {
+   "stream": "stdout",
+   "text": "true false true 6 32 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 1, 10, 100, 25, 9 ] [ 1, 9, 10, 25, 100 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "pear true false"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:\"apple\" < \"banana\":",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:\"Zebra\" < \"apple\":",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:\"10\" < \"9\":",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:\"abc\" < \"abcd\":",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:\"\" < \"a\":",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:\"a\" < \"A\":",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:false",
+    "boolean:true",
+    "boolean:false",
+    "boolean:false",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:false",
+    "boolean:true",
+    "num:6",
+    "str:32",
+    "num:1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:1",
+      "num:10",
+      "num:100",
+      "num:25",
+      "num:9"
+     ],
+     "len": 5
+    },
+    {
+     "array": [
+      "num:1",
+      "num:9",
+      "num:10",
+      "num:25",
+      "num:100"
+     ],
+     "len": 5
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:pear",
+    "boolean:true",
+    "boolean:false"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  10,
+  11,
+  14,
+  15,
+  17,
+  18,
+  19,
+  20,
+  23,
+  24,
+  25,
+  27,
+  29,
+  30
+ ],
+ "statementRuns": 23,
+ "functionCalls": 8,
+ "finalGlobals": {
+  "pairs": {
+   "array": [
+    {
+     "array": [
+      "str:apple",
+      "str:banana"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "str:Zebra",
+      "str:apple"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "str:10",
+      "str:9"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "str:abc",
+      "str:abcd"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "str:",
+      "str:a"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "str:a",
+      "str:A"
+     ],
+     "len": 2
+    }
+   ],
+   "len": 6
+  },
+  "nums": {
+   "array": [
+    "num:10",
+    "num:9",
+    "num:100",
+    "num:1",
+    "num:25"
+   ],
+   "len": 5
+  },
+  "defaultSorted": {
+   "array": [
+    "num:1",
+    "num:10",
+    "num:100",
+    "num:25",
+    "num:9"
+   ],
+   "len": 5
+  },
+  "numericSorted": {
+   "array": [
+    "num:1",
+    "num:9",
+    "num:10",
+    "num:25",
+    "num:100"
+   ],
+   "len": 5
+  },
+  "maxString": "fn:maxString",
+  "maxWord": "str:pear"
+ },
+ "sourceSha256": "a9cfbd35c458e1a5cb725ca9a975d665e747f120e99cfa7c9bc46b4891314f49"
+}

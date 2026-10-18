@@ -1,0 +1,139 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "finished job0"
+  },
+  {
+   "stream": "stdout",
+   "text": "finished job1"
+  },
+  {
+   "stream": "stdout",
+   "text": "finished job2"
+  },
+  {
+   "stream": "stdout",
+   "text": "all: [ 'job0', 'job1', 'job2' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "tick 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "tick 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "tick 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "liftoff"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:finished",
+    "str:job0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:finished",
+    "str:job1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:finished",
+    "str:job2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:all:",
+    {
+     "array": [
+      "str:job0",
+      "str:job1",
+      "str:job2"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:tick",
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:tick",
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:tick",
+    "num:1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:liftoff"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  6,
+  7,
+  8,
+  9,
+  10,
+  12,
+  15,
+  16,
+  17,
+  18,
+  20,
+  22,
+  23,
+  25,
+  26,
+  27
+ ],
+ "statementRuns": 31,
+ "functionCalls": 13,
+ "finalGlobals": {
+  "delay": "fn:delay",
+  "sequential": "fn:sequential",
+  "countdown": "fn:countdown",
+  "all": {
+   "array": [
+    "str:job0",
+    "str:job1",
+    "str:job2"
+   ],
+   "len": 3
+  }
+ },
+ "sourceSha256": "554003d5e05aa5822a927ce38cbd8e35ac4675504e4d201d67496a1d7d1d000d"
+}

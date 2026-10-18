@@ -1,0 +1,241 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Flat: ["
+  },
+  {
+   "stream": "stdout",
+   "text": "  1, 2, 3, 4, 5,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  6, 7, 8, 9"
+  },
+  {
+   "stream": "stdout",
+   "text": "]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Sum: 45"
+  },
+  {
+   "stream": "stdout",
+   "text": "Depth: 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "Same as flat(Infinity)? true"
+  },
+  {
+   "stream": "stdout",
+   "text": "One level: [1,2,3,4,[5,[6,7]],8,[9]]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Keys in nested object: 9"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Flat:",
+    {
+     "array": [
+      "num:1",
+      "num:2",
+      "num:3",
+      "num:4",
+      "num:5",
+      "num:6",
+      "num:7",
+      "num:8",
+      "num:9"
+     ],
+     "len": 9
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Sum:",
+    "num:45"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Depth:",
+    "num:4"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Same as flat(Infinity)?",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:One level:",
+    "str:[1,2,3,4,[5,[6,7]],8,[9]]"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Keys in nested object:",
+    "num:9"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  5,
+  6,
+  8,
+  11,
+  15,
+  16,
+  17,
+  19,
+  23,
+  24,
+  25,
+  26,
+  29,
+  33,
+  34,
+  35,
+  36,
+  37,
+  40,
+  43,
+  44,
+  45,
+  46,
+  47,
+  48,
+  49,
+  50,
+  52,
+  53
+ ],
+ "statementRuns": 172,
+ "functionCalls": 25,
+ "finalGlobals": {
+  "flatten": "fn:flatten",
+  "deepSum": "fn:deepSum",
+  "depth": "fn:depth",
+  "countKeys": "fn:countKeys",
+  "nested": {
+   "array": [
+    "num:1",
+    {
+     "array": [
+      "num:2",
+      "num:3"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "num:4",
+      {
+       "array": [
+        "num:5",
+        {
+         "array": [
+          "num:6",
+          "num:7"
+         ],
+         "len": 2
+        }
+       ],
+       "len": 2
+      }
+     ],
+     "len": 2
+    },
+    "num:8",
+    {
+     "array": [
+      {
+       "array": [
+        "num:9"
+       ],
+       "len": 1
+      }
+     ],
+     "len": 1
+    }
+   ],
+   "len": 5
+  },
+  "flat": {
+   "array": [
+    "num:1",
+    "num:2",
+    "num:3",
+    "num:4",
+    "num:5",
+    "num:6",
+    "num:7",
+    "num:8",
+    "num:9"
+   ],
+   "len": 9
+  },
+  "builtIn": {
+   "array": [
+    "num:1",
+    "num:2",
+    "num:3",
+    "num:4",
+    "num:5",
+    "num:6",
+    "num:7",
+    "num:8",
+    "num:9"
+   ],
+   "len": 9
+  },
+  "config": {
+   "object": "",
+   "props": {
+    "a": "num:1",
+    "b": {
+     "object": "",
+     "props": {
+      "c": "num:2",
+      "d": {
+       "object": "",
+       "props": {
+        "e": "num:3",
+        "f": "null"
+       }
+      }
+     }
+    },
+    "g": {
+     "array": [
+      "num:10",
+      "num:20"
+     ],
+     "len": 2
+    }
+   }
+  }
+ },
+ "sourceSha256": "c98cde2a2d6ecf2cb695b8f95342f9aa2b57400e651a8b3449cbe0e326e2bd7f"
+}

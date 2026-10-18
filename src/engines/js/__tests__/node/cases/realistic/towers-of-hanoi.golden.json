@@ -1,0 +1,191 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Move disk 1 from A to C"
+  },
+  {
+   "stream": "stdout",
+   "text": "Move disk 2 from A to B"
+  },
+  {
+   "stream": "stdout",
+   "text": "Move disk 1 from C to B"
+  },
+  {
+   "stream": "stdout",
+   "text": "Move disk 3 from A to C"
+  },
+  {
+   "stream": "stdout",
+   "text": "Move disk 1 from B to A"
+  },
+  {
+   "stream": "stdout",
+   "text": "Move disk 2 from B to C"
+  },
+  {
+   "stream": "stdout",
+   "text": "Move disk 1 from A to C"
+  },
+  {
+   "stream": "stdout",
+   "text": "Total moves: 7"
+  },
+  {
+   "stream": "stdout",
+   "text": "Expected: 7"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ A: [], B: [], C: [ 3, 2, 1 ] }"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Move disk 1 from A to C"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Move disk 2 from A to B"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Move disk 1 from C to B"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Move disk 3 from A to C"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Move disk 1 from B to A"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Move disk 2 from B to C"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Move disk 1 from A to C"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Total moves:",
+    "num:7"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Expected:",
+    "num:7"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "A": {
+       "array": [],
+       "len": 0
+      },
+      "B": {
+       "array": [],
+       "len": 0
+      },
+      "C": {
+       "array": [
+        "num:3",
+        "num:2",
+        "num:1"
+       ],
+       "len": 3
+      }
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  6,
+  7,
+  8,
+  11,
+  12,
+  13,
+  17,
+  18,
+  20,
+  21,
+  22,
+  25,
+  26,
+  27,
+  28
+ ],
+ "statementRuns": 92,
+ "functionCalls": 22,
+ "finalGlobals": {
+  "pegs": {
+   "object": "",
+   "props": {
+    "A": {
+     "array": [],
+     "len": 0
+    },
+    "B": {
+     "array": [],
+     "len": 0
+    },
+    "C": {
+     "array": [
+      "num:3",
+      "num:2",
+      "num:1"
+     ],
+     "len": 3
+    }
+   }
+  },
+  "moves": {
+   "array": [
+    "str:1: A->C",
+    "str:2: A->B",
+    "str:1: C->B",
+    "str:3: A->C",
+    "str:1: B->A",
+    "str:2: B->C",
+    "str:1: A->C"
+   ],
+   "len": 7
+  },
+  "moveDisk": "fn:moveDisk",
+  "hanoi": "fn:hanoi"
+ },
+ "sourceSha256": "362734a4f06dddbfa2946f760236e0c96dd731841ca8e9031db2085faf4da2db"
+}

@@ -1,0 +1,228 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Tweety is a bird with 2 legs"
+  },
+  {
+   "stream": "stdout",
+   "text": "Rex is a animal with 4 legs"
+  },
+  {
+   "stream": "stdout",
+   "text": "false true [ 'name' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'name', 'type', 'legs', 'tricks', 'describe' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'sing', 'fetch' ] true"
+  },
+  {
+   "stream": "stdout",
+   "text": "4"
+  },
+  {
+   "stream": "stdout",
+   "text": "6 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "6"
+  },
+  {
+   "stream": "stdout",
+   "text": "true true"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ name: 'Tweety' } { name: 'Rex' } { type: 'bird' }"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Tweety is a bird with 2 legs"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Rex is a animal with 4 legs"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:false",
+    "boolean:true",
+    {
+     "array": [
+      "str:name"
+     ],
+     "len": 1
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:name",
+      "str:type",
+      "str:legs",
+      "str:tricks",
+      "str:describe"
+     ],
+     "len": 5
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:sing",
+      "str:fetch"
+     ],
+     "len": 2
+    },
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:4"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:6",
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:6"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:Tweety"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Rex"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "type": "str:bird"
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  7,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  18,
+  19,
+  20,
+  22,
+  23,
+  24,
+  26,
+  27,
+  28,
+  30,
+  31,
+  32,
+  33,
+  34,
+  35,
+  36,
+  38,
+  39
+ ],
+ "statementRuns": 32,
+ "functionCalls": 2,
+ "finalGlobals": {
+  "animal": {
+   "object": "",
+   "props": {
+    "type": "str:animal",
+    "legs": "num:6",
+    "tricks": {
+     "array": [
+      "str:sing",
+      "str:fetch"
+     ],
+     "len": 2
+    },
+    "describe": "fn:describe"
+   }
+  },
+  "bird": {
+   "object": "",
+   "props": {
+    "type": "str:bird"
+   }
+  },
+  "tweety": {
+   "object": "",
+   "props": {
+    "name": "str:Tweety"
+   }
+  },
+  "rex": {
+   "object": "",
+   "props": {
+    "name": "str:Rex"
+   }
+  },
+  "inherited": {
+   "array": [
+    "str:name",
+    "str:type",
+    "str:legs",
+    "str:tricks",
+    "str:describe"
+   ],
+   "len": 5
+  }
+ },
+ "sourceSha256": "794566ba46c36498bb03e79fb712b88eaeb89b46a4cb0ecfdf1160049fd68b8c"
+}

@@ -1,0 +1,108 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "4 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "mild"
+  },
+  {
+   "stream": "stdout",
+   "text": "odd count 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "a and b | a only | not a"
+  },
+  {
+   "stream": "stdout",
+   "text": "doubled 10"
+  },
+  {
+   "stream": "stdout",
+   "text": "after if, same line"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:4",
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:mild"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:odd count",
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:a and b",
+    "str:|",
+    "str:a only",
+    "str:|",
+    "str:not a"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:doubled",
+    "num:10"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:after if, same line"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  6,
+  8,
+  9,
+  10,
+  11,
+  13,
+  14,
+  15,
+  18,
+  19,
+  20,
+  21,
+  23,
+  25,
+  26,
+  27
+ ],
+ "statementRuns": 37,
+ "functionCalls": 5,
+ "finalGlobals": {
+  "abs": "fn:abs",
+  "msg": "str:mild",
+  "temp": "num:15",
+  "count": "num:3",
+  "dangling": "fn:dangling",
+  "x": "num:10"
+ },
+ "sourceSha256": "397c347285b2b86e1cfeefb31b114e89ebe9cd40033f7bb20e1df3ddb3e1803a"
+}

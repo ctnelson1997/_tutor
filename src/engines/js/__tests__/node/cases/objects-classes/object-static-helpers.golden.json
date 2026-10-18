@@ -1,0 +1,317 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[ 'apple', 'bread', 'milk' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 1.25, 3, 2.5 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ [ 'apple', 1.25 ], [ 'bread', 3 ], [ 'milk', 2.5 ] ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "apple: $1.25"
+  },
+  {
+   "stream": "stdout",
+   "text": "bread: $3.00"
+  },
+  {
+   "stream": "stdout",
+   "text": "milk: $2.50"
+  },
+  {
+   "stream": "stdout",
+   "text": "total 6.75"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ color: 'red', size: 'L', tags: [ 'basic' ], qty: 2 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'basic', 'sale' ] true"
+  },
+  {
+   "stream": "stdout",
+   "text": "true { a: 3, b: 2 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ APPLE: 2.5, BREAD: 6, MILK: 5 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ [ '0', 'h' ], [ '1', 'i' ] ] [ '0', '1', '2' ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:apple",
+      "str:bread",
+      "str:milk"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:1.25",
+      "num:3",
+      "num:2.5"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      {
+       "array": [
+        "str:apple",
+        "num:1.25"
+       ],
+       "len": 2
+      },
+      {
+       "array": [
+        "str:bread",
+        "num:3"
+       ],
+       "len": 2
+      },
+      {
+       "array": [
+        "str:milk",
+        "num:2.5"
+       ],
+       "len": 2
+      }
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:apple: $1.25"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:bread: $3.00"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:milk: $2.50"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:total",
+    "num:6.75"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "color": "str:red",
+      "size": "str:L",
+      "tags": {
+       "array": [
+        "str:basic"
+       ],
+       "len": 1
+      },
+      "qty": "num:2"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:basic",
+      "str:sale"
+     ],
+     "len": 2
+    },
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    {
+     "object": "",
+     "props": {
+      "a": "num:3",
+      "b": "num:2"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "APPLE": "num:2.5",
+      "BREAD": "num:6",
+      "MILK": "num:5"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      {
+       "array": [
+        "str:0",
+        "str:h"
+       ],
+       "len": 2
+      },
+      {
+       "array": [
+        "str:1",
+        "str:i"
+       ],
+       "len": 2
+      }
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "str:0",
+      "str:1",
+      "str:2"
+     ],
+     "len": 3
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  7,
+  8,
+  9,
+  10,
+  12,
+  14,
+  15,
+  16,
+  17,
+  18,
+  20,
+  21,
+  22,
+  24,
+  27,
+  28
+ ],
+ "statementRuns": 24,
+ "functionCalls": 3,
+ "finalGlobals": {
+  "prices": {
+   "object": "",
+   "props": {
+    "apple": "num:1.25",
+    "bread": "num:3",
+    "milk": "num:2.5"
+   }
+  },
+  "total": "num:6.75",
+  "defaults": {
+   "object": "",
+   "props": {
+    "color": "str:red",
+    "size": "str:M",
+    "tags": {
+     "array": [
+      "str:basic",
+      "str:sale"
+     ],
+     "len": 2
+    }
+   }
+  },
+  "order": {
+   "object": "",
+   "props": {
+    "color": "str:red",
+    "size": "str:L",
+    "tags": {
+     "array": [
+      "str:basic",
+      "str:sale"
+     ],
+     "len": 2
+    },
+    "qty": "num:2"
+   }
+  },
+  "target": {
+   "object": "",
+   "props": {
+    "a": "num:3",
+    "b": "num:2"
+   }
+  },
+  "returned": {
+   "object": "",
+   "props": {
+    "a": "num:3",
+    "b": "num:2"
+   }
+  },
+  "doubled": {
+   "object": "",
+   "props": {
+    "APPLE": "num:2.5",
+    "BREAD": "num:6",
+    "MILK": "num:5"
+   }
+  }
+ },
+ "sourceSha256": "05b00f451730fcf6b15a7dde05a9baad28e3c285b48a4e7f9cc76e0a89ca220e"
+}

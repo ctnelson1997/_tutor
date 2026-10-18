@@ -1,0 +1,285 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[ 0, 0, 0, 0, 0 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 0, 7, 7, 0, 0 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 0, 7, 7, 9, 9 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "10 40 10 undefined 40"
+  },
+  {
+   "stream": "stdout",
+   "text": "1,2,3 123 1 - 2 - 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "||1|2,3|[object Object]"
+  },
+  {
+   "stream": "stdout",
+   "text": " 5 ababab"
+  },
+  {
+   "stream": "stdout",
+   "text": "true [ 'c', 'b', 'a' ] [ 'c', 'b', 'a' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'a', 'b', 'c' ] [ 'c', 'b', 'a' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "true false"
+  },
+  {
+   "stream": "stdout",
+   "text": ".#. [ '.', '#', '.' ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:0",
+      "num:0",
+      "num:0",
+      "num:0",
+      "num:0"
+     ],
+     "len": 5
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:0",
+      "num:7",
+      "num:7",
+      "num:0",
+      "num:0"
+     ],
+     "len": 5
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:0",
+      "num:7",
+      "num:7",
+      "num:9",
+      "num:9"
+     ],
+     "len": 5
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:10",
+    "num:40",
+    "num:10",
+    "undefined",
+    "num:40"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:1,2,3",
+    "str:123",
+    "str:1 - 2 - 3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:||1|2,3|[object Object]"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:",
+    "str:5",
+    "str:ababab"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    {
+     "array": [
+      "str:c",
+      "str:b",
+      "str:a"
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "str:c",
+      "str:b",
+      "str:a"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:a",
+      "str:b",
+      "str:c"
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "str:c",
+      "str:b",
+      "str:a"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:.#.",
+    {
+     "array": [
+      "str:.",
+      "str:#",
+      "str:."
+     ],
+     "len": 3
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  9,
+  10,
+  12,
+  13,
+  14,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  24,
+  25,
+  27,
+  28,
+  29,
+  30
+ ],
+ "statementRuns": 25,
+ "functionCalls": 2,
+ "finalGlobals": {
+  "zeros": {
+   "array": [
+    "num:0",
+    "num:7",
+    "num:7",
+    "num:9",
+    "num:9"
+   ],
+   "len": 5
+  },
+  "nums": {
+   "array": [
+    "num:10",
+    "num:20",
+    "num:30",
+    "num:40"
+   ],
+   "len": 4
+  },
+  "original": {
+   "array": [
+    "str:c",
+    "str:b",
+    "str:a"
+   ],
+   "len": 3
+  },
+  "alias": {
+   "array": [
+    "str:c",
+    "str:b",
+    "str:a"
+   ],
+   "len": 3
+  },
+  "reversed": {
+   "array": [
+    "str:c",
+    "str:b",
+    "str:a"
+   ],
+   "len": 3
+  },
+  "safe": {
+   "array": [
+    "str:a",
+    "str:b",
+    "str:c"
+   ],
+   "len": 3
+  },
+  "isPalindrome": "fn:isPalindrome",
+  "grid": {
+   "array": [
+    "str:.",
+    "str:#",
+    "str:."
+   ],
+   "len": 3
+  }
+ },
+ "sourceSha256": "4d78054079874288168578d7385eb2037ba80949cd72997e72999d78b167e098"
+}

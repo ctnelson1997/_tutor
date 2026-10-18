@@ -1,0 +1,104 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "interval started"
+  },
+  {
+   "stream": "stdout",
+   "text": "tick 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "tick 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "tick 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "cleared after 3 ticks"
+  },
+  {
+   "stream": "stdout",
+   "text": "history: tick 1, tick 2, tick 3"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:interval started"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:tick",
+    "num:1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:tick",
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:tick",
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:cleared after",
+    "num:3",
+    "str:ticks"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:history:",
+    "str:tick 1, tick 2, tick 3"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  14
+ ],
+ "statementRuns": 19,
+ "functionCalls": 4,
+ "finalGlobals": {
+  "ticks": "num:3",
+  "history": {
+   "array": [
+    "str:tick 1",
+    "str:tick 2",
+    "str:tick 3"
+   ],
+   "len": 3
+  },
+  "id": "num:1"
+ },
+ "sourceSha256": "72eef85dd87c7496f619c35e1a39bdf022b9b4ad4888bcea24950127f4b5a471"
+}

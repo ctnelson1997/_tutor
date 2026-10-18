@@ -1,0 +1,17 @@
+{
+ "console": [],
+ "calls": [],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": {
+  "message": "Unexpected token 'else'",
+  "line": 7,
+  "column": 0
+ },
+ "executedLines": [],
+ "statementRuns": 0,
+ "functionCalls": 0,
+ "finalGlobals": {},
+ "sourceSha256": "542596784223bfa3addbbaabf8a2bebe94679cdc0fafd0c99127ef4fbf71359d"
+}

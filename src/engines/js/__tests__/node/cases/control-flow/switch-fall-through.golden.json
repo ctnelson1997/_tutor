@@ -1,0 +1,127 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "28 30 31"
+  },
+  {
+   "stream": "stdout",
+   "text": "0 [ 'nothing' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "1 [ 'snacks' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "2 [ 'priority', 'snacks' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "3 [ 'lounge', 'priority', 'snacks' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "4 []"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:28",
+    "num:30",
+    "num:31"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:0",
+    {
+     "array": [
+      "str:nothing"
+     ],
+     "len": 1
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:1",
+    {
+     "array": [
+      "str:snacks"
+     ],
+     "len": 1
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:2",
+    {
+     "array": [
+      "str:priority",
+      "str:snacks"
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:3",
+    {
+     "array": [
+      "str:lounge",
+      "str:priority",
+      "str:snacks"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:4",
+    {
+     "array": [],
+     "len": 0
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  5,
+  10,
+  12,
+  15,
+  18,
+  19,
+  21,
+  23,
+  25,
+  26,
+  28,
+  30,
+  32,
+  33
+ ],
+ "statementRuns": 38,
+ "functionCalls": 8,
+ "finalGlobals": {
+  "daysIn": "fn:daysIn",
+  "perks": "fn:perks"
+ },
+ "sourceSha256": "e603a4a73723857d0642db6e959fd6545ba2ac6b8c6a0a06cd637f3131e8d7d1"
+}

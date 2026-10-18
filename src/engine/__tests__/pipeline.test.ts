@@ -362,18 +362,69 @@ a.push(4);`);
     expect(last.stdout).toContain('hello world');
   });
 
-  it('captures console.warn with prefix', () => {
-    const snaps = runPipeline(`console.warn("caution");`);
+  it('writes console.warn and console.error to stderr, in order with stdout (#43)', () => {
+    const snaps = runPipeline(`console.log("a");
+console.warn("caution");
+console.error("oops", { code: 1 });
+console.log("b");`);
 
     const last = lastSnap(snaps);
-    expect(last.stdout.some(s => s.includes('[warn]') && s.includes('caution'))).toBe(true);
+    expect(last.stdout).toEqual(['a', 'b']);
+    expect(last.console).toEqual([
+      { text: 'a', stream: 'stdout' },
+      { text: 'caution', stream: 'stderr' },
+      { text: 'oops { code: 1 }', stream: 'stderr' },
+      { text: 'b', stream: 'stdout' },
+    ]);
+    // A step before any stderr output has no console of its own.
+    expect(snaps[1].console).toBeUndefined();
   });
 
-  it('captures console.error with prefix', () => {
-    const snaps = runPipeline(`console.error("oops");`);
+  it("prints as Node's console does (#43)", () => {
+    const snaps = runPipeline(`console.log([1, , 3], new Map([[1, "a"]]), new Set([NaN, -0]), [-0], { k: undefined }, 10n);
+class Point { constructor() { this.x = 1; } }
+console.log(new Point(), function greet() {}, [1.5, "it's"], "%s costs %d", "pen", 2);
+const o = { name: "loop" }; o.self = o;
+console.log(o);
+console.table([{ a: 1 }]);
+console.group("g"); console.count(); console.groupEnd();`);
+    expect(lastSnap(snaps).stdout).toEqual([
+      "[ 1, <1 empty item>, 3 ] Map(1) { 1 => 'a' } Set(2) { NaN, 0 } [ -0 ] { k: undefined } 10n",
+      `Point { x: 1 } [Function: greet] [ 1.5, "it's" ] %s costs %d pen 2`,
+      "<ref *1> { name: 'loop', self: [Circular *1] }",
+      '┌─────────┬───┐',
+      '│ (index) │ a │',
+      '├─────────┼───┤',
+      '│ 0       │ 1 │',
+      '└─────────┴───┘',
+      'g',
+      '  default: 1',
+    ]);
+  });
 
-    const last = lastSnap(snaps);
-    expect(last.stdout.some(s => s.includes('[error]') && s.includes('oops'))).toBe(true);
+  it('never calls a getter or toJSON to print an object (#43)', () => {
+    const snaps = runPipeline(`let reads = 0;
+const o = { get total() { reads++; return 1; }, toJSON() { reads += 10; } };
+console.log(o);
+console.log(reads);`);
+    expect(lastSnap(snaps).stdout).toEqual(['{ total: [Getter], toJSON: [Function: toJSON] }', '0']);
+  });
+
+  it('adds a last step for output written after the last step, on the way out of an uncaught exception (#43)', () => {
+    const result = runPipelineResult(`function f() {
+  try {
+    throw new Error("boom");
+  } finally {
+    console.log("cleanup");
+  }
+}
+f();`);
+    if (result.type !== 'result') throw new Error('expected a result');
+    const [before, last] = result.snapshots.slice(-2);
+    expect(before.stdout).toEqual([]);
+    expect(last.stdout).toEqual(['cleanup']);
+    expect(last.line).toBe(before.line);
+    expect(result.error?.message).toBe('Error: boom');
   });
 
   it('accumulates stdout across steps', () => {
@@ -546,11 +597,236 @@ let results = funcs.map(f => f());
     expect(arr?.properties.map(p => (p.value as { value: number }).value)).toEqual([0, 1, 2]);
   });
 
+  it('keeps the Global frame current inside a function, leaving out names not yet declared (#45)', () => {
+    const snaps = runPipeline(`let total = 0;
+function add(n) {
+  total += n;
+  const x = total;
+  return x;
+}
+add(5);
+let later = 1;`);
+    const inside = snaps.find(s => s.line === 4 && s.callStack.length === 2);
+    expect(inside && findVar(inside, 'total', 0)?.value).toEqual({ type: 'number', value: 5 });
+    // later is in its temporal dead zone while add runs
+    expect(inside?.callStack[0].variables.map(v => v.name)).toEqual(['add', 'total']);
+    expect(lastSnap(snaps).callStack[0].variables.map(v => v.name)).toEqual(['add', 'total', 'later']);
+  });
+
+  // ── #48: values drawn as themselves ──
+
+  it('draws NaN, the infinities and -0 as themselves, also after JSON (#48)', () => {
+    const last = lastSnap(runPipeline(`const bad = 0 / 0;
+const values = [NaN, Infinity, -Infinity, -0, 1];
+const stats = { max: -Infinity, zero: -0 };`));
+    expect(findVar(last, 'bad')?.value).toEqual({ type: 'number', value: null, display: 'NaN' });
+    const values = last.heap.find(h => h.objectType === 'array')!;
+    expect(values.properties.map(p => (p.value as { display?: string }).display)).toEqual(['NaN', 'Infinity', '-Infinity', '-0', undefined]);
+    const stats = last.heap.find(h => h.objectType === 'object')!;
+    expect(stats.properties.map(p => [p.key, (p.value as { display?: string }).display])).toEqual([['max', '-Infinity'], ['zero', '-0']]);
+  });
+
+  it('draws holes as empty, and Symbol keys as [Symbol(…)] (#48)', () => {
+    const last = lastSnap(runPipeline(`const sparse = [1, , 3];
+sparse.length = 5;
+const id = Symbol("id");
+const user = { name: "Ann", [id]: 7 };`));
+    const sparse = last.heap.find(h => h.objectType === 'array')!;
+    expect(sparse.properties.map(p => p.value.type)).toEqual(['number', 'empty', 'number', 'empty', 'empty']);
+    const user = last.heap.find(h => h.objectType === 'object')!;
+    expect(user.properties.map(p => p.key)).toEqual(['name', '[Symbol(id)]']);
+  });
+
+  it("draws a Map's keys as values: an object key is a reference to its object (#48)", () => {
+    const last = lastSnap(runPipeline(`const owner = { name: "Ann" };
+const scores = new Map([[owner, 90], [1, "one"], ["1", "string one"]]);`));
+    const map = last.heap.find(h => h.objectType === 'map')!;
+    const ownerId = (findVar(last, 'owner')!.value as { heapId: string }).heapId;
+    expect(map.properties.map(p => p.keyValue)).toEqual([
+      { type: 'ref', heapId: ownerId },
+      { type: 'number', value: 1 },
+      { type: 'string', value: '1' },
+    ]);
+    expect(map.properties[0].key).toBe('#' + ownerId);
+  });
+
+  // ── #46: code the instrumenter used to skip ──
+
+  it('steps through a labeled loop, and stops an endless one at the step cap (#46)', () => {
+    const snaps = runPipeline(`let found = null;
+search: for (let r = 0; r < 3; r++) {
+  for (let c = 0; c < 3; c++) {
+    if (r * c === 2) {
+      found = [r, c];
+      break search;
+    }
+  }
+}
+const done = found;`);
+    expect(snaps.some(s => s.line === 5)).toBe(true);
+    expect(lastSnap(snaps).callStack.map(f => f.name)).toEqual(['Global']);
+    const endless = runPipelineResult(`let n = 0;
+spin: while (true) {
+  n++;
+}`);
+    expect(endless.type === 'result' && endless.error?.kind).toBe('limit');
+  });
+
+  it("gives a class field's arrow function and a static block frames and steps (#46)", () => {
+    const snaps = runPipeline(`class Counter {
+  count = 0;
+  bump = () => {
+    this.count++;
+  };
+  static made = 0;
+  static {
+    Counter.made = 1;
+  }
+}
+const c = new Counter();
+c.bump();`);
+    const inBump = snaps.find(s => s.line === 4);
+    expect(inBump?.callStack.map(f => f.name)).toEqual(['Global', 'bump']);
+    const inStatic = snaps.find(s => s.line === 8);
+    expect(inStatic?.callStack.map(f => f.name)).toEqual(['Global', '<static_initializer>']);
+  });
+
+  it('steps into a function behind ! or new (#46)', () => {
+    const snaps = runPipeline(`!function setup() {
+  const ready = true;
+}();
+const p = new Promise(function executor(resolve) {
+  resolve(1);
+});`);
+    expect(snaps.find(s => s.line === 2)?.callStack.map(f => f.name)).toEqual(['Global', 'setup']);
+    expect(snaps.find(s => s.line === 5)?.callStack.map(f => f.name)).toEqual(['Global', 'executor']);
+  });
+
+  // ── #44: frames leave the stack with their code ──
+
+  /** Each step's frames, as "Global>f>for{}". */
+  const stacks = (snaps: ExecutionSnapshot[]) => snaps.map(s => s.callStack.map(f => f.name + (f.isBlockScope ? '{}' : '')).join('>'));
+
+  it('pops a loop frame on break, continue and a labeled break (#44)', () => {
+    const snaps = runPipeline(`const words = ["a", "bb", "ccc"];
+let long = null;
+for (const w of words) {
+  if (w.length < 2) continue;
+  long = w;
+  break;
+}
+let pairs = 0;
+outer: for (let i = 0; i < 3; i++) {
+  for (let j = 0; j < 3; j++) {
+    if (i + j === 2) break outer;
+    pairs++;
+  }
+}
+let n = 0;
+while (true) {
+  let next = n + 1;
+  if (next > 2) break;
+  n = next;
+}
+const done = true;`);
+    const last = lastSnap(snaps);
+    expect(last.callStack.map(f => f.name)).toEqual(['Global']);
+    expect(findVar(last, 'long')?.value).toEqual({ type: 'string', value: 'bb' });
+    expect(findVar(last, 'pairs')?.value).toEqual({ type: 'number', value: 2 });
+    expect(findVar(last, 'n')?.value).toEqual({ type: 'number', value: 2 });
+    // never two frames of the same loop at once
+    expect(stacks(snaps).some(st => /for...of{}>for...of|for{}>for{}>for{}/.test(st))).toBe(false);
+  });
+
+  it('pops a loop frame when a throw leaves the loop at the top level (#44)', () => {
+    const snaps = runPipeline(`let seen = 0;
+try {
+  for (const x of [1, 2, 3]) {
+    seen = x;
+    if (x === 2) throw new Error("stop");
+  }
+} catch (e) {
+  seen = -seen;
+}
+const after = seen;`);
+    const last = lastSnap(snaps);
+    expect(last.callStack.map(f => f.name)).toEqual(['Global']);
+    expect(findVar(last, 'after')?.value).toEqual({ type: 'number', value: -2 });
+  });
+
+  it("shows a generator's frame only while its body runs, with its locals kept (#44)", () => {
+    const snaps = runPipeline(`function* count(limit) {
+  let i = 0;
+  while (i < limit) {
+    yield i;
+    i++;
+  }
+}
+const seen = [];
+for (const v of count(2)) {
+  seen.push(v);
+}
+const total = seen.length;`);
+    const st = stacks(snaps);
+    // the caller's steps (seen.push) never show the suspended generator
+    const pushes = snaps.filter(s => s.line === 10);
+    expect(pushes.length).toBe(2);
+    for (const s of pushes) expect(s.callStack.map(f => f.name)).toEqual(['Global', 'for...of']);
+    // resumed after the first yield (by the loop, between iterations), the generator has its i again
+    const resumed = snaps.find(s => s.line === 5);
+    expect(resumed?.callStack.map(f => f.name)).toEqual(['Global', 'count']);
+    expect(resumed && findVar(resumed, 'i', 1)?.value).toEqual({ type: 'number', value: 0 });
+    expect(st[st.length - 1]).toBe('Global');
+    expect(findVar(lastSnap(snaps), 'total')?.value).toEqual({ type: 'number', value: 2 });
+  });
+
+  it("drops a generator's frames on return() and throw() (#44)", () => {
+    const snaps = runPipeline(`function* g() {
+  try {
+    yield 1;
+    yield 2;
+  } finally {
+    console.log("cleanup");
+  }
+}
+const a = g();
+a.next();
+a.return(5);
+const b = g();
+b.next();
+let caught = null;
+try { b.throw(new Error("x")); } catch (e) { caught = e.message; }
+const end = caught;`);
+    const last = lastSnap(snaps);
+    expect(last.callStack.map(f => f.name)).toEqual(['Global']);
+    expect(last.stdout).toEqual(['cleanup', 'cleanup']);
+    // the finally ran with the generator's frame back on the stack
+    const cleanup = snaps.filter(s => s.line === 6);
+    expect(cleanup.map(s => s.callStack.map(f => f.name).join('>'))).toEqual(['Global>g', 'Global>g']);
+  });
+
+  it("takes an async function's frame off the stack at await (#44)", () => {
+    const snaps = runPipeline(`async function load(id) {
+  const data = await Promise.resolve(id * 2);
+  return data;
+}
+function start() {
+  load(3);
+  const next = "after";
+  return next;
+}
+const r = start();`);
+    // back in start after load awaited: load's frame is gone
+    const after = snaps.find(s => s.line === 7);
+    expect(after?.callStack.map(f => f.name)).toEqual(['Global', 'start']);
+    expect(lastSnap(snaps).callStack.map(f => f.name)).toEqual(['Global']);
+  });
+
   it('pops the call-stack frame when a throw propagates out of a function', () => {
     // Regression: throws were not handled by the return-wrapping machinery,
     // so a function frame leaked onto the call stack whenever an exception
     // crossed a function boundary. The fix wraps each function body in a
-    // synthetic try/catch that runs __popThrowingFrame__ before rethrowing.
+    // synthetic try/finally whose __leave__ pops its frame (#44).
     // Trailing assignment forces a snapshot to be emitted *after* the
     // synthetic catch has popped the frames; without it the last snapshot
     // would land mid-throw, before cleanup runs.

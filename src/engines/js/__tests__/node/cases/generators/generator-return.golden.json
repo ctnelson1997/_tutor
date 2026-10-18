@@ -1,0 +1,177 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "{ value: 1, done: false } { value: 2, done: false } { value: 99, done: true } { value: undefined, done: true }"
+  },
+  {
+   "stream": "stdout",
+   "text": "for...of saw [ 1, 2 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "spread saw [ 1, 2 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ value: 'a', done: false }"
+  },
+  {
+   "stream": "stdout",
+   "text": "cleanup ran"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ value: 'stopped', done: true } { value: undefined, done: true }"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "value": "num:1",
+      "done": "boolean:false"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "value": "num:2",
+      "done": "boolean:false"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "value": "num:99",
+      "done": "boolean:true"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "value": "undefined",
+      "done": "boolean:true"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:for...of saw",
+    {
+     "array": [
+      "num:1",
+      "num:2"
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:spread saw",
+    {
+     "array": [
+      "num:1",
+      "num:2"
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "value": "str:a",
+      "done": "boolean:false"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:cleanup ran"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "value": "str:stopped",
+      "done": "boolean:true"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "value": "undefined",
+      "done": "boolean:true"
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  5,
+  8,
+  9,
+  11,
+  12,
+  13,
+  15,
+  16,
+  20,
+  23,
+  27,
+  28,
+  29,
+  30
+ ],
+ "statementRuns": 23,
+ "functionCalls": 4,
+ "finalGlobals": {
+  "withReturn": "fn:withReturn",
+  "g1": {
+   "object": "",
+   "props": {}
+  },
+  "seen": {
+   "array": [
+    "num:1",
+    "num:2"
+   ],
+   "len": 2
+  },
+  "guarded": "fn:guarded",
+  "g2": {
+   "object": "",
+   "props": {}
+  },
+  "early": {
+   "object": "",
+   "props": {
+    "value": "str:stopped",
+    "done": "boolean:true"
+   }
+  }
+ },
+ "sourceSha256": "773b081807076a4612f855cf017650e73ac3b0a6a442820e02a6011e5341409e"
+}

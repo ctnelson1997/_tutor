@@ -1,0 +1,239 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "true Alice"
+  },
+  {
+   "stream": "stdout",
+   "text": "<ref *1> {"
+  },
+  {
+   "stream": "stdout",
+   "text": "  name: 'Alice',"
+  },
+  {
+   "stream": "stdout",
+   "text": "  friend: { name: 'Bob', friend: [Circular *1] }"
+  },
+  {
+   "stream": "stdout",
+   "text": "}"
+  },
+  {
+   "stream": "stdout",
+   "text": "a->b->c c->b->a 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "c a 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "true c"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "str:Alice"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:Alice",
+      "friend": {
+       "object": "",
+       "props": {
+        "name": "str:Bob",
+        "friend": "<circular>"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:a->b->c",
+    "str:c->b->a",
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:c",
+    "str:a",
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "str:c"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  10,
+  12,
+  13,
+  14,
+  15,
+  16,
+  18,
+  19,
+  21,
+  22,
+  25,
+  26,
+  27,
+  28,
+  29,
+  31,
+  32,
+  33,
+  34,
+  35,
+  36
+ ],
+ "statementRuns": 45,
+ "functionCalls": 3,
+ "finalGlobals": {
+  "alice": {
+   "object": "",
+   "props": {
+    "name": "str:Alice",
+    "friend": {
+     "object": "",
+     "props": {
+      "name": "str:Bob",
+      "friend": "<circular>"
+     }
+    }
+   }
+  },
+  "bob": {
+   "object": "",
+   "props": {
+    "name": "str:Bob",
+    "friend": {
+     "object": "",
+     "props": {
+      "name": "str:Alice",
+      "friend": "<circular>"
+     }
+    }
+   }
+  },
+  "makeNode": "fn:makeNode",
+  "list": {
+   "object": "",
+   "props": {
+    "head": {
+     "object": "",
+     "props": {
+      "value": "str:a",
+      "prev": "null",
+      "next": {
+       "object": "",
+       "props": {
+        "value": "str:c",
+        "prev": "<circular>",
+        "next": "null"
+       }
+      }
+     }
+    },
+    "tail": {
+     "object": "",
+     "props": {
+      "value": "str:c",
+      "prev": {
+       "object": "",
+       "props": {
+        "value": "str:a",
+        "prev": "null",
+        "next": "<circular>"
+       }
+      },
+      "next": "null"
+     }
+    },
+    "size": "num:2"
+   }
+  },
+  "forward": {
+   "array": [
+    "str:a",
+    "str:b",
+    "str:c"
+   ],
+   "len": 3
+  },
+  "backward": {
+   "array": [
+    "str:c",
+    "str:b",
+    "str:a"
+   ],
+   "len": 3
+  },
+  "middle": {
+   "object": "",
+   "props": {
+    "value": "str:b",
+    "prev": {
+     "object": "",
+     "props": {
+      "value": "str:a",
+      "prev": "null",
+      "next": {
+       "object": "",
+       "props": {
+        "value": "str:c",
+        "prev": "<circular>",
+        "next": "null"
+       }
+      }
+     }
+    },
+    "next": {
+     "object": "",
+     "props": {
+      "value": "str:c",
+      "prev": {
+       "object": "",
+       "props": {
+        "value": "str:a",
+        "prev": "null",
+        "next": "<circular>"
+       }
+      },
+      "next": "null"
+     }
+    }
+   }
+  }
+ },
+ "sourceSha256": "2f2df96d64c98e8def49b124ac427f6b23ecdf06b796cdca70ea64a595763f11"
+}

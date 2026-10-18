@@ -15,5 +15,7 @@ describe('primitiveText', () => {
     expect(primitiveText({ type: 'null', value: null })).toBe('null');
     expect(primitiveText({ type: 'undefined', value: null })).toBe('undefined');
     expect(primitiveText({ type: 'bigint', value: '9007199254740993' })).toBe('9007199254740993');
+    // An array's hole (JS, #48)
+    expect(primitiveText({ type: 'empty', value: null })).toBe('empty');
   });
 });

@@ -1,0 +1,80 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "finally sees counter 10"
+  },
+  {
+   "stream": "stdout",
+   "text": "finally after catch return"
+  },
+  {
+   "stream": "stdout",
+   "text": "from finally | finally wins | 0 10 | catch"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:finally sees counter",
+    "num:10"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:finally after catch return"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:from finally",
+    "str:|",
+    "str:finally wins",
+    "str:|",
+    "num:0",
+    "num:10",
+    "str:|",
+    "str:catch"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  4,
+  6,
+  12,
+  14,
+  18,
+  21,
+  23,
+  24,
+  30,
+  32,
+  34,
+  38,
+  39,
+  40,
+  41,
+  42
+ ],
+ "statementRuns": 16,
+ "functionCalls": 4,
+ "finalGlobals": {
+  "overrideReturn": "fn:overrideReturn",
+  "swallowThrow": "fn:swallowThrow",
+  "counter": "num:10",
+  "returnBeforeFinally": "fn:returnBeforeFinally",
+  "catchThenFinally": "fn:catchThenFinally",
+  "a": "str:from finally",
+  "b": "str:finally wins",
+  "c": "num:0",
+  "d": "str:catch"
+ },
+ "sourceSha256": "eaf246fc5fd37fd00011da4ec6034c9384481157e70279218a72d9055923d162"
+}

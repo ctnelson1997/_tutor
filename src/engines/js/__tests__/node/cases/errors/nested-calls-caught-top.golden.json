@@ -1,0 +1,102 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "total() finished for 3 items"
+  },
+  {
+   "stream": "stdout",
+   "text": "total() finished for 3 items"
+  },
+  {
+   "stream": "stdout",
+   "text": "top caught: not a number: \"x\""
+  },
+  {
+   "stream": "stdout",
+   "text": "6 undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "RangeError"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:total() finished for",
+    "num:3",
+    "str:items"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:total() finished for",
+    "num:3",
+    "str:items"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:top caught:",
+    "str:not a number: \"x\""
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:6",
+    "undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:RangeError"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  5,
+  7,
+  11,
+  12,
+  13,
+  15,
+  20,
+  21,
+  23,
+  27,
+  28,
+  30,
+  32,
+  34,
+  37,
+  38,
+  40,
+  42,
+  44,
+  46
+ ],
+ "statementRuns": 50,
+ "functionCalls": 17,
+ "finalGlobals": {
+  "parseItem": "fn:parseItem",
+  "parseList": "fn:parseList",
+  "total": "fn:total",
+  "good": "num:6",
+  "bad": "undefined",
+  "depth": "fn:depth",
+  "reached": "str:RangeError"
+ },
+ "sourceSha256": "de15c262ee2349199d008b199073f0619a4ad279b5278d09e13cee24324530d4"
+}

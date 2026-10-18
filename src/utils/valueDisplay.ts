@@ -11,6 +11,7 @@ export function primitiveText(value: PrimitiveValue): string {
     case 'string': return `"${value.value}"`;
     case 'null': return 'null';
     case 'undefined': return 'undefined';
+    case 'empty': return 'empty';
     default: return String(value.value);
   }
 }

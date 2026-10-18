@@ -1,0 +1,204 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "{ host: 'localhost', port: 8080, paths: [ '/a', '/b' ] }"
+  },
+  {
+   "stream": "stdout",
+   "text": "true false"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ x: 10, y: 2 } true"
+  },
+  {
+   "stream": "stdout",
+   "text": "{} false"
+  },
+  {
+   "stream": "stdout",
+   "text": "true true"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 3, 1, 2 ] [ 1, 2, 3 ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "host": "str:localhost",
+      "port": "num:8080",
+      "paths": {
+       "array": [
+        "str:/a",
+        "str:/b"
+       ],
+       "len": 2
+      }
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "x": "num:10",
+      "y": "num:2"
+     }
+    },
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {}
+    },
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:3",
+      "num:1",
+      "num:2"
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "num:1",
+      "num:2",
+      "num:3"
+     ],
+     "len": 3
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  10,
+  11,
+  12,
+  13,
+  14,
+  16,
+  17,
+  18,
+  19,
+  20,
+  23,
+  24,
+  26,
+  28,
+  29,
+  30,
+  32,
+  33,
+  34
+ ],
+ "statementRuns": 36,
+ "functionCalls": 3,
+ "finalGlobals": {
+  "config": {
+   "object": "",
+   "props": {
+    "host": "str:localhost",
+    "port": "num:8080",
+    "paths": {
+     "array": [
+      "str:/a",
+      "str:/b"
+     ],
+     "len": 2
+    }
+   }
+  },
+  "sealed": {
+   "object": "",
+   "props": {
+    "x": "num:10",
+    "y": "num:2"
+   }
+  },
+  "locked": {
+   "object": "",
+   "props": {}
+  },
+  "deepFreeze": "fn:deepFreeze",
+  "settings": {
+   "object": "",
+   "props": {
+    "theme": {
+     "object": "",
+     "props": {
+      "dark": "boolean:true"
+     }
+    },
+    "list": {
+     "array": [
+      "num:1",
+      "num:2"
+     ],
+     "len": 2
+    }
+   }
+  },
+  "frozenArr": {
+   "array": [
+    "num:3",
+    "num:1",
+    "num:2"
+   ],
+   "len": 3
+  },
+  "sortedCopy": {
+   "array": [
+    "num:1",
+    "num:2",
+    "num:3"
+   ],
+   "len": 3
+  }
+ },
+ "sourceSha256": "cae249042889caabea51747e95061e67a791f2d898d8b1d0c5c03087f270039e"
+}

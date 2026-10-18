@@ -1,0 +1,147 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Grace Hopper"
+  },
+  {
+   "stream": "stdout",
+   "text": "price: $42.00"
+  },
+  {
+   "stream": "stdout",
+   "text": "a[-]b[-]c"
+  },
+  {
+   "stream": "stdout",
+   "text": "6 apples and 24 pears [ '3@0', '12@13' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "backgroundColorMain background-color-main"
+  },
+  {
+   "stream": "stdout",
+   "text": "Tea is $3, cake is $5, pie is {pie}."
+  },
+  {
+   "stream": "stdout",
+   "text": "**** this **** bug 1 2 3 3"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:Grace Hopper"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:price: $42.00"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:a[-]b[-]c"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:6 apples and 24 pears",
+    {
+     "array": [
+      "str:3@0",
+      "str:12@13"
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:backgroundColorMain",
+    "str:background-color-main"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Tea is $3, cake is $5, pie is {pie}."
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:**** this **** bug",
+    "str:1 2 3",
+    "num:3"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  7,
+  8,
+  9,
+  10,
+  12,
+  15,
+  18,
+  20,
+  21,
+  23,
+  24,
+  25,
+  26,
+  28,
+  29,
+  30,
+  31
+ ],
+ "statementRuns": 23,
+ "functionCalls": 16,
+ "finalGlobals": {
+  "name": "str:Hopper, Grace",
+  "calls": {
+   "array": [
+    "str:3@0",
+    "str:12@13"
+   ],
+   "len": 2
+  },
+  "doubled": "str:6 apples and 24 pears",
+  "toCamel": "fn:toCamel",
+  "toKebab": "fn:toKebab",
+  "camel": "str:backgroundColorMain",
+  "prices": {
+   "object": "",
+   "props": {
+    "tea": "num:3",
+    "cake": "num:5"
+   }
+  },
+  "template": "str:Tea is {tea}, cake is {cake}, pie is {pie}.",
+  "filled": "str:Tea is $3, cake is $5, pie is {pie}.",
+  "censored": "str:**** this **** bug",
+  "counter": {
+   "object": "",
+   "props": {
+    "n": "num:3"
+   }
+  },
+  "numbered": "str:1 2 3"
+ },
+ "sourceSha256": "adf39da091f208273da6b8e1dd410371e474b068e9dea6f83388c32b5eeb8079"
+}

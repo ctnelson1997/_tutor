@@ -1,0 +1,204 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "68"
+  },
+  {
+   "stream": "stdout",
+   "text": "100 100"
+  },
+  {
+   "stream": "stdout",
+   "text": "rejected hot"
+  },
+  {
+   "stream": "stdout",
+   "text": "-40"
+  },
+  {
+   "stream": "stdout",
+   "text": "42"
+  },
+  {
+   "stream": "stdout",
+   "text": "function function false"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ '_celsius', 'fahrenheit', 'celsius' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "{"
+  },
+  {
+   "stream": "stdout",
+   "text": "  _celsius: -40,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  fahrenheit: [Getter/Setter],"
+  },
+  {
+   "stream": "stdout",
+   "text": "  celsius: [Getter/Setter]"
+  },
+  {
+   "stream": "stdout",
+   "text": "}"
+  },
+  {
+   "stream": "stdout",
+   "text": "-40 { _celsius: -40, fahrenheit: -40, celsius: -40 }"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:68"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:100",
+    "num:100"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:rejected",
+    "str:hot"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:-40"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:42"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:function",
+    "str:function",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:_celsius",
+      "str:fahrenheit",
+      "str:celsius"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "_celsius": "num:-40",
+      "fahrenheit": "<accessor>",
+      "celsius": "<accessor>"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:-40",
+    {
+     "object": "",
+     "props": {
+      "_celsius": "num:-40",
+      "fahrenheit": "num:-40",
+      "celsius": "num:-40"
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  5,
+  8,
+  11,
+  14,
+  15,
+  16,
+  18,
+  22,
+  23,
+  24,
+  25,
+  26,
+  27,
+  29,
+  31,
+  34,
+  35,
+  37,
+  38,
+  39,
+  40,
+  41,
+  42
+ ],
+ "statementRuns": 28,
+ "functionCalls": 9,
+ "finalGlobals": {
+  "temp": {
+   "object": "",
+   "props": {
+    "_celsius": "num:-40",
+    "fahrenheit": "<accessor>",
+    "celsius": "<accessor>"
+   }
+  },
+  "readOnly": {
+   "object": "",
+   "props": {
+    "answer": "<getter>"
+   }
+  },
+  "desc": {
+   "object": "",
+   "props": {
+    "get": "fn:get fahrenheit",
+    "set": "fn:set fahrenheit",
+    "enumerable": "boolean:true",
+    "configurable": "boolean:true"
+   }
+  },
+  "copy": {
+   "object": "",
+   "props": {
+    "_celsius": "num:-40",
+    "fahrenheit": "num:-40",
+    "celsius": "num:-40"
+   }
+  }
+ },
+ "sourceSha256": "b0b40a971b0b65909074d1dbd9e44a2db66f25d4b50e0ed382c086d8445b135b"
+}

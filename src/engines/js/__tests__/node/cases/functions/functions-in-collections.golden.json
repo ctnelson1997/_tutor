@@ -1,0 +1,161 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "9 3 18 NaN unknown operator %"
+  },
+  {
+   "stream": "stdout",
+   "text": "after pipeline: 50"
+  },
+  {
+   "stream": "stdout",
+   "text": "called as an array element, this is the array: 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "greet -> Hello kim"
+  },
+  {
+   "stream": "stdout",
+   "text": "shout -> KIM!"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ '+', '-', '*', '/' ] 3 divide *"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:9",
+    "num:3",
+    "num:18",
+    "num:NaN",
+    "str:unknown operator %"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:after pipeline:",
+    "num:50"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:called as an array element, this is the array:",
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:greet",
+    "str:->",
+    "str:Hello kim"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:shout",
+    "str:->",
+    "str:KIM!"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:+",
+      "str:-",
+      "str:*",
+      "str:/"
+     ],
+     "len": 4
+    },
+    "num:3",
+    "str:divide",
+    "str:*"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  5,
+  6,
+  9,
+  10,
+  11,
+  13,
+  14,
+  17,
+  19,
+  20,
+  21,
+  23,
+  24,
+  25,
+  26,
+  27,
+  28,
+  29,
+  31,
+  32,
+  33
+ ],
+ "statementRuns": 36,
+ "functionCalls": 17,
+ "finalGlobals": {
+  "operations": {
+   "object": "",
+   "props": {
+    "+": "fn:+",
+    "-": "fn:-",
+    "*": "fn:*",
+    "/": "fn:divide"
+   }
+  },
+  "calculate": "fn:calculate",
+  "steps": {
+   "array": [
+    "fn:",
+    "fn:",
+    "fn:"
+   ],
+   "len": 3
+  },
+  "value": "num:50",
+  "handlerMap": {
+   "map": [
+    [
+     "str:greet",
+     "fn:"
+    ],
+    [
+     "str:shout",
+     "fn:"
+    ]
+   ]
+  },
+  "names": {
+   "array": [
+    "str:+",
+    "str:-",
+    "str:*",
+    "str:/"
+   ],
+   "len": 4
+  },
+  "fnCount": "num:3"
+ },
+ "sourceSha256": "9964634f552ddd99837c69c147c0c959298c62eb91a588dd7f1c6ffc71d659c4"
+}

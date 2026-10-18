@@ -1,0 +1,164 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "12 cm"
+  },
+  {
+   "stream": "stdout",
+   "text": "10 40"
+  },
+  {
+   "stream": "stdout",
+   "text": "width must be positive"
+  },
+  {
+   "stream": "stdout",
+   "text": "10"
+  },
+  {
+   "stream": "stdout",
+   "text": "40"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ '_width', '_height' ] true false"
+  },
+  {
+   "stream": "stdout",
+   "text": "Rectangle { _width: 10, _height: 4 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "49 7 true Square { _width: 7, _height: 7 }"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:12",
+    "str:cm"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:10",
+    "num:40"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:width must be positive"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:10"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:40"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:_width",
+      "str:_height"
+     ],
+     "len": 2
+    },
+    "boolean:true",
+    "boolean:false"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "Rectangle",
+     "props": {
+      "_width": "num:10",
+      "_height": "num:4"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:49",
+    "num:7",
+    "boolean:true",
+    {
+     "object": "Square",
+     "props": {
+      "_width": "num:7",
+      "_height": "num:7"
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  4,
+  5,
+  8,
+  11,
+  14,
+  15,
+  16,
+  18,
+  21,
+  25,
+  26,
+  27,
+  28,
+  29,
+  30,
+  31,
+  32,
+  33,
+  34,
+  38,
+  41,
+  42,
+  45,
+  48,
+  49,
+  50
+ ],
+ "statementRuns": 36,
+ "functionCalls": 16,
+ "finalGlobals": {
+  "Rectangle": "fn:Rectangle",
+  "r": {
+   "object": "Rectangle",
+   "props": {
+    "_width": "num:10",
+    "_height": "num:4"
+   }
+  },
+  "Square": "fn:Square",
+  "s": {
+   "object": "Square",
+   "props": {
+    "_width": "num:7",
+    "_height": "num:7"
+   }
+  }
+ },
+ "sourceSha256": "334c607369746dbe53689e7a4a6438f8753f1e06fb122aea43d1032dea9c4f4e"
+}

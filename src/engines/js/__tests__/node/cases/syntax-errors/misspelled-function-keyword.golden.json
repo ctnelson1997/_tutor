@@ -1,0 +1,17 @@
+{
+ "console": [],
+ "calls": [],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": {
+  "message": "Unexpected identifier 'greet'",
+  "line": 4,
+  "column": 9
+ },
+ "executedLines": [],
+ "statementRuns": 0,
+ "functionCalls": 0,
+ "finalGlobals": {},
+ "sourceSha256": "ed53f2657630e6b377ce0bf850bf24aa23611e3c261929e4665632d0b647c6be"
+}

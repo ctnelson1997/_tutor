@@ -1,0 +1,169 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[ { a: 1, b: [ true, null ] }, null, null, null, 'ok' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "SyntaxError true - Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+  },
+  {
+   "stream": "stdout",
+   "text": "SyntaxError true - Unexpected token ']', \"[1, 2,]\" is not valid JSON"
+  },
+  {
+   "stream": "stdout",
+   "text": "SyntaxError true - Unexpected end of JSON input"
+  },
+  {
+   "stream": "stdout",
+   "text": "SyntaxError true - Unexpected end of JSON input"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ debug: true, level: 3 }"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      {
+       "object": "",
+       "props": {
+        "a": "num:1",
+        "b": {
+         "array": [
+          "boolean:true",
+          "null"
+         ],
+         "len": 2
+        }
+       }
+      },
+      "null",
+      "null",
+      "null",
+      "str:ok"
+     ],
+     "len": 5
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:SyntaxError",
+    "boolean:true",
+    "str:-",
+    "str:Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:SyntaxError",
+    "boolean:true",
+    "str:-",
+    "str:Unexpected token ']', \"[1, 2,]\" is not valid JSON"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:SyntaxError",
+    "boolean:true",
+    "str:-",
+    "str:Unexpected end of JSON input"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:SyntaxError",
+    "boolean:true",
+    "str:-",
+    "str:Unexpected end of JSON input"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "debug": "boolean:true",
+      "level": "num:3"
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  4,
+  6,
+  10,
+  11,
+  12,
+  14,
+  16,
+  18,
+  22,
+  23,
+  25,
+  29
+ ],
+ "statementRuns": 24,
+ "functionCalls": 5,
+ "finalGlobals": {
+  "parseOrNull": "fn:parseOrNull",
+  "inputs": {
+   "array": [
+    "str:{\"a\": 1, \"b\": [true, null]}",
+    "str:{a: 1}",
+    "str:[1, 2,]",
+    "str:",
+    "str:\"ok\""
+   ],
+   "len": 5
+  },
+  "parsed": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "a": "num:1",
+      "b": {
+       "array": [
+        "boolean:true",
+        "null"
+       ],
+       "len": 2
+      }
+     }
+    },
+    "null",
+    "null",
+    "null",
+    "str:ok"
+   ],
+   "len": 5
+  },
+  "config": {
+   "object": "",
+   "props": {
+    "debug": "boolean:true",
+    "level": "num:3"
+   }
+  },
+  "raw": "str:{\"debug\": true, \"level\": 3}"
+ },
+ "sourceSha256": "2fe0dfb6fe997f2a9faaf5ef165ec2bbda5f0a3c1ffa16dffd129ee12d929fa1"
+}

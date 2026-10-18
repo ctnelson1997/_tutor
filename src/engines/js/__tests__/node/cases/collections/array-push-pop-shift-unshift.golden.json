@@ -1,0 +1,295 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "1 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "4 6"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'x', 'y', 'z', 'a', 'b', 'c' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "c x 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'y', 'z', 'a', 'b' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "undefined undefined 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 1 ] [ 2, 4, 3 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'Ann', 'Bob', 'Cat', 'Dan' ] []"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ [ 1, 9 ], [ 2 ], [ 1, 9 ] ] true"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:1",
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:4",
+    "num:6"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:x",
+      "str:y",
+      "str:z",
+      "str:a",
+      "str:b",
+      "str:c"
+     ],
+     "len": 6
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:c",
+    "str:x",
+    "num:4"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:y",
+      "str:z",
+      "str:a",
+      "str:b"
+     ],
+     "len": 4
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "undefined",
+    "undefined",
+    "num:0"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:1"
+     ],
+     "len": 1
+    },
+    {
+     "array": [
+      "num:2",
+      "num:4",
+      "num:3"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:Ann",
+      "str:Bob",
+      "str:Cat",
+      "str:Dan"
+     ],
+     "len": 4
+    },
+    {
+     "array": [],
+     "len": 0
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      {
+       "array": [
+        "num:1",
+        "num:9"
+       ],
+       "len": 2
+      },
+      {
+       "array": [
+        "num:2"
+       ],
+       "len": 1
+      },
+      {
+       "array": [
+        "num:1",
+        "num:9"
+       ],
+       "len": 2
+      }
+     ],
+     "len": 3
+    },
+    "boolean:true"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  10,
+  11,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  21,
+  23,
+  24,
+  25,
+  26,
+  27,
+  28,
+  30,
+  32,
+  33,
+  34,
+  35
+ ],
+ "statementRuns": 56,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "queue": {
+   "array": [
+    "str:y",
+    "str:z",
+    "str:a",
+    "str:b"
+   ],
+   "len": 4
+  },
+  "alias": {
+   "array": [
+    "str:y",
+    "str:z",
+    "str:a",
+    "str:b"
+   ],
+   "len": 4
+  },
+  "empty": {
+   "array": [],
+   "len": 0
+  },
+  "stack": {
+   "array": [
+    "num:1"
+   ],
+   "len": 1
+  },
+  "ops": {
+   "array": [
+    "str:push 1",
+    "str:push 2",
+    "str:pop",
+    "str:push 3",
+    "str:push 4",
+    "str:pop",
+    "str:pop"
+   ],
+   "len": 7
+  },
+  "popped": {
+   "array": [
+    "num:2",
+    "num:4",
+    "num:3"
+   ],
+   "len": 3
+  },
+  "line": {
+   "array": [],
+   "len": 0
+  },
+  "served": {
+   "array": [
+    "str:Ann",
+    "str:Bob",
+    "str:Cat",
+    "str:Dan"
+   ],
+   "len": 4
+  },
+  "nested": {
+   "array": [
+    {
+     "array": [
+      "num:1",
+      "num:9"
+     ],
+     "len": 2
+    },
+    {
+     "array": [
+      "num:2"
+     ],
+     "len": 1
+    },
+    {
+     "array": [
+      "num:1",
+      "num:9"
+     ],
+     "len": 2
+    }
+   ],
+   "len": 3
+  }
+ },
+ "sourceSha256": "af9effd6e3a0d238c5701df78fb5bbb365751b63adf83ce1c741fe1e2682ad3f"
+}

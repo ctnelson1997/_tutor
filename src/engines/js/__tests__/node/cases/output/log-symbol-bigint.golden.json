@@ -1,0 +1,198 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Symbol(id) Symbol() Symbol(app.shared) Symbol(Symbol.iterator)"
+  },
+  {
+   "stream": "stdout",
+   "text": "Symbol(id) id symbol"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ name: 'box', Symbol(id): 123, Symbol(Symbol.iterator): null }"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ Symbol(id), Symbol(app.shared) ] { sym: Symbol(id) }"
+  },
+  {
+   "stream": "stdout",
+   "text": "12345678901234567890n 18446744073709551616n bigint"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 1n, -5n, 0n, 12345678901234567890n ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ balance: 1000n, owner: 'Kim' }"
+  },
+  {
+   "stream": "stdout",
+   "text": "3n -1n true true"
+  },
+  {
+   "stream": "stdout",
+   "text": "12345678901234567890 18446744073709551616 ab54a98ceb1f0ad2"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "sym:id",
+    "sym:",
+    "sym:app.shared",
+    "sym:Symbol.iterator"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Symbol(id)",
+    "str:id",
+    "str:symbol"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:box",
+      "[Symbol(id)]": "num:123",
+      "[Symbol(Symbol.iterator)]": "null"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "sym:id",
+      "sym:app.shared"
+     ],
+     "len": 2
+    },
+    {
+     "object": "",
+     "props": {
+      "sym": "sym:id"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "bigint:12345678901234567890",
+    "bigint:18446744073709551616",
+    "str:bigint"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "bigint:1",
+      "bigint:-5",
+      "bigint:0",
+      "bigint:12345678901234567890"
+     ],
+     "len": 4
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "balance": "bigint:1000",
+      "owner": "str:Kim"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "bigint:3",
+    "bigint:-1",
+    "boolean:true",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:12345678901234567890",
+    "str:18446744073709551616",
+    "str:ab54a98ceb1f0ad2"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18
+ ],
+ "statementRuns": 17,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "id": "sym:id",
+  "anonSym": "sym:",
+  "shared": "sym:app.shared",
+  "tagged": {
+   "object": "",
+   "props": {
+    "name": "str:box",
+    "[Symbol(id)]": "num:123",
+    "[Symbol(Symbol.iterator)]": "null"
+   }
+  },
+  "big": "bigint:12345678901234567890",
+  "product": "bigint:18446744073709551616",
+  "mixed": {
+   "array": [
+    "bigint:1",
+    "bigint:-5",
+    "bigint:0",
+    "bigint:12345678901234567890"
+   ],
+   "len": 4
+  },
+  "account": {
+   "object": "",
+   "props": {
+    "balance": "bigint:1000",
+    "owner": "str:Kim"
+   }
+  }
+ },
+ "sourceSha256": "7e66c555c3d7b3ddf4211fe84c57b9fc905cd7c9ca320a3d061dd1791ce0c0e6"
+}

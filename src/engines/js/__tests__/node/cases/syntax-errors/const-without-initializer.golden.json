@@ -1,0 +1,17 @@
+{
+ "console": [],
+ "calls": [],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": {
+  "message": "Missing initializer in const declaration",
+  "line": 4,
+  "column": 6
+ },
+ "executedLines": [],
+ "statementRuns": 0,
+ "functionCalls": 0,
+ "finalGlobals": {},
+ "sourceSha256": "3cb31a3511b190731f1bba6152b0b28c36bee1b8f56e8b9990ffdf92bbc59c48"
+}

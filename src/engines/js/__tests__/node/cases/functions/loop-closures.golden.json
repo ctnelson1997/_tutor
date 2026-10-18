@@ -1,0 +1,178 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "handling save handling quit"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 0, 1, 4 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "closures over the outer m: [ 3, 3, 3 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 10, 21, 32 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'var i=3, let j=0', 'var i=3, let j=1', 'var i=3, let j=2' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "handling load"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:handling save",
+    "str:handling quit"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:0",
+      "num:1",
+      "num:4"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:closures over the outer m:",
+    {
+     "array": [
+      "num:3",
+      "num:3",
+      "num:3"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:10",
+      "num:21",
+      "num:32"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:var i=3, let j=0",
+      "str:var i=3, let j=1",
+      "str:var i=3, let j=2"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:handling load"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  21,
+  22,
+  23,
+  24,
+  26,
+  27,
+  28,
+  29,
+  30,
+  32,
+  33,
+  34
+ ],
+ "statementRuns": 49,
+ "functionCalls": 30,
+ "finalGlobals": {
+  "handlers": {
+   "object": "",
+   "props": {
+    "save": "fn:",
+    "load": "fn:",
+    "quit": "fn:"
+   }
+  },
+  "fromWhile": {
+   "array": [
+    "fn:",
+    "fn:",
+    "fn:"
+   ],
+   "len": 3
+  },
+  "n": "num:3",
+  "sharedWhile": {
+   "array": [
+    "fn:",
+    "fn:",
+    "fn:"
+   ],
+   "len": 3
+  },
+  "m": "num:3",
+  "adders": {
+   "array": [
+    "fn:",
+    "fn:",
+    "fn:"
+   ],
+   "len": 3
+  },
+  "delayed": {
+   "array": [
+    "fn:",
+    "fn:",
+    "fn:"
+   ],
+   "len": 3
+  },
+  "firstHandler": "fn:"
+ },
+ "sourceSha256": "b87b5c0a924f9e70c3749a80149084a338fd38a4dbe27af5c49072b0ccda2637"
+}

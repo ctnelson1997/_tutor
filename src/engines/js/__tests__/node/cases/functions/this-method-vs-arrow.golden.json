@@ -1,0 +1,148 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "1 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "timer 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "inner function this is globalThis: true"
+  },
+  {
+   "stream": "stdout",
+   "text": "timer via self"
+  },
+  {
+   "stream": "stdout",
+   "text": "arrow keeps this: 100"
+  },
+  {
+   "stream": "stdout",
+   "text": "arrow ignores new owner: 100"
+  },
+  {
+   "stream": "stdout",
+   "text": "borrowed method uses its new this: 11 11 100"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:1",
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:timer",
+    "num:4"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:inner function this is globalThis:",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:timer via self"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:arrow keeps this:",
+    "num:100"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:arrow ignores new owner:",
+    "num:100"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:borrowed method uses its new this:",
+    "num:11",
+    "num:11",
+    "num:100"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  6,
+  7,
+  10,
+  11,
+  12,
+  14,
+  15,
+  19,
+  21,
+  24,
+  26,
+  28,
+  31,
+  34,
+  35,
+  36,
+  37,
+  38,
+  39,
+  40,
+  41,
+  42,
+  43,
+  44
+ ],
+ "statementRuns": 31,
+ "functionCalls": 13,
+ "finalGlobals": {
+  "timer": {
+   "object": "",
+   "props": {
+    "seconds": "num:100",
+    "name": "str:timer",
+    "tick": "fn:tick",
+    "tickTwiceWithArrow": "fn:tickTwiceWithArrow",
+    "nestedFunction": "fn:nestedFunction",
+    "savedSelf": "fn:savedSelf",
+    "makeArrowGetter": "fn:makeArrowGetter"
+   }
+  },
+  "getSeconds": "fn:",
+  "other": {
+   "object": "",
+   "props": {
+    "seconds": "num:-1",
+    "getSeconds": "fn:"
+   }
+  },
+  "shared": {
+   "object": "",
+   "props": {
+    "name": "str:shared",
+    "tick": "fn:tick",
+    "seconds": "num:11"
+   }
+  }
+ },
+ "sourceSha256": "ef7db3b57518843dd0ad76680dcb5bebe0e4c72fdaa9cb7d98c5a4bc73cd4971"
+}

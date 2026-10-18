@@ -9,7 +9,6 @@
  *  - __popFrame__(value, line) at a return or the function's closing brace,
  *    a step showing the returned value
  *  - Loop guards to prevent infinite loops
- *  - Rewrites console.log/warn/error to __logOutput__
  *  - Blocks eval() and new Function()
  */
 
@@ -45,6 +44,8 @@ export function instrument(source: string): string {
     sourceType: 'script',
     locations: true,
   }) as AnyNode;
+  // Each function's own text, before instrumentation changes it (#47).
+  const originalFunctions = functionTexts(ast, source);
 
   // Collect scope info: we walk the AST and build a scope tree
   // For simplicity, we do a two-pass approach:
@@ -59,8 +60,103 @@ export function instrument(source: string): string {
 var eval = undefined;
 `;
 
-  const generated = generate(ast);
-  return preamble + generated;
+  const body = preamble + generate(ast);
+  return programFacts(body, originalFunctions) + body;
+}
+
+// ── What the program could see of its instrumentation (#47) ──
+
+/** A function's text as Function.prototype.toString gives it, and what kind of function it is. */
+interface FunctionText { kind: string; text: string; line: number }
+
+/** Walk a tree in source order, with each node's parent. */
+function walkTree(node: AnyNode, visit: (n: AnyNode, parent: AnyNode | null) => void, parent: AnyNode | null = null): void {
+  if (!node || typeof node.type !== 'string') return;
+  visit(node, parent);
+  for (const [key, value] of Object.entries(node)) {
+    if (key === 'loc' || key.startsWith('_')) continue;
+    if (Array.isArray(value)) for (const v of value) walkTree(v, visit, node);
+    else if (value && typeof (value as AnyNode).type === 'string') walkTree(value, visit, node);
+  }
+}
+
+/**
+ * Every function and class of a program, in source order, with the text
+ * Function.prototype.toString returns for it: the node's own span; for a
+ * method, from its key (its get, async or * included, static not).
+ */
+function functionTexts(ast: AnyNode, text: string): FunctionText[] {
+  const out: FunctionText[] = [];
+  walkTree(ast, (node, parent) => {
+    if (node.type === 'ClassDeclaration' || node.type === 'ClassExpression') {
+      out.push({ kind: 'class', text: text.slice(node.start, node.end), line: node.loc?.start.line ?? 0 });
+    } else if (FUNCTION_TYPES.has(node.type)) {
+      if (node.id?.name === '__globals__') return;
+      const member = parent && parent.value === node && (parent.type === 'MethodDefinition' || (parent.type === 'Property' && (parent.method || parent.kind !== 'init'))) ? parent : null;
+      let start = member ? member.start : node.start;
+      if (member?.static) start += /^static\s*/.exec(text.slice(start))?.[0].length ?? 0;
+      out.push({ kind: member ? 'method' : node.type, text: text.slice(start, node.end), line: node.loc?.start.line ?? 0 });
+    }
+  });
+  return out;
+}
+
+/** The key the runtime finds a function's original text by: its instrumented text's length and hash. */
+export function sourceKey(text: string): string {
+  let h1 = 0xdeadbeef;
+  let h2 = 0x41c6ce57;
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charCodeAt(i);
+    h1 = Math.imul(h1 ^ c, 2654435761);
+    h2 = Math.imul(h2 ^ c, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return text.length + ':' + (h2 >>> 0).toString(36) + (h1 >>> 0).toString(36);
+}
+
+const STEP_CALLS = new Set(['__capture__', '__condition__', '__popFrame__', '__endScript__']);
+
+/**
+ * Two lines that go before the instrumented program, telling the runtime
+ * what the program must see instead of its instrumentation:
+ *   __programLines__([...]): the program's line for each line of the
+ *     instrumented code (the line of the step before it), so stack traces
+ *     name the program's lines;
+ *   __sourceTexts__({...}): each function's own text, by its instrumented
+ *     text's key, for Function.prototype.toString.
+ * If the instrumented program's functions don't line up with the
+ * program's, the texts are left out rather than risk a wrong one.
+ */
+function programFacts(body: string, originals: FunctionText[]): string {
+  const tree = acorn.parse(body, { ecmaVersion: 'latest', sourceType: 'script', locations: true }) as AnyNode;
+  const instrumented = functionTexts(tree, body);
+  const texts: Record<string, string> = {};
+  const marks: [number, number][] = [];
+  if (instrumented.length === originals.length && instrumented.every((f, i) => f.kind === originals[i].kind)) {
+    instrumented.forEach((f, i) => {
+      if (f.text !== originals[i].text) texts[sourceKey(f.text)] = originals[i].text;
+      marks.push([f.line, originals[i].line]);
+    });
+  }
+  walkTree(tree, node => {
+    if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier' || !STEP_CALLS.has(node.callee.name)) return;
+    const arg = node.arguments[node.callee.name === '__capture__' || node.callee.name === '__endScript__' ? 0 : 1];
+    const line = arg?.type === 'Literal' ? arg.value : arg?.type === 'ArrayExpression' ? arg.elements[0]?.value : null;
+    if (typeof line === 'number' && line > 0) marks.push([node.loc.start.line, line]);
+  });
+  // Line by line, the program's line of the nearest step at or before it (the two lines above come first).
+  marks.sort((a, b) => a[0] - b[0]);
+  const lineCount = body.split('\n').length;
+  // (index 0 is unused; the two lines of facts map to no line)
+  const lines: number[] = [0, 0, 0];
+  let m = 0;
+  let current = 0;
+  for (let line = 1; line <= lineCount; line++) {
+    while (m < marks.length && marks[m][0] <= line) current = marks[m++][1];
+    lines.push(current);
+  }
+  return `__programLines__(${JSON.stringify(lines)});\n__sourceTexts__(${JSON.stringify(texts)});\n`;
 }
 
 /**
@@ -243,6 +339,67 @@ function buildPushFrame(name: string, paramNames: string[], isBlockScope = false
   };
 }
 
+/** `const name = <push>`: the frame __pushFrame__ returns, kept to leave it later (__leave__). */
+function declareFrame(name: string, push: AnyNode, kind: 'var' | 'const' = 'const'): AnyNode {
+  return {
+    type: 'VariableDeclaration',
+    kind,
+    declarations: [{ type: 'VariableDeclarator', id: { type: 'Identifier', name }, init: push.expression }],
+  };
+}
+
+/** `__name__(args…)` */
+function runtimeCall(name: string, args: AnyNode[]): AnyNode {
+  return { type: 'CallExpression', callee: { type: 'Identifier', name }, arguments: args, optional: false };
+}
+
+/** `try { body } finally { __leave__(frame); }`: the frame comes off the stack however the code is left (#44). */
+function leaveAfter(body: AnyNode[], frame: string): AnyNode {
+  return {
+    type: 'TryStatement',
+    block: { type: 'BlockStatement', body },
+    handler: null,
+    finalizer: { type: 'BlockStatement', body: [{ type: 'ExpressionStatement', expression: runtimeCall('__leave__', [{ type: 'Identifier', name: frame }]) }] },
+  };
+}
+
+const FUNCTION_TYPES = new Set(['FunctionDeclaration', 'FunctionExpression', 'ArrowFunctionExpression', 'ClassDeclaration', 'ClassExpression']);
+
+/**
+ * A generator's or async function's frame leaves the stack at each `yield`
+ * and `await`, and comes back when the function resumes (#44), as a
+ * debugger's call stack shows it: `await x` becomes
+ * `__resume__(__fr__, await __suspend__(__fr__, x))`. A rejected `await`,
+ * `gen.throw()` and `gen.return()` resume the function in a catch or finally
+ * block instead, so each of those starts with `__resume__(__fr__)`. Nested
+ * functions and classes have frames of their own and are left alone.
+ */
+function suspendAtYieldAndAwait(node: AnyNode): void {
+  for (const key of Object.keys(node)) {
+    if (key === 'loc' || key.startsWith('_')) continue;
+    const child = node[key];
+    if (Array.isArray(child)) {
+      for (let i = 0; i < child.length; i++) if (child[i] && typeof child[i].type === 'string') child[i] = suspended(child[i]);
+    } else if (child && typeof child.type === 'string') {
+      node[key] = suspended(child);
+    }
+  }
+}
+
+function suspended(n: AnyNode): AnyNode {
+  if (FUNCTION_TYPES.has(n.type)) return n;
+  suspendAtYieldAndAwait(n);
+  const frame = { type: 'Identifier', name: '__fr__' };
+  if (n.type === 'AwaitExpression' || n.type === 'YieldExpression') {
+    const operand = runtimeCall('__suspend__', [frame, n.argument ?? { type: 'Identifier', name: 'undefined' }]);
+    return runtimeCall('__resume__', [frame, { ...n, argument: operand }]);
+  }
+  const resume = () => ({ type: 'ExpressionStatement', expression: runtimeCall('__resume__', [frame]) });
+  if (n.type === 'CatchClause') n.body.body.unshift(resume());
+  if (n.type === 'TryStatement' && n.finalizer) n.finalizer.body.unshift(resume());
+  return n;
+}
+
 /** `__popFrame__()`; with the line of a function's closing brace, a return step there showing `undefined`. */
 function buildPopFrame(endLine?: number): AnyNode {
   return {
@@ -394,19 +551,20 @@ function instrumentBlock(
 
     // Extract for-loop init so it gets its own capture step.
     // var and expression inits are hoisted/function-scoped, so extracting
-    // them before the for statement is safe.
-    if (stmt.type === 'ForStatement' && stmt.init) {
+    // them before the for statement (and its labels) is safe.
+    const loop = unlabeled(stmt);
+    if (loop.type === 'ForStatement' && loop.init) {
       // Stash test/update column ranges on the for-statement for instrumentLoop
-      if (stmt.test?.loc) stmt._testColRange = stmt.test.loc;
-      if (stmt.update?.loc) stmt._updateColRange = stmt.update.loc;
+      if (loop.test?.loc) loop._testColRange = loop.test.loc;
+      if (loop.update?.loc) loop._updateColRange = loop.update.loc;
 
-      if (stmt.init.type === 'VariableDeclaration' && stmt.init.kind === 'var') {
-        const initDecl = stmt.init;
+      if (loop.init.type === 'VariableDeclaration' && loop.init.kind === 'var') {
+        const initDecl = loop.init;
         initDecl._forColumnRange = initDecl.loc;
-        stmt.init = null;
+        loop.init = null;
         body.splice(i, 0, initDecl);
         continue; // re-process at index i, which now points to initDecl
-      } else if (stmt.init.type !== 'VariableDeclaration') {
+      } else if (loop.init.type !== 'VariableDeclaration') {
         // NOTE: `let`/`const` for-inits are intentionally NOT extracted out of
         // the for-statement. `for (let i = 0; ...; ...) { ... }` creates a
         // fresh per-iteration binding for `i` — closures inside the body
@@ -419,11 +577,11 @@ function instrumentBlock(
         // Expression init (e.g. i = 0)
         const exprStmt: AnyNode = {
           type: 'ExpressionStatement',
-          expression: stmt.init,
-          loc: stmt.init.loc,
-          _forColumnRange: stmt.init.loc,
+          expression: loop.init,
+          loc: loop.init.loc,
+          _forColumnRange: loop.init.loc,
         };
-        stmt.init = null;
+        loop.init = null;
         body.splice(i, 0, exprStmt);
         continue; // re-process at index i, which now points to exprStmt
       }
@@ -431,7 +589,7 @@ function instrumentBlock(
 
     // The step before the statement runs. Synthetic statements (loop guards,
     // frame pushes and pops) have no line and take no step.
-    if (line > 0 && takesStepBefore(stmt) && (!stmt._isBlockScopeInit || stmt._forColumnRange)) {
+    if (line > 0 && takesStepBefore(stepsLikeItsStatement(stmt)) && (!stmt._isBlockScopeInit || stmt._forColumnRange)) {
       body.splice(i, 0, buildCaptureExpression(visible(), line, stmt._forColumnRange ?? undefined));
       i += 1;
     }
@@ -467,13 +625,14 @@ function instrumentBlock(
       }
     }
 
-    // If instrumentLoop flagged a block-scope wrap (for while loops),
-    // replace body[i] with: { __pushFrame__('while',{},true); while(...){...}; __popFrame__(); }
-    // This keeps the block-scope frame alive during every condition check.
-    if (stmt._blockWrap) {
-      const { push, pop } = stmt._blockWrap as { push: AnyNode; pop: AnyNode };
-      delete stmt._blockWrap;
-      body[i] = { type: 'BlockStatement', body: [push, stmt, pop] };
+    // If instrumentLoop flagged a block-scope wrap (for while loops), replace body[i] with
+    // { const __bf__ = __pushFrame__('while', {}, true); try { while (...) {...} } finally { __leave__(__bf__); } }
+    // This keeps the block-scope frame alive during every condition check, and
+    // pops it however the loop is left: its test, break, a labeled break, a throw (#44).
+    if (loop._blockWrap) {
+      const { push } = loop._blockWrap as { push: AnyNode };
+      delete loop._blockWrap;
+      body[i] = { type: 'BlockStatement', body: [declareFrame('__bf__', push), leaveAfter([stmt], '__bf__')] };
     }
 
     // Remove block-scoped loop vars from the parent scope so they don't appear
@@ -488,15 +647,50 @@ function instrumentBlock(
     i += 1;
   }
 
-  // The program's last step: the final state, after its last statement ran.
-  if (isTopLevel && finalLine > 0) {
-    const final = buildCaptureExpression(visible(), finalLine);
-    // A final capture is a step even on the line the program last stepped at.
-    const args = final.expression.arguments;
-    while (args.length < 4) args.push({ type: 'Literal', value: null, raw: 'null' });
-    args.push({ type: 'Literal', value: true });
-    body.push(final);
+  // The script's last step: the state after its last statement ran
+  // (__endScript__, a step even on the line it last stepped at). The program's
+  // timers and promise callbacks run after it (#45). __globals__ reads every
+  // top-level name, for that step and to keep the Global frame current while
+  // functions and callbacks run.
+  if (isTopLevel) {
+    body.push(buildGlobalsReader(visible()));
+    body.push({ type: 'ExpressionStatement', expression: runtimeCall('__endScript__', [{ type: 'Literal', value: finalLine }]) });
   }
+}
+
+/**
+ * `function __globals__() { const g = { __proto__: null }; try { g["a"] = a; } catch (e) {} … return g; }`:
+ * each top-level name's value, leaving out those still in their temporal dead zone.
+ */
+function buildGlobalsReader(names: string[]): AnyNode {
+  const g = { type: 'Identifier', name: '__g__' };
+  const body: AnyNode[] = [{
+    type: 'VariableDeclaration',
+    kind: 'var',
+    declarations: [{
+      type: 'VariableDeclarator',
+      id: g,
+      init: { type: 'ObjectExpression', properties: [{ type: 'Property', key: { type: 'Identifier', name: '__proto__' }, value: { type: 'Literal', value: null, raw: 'null' }, kind: 'init', shorthand: false, computed: false, method: false }] },
+    }],
+  }];
+  for (const name of names) {
+    body.push({
+      type: 'TryStatement',
+      block: { type: 'BlockStatement', body: [{
+        type: 'ExpressionStatement',
+        expression: {
+          type: 'AssignmentExpression',
+          operator: '=',
+          left: { type: 'MemberExpression', object: g, property: { type: 'Literal', value: name }, computed: true, optional: false },
+          right: { type: 'Identifier', name },
+        },
+      }] },
+      handler: { type: 'CatchClause', param: { type: 'Identifier', name: '__e__' }, body: { type: 'BlockStatement', body: [] } },
+      finalizer: null,
+    });
+  }
+  body.push({ type: 'ReturnStatement', argument: g });
+  return { type: 'FunctionDeclaration', id: { type: 'Identifier', name: '__globals__' }, params: [], body: { type: 'BlockStatement', body }, generator: false, async: false };
 }
 
 /**
@@ -512,7 +706,6 @@ function takesStepBefore(stmt: AnyNode): boolean {
     case 'EmptyStatement':
     case 'BlockStatement':
     case 'TryStatement':
-    case 'LabeledStatement':
     case 'IfStatement':
     case 'WhileStatement':
     case 'DoWhileStatement':
@@ -522,6 +715,11 @@ function takesStepBefore(stmt: AnyNode): boolean {
     default:
       return true;
   }
+}
+
+/** A labeled statement takes the step its statement takes (#46). */
+function stepsLikeItsStatement(stmt: AnyNode): AnyNode {
+  return unlabeled(stmt);
 }
 
 /** The names a block's own let, const and class declarations introduce. */
@@ -537,20 +735,56 @@ function collectLexicalNames(body: AnyNode[]): string[] {
   return names;
 }
 
+/** The syntax JSTutor can't show yet: an error before the program runs, never code run unseen (#46). */
+export class UnsupportedSyntaxError extends Error {
+  line?: number;
+  constructor(node: AnyNode) {
+    super(`${describeNode(node)} isn't supported in JSTutor yet`);
+    this.name = 'UnsupportedSyntaxError';
+    this.line = node.loc?.start?.line;
+  }
+}
+
+function describeNode(node: AnyNode): string {
+  return node.type.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();
+}
+
+/** A labeled statement's statement, through any number of labels. */
+function unlabeled(stmt: AnyNode): AnyNode {
+  while (stmt.type === 'LabeledStatement') stmt = stmt.body;
+  return stmt;
+}
+
+/** A property or class member's name, as JavaScript names a function defined there. */
+function keyName(key: AnyNode): string | undefined {
+  if (key.type === 'Identifier') return key.name;
+  if (key.type === 'PrivateIdentifier') return '#' + key.name;
+  if (key.type === 'Literal') return String(key.value);
+  return undefined;
+}
+
+/** An anonymous function or class gets the name of what it is assigned to, as in JavaScript. */
+function inferName(node: AnyNode, name: string | undefined): void {
+  if (!node || !name) return;
+  const anonymous = (node.type === 'FunctionExpression' || node.type === 'ArrowFunctionExpression' || node.type === 'ClassExpression') && !node.id;
+  if (anonymous && !node._inferredName) node._inferredName = name;
+}
+
 /**
- * Instrument a single statement and its children.
+ * Instrument a single statement and its children. Every statement type is
+ * handled; one the instrumenter doesn't know is an UnsupportedSyntaxError,
+ * never a statement left to run unseen (#46).
  */
 function instrumentStatement(stmt: AnyNode, scopeVars: string[]): void {
   switch (stmt.type) {
     case 'FunctionDeclaration':
-    case 'FunctionExpression':
-    case 'ArrowFunctionExpression':
       instrumentFunction(stmt, scopeVars);
       break;
 
     case 'IfStatement':
-      // Wrap the test expression with __condition__ to track the decision
-      // (skip synthetic loop guard nodes)
+      // Functions in the test first, then the test is wrapped with __condition__
+      // to track the decision (not the synthetic loop guard's).
+      instrumentExpression(stmt.test, scopeVars);
       if (!stmt._isLoopGuard) {
         stmt.test = buildConditionWrapper(stmt.test, undefined, scopeVars);
       }
@@ -574,16 +808,20 @@ function instrumentStatement(stmt: AnyNode, scopeVars: string[]): void {
     case 'ForStatement':
     case 'ForInStatement':
     case 'ForOfStatement':
-      instrumentLoop(stmt, scopeVars);
-      break;
-
     case 'WhileStatement':
     case 'DoWhileStatement':
       instrumentLoop(stmt, scopeVars);
       break;
 
+    case 'LabeledStatement':
+      // A labeled loop is a loop, a labeled block a block (#46).
+      instrumentStatement(stmt.body, scopeVars);
+      break;
+
     case 'SwitchStatement':
+      instrumentExpression(stmt.discriminant, scopeVars);
       for (const c of stmt.cases) {
+        if (c.test) instrumentExpression(c.test, scopeVars);
         if (c.consequent && c.consequent.length > 0) {
           instrumentBlock(c.consequent, scopeVars, false);
         }
@@ -597,6 +835,7 @@ function instrumentStatement(stmt: AnyNode, scopeVars: string[]): void {
       if (stmt.handler && stmt.handler.body) {
         const catchVars = [...scopeVars];
         if (stmt.handler.param) {
+          instrumentExpression(stmt.handler.param, scopeVars);
           extractPatternNames(stmt.handler.param, catchVars);
         }
         instrumentBlock(stmt.handler.body.body, catchVars, false);
@@ -611,12 +850,10 @@ function instrumentStatement(stmt: AnyNode, scopeVars: string[]): void {
       break;
 
     case 'VariableDeclaration':
-      // Check if any init is a function expression, instrument it
       for (const decl of stmt.declarations) {
+        instrumentExpression(decl.id, scopeVars);
         if (decl.init) {
-          if ((decl.init.type === 'ArrowFunctionExpression' || decl.init.type === 'FunctionExpression') && !decl.init.id && decl.id.type === 'Identifier') {
-            decl.init._inferredName = decl.id.name;
-          }
+          if (decl.id.type === 'Identifier') inferName(decl.init, decl.id.name);
           instrumentExpression(decl.init, scopeVars);
         }
       }
@@ -627,20 +864,55 @@ function instrumentStatement(stmt: AnyNode, scopeVars: string[]): void {
       break;
 
     case 'ReturnStatement':
+    case 'ThrowStatement':
       if (stmt.argument) {
         instrumentExpression(stmt.argument, scopeVars);
       }
       break;
 
     case 'ClassDeclaration':
-    case 'ClassExpression':
       instrumentClass(stmt, scopeVars);
       break;
+
+    case 'WithStatement':
+      instrumentExpression(stmt.object, scopeVars);
+      if (stmt.body.type !== 'BlockStatement') stmt.body = { type: 'BlockStatement', body: [stmt.body] };
+      instrumentBlock(stmt.body.body, scopeVars, false);
+      break;
+
+    case 'EmptyStatement':
+    case 'BreakStatement':
+    case 'ContinueStatement':
+    case 'DebuggerStatement':
+      break;
+
+    default:
+      throw new UnsupportedSyntaxError(stmt);
   }
 }
 
 /**
- * Walk expressions to find nested functions, arrow functions, etc.
+ * The parts of each expression (and destructuring pattern) that can hold
+ * code: instrumentExpression walks them to reach every function, wherever it
+ * is (an argument of new, a call in a member chain, after ! or await,
+ * a default value). A type missing here is an UnsupportedSyntaxError (#46).
+ */
+const EXPRESSION_CHILDREN: Record<string, readonly string[]> = {
+  Identifier: [], Literal: [], ThisExpression: [], Super: [], MetaProperty: [], PrivateIdentifier: [], TemplateElement: [],
+  ArrayExpression: ['elements'], ObjectExpression: ['properties'], Property: ['key', 'value'], SpreadElement: ['argument'],
+  UnaryExpression: ['argument'], UpdateExpression: ['argument'], AwaitExpression: ['argument'], YieldExpression: ['argument'],
+  BinaryExpression: ['left', 'right'], LogicalExpression: ['left', 'right'], AssignmentExpression: ['left', 'right'],
+  ConditionalExpression: ['test', 'consequent', 'alternate'],
+  CallExpression: ['callee', 'arguments'], NewExpression: ['callee', 'arguments'],
+  MemberExpression: ['object', 'property'], ChainExpression: ['expression'], SequenceExpression: ['expressions'],
+  TemplateLiteral: ['expressions'], TaggedTemplateExpression: ['tag', 'quasi'], ParenthesizedExpression: ['expression'],
+  ImportExpression: ['source', 'options'],
+  ObjectPattern: ['properties'], ArrayPattern: ['elements'], AssignmentPattern: ['left', 'right'], RestElement: ['argument'],
+};
+
+/**
+ * Walk an expression (or pattern) to instrument every function and class in
+ * it, naming anonymous ones as JavaScript does.
  */
 function instrumentExpression(expr: AnyNode, scopeVars: string[]): void {
   if (!expr) return;
@@ -649,52 +921,25 @@ function instrumentExpression(expr: AnyNode, scopeVars: string[]): void {
     case 'FunctionExpression':
     case 'ArrowFunctionExpression':
       instrumentFunction(expr, scopeVars);
-      break;
-
-    case 'CallExpression':
-      instrumentExpression(expr.callee, scopeVars);
-      for (const arg of expr.arguments) {
-        instrumentExpression(arg, scopeVars);
-      }
-      break;
-
-    case 'AssignmentExpression':
-      instrumentExpression(expr.right, scopeVars);
-      break;
-
-    case 'BinaryExpression':
-    case 'LogicalExpression':
-      instrumentExpression(expr.left, scopeVars);
-      instrumentExpression(expr.right, scopeVars);
-      break;
-
-    case 'ConditionalExpression':
-      instrumentExpression(expr.test, scopeVars);
-      instrumentExpression(expr.consequent, scopeVars);
-      instrumentExpression(expr.alternate, scopeVars);
-      break;
-
-    case 'ArrayExpression':
-      for (const elem of expr.elements) {
-        if (elem) instrumentExpression(elem, scopeVars);
-      }
-      break;
-
-    case 'ObjectExpression':
-      for (const prop of expr.properties) {
-        if (prop.value) instrumentExpression(prop.value, scopeVars);
-      }
-      break;
-
+      return;
     case 'ClassExpression':
       instrumentClass(expr, scopeVars);
-      break;
+      return;
+  }
 
-    case 'TemplateLiteral':
-      for (const e of expr.expressions) {
-        instrumentExpression(e, scopeVars);
-      }
-      break;
+  const children = EXPRESSION_CHILDREN[expr.type];
+  if (!children) throw new UnsupportedSyntaxError(expr);
+  if (expr.type === 'Property' && !expr.computed) inferName(expr.value, keyName(expr.key));
+  if ((expr.type === 'AssignmentExpression' || expr.type === 'AssignmentPattern') && expr.left.type === 'Identifier') {
+    inferName(expr.right, expr.left.name);
+  }
+  for (const key of children) {
+    const child = expr[key];
+    if (Array.isArray(child)) {
+      for (const c of child) if (c) instrumentExpression(c, scopeVars);
+    } else if (child) {
+      instrumentExpression(child, scopeVars);
+    }
   }
 }
 
@@ -752,6 +997,8 @@ function instrumentFunction(fn: AnyNode, _parentVars: string[]): void {
   // Scope: params are available immediately; local declarations will be
   // discovered incrementally by instrumentBlock to avoid TDZ errors.
   const fnScopeVars = [...paramNames];
+  // Functions in the parameters' default values (#46).
+  for (const param of fn.params) instrumentExpression(param, fnScopeVars);
 
   // Instrument body statements. The capture before the first one is the
   // step entering the function, with its parameters bound (instrumentFunction
@@ -759,55 +1006,31 @@ function instrumentFunction(fn: AnyNode, _parentVars: string[]): void {
   instrumentBlock(body, fnScopeVars, false);
 
   // Wrap return values so the frame pops AFTER the expression evaluates.
-  // Do this BEFORE wrapping the body in try/catch — otherwise the recursion
+  // Do this BEFORE wrapping the body in try/finally — otherwise the recursion
   // into the user-level try would also rewrite our synthetic try.
   wrapReturnsWithPopFrame(body);
 
-  // Wrap the entire body in `try { ... } catch (e) { __popThrowingFrame__(); throw e; }`
-  // so that throws which propagate out of the function still pop the frame.
-  // Without this, a `throw` skips the trailing __popFrame__ at the bottom of
-  // the body and the frame leaks onto every subsequent visualization.
+  // A generator's or async function's frame leaves the stack at each yield
+  // and await, and comes back when it resumes (#44).
+  if (fn.async || fn.generator) suspendAtYieldAndAwait({ type: 'BlockStatement', body });
+
+  // Wrap the body in `try { ... } finally { __leave__(__fr__); }`, so the
+  // frame (and any loop frames above it) leaves the stack however the
+  // function ends: a return (whose __popFrame__ has already popped it), a
+  // throw, or a generator's return(). Without it, a throw skips the trailing
+  // __popFrame__ and the frame leaks onto every later step.
   const userBody = body.splice(0, body.length);
   // The fall-through pop sits inside the try; reaching the closing brace is a
   // return step there (an arrow function's expression body returns before it).
   userBody.push(buildPopFrame(fnEndLine));
+  body.push(leaveAfter(userBody, '__fr__'));
 
-  const tryStmt: AnyNode = {
-    type: 'TryStatement',
-    block: { type: 'BlockStatement', body: userBody },
-    handler: {
-      type: 'CatchClause',
-      param: { type: 'Identifier', name: '__e__' },
-      body: {
-        type: 'BlockStatement',
-        body: [
-          {
-            type: 'ExpressionStatement',
-            expression: {
-              type: 'CallExpression',
-              callee: { type: 'Identifier', name: '__popThrowingFrame__' },
-              arguments: [],
-              optional: false,
-            },
-          },
-          {
-            type: 'ThrowStatement',
-            argument: { type: 'Identifier', name: '__e__' },
-          },
-        ],
-      },
-    },
-    finalizer: null,
-  };
-  body.push(tryStmt);
-
-  // Insert __pushFrame__ at the very beginning of the function body (outside
-  // the try) so that the frame is pushed before any user-visible operation,
-  // including the try entry.
+  // The frame is pushed at the very beginning of the function body (outside
+  // the try), before any user-visible operation, and kept as __fr__.
   // Arrow functions don't have their own `this`, so only capture it for regular functions.
-  // Derived class constructors must not read `this` before super() returns.
+  // Derived class constructors must not read \`this\` before super() returns.
   const captureThis = fn.type !== 'ArrowFunctionExpression' && !fn._skipThisCapture;
-  body.unshift(buildPushFrame(name, paramNames, false, _closureVarNames, captureThis));
+  body.unshift(declareFrame('__fr__', buildPushFrame(name, paramNames, false, _closureVarNames, captureThis), 'var'));
 
   // Restore saved state
   _functionDepth = savedFunctionDepth;
@@ -903,6 +1126,23 @@ function wrapReturnsInBranches(stmt: AnyNode): void {
  * Instrument a loop statement (for, while, do-while, for-in, for-of).
  */
 function instrumentLoop(stmt: AnyNode, scopeVars: string[]): void {
+  // The functions in the loop's head: a for's declarations, test and update, a
+  // for-in/for-of's target and source, a while's test (#46).
+  if (stmt.init) {
+    if (stmt.init.type === 'VariableDeclaration') {
+      for (const decl of stmt.init.declarations) { instrumentExpression(decl.id, scopeVars); if (decl.init) instrumentExpression(decl.init, scopeVars); }
+    } else {
+      instrumentExpression(stmt.init, scopeVars);
+    }
+  }
+  if (stmt.test) instrumentExpression(stmt.test, scopeVars);
+  if (stmt.update) instrumentExpression(stmt.update, scopeVars);
+  if (stmt.right) instrumentExpression(stmt.right, scopeVars);
+  if (stmt.left) {
+    if (stmt.left.type === 'VariableDeclaration') for (const decl of stmt.left.declarations) instrumentExpression(decl.id, scopeVars);
+    else instrumentExpression(stmt.left, scopeVars);
+  }
+
   // Collect loop-specific variable declarations
   const loopVars = [...scopeVars];
   const blockScopedVars: string[] = [];
@@ -1015,21 +1255,21 @@ function instrumentLoop(stmt: AnyNode, scopeVars: string[]): void {
     // (TDZ), so push with empty params — they'll appear in subsequent captures.
     const isWhileStyle = stmt.type === 'WhileStatement' || stmt.type === 'DoWhileStatement';
     const pushNode = buildPushFrame(loopName, isWhileStyle ? [] : blockScopedVars, true);
-    const popNode = buildPopFrame();
 
     if (stmt.type === 'ForStatement' && stmt.init === null) {
       // let/const init was pre-extracted into the parent block: push/pop go in a
       // wrapper block around the for statement so the frame is alive during every
       // condition check. instrumentBlock will apply the wrapper after this returns.
-      stmt._blockWrap = { push: pushNode, pop: popNode };
+      stmt._blockWrap = { push: pushNode };
     } else if (isWhileStyle) {
       // while/do-while: wrap the loop so the block frame is alive during condition
       // checks (same approach as for-loops with extracted init).
-      stmt._blockWrap = { push: pushNode, pop: popNode };
+      stmt._blockWrap = { push: pushNode };
     } else {
-      // for...in / for...of: no separate condition step, so push/pop inside body is fine
+      // for...in / for...of: no separate condition step, so the frame is pushed
+      // in the body (per-iteration bindings) and left in a finally, once the
+      // body is instrumented, so continue and break pop it too (#44).
       stmt.body.body.splice(1, 0, pushNode);
-      stmt.body.body.push(popNode);
     }
 
     // Set parent var context so captures distribute vars correctly.
@@ -1053,6 +1293,13 @@ function instrumentLoop(stmt: AnyNode, scopeVars: string[]): void {
 
     instrumentBlock(stmt.body.body, effectiveLoopVars, false);
 
+    const pushAt = stmt.body.body.indexOf(pushNode);
+    if (pushAt !== -1) {
+      const rest = stmt.body.body.splice(pushAt + 1);
+      stmt.body.body[pushAt] = declareFrame('__bf__', pushNode);
+      stmt.body.body.push(leaveAfter(rest, '__bf__'));
+    }
+
     _parentVarNames = savedParentVarNames;
   } else {
     // No block-scoped vars (e.g. var-based loop) — normal instrumentation
@@ -1061,25 +1308,64 @@ function instrumentLoop(stmt: AnyNode, scopeVars: string[]): void {
 }
 
 /**
- * Instrument a class declaration/expression.
+ * Instrument a class declaration/expression: its methods, its fields'
+ * values (an arrow function in a field is a common idiom), its static blocks,
+ * computed keys and the superclass expression (#46).
  */
 function instrumentClass(cls: AnyNode, scopeVars: string[]): void {
   const isDerived = !!cls.superClass;
-  if (cls.body?.body) {
-    for (const method of cls.body.body) {
-      if (method.type === 'MethodDefinition' && method.value) {
-        // In a derived class constructor, `this` is unbound until super()
-        // returns. Reading it (e.g. as the 5th arg to __pushFrame__) throws
-        // a ReferenceError, so flag the constructor to skip the this capture.
-        if (isDerived && method.kind === 'constructor') {
-          method.value._skipThisCapture = true;
-        }
-        const key = method.key;
-        method.value._inferredName = method.kind === 'constructor' ? cls.id?.name
-          : method.computed ? undefined
-            : key.type === 'Identifier' ? key.name : key.type === 'PrivateIdentifier' ? '#' + key.name : key.type === 'Literal' ? String(key.value) : undefined;
-        instrumentFunction(method.value, scopeVars);
+  if (cls.superClass) instrumentExpression(cls.superClass, scopeVars);
+  const className: string | undefined = cls.id?.name ?? cls._inferredName;
+  for (const member of cls.body?.body ?? []) {
+    if (member.computed) instrumentExpression(member.key, scopeVars);
+    if (member.type === 'MethodDefinition') {
+      // In a derived class constructor, `this` is unbound until super()
+      // returns. Reading it (e.g. as the 5th arg to __pushFrame__) throws
+      // a ReferenceError, so flag the constructor to skip the this capture.
+      if (isDerived && member.kind === 'constructor') {
+        member.value._skipThisCapture = true;
       }
+      member.value._inferredName = member.kind === 'constructor' ? className
+        : member.computed ? undefined : keyName(member.key);
+      instrumentFunction(member.value, scopeVars);
+    } else if (member.type === 'PropertyDefinition') {
+      if (member.value) {
+        if (!member.computed) inferName(member.value, keyName(member.key));
+        instrumentExpression(member.value, scopeVars);
+      }
+    } else if (member.type === 'StaticBlock') {
+      instrumentStaticBlock(member, scopeVars);
+    } else {
+      throw new UnsupportedSyntaxError(member);
     }
   }
+}
+
+/**
+ * A static block runs once, when its class is defined, like a function body
+ * whose `this` is the class: it gets a frame, named as V8's debugger
+ * names it, and steps (#46).
+ */
+function instrumentStaticBlock(block: AnyNode, scopeVars: string[]): void {
+  const savedParentVarNames = _parentVarNames;
+  const savedClosureVarNames = _closureVarNames;
+  const savedFunctionDepth = _functionDepth;
+  _parentVarNames = null;
+  _functionDepth++;
+  const outerClosureVars = _functionDepth > 1 ? scopeVars.slice() : null;
+  if (outerClosureVars && savedClosureVarNames) {
+    for (const name of savedClosureVarNames) if (!outerClosureVars.includes(name)) outerClosureVars.push(name);
+  }
+  _closureVarNames = outerClosureVars;
+
+  instrumentBlock(block.body, [], false);
+  const body = block.body.splice(0, block.body.length);
+  block.body.push(
+    declareFrame('__fr__', buildPushFrame('<static_initializer>', [], false, _closureVarNames, true), 'var'),
+    leaveAfter(body, '__fr__'),
+  );
+
+  _functionDepth = savedFunctionDepth;
+  _closureVarNames = savedClosureVarNames;
+  _parentVarNames = savedParentVarNames;
 }

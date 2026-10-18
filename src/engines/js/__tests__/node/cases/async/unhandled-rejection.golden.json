@@ -1,0 +1,56 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "main called"
+  },
+  {
+   "stream": "stdout",
+   "text": "valid 30"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:main called"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:valid",
+    "num:30"
+   ]
+  }
+ ],
+ "uncaught": [
+  {
+   "name": "RangeError",
+   "message": "age cannot be negative: -3",
+   "where": "promise",
+   "consoleLines": 2
+  }
+ ],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  7,
+  8,
+  9,
+  12,
+  13,
+  14
+ ],
+ "statementRuns": 10,
+ "functionCalls": 3,
+ "finalGlobals": {
+  "validate": "fn:validate",
+  "main": "fn:main",
+  "started": "boolean:true"
+ },
+ "sourceSha256": "feb7d7c3d08fd2202d284ae41e512d2ec0ee441baeb430e369bae05b6d3675f8"
+}

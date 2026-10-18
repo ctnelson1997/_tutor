@@ -1,0 +1,257 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "73.75"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ ann: 65.5, bob: 72, cy: 8.25 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "5"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ '1. #1 ANN', '2. #2 BOB', '3. #3 ANN', '4. #4 CY', '5. #5 BOB' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 1, NaN, 2 ] [ 1, 2, 10 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ m: 1, i: 4, s: 4, p: 2 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "29.15"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'paid', 'pending', 'refunded' ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:73.75"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "ann": "num:65.5",
+      "bob": "num:72",
+      "cy": "num:8.25"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:5"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:1. #1 ANN",
+      "str:2. #2 BOB",
+      "str:3. #3 ANN",
+      "str:4. #4 CY",
+      "str:5. #5 BOB"
+     ],
+     "len": 5
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:1",
+      "num:NaN",
+      "num:2"
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "num:1",
+      "num:2",
+      "num:10"
+     ],
+     "len": 3
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "m": "num:1",
+      "i": "num:4",
+      "s": "num:4",
+      "p": "num:2"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:29.15"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:paid",
+      "str:pending",
+      "str:refunded"
+     ],
+     "len": 3
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  10,
+  14,
+  16,
+  17,
+  18,
+  20,
+  22,
+  23,
+  25,
+  26,
+  28,
+  29,
+  30,
+  31,
+  32,
+  33,
+  34
+ ],
+ "statementRuns": 26,
+ "functionCalls": 51,
+ "finalGlobals": {
+  "orders": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "id": "num:1",
+      "customer": "str:ann",
+      "total": "num:25.5",
+      "status": "str:paid"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "id": "num:2",
+      "customer": "str:bob",
+      "total": "num:12",
+      "status": "str:pending"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "id": "num:3",
+      "customer": "str:ann",
+      "total": "num:40",
+      "status": "str:paid"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "id": "num:4",
+      "customer": "str:cy",
+      "total": "num:8.25",
+      "status": "str:paid"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "id": "num:5",
+      "customer": "str:bob",
+      "total": "num:60",
+      "status": "str:refunded"
+     }
+    }
+   ],
+   "len": 5
+  },
+  "paidTotal": "num:73.75",
+  "byCustomer": {
+   "object": "",
+   "props": {
+    "ann": "num:65.5",
+    "bob": "num:72",
+    "cy": "num:8.25"
+   }
+  },
+  "biggest": {
+   "object": "",
+   "props": {
+    "id": "num:5",
+    "customer": "str:bob",
+    "total": "num:60",
+    "status": "str:refunded"
+   }
+  },
+  "labels": {
+   "array": [
+    "str:1. #1 ANN",
+    "str:2. #2 BOB",
+    "str:3. #3 ANN",
+    "str:4. #4 CY",
+    "str:5. #5 BOB"
+   ],
+   "len": 5
+  },
+  "counts": {
+   "object": "",
+   "props": {
+    "m": "num:1",
+    "i": "num:4",
+    "s": "num:4",
+    "p": "num:2"
+   }
+  },
+  "avg": "num:29.15",
+  "statusList": {
+   "array": [
+    "str:paid",
+    "str:pending",
+    "str:refunded"
+   ],
+   "len": 3
+  }
+ },
+ "sourceSha256": "696102eef78f87ce02f4b3058c692e4cc06c1dde6c83e6672471bed36c3c47a0"
+}

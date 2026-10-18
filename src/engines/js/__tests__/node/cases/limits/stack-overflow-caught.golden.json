@@ -1,0 +1,77 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "true RangeError"
+  },
+  {
+   "stream": "stdout",
+   "text": "Maximum call stack size exceeded"
+  },
+  {
+   "stream": "stdout",
+   "text": "went deeper than 1000 calls: true"
+  },
+  {
+   "stream": "stdout",
+   "text": "still running RangeError"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "boolean:true",
+    "str:RangeError"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Maximum call stack size exceeded"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:went deeper than 1000 calls:",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:still running",
+    "str:RangeError"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  4,
+  5,
+  7,
+  9,
+  11,
+  12,
+  13,
+  15,
+  16,
+  17
+ ],
+ "statementRuns": 10000,
+ "functionCalls": 10000,
+ "finalGlobals": {
+  "deep": "boolean:true",
+  "dive": "fn:dive",
+  "caught": {
+   "error": "RangeError: Maximum call stack size exceeded"
+  },
+  "recovered": "str:still running"
+ },
+ "sourceSha256": "6da8c80933ad9d68b23a68654b0fe96d7bc5b4c98f9687e3fc30822b6d4c25ce"
+}

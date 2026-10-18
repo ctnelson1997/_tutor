@@ -1,0 +1,422 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "["
+  },
+  {
+   "stream": "stdout",
+   "text": "  -3,  1, 10, 100,"
+  },
+  {
+   "stream": "stdout",
+   "text": "   2, 25,  9"
+  },
+  {
+   "stream": "stdout",
+   "text": "] true"
+  },
+  {
+   "stream": "stdout",
+   "text": "["
+  },
+  {
+   "stream": "stdout",
+   "text": "  -3,  1,   2, 9,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  10, 25, 100"
+  },
+  {
+   "stream": "stdout",
+   "text": "]"
+  },
+  {
+   "stream": "stdout",
+   "text": "["
+  },
+  {
+   "stream": "stdout",
+   "text": "  100, 25, 10, 9,"
+  },
+  {
+   "stream": "stdout",
+   "text": "    2,  1, -3"
+  },
+  {
+   "stream": "stdout",
+   "text": "]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'Apple', 'Banana', 'apple', 'banana', 'cherry' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'Apple', 'apple', 'banana', 'Banana', 'cherry' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 1, 2, 3, null, undefined, undefined ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Eve:95 Ann:90 Cat:90 Bob:85 Dan:85"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'a', 'e', 'bb', 'dd', 'ccc' ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 1, 2, 3, 4, 5 ] true"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ false, true, true ] [ 0.25, 0.5, 1e+21, 3 ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:-3",
+      "num:1",
+      "num:10",
+      "num:100",
+      "num:2",
+      "num:25",
+      "num:9"
+     ],
+     "len": 7
+    },
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:-3",
+      "num:1",
+      "num:2",
+      "num:9",
+      "num:10",
+      "num:25",
+      "num:100"
+     ],
+     "len": 7
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:100",
+      "num:25",
+      "num:10",
+      "num:9",
+      "num:2",
+      "num:1",
+      "num:-3"
+     ],
+     "len": 7
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:Apple",
+      "str:Banana",
+      "str:apple",
+      "str:banana",
+      "str:cherry"
+     ],
+     "len": 5
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:Apple",
+      "str:apple",
+      "str:banana",
+      "str:Banana",
+      "str:cherry"
+     ],
+     "len": 5
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:1",
+      "num:2",
+      "num:3",
+      "null",
+      "undefined",
+      "undefined"
+     ],
+     "len": 6
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Eve:95 Ann:90 Cat:90 Bob:85 Dan:85"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:a",
+      "str:e",
+      "str:bb",
+      "str:dd",
+      "str:ccc"
+     ],
+     "len": 5
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:1",
+      "num:2",
+      "num:3",
+      "num:4",
+      "num:5"
+     ],
+     "len": 5
+    },
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "boolean:false",
+      "boolean:true",
+      "boolean:true"
+     ],
+     "len": 3
+    },
+    {
+     "array": [
+      "num:0.25",
+      "num:0.5",
+      "num:1e+21",
+      "num:3"
+     ],
+     "len": 4
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  11,
+  12,
+  13,
+  14,
+  16,
+  17,
+  19,
+  26,
+  27,
+  28,
+  29,
+  30,
+  31,
+  32,
+  33,
+  35,
+  36
+ ],
+ "statementRuns": 31,
+ "functionCalls": 74,
+ "finalGlobals": {
+  "nums": {
+   "array": [
+    "num:100",
+    "num:25",
+    "num:10",
+    "num:9",
+    "num:2",
+    "num:1",
+    "num:-3"
+   ],
+   "len": 7
+  },
+  "alias": {
+   "array": [
+    "num:100",
+    "num:25",
+    "num:10",
+    "num:9",
+    "num:2",
+    "num:1",
+    "num:-3"
+   ],
+   "len": 7
+  },
+  "words": {
+   "array": [
+    "str:banana",
+    "str:Apple",
+    "str:cherry",
+    "str:apple",
+    "str:Banana"
+   ],
+   "len": 5
+  },
+  "lower": "fn:lower",
+  "mixed": {
+   "array": [
+    "num:1",
+    "num:2",
+    "num:3",
+    "null",
+    "undefined",
+    "undefined"
+   ],
+   "len": 6
+  },
+  "students": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:Ann",
+      "grade": "num:90"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Bob",
+      "grade": "num:85"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Cat",
+      "grade": "num:90"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Dan",
+      "grade": "num:85"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Eve",
+      "grade": "num:95"
+     }
+    }
+   ],
+   "len": 5
+  },
+  "byGrade": {
+   "array": [
+    {
+     "object": "",
+     "props": {
+      "name": "str:Eve",
+      "grade": "num:95"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Ann",
+      "grade": "num:90"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Cat",
+      "grade": "num:90"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Bob",
+      "grade": "num:85"
+     }
+    },
+    {
+     "object": "",
+     "props": {
+      "name": "str:Dan",
+      "grade": "num:85"
+     }
+    }
+   ],
+   "len": 5
+  },
+  "byLen": {
+   "array": [
+    "str:a",
+    "str:e",
+    "str:bb",
+    "str:dd",
+    "str:ccc"
+   ],
+   "len": 5
+  },
+  "comparisons": "num:4",
+  "sorted": {
+   "array": [
+    "num:1",
+    "num:2",
+    "num:3",
+    "num:4",
+    "num:5"
+   ],
+   "len": 5
+  }
+ },
+ "sourceSha256": "4599c81d5800f703ca880dda5c6f48ce9826e26fc1b4eab7f4bddb0a66c1d84d"
+}

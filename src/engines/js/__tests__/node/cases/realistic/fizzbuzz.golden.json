@@ -1,0 +1,297 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "1"
+  },
+  {
+   "stream": "stdout",
+   "text": "2"
+  },
+  {
+   "stream": "stdout",
+   "text": "Fizz"
+  },
+  {
+   "stream": "stdout",
+   "text": "4"
+  },
+  {
+   "stream": "stdout",
+   "text": "Buzz"
+  },
+  {
+   "stream": "stdout",
+   "text": "Fizz"
+  },
+  {
+   "stream": "stdout",
+   "text": "7"
+  },
+  {
+   "stream": "stdout",
+   "text": "8"
+  },
+  {
+   "stream": "stdout",
+   "text": "Fizz"
+  },
+  {
+   "stream": "stdout",
+   "text": "Buzz"
+  },
+  {
+   "stream": "stdout",
+   "text": "11"
+  },
+  {
+   "stream": "stdout",
+   "text": "Fizz"
+  },
+  {
+   "stream": "stdout",
+   "text": "13"
+  },
+  {
+   "stream": "stdout",
+   "text": "14"
+  },
+  {
+   "stream": "stdout",
+   "text": "FizzBuzz"
+  },
+  {
+   "stream": "stdout",
+   "text": "16"
+  },
+  {
+   "stream": "stdout",
+   "text": "17"
+  },
+  {
+   "stream": "stdout",
+   "text": "Fizz"
+  },
+  {
+   "stream": "stdout",
+   "text": "19"
+  },
+  {
+   "stream": "stdout",
+   "text": "Buzz"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ Fizz: 5, Buzz: 3, FizzBuzz: 1, number: 11 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "Loop variable after the loop: 21"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Fizz"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:4"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Buzz"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Fizz"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:7"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:8"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Fizz"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Buzz"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:11"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Fizz"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:13"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:14"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:FizzBuzz"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:16"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:17"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Fizz"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:19"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Buzz"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "",
+     "props": {
+      "Fizz": "num:5",
+      "Buzz": "num:3",
+      "FizzBuzz": "num:1",
+      "number": "num:11"
+     }
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:Loop variable after the loop: 21"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  14,
+  16,
+  17,
+  19,
+  21,
+  22,
+  25,
+  26
+ ],
+ "statementRuns": 178,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "counts": {
+   "object": "",
+   "props": {
+    "Fizz": "num:5",
+    "Buzz": "num:3",
+    "FizzBuzz": "num:1",
+    "number": "num:11"
+   }
+  },
+  "output": {
+   "array": [
+    "num:1",
+    "num:2",
+    "str:Fizz",
+    "num:4",
+    "str:Buzz",
+    "str:Fizz",
+    "num:7",
+    "num:8",
+    "str:Fizz",
+    "str:Buzz",
+    "num:11",
+    "str:Fizz",
+    "num:13",
+    "num:14",
+    "str:FizzBuzz",
+    "num:16",
+    "num:17",
+    "str:Fizz",
+    "num:19",
+    "str:Buzz"
+   ],
+   "len": 20
+  }
+ },
+ "sourceSha256": "7ce917d8390ada6fb24c47e74b2707d3b7e05ee83b516a452a1573ae89352d04"
+}
