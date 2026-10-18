@@ -32,6 +32,72 @@ describe('instrument', () => {
     expect(count).toBeGreaterThanOrEqual(3);
   });
 
+  // ── #44: frames leave with their code ──
+
+  it("keeps each function's frame and leaves it in a finally", () => {
+    const out = instrument(`function f(a) {
+  if (a) throw new Error("x");
+  return a;
+}`);
+    expect(out).toContain('var __fr__ = __pushFrame__("f"');
+    expect(out).toMatch(/finally \{\s*__leave__\(__fr__\);\s*\}/);
+    expect(out).not.toContain('__popThrowingFrame__');
+  });
+
+  it('leaves a loop frame in a finally, so break and continue pop it', () => {
+    const forOf = instrument(`for (const x of [1, 2]) {
+  if (x) continue;
+  break;
+}`);
+    expect(forOf).toContain('const __bf__ = __pushFrame__("for...of"');
+    expect(forOf).toMatch(/finally \{\s*__leave__\(__bf__\);\s*\}/);
+    const whileLet = instrument(`let n = 0;
+while (n < 3) {
+  let m = n;
+  n++;
+}`);
+    expect(whileLet).toMatch(/const __bf__ = __pushFrame__\("while"[^]*try \{\s*while/);
+    expect(whileLet).not.toMatch(/__popFrame__\(\);/);
+  });
+
+  it("suspends a generator's or async function's frame at yield and await, and resumes it in catch and finally", () => {
+    const out = instrument(`async function f() {
+  try {
+    await g();
+  } catch (e) {
+    log(e);
+  } finally {
+    done();
+  }
+  const inner = () => 1;
+}
+function* h() {
+  yield 1;
+  const v = yield;
+  yield* [v];
+}`);
+    expect(out).toContain('__resume__(__fr__, await __suspend__(__fr__, g()))');
+    expect(out).toMatch(/catch \(e\) \{\s*__resume__\(__fr__\);/);
+    expect(out).toMatch(/finally \{\s*__resume__\(__fr__\);\s*__capture__/);
+    expect(out).toContain('__resume__(__fr__, yield __suspend__(__fr__, 1))');
+    expect(out).toContain('__resume__(__fr__, yield __suspend__(__fr__, undefined))');
+    expect(out).toContain('__resume__(__fr__, yield* __suspend__(__fr__, [v]))');
+  });
+
+  it('leaves plain functions without suspension calls, and nested functions to themselves', () => {
+    const out = instrument(`function plain() {
+  try { a(); } catch (e) {}
+}
+async function outer() {
+  const f = function () { try { b(); } catch (e) {} };
+  await f();
+}`);
+    const plain = out.slice(out.indexOf('function plain'), out.indexOf('async function outer'));
+    expect(plain).not.toContain('__resume__');
+    const nested = out.slice(out.indexOf('const f = function'), out.indexOf('__capture__(6'));
+    expect(nested).not.toContain('__resume__');
+  });
+
   // ── Eval blocking ──
 
   it('prepends eval blocker', () => {
@@ -211,7 +277,7 @@ describe('instrument', () => {
   it('creates block scope frame for for-loop with let', () => {
     const out = instrument('for (let i = 0; i < 3; i++) { let x = i; }');
     expect(out).toContain('__pushFrame__');
-    expect(out).toContain('__popFrame__');
+    expect(out).toContain('__leave__');
   });
 
   // ── Destructuring ──

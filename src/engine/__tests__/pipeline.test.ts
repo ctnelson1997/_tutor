@@ -597,11 +597,131 @@ let results = funcs.map(f => f());
     expect(arr?.properties.map(p => (p.value as { value: number }).value)).toEqual([0, 1, 2]);
   });
 
+  // ── #44: frames leave the stack with their code ──
+
+  /** Each step's frames, as "Global>f>for{}". */
+  const stacks = (snaps: ExecutionSnapshot[]) => snaps.map(s => s.callStack.map(f => f.name + (f.isBlockScope ? '{}' : '')).join('>'));
+
+  it('pops a loop frame on break, continue and a labeled break (#44)', () => {
+    const snaps = runPipeline(`const words = ["a", "bb", "ccc"];
+let long = null;
+for (const w of words) {
+  if (w.length < 2) continue;
+  long = w;
+  break;
+}
+let pairs = 0;
+outer: for (let i = 0; i < 3; i++) {
+  for (let j = 0; j < 3; j++) {
+    if (i + j === 2) break outer;
+    pairs++;
+  }
+}
+let n = 0;
+while (true) {
+  let next = n + 1;
+  if (next > 2) break;
+  n = next;
+}
+const done = true;`);
+    const last = lastSnap(snaps);
+    expect(last.callStack.map(f => f.name)).toEqual(['Global']);
+    expect(findVar(last, 'long')?.value).toEqual({ type: 'string', value: 'bb' });
+    expect(findVar(last, 'pairs')?.value).toEqual({ type: 'number', value: 2 });
+    expect(findVar(last, 'n')?.value).toEqual({ type: 'number', value: 2 });
+    // never two frames of the same loop at once
+    expect(stacks(snaps).some(st => /for...of{}>for...of|for{}>for{}>for{}/.test(st))).toBe(false);
+  });
+
+  it('pops a loop frame when a throw leaves the loop at the top level (#44)', () => {
+    const snaps = runPipeline(`let seen = 0;
+try {
+  for (const x of [1, 2, 3]) {
+    seen = x;
+    if (x === 2) throw new Error("stop");
+  }
+} catch (e) {
+  seen = -seen;
+}
+const after = seen;`);
+    const last = lastSnap(snaps);
+    expect(last.callStack.map(f => f.name)).toEqual(['Global']);
+    expect(findVar(last, 'after')?.value).toEqual({ type: 'number', value: -2 });
+  });
+
+  it("shows a generator's frame only while its body runs, with its locals kept (#44)", () => {
+    const snaps = runPipeline(`function* count(limit) {
+  let i = 0;
+  while (i < limit) {
+    yield i;
+    i++;
+  }
+}
+const seen = [];
+for (const v of count(2)) {
+  seen.push(v);
+}
+const total = seen.length;`);
+    const st = stacks(snaps);
+    // the caller's steps (seen.push) never show the suspended generator
+    const pushes = snaps.filter(s => s.line === 10);
+    expect(pushes.length).toBe(2);
+    for (const s of pushes) expect(s.callStack.map(f => f.name)).toEqual(['Global', 'for...of']);
+    // resumed after the first yield (by the loop, between iterations), the generator has its i again
+    const resumed = snaps.find(s => s.line === 5);
+    expect(resumed?.callStack.map(f => f.name)).toEqual(['Global', 'count']);
+    expect(resumed && findVar(resumed, 'i', 1)?.value).toEqual({ type: 'number', value: 0 });
+    expect(st[st.length - 1]).toBe('Global');
+    expect(findVar(lastSnap(snaps), 'total')?.value).toEqual({ type: 'number', value: 2 });
+  });
+
+  it("drops a generator's frames on return() and throw() (#44)", () => {
+    const snaps = runPipeline(`function* g() {
+  try {
+    yield 1;
+    yield 2;
+  } finally {
+    console.log("cleanup");
+  }
+}
+const a = g();
+a.next();
+a.return(5);
+const b = g();
+b.next();
+let caught = null;
+try { b.throw(new Error("x")); } catch (e) { caught = e.message; }
+const end = caught;`);
+    const last = lastSnap(snaps);
+    expect(last.callStack.map(f => f.name)).toEqual(['Global']);
+    expect(last.stdout).toEqual(['cleanup', 'cleanup']);
+    // the finally ran with the generator's frame back on the stack
+    const cleanup = snaps.filter(s => s.line === 6);
+    expect(cleanup.map(s => s.callStack.map(f => f.name).join('>'))).toEqual(['Global>g', 'Global>g']);
+  });
+
+  it("takes an async function's frame off the stack at await (#44)", () => {
+    const snaps = runPipeline(`async function load(id) {
+  const data = await Promise.resolve(id * 2);
+  return data;
+}
+function start() {
+  load(3);
+  const next = "after";
+  return next;
+}
+const r = start();`);
+    // back in start after load awaited: load's frame is gone
+    const after = snaps.find(s => s.line === 7);
+    expect(after?.callStack.map(f => f.name)).toEqual(['Global', 'start']);
+    expect(lastSnap(snaps).callStack.map(f => f.name)).toEqual(['Global']);
+  });
+
   it('pops the call-stack frame when a throw propagates out of a function', () => {
     // Regression: throws were not handled by the return-wrapping machinery,
     // so a function frame leaked onto the call stack whenever an exception
     // crossed a function boundary. The fix wraps each function body in a
-    // synthetic try/catch that runs __popThrowingFrame__ before rethrowing.
+    // synthetic try/finally whose __leave__ pops its frame (#44).
     // Trailing assignment forces a snapshot to be emitted *after* the
     // synthetic catch has popped the frames; without it the last snapshot
     // would land mid-throw, before cleanup runs.

@@ -242,6 +242,67 @@ function buildPushFrame(name: string, paramNames: string[], isBlockScope = false
   };
 }
 
+/** `const name = <push>`: the frame __pushFrame__ returns, kept to leave it later (__leave__). */
+function declareFrame(name: string, push: AnyNode, kind: 'var' | 'const' = 'const'): AnyNode {
+  return {
+    type: 'VariableDeclaration',
+    kind,
+    declarations: [{ type: 'VariableDeclarator', id: { type: 'Identifier', name }, init: push.expression }],
+  };
+}
+
+/** `__name__(args…)` */
+function runtimeCall(name: string, args: AnyNode[]): AnyNode {
+  return { type: 'CallExpression', callee: { type: 'Identifier', name }, arguments: args, optional: false };
+}
+
+/** `try { body } finally { __leave__(frame); }`: the frame comes off the stack however the code is left (#44). */
+function leaveAfter(body: AnyNode[], frame: string): AnyNode {
+  return {
+    type: 'TryStatement',
+    block: { type: 'BlockStatement', body },
+    handler: null,
+    finalizer: { type: 'BlockStatement', body: [{ type: 'ExpressionStatement', expression: runtimeCall('__leave__', [{ type: 'Identifier', name: frame }]) }] },
+  };
+}
+
+const FUNCTION_TYPES = new Set(['FunctionDeclaration', 'FunctionExpression', 'ArrowFunctionExpression', 'ClassDeclaration', 'ClassExpression']);
+
+/**
+ * A generator's or async function's frame leaves the stack at each `yield`
+ * and `await`, and comes back when the function resumes (#44), as a
+ * debugger's call stack shows it: `await x` becomes
+ * `__resume__(__fr__, await __suspend__(__fr__, x))`. A rejected `await`,
+ * `gen.throw()` and `gen.return()` resume the function in a catch or finally
+ * block instead, so each of those starts with `__resume__(__fr__)`. Nested
+ * functions and classes have frames of their own and are left alone.
+ */
+function suspendAtYieldAndAwait(node: AnyNode): void {
+  for (const key of Object.keys(node)) {
+    if (key === 'loc' || key.startsWith('_')) continue;
+    const child = node[key];
+    if (Array.isArray(child)) {
+      for (let i = 0; i < child.length; i++) if (child[i] && typeof child[i].type === 'string') child[i] = suspended(child[i]);
+    } else if (child && typeof child.type === 'string') {
+      node[key] = suspended(child);
+    }
+  }
+}
+
+function suspended(n: AnyNode): AnyNode {
+  if (FUNCTION_TYPES.has(n.type)) return n;
+  suspendAtYieldAndAwait(n);
+  const frame = { type: 'Identifier', name: '__fr__' };
+  if (n.type === 'AwaitExpression' || n.type === 'YieldExpression') {
+    const operand = runtimeCall('__suspend__', [frame, n.argument ?? { type: 'Identifier', name: 'undefined' }]);
+    return runtimeCall('__resume__', [frame, { ...n, argument: operand }]);
+  }
+  const resume = () => ({ type: 'ExpressionStatement', expression: runtimeCall('__resume__', [frame]) });
+  if (n.type === 'CatchClause') n.body.body.unshift(resume());
+  if (n.type === 'TryStatement' && n.finalizer) n.finalizer.body.unshift(resume());
+  return n;
+}
+
 /** `__popFrame__()`; with the line of a function's closing brace, a return step there showing `undefined`. */
 function buildPopFrame(endLine?: number): AnyNode {
   return {
@@ -466,13 +527,14 @@ function instrumentBlock(
       }
     }
 
-    // If instrumentLoop flagged a block-scope wrap (for while loops),
-    // replace body[i] with: { __pushFrame__('while',{},true); while(...){...}; __popFrame__(); }
-    // This keeps the block-scope frame alive during every condition check.
+    // If instrumentLoop flagged a block-scope wrap (for while loops), replace body[i] with
+    // { const __bf__ = __pushFrame__('while', {}, true); try { while (...) {...} } finally { __leave__(__bf__); } }
+    // This keeps the block-scope frame alive during every condition check, and
+    // pops it however the loop is left: its test, break, a labeled break, a throw (#44).
     if (stmt._blockWrap) {
-      const { push, pop } = stmt._blockWrap as { push: AnyNode; pop: AnyNode };
+      const { push } = stmt._blockWrap as { push: AnyNode };
       delete stmt._blockWrap;
-      body[i] = { type: 'BlockStatement', body: [push, stmt, pop] };
+      body[i] = { type: 'BlockStatement', body: [declareFrame('__bf__', push), leaveAfter([stmt], '__bf__')] };
     }
 
     // Remove block-scoped loop vars from the parent scope so they don't appear
@@ -758,55 +820,31 @@ function instrumentFunction(fn: AnyNode, _parentVars: string[]): void {
   instrumentBlock(body, fnScopeVars, false);
 
   // Wrap return values so the frame pops AFTER the expression evaluates.
-  // Do this BEFORE wrapping the body in try/catch — otherwise the recursion
+  // Do this BEFORE wrapping the body in try/finally — otherwise the recursion
   // into the user-level try would also rewrite our synthetic try.
   wrapReturnsWithPopFrame(body);
 
-  // Wrap the entire body in `try { ... } catch (e) { __popThrowingFrame__(); throw e; }`
-  // so that throws which propagate out of the function still pop the frame.
-  // Without this, a `throw` skips the trailing __popFrame__ at the bottom of
-  // the body and the frame leaks onto every subsequent visualization.
+  // A generator's or async function's frame leaves the stack at each yield
+  // and await, and comes back when it resumes (#44).
+  if (fn.async || fn.generator) suspendAtYieldAndAwait({ type: 'BlockStatement', body });
+
+  // Wrap the body in `try { ... } finally { __leave__(__fr__); }`, so the
+  // frame (and any loop frames above it) leaves the stack however the
+  // function ends: a return (whose __popFrame__ has already popped it), a
+  // throw, or a generator's return(). Without it, a throw skips the trailing
+  // __popFrame__ and the frame leaks onto every later step.
   const userBody = body.splice(0, body.length);
   // The fall-through pop sits inside the try; reaching the closing brace is a
   // return step there (an arrow function's expression body returns before it).
   userBody.push(buildPopFrame(fnEndLine));
+  body.push(leaveAfter(userBody, '__fr__'));
 
-  const tryStmt: AnyNode = {
-    type: 'TryStatement',
-    block: { type: 'BlockStatement', body: userBody },
-    handler: {
-      type: 'CatchClause',
-      param: { type: 'Identifier', name: '__e__' },
-      body: {
-        type: 'BlockStatement',
-        body: [
-          {
-            type: 'ExpressionStatement',
-            expression: {
-              type: 'CallExpression',
-              callee: { type: 'Identifier', name: '__popThrowingFrame__' },
-              arguments: [],
-              optional: false,
-            },
-          },
-          {
-            type: 'ThrowStatement',
-            argument: { type: 'Identifier', name: '__e__' },
-          },
-        ],
-      },
-    },
-    finalizer: null,
-  };
-  body.push(tryStmt);
-
-  // Insert __pushFrame__ at the very beginning of the function body (outside
-  // the try) so that the frame is pushed before any user-visible operation,
-  // including the try entry.
+  // The frame is pushed at the very beginning of the function body (outside
+  // the try), before any user-visible operation, and kept as __fr__.
   // Arrow functions don't have their own `this`, so only capture it for regular functions.
-  // Derived class constructors must not read `this` before super() returns.
+  // Derived class constructors must not read \`this\` before super() returns.
   const captureThis = fn.type !== 'ArrowFunctionExpression' && !fn._skipThisCapture;
-  body.unshift(buildPushFrame(name, paramNames, false, _closureVarNames, captureThis));
+  body.unshift(declareFrame('__fr__', buildPushFrame(name, paramNames, false, _closureVarNames, captureThis), 'var'));
 
   // Restore saved state
   _functionDepth = savedFunctionDepth;
@@ -1014,21 +1052,21 @@ function instrumentLoop(stmt: AnyNode, scopeVars: string[]): void {
     // (TDZ), so push with empty params — they'll appear in subsequent captures.
     const isWhileStyle = stmt.type === 'WhileStatement' || stmt.type === 'DoWhileStatement';
     const pushNode = buildPushFrame(loopName, isWhileStyle ? [] : blockScopedVars, true);
-    const popNode = buildPopFrame();
 
     if (stmt.type === 'ForStatement' && stmt.init === null) {
       // let/const init was pre-extracted into the parent block: push/pop go in a
       // wrapper block around the for statement so the frame is alive during every
       // condition check. instrumentBlock will apply the wrapper after this returns.
-      stmt._blockWrap = { push: pushNode, pop: popNode };
+      stmt._blockWrap = { push: pushNode };
     } else if (isWhileStyle) {
       // while/do-while: wrap the loop so the block frame is alive during condition
       // checks (same approach as for-loops with extracted init).
-      stmt._blockWrap = { push: pushNode, pop: popNode };
+      stmt._blockWrap = { push: pushNode };
     } else {
-      // for...in / for...of: no separate condition step, so push/pop inside body is fine
+      // for...in / for...of: no separate condition step, so the frame is pushed
+      // in the body (per-iteration bindings) and left in a finally, once the
+      // body is instrumented, so continue and break pop it too (#44).
       stmt.body.body.splice(1, 0, pushNode);
-      stmt.body.body.push(popNode);
     }
 
     // Set parent var context so captures distribute vars correctly.
@@ -1051,6 +1089,13 @@ function instrumentLoop(stmt: AnyNode, scopeVars: string[]): void {
     );
 
     instrumentBlock(stmt.body.body, effectiveLoopVars, false);
+
+    const pushAt = stmt.body.body.indexOf(pushNode);
+    if (pushAt !== -1) {
+      const rest = stmt.body.body.splice(pushAt + 1);
+      stmt.body.body[pushAt] = declareFrame('__bf__', pushNode);
+      stmt.body.body.push(leaveAfter(rest, '__bf__'));
+    }
 
     _parentVarNames = savedParentVarNames;
   } else {

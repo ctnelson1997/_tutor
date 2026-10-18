@@ -538,17 +538,38 @@ function __pushFrame__(name, params, isBlockScope, closureVars, thisVal) {
   }
   __callStack__.push(frame);
   __framePushed__ = true;
+  return frame;
 }
 
-// Pop a function frame plus any block-scope frames above it WITHOUT
-// emitting a snapshot. Invoked from the synthetic catch wrapper that
-// instrumentFunction wraps around every function body so that throws
-// propagating out of the function still clean up the call stack.
-function __popThrowingFrame__() {
-  while (__callStack__.length > 1 && __callStack__[__callStack__.length - 1].isBlockScope) {
-    __callStack__.pop();
+// Take a frame, and every frame above it, off the stack, wherever it is now
+// (#44). Each function's body and each loop with a block frame ends in a
+// finally calling this, so the frame goes however the code is left: a return
+// (already popped: nothing to do), break, continue, a labeled break, a throw.
+// A suspended generator or async function that ends (a rejected await nothing
+// caught, a generator's return()) drops its saved frames.
+function __leave__(frame) {
+  if (!frame) return;
+  if (frame.__saved) { frame.__saved = null; return; }
+  var at = __callStack__.lastIndexOf(frame);
+  if (at > 0) __callStack__.length = at;
+}
+
+// At a yield or await, a generator's or async function's frames (its own and
+// its loops') leave the stack, as a debugger shows them, and come back when it
+// resumes, on top of whatever is running then (#44).
+function __suspend__(frame, value) {
+  var at = __callStack__.lastIndexOf(frame);
+  if (at > 0) frame.__saved = __callStack__.splice(at);
+  return value;
+}
+function __resume__(frame, value) {
+  var saved = frame.__saved;
+  if (saved) {
+    frame.__saved = null;
+    for (var i = 0; i < saved.length; i++) __callStack__.push(saved[i]);
+    __framePushed__ = true;
   }
-  if (__callStack__.length > 1) __callStack__.pop();
+  return value;
 }
 
 function __popFrame__(retVal, line) {

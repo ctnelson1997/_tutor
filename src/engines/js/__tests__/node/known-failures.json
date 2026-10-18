@@ -35,17 +35,9 @@
       },
       "final-state": {
         "issues": [
-          45,
-          44
-        ],
-        "reason": "the last step comes before the callbacks ran; values drawn in a frame left on the stack"
-      },
-      "frames": {
-        "issues": [
-          44,
           45
         ],
-        "reason": "an async function's frame stays on the stack after await"
+        "reason": "the last step comes before the callbacks ran"
       }
     },
     "async/async-await-return": {
@@ -63,17 +55,9 @@
       },
       "final-state": {
         "issues": [
-          45,
-          44
-        ],
-        "reason": "the last step comes before the callbacks ran; values drawn in a frame left on the stack"
-      },
-      "frames": {
-        "issues": [
-          44,
           45
         ],
-        "reason": "an async function's frame stays on the stack after await"
+        "reason": "the last step comes before the callbacks ran"
       }
     },
     "async/async-class-method": {
@@ -85,17 +69,9 @@
       },
       "final-state": {
         "issues": [
-          45,
-          44
-        ],
-        "reason": "the last step comes before the callbacks ran; values drawn in a frame left on the stack"
-      },
-      "frames": {
-        "issues": [
-          44,
           45
         ],
-        "reason": "an async function's frame stays on the stack after await"
+        "reason": "the last step comes before the callbacks ran"
       }
     },
     "async/async-throw-then-catch": {
@@ -127,17 +103,9 @@
       },
       "final-state": {
         "issues": [
-          45,
-          44
-        ],
-        "reason": "the last step comes before the callbacks ran; values drawn in a frame left on the stack"
-      },
-      "frames": {
-        "issues": [
-          44,
           45
         ],
-        "reason": "an async function's frame stays on the stack after await"
+        "reason": "the last step comes before the callbacks ran"
       }
     },
     "async/catch-rejection": {
@@ -163,17 +131,9 @@
       },
       "final-state": {
         "issues": [
-          45,
-          44
-        ],
-        "reason": "the last step comes before the callbacks ran; values drawn in a frame left on the stack"
-      },
-      "frames": {
-        "issues": [
-          44,
           45
         ],
-        "reason": "an async function's frame stays on the stack after await"
+        "reason": "the last step comes before the callbacks ran"
       }
     },
     "async/fire-and-forget": {
@@ -191,17 +151,9 @@
       },
       "final-state": {
         "issues": [
-          45,
-          44
-        ],
-        "reason": "the last step comes before the callbacks ran; values drawn in a frame left on the stack"
-      },
-      "frames": {
-        "issues": [
-          44,
           45
         ],
-        "reason": "an async function's frame stays on the stack after await"
+        "reason": "the last step comes before the callbacks ran"
       }
     },
     "async/microtask-macrotask-order": {
@@ -219,17 +171,9 @@
       },
       "final-state": {
         "issues": [
-          45,
-          44
-        ],
-        "reason": "the last step comes before the callbacks ran; values drawn in a frame left on the stack"
-      },
-      "frames": {
-        "issues": [
-          44,
           45
         ],
-        "reason": "an async function's frame stays on the stack after await"
+        "reason": "the last step comes before the callbacks ran"
       }
     },
     "async/promise-all": {
@@ -289,17 +233,9 @@
       },
       "final-state": {
         "issues": [
-          45,
-          44
-        ],
-        "reason": "the last step comes before the callbacks ran; values drawn in a frame left on the stack"
-      },
-      "frames": {
-        "issues": [
-          44,
           45
         ],
-        "reason": "an async function's frame stays on the stack after await"
+        "reason": "the last step comes before the callbacks ran"
       }
     },
     "async/promise-then-chain": {
@@ -382,13 +318,6 @@
           45
         ],
         "reason": "output of promise callbacks and timers is lost"
-      },
-      "frames": {
-        "issues": [
-          44,
-          45
-        ],
-        "reason": "an async function's frame stays on the stack after await"
       }
     },
     "async/unhandled-rejection": {
@@ -403,13 +332,6 @@
           45
         ],
         "reason": "an unhandled rejection after the reply is never reported"
-      },
-      "frames": {
-        "issues": [
-          44,
-          45
-        ],
-        "reason": "an async function's frame stays on the stack after await"
       }
     },
     "collections/array-concat-indexof-includes": {
@@ -452,20 +374,6 @@
         "reason": "a DataCloneError's message quotes the function's instrumented source"
       }
     },
-    "collections/iterators-entries": {
-      "final-state": {
-        "issues": [
-          44
-        ],
-        "reason": "values drawn in a frame left on the stack"
-      },
-      "frames": {
-        "issues": [
-          44
-        ],
-        "reason": "a generator's frame stays on the stack after it yields"
-      }
-    },
     "collections/map-object-keys": {
       "final-state": {
         "issues": [
@@ -503,48 +411,6 @@
           48
         ],
         "reason": "holes drawn as other values"
-      }
-    },
-    "control-flow/continue-in-for-update": {
-      "final-state": {
-        "issues": [
-          44
-        ],
-        "reason": "values drawn in a frame left on the stack"
-      },
-      "frames": {
-        "issues": [
-          44
-        ],
-        "reason": "loop frames left on the stack after break or continue"
-      }
-    },
-    "control-flow/for-no-test-break": {
-      "final-state": {
-        "issues": [
-          44
-        ],
-        "reason": "values drawn in a frame left on the stack"
-      },
-      "frames": {
-        "issues": [
-          44
-        ],
-        "reason": "loop frames left on the stack after break or continue"
-      }
-    },
-    "control-flow/for-of-entries": {
-      "final-state": {
-        "issues": [
-          44
-        ],
-        "reason": "values drawn in a frame left on the stack"
-      },
-      "frames": {
-        "issues": [
-          44
-        ],
-        "reason": "loop frames left on the stack after break or continue"
       }
     },
     "control-flow/labeled-block": {
@@ -651,20 +517,6 @@
         "reason": "NaN drawn as other values"
       }
     },
-    "errors/break-return-in-try-finally": {
-      "final-state": {
-        "issues": [
-          44
-        ],
-        "reason": "values drawn in a frame left on the stack"
-      },
-      "frames": {
-        "issues": [
-          44
-        ],
-        "reason": "loop frames left on the stack after break or continue"
-      }
-    },
     "functions/callbacks": {
       "final-state": {
         "issues": [
@@ -709,20 +561,6 @@
         "reason": "a function behind ! or void runs with no steps"
       }
     },
-    "generators/class-generator-iterator": {
-      "final-state": {
-        "issues": [
-          44
-        ],
-        "reason": "values drawn in a frame left on the stack"
-      },
-      "frames": {
-        "issues": [
-          44
-        ],
-        "reason": "a generator's frame stays on the stack after it yields"
-      }
-    },
     "generators/custom-iterable-object": {
       "final-state": {
         "issues": [
@@ -731,63 +569,12 @@
         "reason": "Symbol keys drawn as other values"
       }
     },
-    "generators/generator-return": {
-      "final-state": {
-        "issues": [
-          44
-        ],
-        "reason": "values drawn in a frame left on the stack"
-      },
-      "frames": {
-        "issues": [
-          44
-        ],
-        "reason": "a generator's frame stays on the stack after it yields"
-      }
-    },
     "generators/hand-written-iterator": {
       "final-state": {
         "issues": [
-          44,
           48
         ],
-        "reason": "values drawn in a frame left on the stack; Symbol keys drawn as other values"
-      },
-      "frames": {
-        "issues": [
-          44
-        ],
-        "reason": "loop frames left on the stack after break or continue"
-      }
-    },
-    "generators/infinite-take": {
-      "final-state": {
-        "issues": [
-          44
-        ],
-        "reason": "values drawn in a frame left on the stack"
-      },
-      "frames": {
-        "issues": [
-          44
-        ],
-        "reason": "a generator's frame stays on the stack after it yields"
-      }
-    },
-    "generators/interleaved-and-throw": {
-      "frames": {
-        "issues": [
-          44
-        ],
-        "reason": "a generator's frame stays on the stack after it yields"
-      }
-    },
-    "generators/lazy-pipeline": {
-      "frames": {
-        "issues": [
-          44
-        ],
-        "reason": "a generator's frame stays on the stack after it yields"
+        "reason": "Symbol keys drawn as other values"
       }
     },
     "limits/endless-labeled-loop": {
@@ -895,17 +682,9 @@
       },
       "final-state": {
         "issues": [
-          45,
-          44
-        ],
-        "reason": "the last step comes before the callbacks ran; values drawn in a frame left on the stack"
-      },
-      "frames": {
-        "issues": [
-          44,
           45
         ],
-        "reason": "an async function's frame stays on the stack after await"
+        "reason": "the last step comes before the callbacks ran"
       }
     },
     "realistic/countdown-timer": {
@@ -950,20 +729,6 @@
         "reason": "NaN, Infinity drawn as other values"
       }
     },
-    "realistic/letter-frequency-map": {
-      "final-state": {
-        "issues": [
-          44
-        ],
-        "reason": "values drawn in a frame left on the stack"
-      },
-      "frames": {
-        "issues": [
-          44
-        ],
-        "reason": "loop frames left on the stack after break or continue"
-      }
-    },
     "realistic/promise-all-orders": {
       "output": {
         "issues": [
@@ -976,48 +741,6 @@
           45
         ],
         "reason": "the last step comes before the callbacks ran"
-      }
-    },
-    "realistic/remove-duplicates": {
-      "final-state": {
-        "issues": [
-          44
-        ],
-        "reason": "values drawn in a frame left on the stack"
-      },
-      "frames": {
-        "issues": [
-          44
-        ],
-        "reason": "loop frames left on the stack after break or continue"
-      }
-    },
-    "realistic/tic-tac-toe": {
-      "final-state": {
-        "issues": [
-          44
-        ],
-        "reason": "values drawn in a frame left on the stack"
-      },
-      "frames": {
-        "issues": [
-          44
-        ],
-        "reason": "loop frames left on the stack after break or continue"
-      }
-    },
-    "strings-regex/named-groups-exec": {
-      "final-state": {
-        "issues": [
-          44
-        ],
-        "reason": "values drawn in a frame left on the stack"
-      },
-      "frames": {
-        "issues": [
-          44
-        ],
-        "reason": "loop frames left on the stack after break or continue"
       }
     },
     "syntax-errors/await-in-non-async-function": {
