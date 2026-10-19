@@ -19,6 +19,8 @@ export interface CodeFlag {
 export interface HeapTypeDisplay {
   label: string;
   variant: string;
+  /** What an object of this type with no properties shows: a text ("empty object" if not given), or null for nothing (a Python module, drawn by its name only). */
+  empty?: string | null;
 }
 
 /** Options passed to an engine's execute(). `stdin` feeds Java's Scanner and Python's input(). */

@@ -12,7 +12,8 @@
  *   traceback    an uncaught exception's traceback is CPython's.
  *   steps        each step is a CPython event at the same line with the same
  *                stack of frames, in order, and every line CPython ran has one.
- *   variables    each step's innermost frame shows the variables CPython's has.
+ *   variables    each step's innermost frame shows the variables CPython's has,
+ *                in its order (the module's in the order they first appeared).
  *   values       and with CPython's values (and `return ↵` with the return value).
  *   final-state  the last step's module frame holds the final globals.
  *   refs, lines, names, reachable   snapshot invariants.
@@ -404,6 +405,27 @@ function compareSteps(c: PyCase, golden: PyGolden, reply: WorkerMessage): StepCo
   const importedNames = new Set([...c.source.matchAll(/^\s*import\s+([\w., ]+)$/gm)].flatMap(m => m[1].split(',').map(x => x.trim().split(/\s+as\s+/).pop()!.split('.')[0])));
   const events = referenceEvents(golden);
   const matched = new Array<boolean>(events.length).fill(false);
+  const words = sourceWords(c.source);
+  // The names each event's frame started with (its call event's): a class
+  // body's that the source never names came from a metaclass's __prepare__
+  // (an Enum's _generate_next_value_), which PyTutor hides as Python's own.
+  const startNames: Set<string>[] = [];
+  // The module's variables in the order they first appeared, as PyTutor lists
+  // them, and how many had appeared by each event.
+  const moduleOrder: string[] = [];
+  const moduleSeen: number[] = [];
+  {
+    const starts: Set<string>[] = [];
+    events.forEach((e, k) => {
+      const depth = e.stack.length;
+      if (e.event === 'call') starts[depth] = new Set(Object.keys(e.locals ?? {}));
+      startNames[k] = starts[depth] ?? new Set();
+      if (e.stack[depth - 1] === '<module>' && depth === 1) {
+        for (const name of Object.keys(e.locals ?? {})) if (!moduleOrder.includes(name)) moduleOrder.push(name);
+      }
+      moduleSeen[k] = moduleOrder.length;
+    });
+  }
   const continuation = new Set(golden.continuation);
   let j = 0;
   let misaligned = 0;
@@ -411,6 +433,7 @@ function compareSteps(c: PyCase, golden: PyGolden, reply: WorkerMessage): StepCo
   const valueDiffs: string[] = [];
   const missing = new Set<string>();
   const extra = new Set<string>();
+  const misordered: string[] = [];
   const returnDiffs: string[] = [];
   snaps.forEach((s, i) => {
     const top = s.callStack[s.callStack.length - 1];
@@ -463,6 +486,7 @@ function compareSteps(c: PyCase, golden: PyGolden, reply: WorkerMessage): StepCo
     for (const [name, rep] of Object.entries(e.locals ?? {})) {
       // CPython's own (a generator expression's `.0`), a class body's bookkeeping, modules.
       if (name.startsWith('.') || rep === '<module>' || HIDDEN_CLASS_NAMES.has(name)) continue;
+      if (startNames[found].has(name) && !words.has(name)) continue;
       const v = shown.get(name);
       if (!v) { missing.add(`${top.name}.${name}`); continue; }
       const d = compareValue(rep, v);
@@ -470,11 +494,20 @@ function compareSteps(c: PyCase, golden: PyGolden, reply: WorkerMessage): StepCo
     }
     for (const [name, v] of shown) {
       if (name === 'return ↵' || name in (e.locals ?? {})) continue;
+      // The recorder leaves the module's dunder names out.
+      if (top.name === '<module>' && /^__\w+__$/.test(name)) continue;
       const h = v.type === 'ref' ? s.heap.find(x => x.id === v.heapId) : null;
       if (h && /module/.test(h.objectType)) continue;
       if (importedNames.has(name)) continue;
       extra.add(`${top.name}.${name}`);
     }
+    // The order: a function's and a class body's as CPython's frame has them,
+    // the module's as they first appeared.
+    const expected = top.name === '<module>' && e.stack.length === 1 ? moduleOrder.slice(0, moduleSeen[found]) : Object.keys(e.locals ?? {});
+    const both = new Set(expected.filter(name => shown.has(name)));
+    const shownOrder = [...shown.keys()].filter(name => both.has(name));
+    const expectedOrder = expected.filter(name => both.has(name));
+    if (shownOrder.join() !== expectedOrder.join() && misordered.length < 3) misordered.push(`step ${i} ${top.name}: ${shownOrder.join(', ')} (CPython: ${expectedOrder.join(', ')})`);
     if (e.event === 'return' && e.value !== undefined && !e.unwinding && top.name !== '<module>') {
       const rv = shown.get('return ↵');
       if (!rv) returnDiffs.push(`step ${i} ${top.name}: no return ↵ (returns ${e.value})`);
@@ -505,6 +538,7 @@ function compareSteps(c: PyCase, golden: PyGolden, reply: WorkerMessage): StepCo
   }
   if (missing.size) out.variables.push(`not shown: ${[...missing].slice(0, 8).join(', ')}`);
   if (extra.size) out.variables.push(`shown but not in CPython's frame: ${[...extra].slice(0, 8).join(', ')}`);
+  if (misordered.length) out.variables.push(`shown in another order: ${misordered.join(' ; ')}`);
   if (valueDiffs.length) out.values.push(`${valueDiffs.length} value(s), first: ${valueDiffs.slice(0, 3).join(' ; ')}`);
   if (returnDiffs.length) out.values.push(...returnDiffs.slice(0, 3));
   return out;
@@ -573,8 +607,20 @@ function checkLines(snapshots: ExecutionSnapshot[], lineCount: number): string[]
 /** The name PyTutor shows that isn't the program's own, on purpose: a return value. */
 const SHOWN_NAMES = (name: string) => name === 'return ↵';
 
+/** The words of a program's source: the names it can define. */
+function sourceWords(source: string): Set<string> {
+  return new Set(source.match(/[A-Za-z_][A-Za-z0-9_]*/g) ?? []);
+}
+
+/** A source word, or one Python mangled from it (`_Account__secret` for `__secret`). */
+function isProgramName(name: string, words: Set<string>): boolean {
+  if (words.has(name)) return true;
+  const i = name.indexOf('__', 1);
+  return name.startsWith('_') && i > 1 && words.has(name.slice(i));
+}
+
 function checkNames(c: PyCase, reply: WorkerMessage): { problems: string[]; internal: boolean } {
-  const words = new Set(c.source.match(/[A-Za-z_][A-Za-z0-9_]*/g) ?? []);
+  const words = sourceWords(c.source);
   const problems: string[] = [];
   let internal = false;
   const message = reply.type === 'error' ? reply.message : reply.error?.message;
@@ -588,6 +634,15 @@ function checkNames(c: PyCase, reply: WorkerMessage): { problems: string[]; inte
       for (const f of s.callStack) {
         for (const v of f.variables ?? []) {
           if (!SHOWN_NAMES(v.name) && !words.has(v.name)) found.push(`variable ${f.name}.${v.name} isn't the program's`);
+        }
+      }
+      // No library internals (#38): a class shows the attributes the program
+      // names, an object its private attributes only when the program names them.
+      for (const h of s.heap) {
+        for (const p of h.properties) {
+          if (h.objectType === 'class' ? !isProgramName(p.key, words) : h.objectType === 'object' && p.key.startsWith('_') && !isProgramName(p.key, words)) {
+            found.push(`attribute ${h.label ?? h.objectType}.${p.key} isn't the program's`);
+          }
         }
       }
       return found;

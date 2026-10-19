@@ -354,6 +354,49 @@ describe('checkCase', () => {
     expect(checkCase(c, g, outcome(result(wrong))).checks.values.join()).toMatch(/<module>\.x: 1 shown as 7/);
   });
 
+  it("checks the variables' order: a function's as CPython's frame has them, the module's as they first appeared (#38)", () => {
+    const sorted = good.map(s => ({ ...s, callStack: [frame('<module>', Object.fromEntries(s.callStack[0].variables.map(v => [v.name, v.value]).reverse()))] }));
+    expect(checkCase(c, g, outcome(result(sorted))).checks.variables.join()).toMatch(/shown in another order: step 2 <module>: y, x \(CPython: x, y\)/);
+    // x deleted and defined again: CPython's dict has it last, PyTutor keeps its place.
+    const dc = pyCase('x = 1\ny = 2\ndel x\nx = 3\n');
+    const dg = golden({ events: [ev('line', 1, ['<module>']), ev('line', 2, ['<module>'], { x: '1' }), ev('line', 3, ['<module>'], { x: '1', y: '2' }), ev('line', 4, ['<module>'], { y: '2' }), ev('return', 4, ['<module>'], { y: '2', x: '3' }, { value: 'None' })] });
+    const dsteps = (last: Record<string, RuntimeValue>) => [
+      snap(0, 1, [frame('<module>')]), snap(1, 2, [frame('<module>', { x: num(1) })]), snap(2, 3, [frame('<module>', { x: num(1), y: num(2) })]),
+      snap(3, 4, [frame('<module>', { y: num(2) })]), snap(4, 4, [frame('<module>', last)]),
+    ];
+    expect(checkCase(dc, dg, outcome(result(dsteps({ x: num(3), y: num(2) })))).checks.variables).toEqual([]);
+    expect(checkCase(dc, dg, outcome(result(dsteps({ y: num(2), x: num(3) })))).checks.variables.join()).toMatch(/another order: step 4 <module>: y, x \(CPython: x, y\)/);
+    const fc = pyCase('def f(b, a):\n    z = 1\nf(1, 2)\n');
+    const fg = golden({ events: [ev('line', 3, ['<module>']), ev('call', 1, ['<module>', 'f'], { b: '1', a: '2' }), ev('line', 2, ['<module>', 'f'], { b: '1', a: '2' })] });
+    const fsteps = (vars: Record<string, RuntimeValue>) => [snap(0, 3, [frame('<module>')]), snap(1, 1, [frame('<module>'), frame('f', vars)]), snap(2, 2, [frame('<module>'), frame('f', vars)])];
+    expect(checkCase(fc, fg, outcome(result(fsteps({ b: num(1), a: num(2) })))).checks.variables).toEqual([]);
+    expect(checkCase(fc, fg, outcome(result(fsteps({ a: num(2), b: num(1) })))).checks.variables.join()).toMatch(/another order: step 1 f: a, b \(CPython: b, a\)/);
+  });
+
+  it("doesn't require what a class body's namespace started with when the source never names it (#38)", () => {
+    const ec = pyCase('class Color(Enum):\n    RED = 1\n');
+    const start = { _generate_next_value_: '<staticmethod>' };
+    const eg = golden({ events: [ev('line', 1, ['<module>']), ev('call', 1, ['<module>', 'Color'], start), ev('line', 1, ['<module>', 'Color'], start), ev('line', 2, ['<module>', 'Color'], { ...start, __module__: "'__main__'" })] });
+    const steps = [snap(0, 1, [frame('<module>')]), snap(1, 1, [frame('<module>'), frame('Color')]), snap(2, 2, [frame('<module>'), frame('Color')])];
+    expect(checkCase(ec, eg, outcome(result(steps))).checks.variables).toEqual([]);
+    // A name the program wrote is required, start or not.
+    const named = pyCase('class Color(Enum):\n    RED = 1\n_generate_next_value_ = 0\n');
+    expect(checkCase(named, eg, outcome(result(steps))).checks.variables.join()).toMatch(/not shown: Color\._generate_next_value_/);
+  });
+
+  it('finds library internals drawn on the heap: a class attribute or a private attribute the source never names (#38)', () => {
+    const lc = pyCase('class Color(Enum):\n    RED = 1\nclass A:\n    def __init__(self):\n        self._balance = 0\n        self.__pin = 1\na = A()\n');
+    const heap = (classKeys: string[], objectKeys: string[]): ExecutionSnapshot['heap'] => [
+      { id: '1', objectType: 'class', label: 'Color(Enum)', properties: classKeys.map(key => ({ key, value: num(1) })) },
+      { id: '2', objectType: 'object', label: 'A', properties: objectKeys.map(key => ({ key, value: num(1) })) },
+    ];
+    const run = (h: ExecutionSnapshot['heap']) => result([snap(0, 1, [frame('<module>', { Color: ref('1'), a: ref('2') })], [], h)]);
+    expect(checkCase(lc, golden(), outcome(run(heap(['RED', '__init__'], ['_balance', 'value', '_A__pin'])))).checks.names).toEqual([]);
+    const names = checkCase(lc, golden(), outcome(run(heap(['RED', '_member_map_'], ['_balance', '_value_'])))).checks.names.join();
+    expect(names).toMatch(/attribute Color\(Enum\)\._member_map_ isn't the program's/);
+    expect(names).toMatch(/attribute A\._value_ isn't the program's/);
+  });
+
   it("skips a class body's bookkeeping, modules, and events the recorder couldn't read", () => {
     const g2 = golden({
       ...g,

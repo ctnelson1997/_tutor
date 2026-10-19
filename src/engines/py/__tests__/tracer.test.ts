@@ -125,8 +125,8 @@ describe('getTracerCode', () => {
   });
 
   it('draws each kind of heap object', () => {
-    for (const kind of ['list', 'tuple', 'dict', 'set', 'function']) expect(code).toContain(`object_type = "${kind}"`);
-    expect(code).toContain('label = t.__name__');
+    for (const kind of ['list', 'tuple', 'dict', 'set', 'function', 'class', 'module']) expect(code).toContain(`object_type = "${kind}"`);
+    expect(code).toContain('label = _type_name(t)');
   });
 
   // ── Limits ──
@@ -166,22 +166,35 @@ describe('getTracerCode', () => {
     expect(code).not.toContain('_SAFE_MODULES');
   });
 
-  // ── Variable filtering ──
+  // ── What a frame shows (#38; model.test.ts runs it) ──
 
-  it('snapshots baseline namespace keys before user code runs', () => {
-    expect(code).toContain('_baseline_keys = set(namespace.keys())');
+  it("hides only the names Python keeps itself: the module's, a class body's, a method's __class__ cell", () => {
+    expect(code).toContain('_MODULE_BOOKKEEPING = frozenset(');
+    expect(code).toContain('_CLASS_BOOKKEEPING = frozenset(');
+    expect(code).toContain("_FUNCTION_BOOKKEEPING = frozenset({'__class__', '__classdict__'})");
+    expect(code).not.toContain('_baseline_keys');
+    expect(code).not.toContain("name.startswith('__') and name.endswith('__')");
   });
 
-  it('filters baseline keys from module-level variable display', () => {
-    expect(code).toContain('name in _baseline_keys');
+  it("hides what a class body's namespace started with while it holds the same object", () => {
+    expect(code).toContain('frame_info["base"] = dict(params)');
+    expect(code).toContain('dict.__getitem__(local_vars, k) is base[k]');
   });
 
-  it('filters dunder variables from snapshots', () => {
-    expect(code).toContain("name.startswith('__') and name.endswith('__')");
+  it("lists variables in their order, not sorted, the module's in the order they first appeared", () => {
+    expect(code).toContain('for name in _shown_names(frame_info, local_vars):');
+    expect(code).toContain('_module_order[k] = None');
+    expect(code).not.toContain('sorted(k for k in dict.keys(local_vars)');
   });
 
   it('filters internal positional variables (e.g. .0 iterator)', () => {
-    expect(code).toContain("name.startswith('.')");
+    expect(code).toContain("not k.startswith('.')");
+  });
+
+  it('draws classes, modules and Enum members as themselves', () => {
+    expect(code).toContain('object_type = "class"');
+    expect(code).toContain('object_type = "module"');
+    expect(code).toContain('issubclass(t, _Enum)');
   });
 
   // ── Comprehension frames (#33; comprehensions.test.ts runs them) ──
@@ -292,7 +305,7 @@ describe('getTracerCode', () => {
   });
 
   it('pushes named frame on function call event', () => {
-    expect(code).toContain('_call_stack.append({"name": display_name');
+    expect(code).toContain('frame_info = {"name": display_name');
   });
 
   it('pops frame on return event', () => {

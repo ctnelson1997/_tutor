@@ -20,6 +20,8 @@ import dis as _dis
 import ast as _ast
 import traceback as _traceback
 import builtins as _builtins
+import re as _re
+import enum as _enum
 
 # The tracer's own builtins and library functions (#34): a program that
 # replaces builtins.len, json.dumps or sys.settrace doesn't change what the
@@ -37,6 +39,12 @@ _real_setlimit = sys.setrecursionlimit
 _real_stderr = sys.__stderr__
 _DEFAULT_LIMIT = sys.getrecursionlimit()
 _MemberDescriptor = _types.MemberDescriptorType
+_Enum = _enum.Enum
+_type_dict = type.__dict__['__dict__'].__get__
+_type_name = type.__dict__['__name__'].__get__
+_type_bases = type.__dict__['__bases__'].__get__
+_type_mro = type.__dict__['__mro__'].__get__
+_function_code = _types.FunctionType.__dict__['__code__'].__get__
 
 # ══════════════════════════════════════
 # PyTutor Tracer
@@ -133,9 +141,57 @@ def _retrace(frame, event, arg):
     _setprofile(None)
     _settrace(_tracer)
 
-# Set of namespace keys present BEFORE user code runs.
-# Populated in run_traced(); used to filter out builtins and tracer internals.
-_baseline_keys = set()
+# ── What a frame shows (#38) ──
+#
+# Every variable the program has, in the order pythontutor.com shows them:
+# a function's in its code's order (f_locals: the parameters, then the other
+# locals as compiled), the module's in the order they first appeared (a
+# variable deleted and defined again keeps its place), a class body's in the
+# order it defined them. Hidden are only the names Python keeps itself.
+
+# The module's own: CPython's __main__ has them, or Python sets them (from a
+# docstring or annotations; the warnings module's registry).
+_MODULE_BOOKKEEPING = frozenset({'__name__', '__builtins__', '__doc__', '__annotations__', '__package__', '__spec__', '__loader__', '__file__', '__cached__', '__warningregistry__'})
+# A class body's and a class's own (pythontutor.com hides these too).
+_CLASS_BOOKKEEPING = frozenset({'__module__', '__qualname__', '__dict__', '__weakref__', '__doc__', '__annotations__', '__classcell__', '__firstlineno__', '__static_attributes__'})
+# A method's implicit cell for super() (and 3.12's for type parameters).
+_FUNCTION_BOOKKEEPING = frozenset({'__class__', '__classdict__'})
+
+_module_order = {}    # the module's variables in the order they first appeared (a dict as an ordered set)
+
+def _shown_names(frame_info, local_vars):
+    names = [k for k in dict.keys(local_vars) if type(k) is str and not k.startswith('.')]
+    kind = frame_info["kind"]
+    if kind == "module":
+        for k in names:
+            if k not in _module_order:
+                _module_order[k] = None
+        present = set(names)
+        return [k for k in _module_order if k in present and k not in _MODULE_BOOKKEEPING]
+    if kind == "class":
+        # A name the class's namespace started with (an Enum's
+        # _generate_next_value_, from its metaclass's __prepare__) is hidden
+        # while it holds the same object.
+        base = frame_info["base"]
+        return [k for k in names if k not in _CLASS_BOOKKEEPING and not (k in base and dict.__getitem__(local_vars, k) is base[k])]
+    return [k for k in names if k not in _FUNCTION_BOOKKEEPING]
+
+def _frame_kind(code):
+    if code.co_name == '<module>':
+        return "module"
+    return "function" if code.co_flags & _CO_OPTIMIZED else "class"
+
+# The words of the program's source: an attribute a library adds (an Enum's
+# _member_map_, a dataclass's __match_args__) isn't one, an attribute the
+# program sets is (#38).
+_source_words = frozenset()
+
+def _is_source_word(name):
+    if name in _source_words:
+        return True
+    # A private name as Python mangles it: _Account__secret for __secret.
+    i = name.find('__', 1)
+    return name.startswith('_') and i > 1 and name[i:] in _source_words
 
 # Lines that are continuations of multi-line simple statements.
 # These produce no visible variable changes, so we skip snapshots for them.
@@ -412,7 +468,9 @@ def _frame_locals(frame):
         return frame.f_globals
     if not (code.co_flags & _CO_OPTIMIZED) and code.co_nlocals > 0:
         return {}
-    return frame.f_locals
+    loc = frame.f_locals
+    # A metaclass's __prepare__ may give a class body a mapping that isn't a dict: not read.
+    return loc if issubclass(type(loc), dict) else {}
 
 # ── Multi-line statement detection ──
 
@@ -455,7 +513,8 @@ def _scan_continuation_lines(source_code):
 # from a queue, not by recursion, so a long linked list doesn't take the tracer
 # near the recursion limit.
 
-_FUNCTION_TYPES = (_types.FunctionType, _types.BuiltinFunctionType, _types.MethodType, _types.BuiltinMethodType, type)
+_FUNCTION_TYPES = (_types.FunctionType, _types.BuiltinFunctionType, _types.MethodType, _types.BuiltinMethodType)
+_METHOD_WRAPPERS = (staticmethod, classmethod, property)
 # Ints JavaScript holds exactly: their text is the same in both languages.
 _EXACT_INT = 2 ** 53
 
@@ -549,7 +608,7 @@ def _safe_repr(v, depth=2):
         return '(' + ', '.join(items) + (',' if len(items) == 1 else '') + ')'
     if issubclass(t, frozenset) and depth > 0:
         return 'frozenset({' + ', '.join(_safe_repr(x, depth - 1) for x in frozenset.__iter__(v)) + '})'
-    return '<' + t.__name__ + ' object>'
+    return '<' + _type_name(t) + ' object>'
 
 def _key_text(k):
     if issubclass(type(k), str):
@@ -593,7 +652,7 @@ def _slot_values(obj):
                 continue
             stored = name
             if name.startswith('__') and not name.endswith('__'):
-                stored = '_' + cls.__name__.lstrip('_') + name
+                stored = '_' + _type_name(cls).lstrip('_') + name
             descr = cls_dict.get(stored)
             if type(descr) is not _MemberDescriptor:
                 continue
@@ -602,6 +661,55 @@ def _slot_values(obj):
             except AttributeError:
                 continue
     return out
+
+def _wrapped_function(v):
+    # The function a method's value runs: itself, a staticmethod's or
+    # classmethod's __func__, a property's getter. None for anything else.
+    t = type(v)
+    if t is _types.FunctionType:
+        return v
+    if issubclass(t, staticmethod):
+        return staticmethod.__dict__['__func__'].__get__(v)
+    if issubclass(t, classmethod):
+        return classmethod.__dict__['__func__'].__get__(v)
+    if issubclass(t, property):
+        return property.__dict__['fget'].__get__(v)
+    return None
+
+def _is_program_function(f):
+    return type(f) is _types.FunctionType and _function_code(f).co_filename == _USER_FILE
+
+def _is_program_class(cls):
+    # A class the program defined (its namespace is __main__'s, as in CPython).
+    module = _type_dict(cls).get('__module__')
+    return type(module) is str and module == '__main__'
+
+def _is_library_descriptor(v):
+    # A library's descriptor stored in a class: a __slots__ member, a named
+    # tuple's field getter. The program reads values through it.
+    t = type(v)
+    if _is_program_class(t):
+        return False
+    return any('__get__' in _type_dict(c) for c in _type_mro(t))
+
+def _class_attribute_shown(name, v):
+    # What a class drawing shows: the methods the program wrote and the
+    # attributes it named, not what Python or a library added (a dataclass's
+    # generated __init__, an Enum's _member_map_, an ABC's _abc_impl).
+    if name in _CLASS_BOOKKEEPING:
+        return False
+    f = _wrapped_function(v)
+    if f is not None:
+        return _is_program_function(f)
+    if _is_library_descriptor(v):
+        return False
+    return _is_source_word(name)
+
+def _instance_attribute_shown(name):
+    # An object's attributes, but a library's private ones (an Enum
+    # member's _value_, a Thread's _target): a private name is shown when the
+    # program names it (self._balance).
+    return not name.startswith('_') or _is_source_word(name)
 
 def _serialize_heap_object(obj, heap_id, heap_objects, visited, pending):
     # A heap object as the snapshot draws it.
@@ -638,22 +746,53 @@ def _serialize_heap_object(obj, heap_id, heap_objects, visited, pending):
     elif issubclass(t, _FUNCTION_TYPES):
         object_type = "function"
         label = _safe_name(obj)
+    elif issubclass(t, _METHOD_WRAPPERS):
+        # A staticmethod, classmethod or property in a class: drawn as its function.
+        object_type = "function"
+        f = _wrapped_function(obj)
+        kind = 'staticmethod' if issubclass(t, staticmethod) else 'classmethod' if issubclass(t, classmethod) else 'property'
+        label = '@' + kind + ' ' + (_safe_name(f) if f is not None else '')
+    elif issubclass(t, type):
+        # A class (#38): one the program defined with its bases, the methods it
+        # wrote and its class attributes; a library's by its name only.
+        object_type = "class"
+        label = _type_name(obj)
+        if _is_program_class(obj):
+            bases = [b for b in _type_bases(obj) if b is not object]
+            if bases:
+                label += '(' + ', '.join(_type_name(b) for b in bases) + ')'
+            for k, v in _type_dict(obj).items():
+                if len(properties) >= _MAX_DICT_PROPS:
+                    break
+                if type(k) is str and _class_attribute_shown(k, v):
+                    properties.append({"key": k, "value": _serialize_value(v, heap_objects, visited, pending)})
+    elif issubclass(t, _types.ModuleType):
+        # A module is one object, by its name, never drawn in full (#38).
+        object_type = "module"
+        label = _safe_name(obj)
+    elif issubclass(t, _Enum):
+        # An Enum member, as Python names it, with its value.
+        d = _object_dict(obj) or {}
+        member = d.get('_name_')
+        label = _type_name(t) + ('.' + member if type(member) is str else '')
+        if '_value_' in d:
+            properties.append({"key": "value", "value": _serialize_value(d['_value_'], heap_objects, visited, pending)})
     else:
         # An instance: its __dict__ and its __slots__, as stored.
-        label = t.__name__
+        label = _type_name(t)
         count = 0
         d = _object_dict(obj)
         if d is not None:
             for k, v in dict.items(d):
                 if count >= _MAX_DICT_PROPS:
                     break
-                if type(k) is str and not k.startswith('_'):
+                if type(k) is str and _instance_attribute_shown(k):
                     properties.append({"key": k, "value": _serialize_value(v, heap_objects, visited, pending)})
                     count += 1
         for name, v in _slot_values(obj):
             if count >= _MAX_DICT_PROPS:
                 break
-            if not name.startswith('_'):
+            if _instance_attribute_shown(name):
                 properties.append({"key": name, "value": _serialize_value(v, heap_objects, visited, pending)})
                 count += 1
 
@@ -683,18 +822,7 @@ def _capture_snapshot(line, current_locals, return_value=None, has_return=False,
         variables = []
         local_vars = current_locals if i == len(_call_stack) - 1 else frame_info.get("locals", {})
 
-        for name in sorted(k for k in dict.keys(local_vars) if type(k) is str):
-            # For the module frame, skip everything that was in the
-            # namespace before user code started (builtins, tracer
-            # internals, etc.). For function frames, f_locals only
-            # contains the function's own locals so no filtering needed.
-            if frame_info["name"] == "<module>" and name in _baseline_keys:
-                continue
-            if name.startswith('__') and name.endswith('__'):
-                continue
-            # Skip CPython internal positional args (a comprehension's or generator expression's iterable)
-            if name.startswith('.'):
-                continue
+        for name in _shown_names(frame_info, local_vars):
             val = dict.__getitem__(local_vars, name)
             serialized = _serialize_value(val, heap_objects, visited, pending)
             variables.append({"name": name, "value": serialized})
@@ -783,12 +911,16 @@ def _trace_event(frame, event, arg):
     if event == 'call':
         if fname == '<module>':
             # The module's variables are its globals, read as they are at each step.
-            _call_stack.append({"name": "<module>", "locals": frame.f_globals})
+            _call_stack.append({"name": "<module>", "locals": frame.f_globals, "kind": "module"})
         else:
             display_name = _COMP_DISPLAY_NAMES.get(fname, fname)
             # Capture function parameters from f_locals at call time
             params = dict(_frame_locals(frame))
-            _call_stack.append({"name": display_name, "locals": params})
+            frame_info = {"name": display_name, "locals": params, "kind": _frame_kind(code)}
+            if frame_info["kind"] == "class":
+                # What the class's namespace started with, before its body ran.
+                frame_info["base"] = dict(params)
+            _call_stack.append(frame_info)
             # A comprehension's frame first shows with its first iteration's variables.
             if not _is_comprehension(code):
                 _capture_snapshot(frame.f_lineno, params)
@@ -877,7 +1009,7 @@ def _traceback_text(e, source_code):
     return chr(10).join(out)
 
 def run_traced(source_code, stdin_text=''):
-    global _snapshots, _call_stack, _heap_map, _heap_counter, _step_counter, _baseline_keys, _continuation_lines
+    global _snapshots, _call_stack, _heap_map, _heap_counter, _step_counter, _continuation_lines, _module_order, _source_words
     global _stop_reason, _start_time, _events, _unwinding, _work
     global _out_lines, _console, _console_open, _stderr_used, _stdin_used, _output_count, _output_seen
     global _limit, _base, _refused
@@ -901,6 +1033,8 @@ def run_traced(source_code, stdin_text=''):
     _heap_counter = 0
     _step_counter = 0
     _continuation_lines = set()
+    _module_order = {}
+    _source_words = frozenset(_re.findall(r'[A-Za-z_][A-Za-z0-9_]*', source_code))
 
     # Pre-scan source for multi-line statements
     _scan_continuation_lines(source_code)
@@ -910,10 +1044,6 @@ def run_traced(source_code, stdin_text=''):
     # __builtins__), so a program that replaces builtins.len calls its own len
     # and a variable named list or max is the program's (#34).
     namespace = {'__name__': '__main__'}
-
-    # Snapshot the namespace keys BEFORE user code runs so we can
-    # filter them out of the module-level variable display later.
-    _baseline_keys = set(namespace.keys())
 
     # The source, for tracebacks, warnings and traceback.print_exc(), as CPython has main.py's.
     _linecache.cache[_USER_FILE] = (len(source_code), None, source_code.splitlines(True), _USER_FILE)

@@ -48,7 +48,7 @@ function ArrayDisplay({ obj, changedKeys, step }: { obj: HeapObject; changedKeys
   );
 }
 
-function ObjectDisplay({ obj, changedKeys, step }: { obj: HeapObject; changedKeys: Set<string>; step: number }) {
+function ObjectDisplay({ obj, changedKeys, step, empty = 'empty object' }: { obj: HeapObject; changedKeys: Set<string>; step: number; empty?: string }) {
   return (
     <table className="w-100">
       <tbody>
@@ -71,7 +71,7 @@ function ObjectDisplay({ obj, changedKeys, step }: { obj: HeapObject; changedKey
         {obj.properties.length === 0 && (
           <tr>
             <td colSpan={2} className="text-muted" style={{ fontStyle: 'italic' }}>
-              empty object
+              {empty}
             </td>
           </tr>
         )}
@@ -82,8 +82,9 @@ function ObjectDisplay({ obj, changedKeys, step }: { obj: HeapObject; changedKey
 
 function FunctionDisplay({ obj }: { obj: HeapObject }) {
   const name = obj.label || 'anonymous';
-  // A Java lambda or method reference is labeled with its source, a JS or Python function with its name.
-  const shown = /->|::/.test(name) ? name : `${name}()`;
+  // A Java lambda or method reference is labeled with its source, a JS or
+  // Python function with its name, a Python property as `@property name` (read, not called).
+  const shown = /->|::/.test(name) || name.startsWith('@property ') ? name : `${name}()`;
   return (
     <div style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
       <span style={{ color: '#6f42c1' }}>ƒ</span>{' '}
@@ -92,12 +93,13 @@ function FunctionDisplay({ obj }: { obj: HeapObject }) {
   );
 }
 
-const PRIMITIVE_HEAP_TYPES = new Set(['int', 'float', 'str', 'bool', 'NoneType']);
+const PRIMITIVE_HEAP_TYPES = new Set(['int', 'float', 'complex', 'str', 'bool', 'NoneType']);
 
 function PrimitiveDisplay({ obj }: { obj: HeapObject }) {
   const colorMap: Record<string, string> = {
     int: '#0d6efd',
     float: '#0d6efd',
+    complex: '#0d6efd',
     str: '#198754',
     bool: '#fd7e14',
     NoneType: '#6c757d',
@@ -140,7 +142,8 @@ function HeapCard({ obj, changedKeys, step, typeConfig }: { obj: HeapObject; cha
           #{obj.id}
         </span>
       </Card.Header>
-      <Card.Body>
+      {/* A type drawn by its name alone (a Python module) has no body when it has nothing to show. */}
+      {!(config.empty === null && obj.properties.length === 0) && <Card.Body>
         {PRIMITIVE_HEAP_TYPES.has(obj.objectType) ? (
           <PrimitiveDisplay obj={obj} />
         ) : obj.objectType === 'array' || obj.objectType === 'list' || obj.objectType === 'tuple' ? (
@@ -152,9 +155,9 @@ function HeapCard({ obj, changedKeys, step, typeConfig }: { obj: HeapObject; cha
             {obj.properties.length > 0 && <ObjectDisplay obj={obj} changedKeys={changedKeys} step={step} />}
           </>
         ) : (
-          <ObjectDisplay obj={obj} changedKeys={changedKeys} step={step} />
+          <ObjectDisplay obj={obj} changedKeys={changedKeys} step={step} empty={config.empty ?? undefined} />
         )}
-      </Card.Body>
+      </Card.Body>}
     </Card>
   );
 }

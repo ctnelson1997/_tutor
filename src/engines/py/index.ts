@@ -23,8 +23,13 @@ export const pyEngine: LanguageEngine = {
     set: { label: 'Set', variant: 'warning' },
     function: { label: 'Function', variant: 'dark' },
     object: { label: 'Object', variant: 'warning' },
+    // A class the program defined, with its attributes and methods; a library's by its name (#38).
+    class: { label: 'Class', variant: 'primary', empty: 'no attributes' },
+    // A module, by its name, never drawn in full (#38).
+    module: { label: 'Module', variant: 'secondary', empty: null },
     int: { label: 'int', variant: 'primary' },
     float: { label: 'float', variant: 'primary' },
+    complex: { label: 'complex', variant: 'primary' },
     str: { label: 'str', variant: 'success' },
     bool: { label: 'bool', variant: 'warning' },
     NoneType: { label: 'NoneType', variant: 'secondary' },
