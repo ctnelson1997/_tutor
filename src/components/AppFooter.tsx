@@ -14,7 +14,7 @@ export default function AppFooter() {
       <span className="app-footer-sep" aria-hidden="true">·</span>
       <span title="Engine version (from package.json)">v{__TUTOR_ENGINE_VERSION__}</span>
       <span className="app-footer-sep" aria-hidden="true">·</span>
-      <span>Oct 17, 2026</span>
+      <span>Oct 19, 2026</span>
     </footer>
   );
 }
