@@ -12,6 +12,10 @@ export const pyEngine: LanguageEngine = {
   examples,
   sandboxCode: '# Write your code below!\nx = 1\nprint(x)',
   analyzeCode,
+  stdin: {
+    reader: 'input()',
+    placeholder: 'Type input here — each input() reads one line, like typing into a terminal.',
+  },
   heapTypeConfig: {
     list: { label: 'List', variant: 'info' },
     dict: { label: 'Dict', variant: 'warning' },

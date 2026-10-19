@@ -147,7 +147,7 @@
   {"event":"call","line":14,"stack":["<module>","__getitem__"],"locals":{"self":"<Playlist>","index":"10"}},
   {"event":"line","line":15,"stack":["<module>","__getitem__"],"locals":{"self":"<Playlist>","index":"10"}},
   {"event":"exception","line":15,"stack":["<module>","__getitem__"],"locals":{"self":"<Playlist>","index":"10"},"exc":"IndexError"},
-  {"event":"return","line":15,"stack":["<module>","__getitem__"],"locals":{"self":"<Playlist>","index":"10"},"value":"None"},
+  {"event":"return","line":15,"stack":["<module>","__getitem__"],"locals":{"self":"<Playlist>","index":"10"},"value":"None","unwinding":true},
   {"event":"exception","line":32,"stack":["<module>"],"locals":{"Playlist":"<type>","pl":"<Playlist>","s":"'YESTERDAY'"},"exc":"IndexError"},
   {"event":"line","line":33,"stack":["<module>"],"locals":{"Playlist":"<type>","pl":"<Playlist>","s":"'YESTERDAY'"}},
   {"event":"line","line":34,"stack":["<module>"],"locals":{"Playlist":"<type>","pl":"<Playlist>","s":"'YESTERDAY'","e":"<IndexError>"}},

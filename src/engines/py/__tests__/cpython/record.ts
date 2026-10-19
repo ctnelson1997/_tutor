@@ -14,44 +14,11 @@
  *
  * Used by scripts/py-golden.ts, which runs each case in a process of its own.
  */
-import { MAX_GOLDEN_EVENTS, type GoldenLine, type PyGolden } from './corpus';
+import { MAX_GOLDEN_EVENTS, consoleLines, type ConsoleChunk, type PyGolden } from './corpus';
 import { loadNodePyodide, stdinOf, type PyodideInterface } from './pyodideNode';
 
 /** The recorder's time budget: a program still running after it is endless. */
 export const ENDLESS_AFTER_SECONDS = 5;
-
-/** A chunk one stream received, in the order the program wrote it. */
-export interface ConsoleChunk {
-  stream: 'stdout' | 'stderr';
-  text: string;
-}
-
-/**
- * The console as lines: each line belongs to the stream that wrote its first
- * characters (as JavaTutor's console does, #22), and a final line without a
- * newline is kept.
- */
-export function consoleLines(chunks: ConsoleChunk[]): GoldenLine[] {
-  const lines: GoldenLine[] = [];
-  let open: GoldenLine | null = null;
-  for (const { stream, text } of chunks) {
-    text.split('\n').forEach((part, i) => {
-      if (i > 0) {
-        // A newline ends the open line, or is an empty line of its own.
-        if (!open) lines.push({ stream, text: '' });
-        open = null;
-      }
-      if (part) {
-        if (!open) {
-          open = { stream, text: '' };
-          lines.push(open);
-        }
-        open.text += part;
-      }
-    });
-  }
-  return lines;
-}
 
 /** Python run in the recorder's Pyodide: unbuffered streams, so each write reaches its handler in program order (`python -u`). */
 const UNBUFFERED_STREAMS = String.raw`
@@ -89,6 +56,7 @@ _limit = sys.getrecursionlimit()
 _real_getlimit = sys.getrecursionlimit
 _real_setlimit = sys.setrecursionlimit
 _refused = set()
+_unwinding = set()   # frames an exception is passing through: their 'return' event is the frame unwinding
 
 def _getrecursionlimit():
     return _limit
@@ -178,8 +146,14 @@ def _trace(frame, event, arg):
         ev['locals'] = {'!error': repr(ex)}
     if event == 'return':
         ev['value'] = _r(arg)
-    if event == 'exception':
+        if frame in _unwinding:
+            ev['unwinding'] = True
+            _unwinding.discard(frame)
+    elif event == 'exception':
         ev['exc'] = arg[0].__name__
+        _unwinding.add(frame)
+    elif event == 'line':
+        _unwinding.discard(frame)
     _events.append(ev)
     return _trace
 
@@ -202,8 +176,10 @@ if _compile_error is None:
         sys.settrace(_trace)
     try:
         exec(_code, _g)
-    except SystemExit:
-        pass
+    except SystemExit as ex:
+        # As CPython ends: a code that isn't None or an int is printed to stderr.
+        if ex.code is not None and not isinstance(ex.code, int):
+            sys.stderr.write(str(ex.code) + chr(10))
     except _Endless:
         _endless = True
     except BaseException as ex:

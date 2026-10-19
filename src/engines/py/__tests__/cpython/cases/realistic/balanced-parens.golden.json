@@ -406,7 +406,7 @@
   {"event":"return","line":18,"stack":["<module>","pop","is_empty"],"locals":{"self":"<Stack>"},"value":"True"},
   {"event":"line","line":11,"stack":["<module>","pop"],"locals":{"self":"<Stack>"}},
   {"event":"exception","line":11,"stack":["<module>","pop"],"locals":{"self":"<Stack>"},"exc":"IndexError"},
-  {"event":"return","line":11,"stack":["<module>","pop"],"locals":{"self":"<Stack>"},"value":"None"},
+  {"event":"return","line":11,"stack":["<module>","pop"],"locals":{"self":"<Stack>"},"value":"None","unwinding":true},
   {"event":"exception","line":51,"stack":["<module>"],"locals":{"Stack":"<type>","PAIRS":"<dict>","is_balanced":"<function>","tests":"<list>","results":"<dict>","t":"'a{b(c)d}e'","s":"<Stack>","word":"'three'","popped":"<list>"},"exc":"IndexError"},
   {"event":"line","line":52,"stack":["<module>"],"locals":{"Stack":"<type>","PAIRS":"<dict>","is_balanced":"<function>","tests":"<list>","results":"<dict>","t":"'a{b(c)d}e'","s":"<Stack>","word":"'three'","popped":"<list>"}},
   {"event":"line","line":53,"stack":["<module>"],"locals":{"Stack":"<type>","PAIRS":"<dict>","is_balanced":"<function>","tests":"<list>","results":"<dict>","t":"'a{b(c)d}e'","s":"<Stack>","word":"'three'","popped":"<list>","e":"<IndexError>"}},

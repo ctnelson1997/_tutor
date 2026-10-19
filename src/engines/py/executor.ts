@@ -11,6 +11,7 @@
 import { getTracerCode } from './tracer';
 import { TIMEOUT_REPLY, WORKER_TIMEOUT } from './run';
 import type { WorkerMessage } from '../../types/snapshot';
+import type { EngineExecuteOptions } from '../../types/engine';
 import PyWorker from './worker.ts?worker&inline';
 const INIT_TIMEOUT = 30_000; // Pyodide download can take a while
 
@@ -66,10 +67,10 @@ async function ensureWorker(): Promise<void> {
 }
 
 /**
- * Execute user Python code through the Pyodide tracing pipeline.
- * Returns the raw WorkerMessage (snapshots or error).
+ * Execute user Python code through the Pyodide tracing pipeline, input()
+ * reading `options.stdin`. Returns the raw WorkerMessage (snapshots or error).
  */
-export async function execute(source: string): Promise<WorkerMessage> {
+export async function execute(source: string, options?: EngineExecuteOptions): Promise<WorkerMessage> {
   try {
     await ensureWorker();
   } catch (err) {
@@ -112,7 +113,7 @@ export async function execute(source: string): Promise<WorkerMessage> {
       });
     };
 
-    worker.postMessage({ type: 'run', source, tracerCode });
+    worker.postMessage({ type: 'run', source, stdin: options?.stdin ?? '', tracerCode });
   });
 }
 

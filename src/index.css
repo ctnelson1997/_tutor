@@ -117,6 +117,12 @@ html, body, #root {
   color: #f44747;
 }
 
+/* What the program read from stdin, echoed where a terminal shows what was typed. */
+.console-panel .log-input {
+  color: #4ec9b0;
+  font-style: italic;
+}
+
 /* Toast fade duration override */
 .toast.fade {
   transition: opacity 0.5s ease !important;

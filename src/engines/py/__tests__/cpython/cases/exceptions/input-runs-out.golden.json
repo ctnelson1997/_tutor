@@ -1,0 +1,53 @@
+{
+ "stdout": "Number 1: running total: 4\nNumber 2: running total: 14\nNumber 3: ",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Number 1: running total: 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "Number 2: running total: 14"
+  },
+  {
+   "stream": "stdout",
+   "text": "Number 3: "
+  }
+ ],
+ "exception": {
+  "class": "EOFError",
+  "message": "EOF when reading a line"
+ },
+ "traceback": "Traceback (most recent call last):\n  File \"main.py\", line 5, in <module>\n    text = input(f\"Number {count + 1}: \")\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nEOFError: EOF when reading a line\n",
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"total":"0"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"total":"0","count":"0"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"total":"0","count":"0"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"total":"0","count":"0","text":"'4'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"total":"4","count":"0","text":"'4'"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"total":"4","count":"1","text":"'4'"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"total":"4","count":"1","text":"'4'"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"total":"4","count":"1","text":"'4'"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"total":"4","count":"1","text":"'10'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"total":"14","count":"1","text":"'10'"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"total":"14","count":"2","text":"'10'"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"total":"14","count":"2","text":"'10'"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"total":"14","count":"2","text":"'10'"}},
+  {"event":"exception","line":5,"stack":["<module>"],"locals":{"total":"14","count":"2","text":"'10'"},"exc":"EOFError"},
+  {"event":"return","line":5,"stack":["<module>"],"locals":{"total":"14","count":"2","text":"'10'"},"value":"None","unwinding":true}
+ ],
+ "truncated": false,
+ "stepEvents": 16,
+ "finalGlobals": {
+  "total": "14",
+  "count": "2",
+  "text": "'10'"
+ },
+ "continuation": [],
+ "sourceSha256": "2596da4f9bbe762fb24d68ec58af1f6ec2510b8298a66367d9f837dd0b20b5d1"
+}

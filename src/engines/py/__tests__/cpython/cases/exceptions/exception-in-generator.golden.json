@@ -67,7 +67,7 @@
   {"event":"line","line":3,"stack":["<module>","parse_all"],"locals":{"lines":"<list>","line":"'2'"}},
   {"event":"line","line":4,"stack":["<module>","parse_all"],"locals":{"lines":"<list>","line":"'x'"}},
   {"event":"exception","line":4,"stack":["<module>","parse_all"],"locals":{"lines":"<list>","line":"'x'"},"exc":"ValueError"},
-  {"event":"return","line":4,"stack":["<module>","parse_all"],"locals":{"lines":"<list>","line":"'x'"},"value":"None"},
+  {"event":"return","line":4,"stack":["<module>","parse_all"],"locals":{"lines":"<list>","line":"'x'"},"value":"None","unwinding":true},
   {"event":"exception","line":16,"stack":["<module>"],"locals":{"parse_all":"<function>","guarded":"<function>","gen":"<generator>","got":"<list>","value":"2"},"exc":"ValueError"},
   {"event":"line","line":18,"stack":["<module>"],"locals":{"parse_all":"<function>","guarded":"<function>","gen":"<generator>","got":"<list>","value":"2"}},
   {"event":"line","line":19,"stack":["<module>"],"locals":{"parse_all":"<function>","guarded":"<function>","gen":"<generator>","got":"<list>","value":"2","e":"<ValueError>"}},

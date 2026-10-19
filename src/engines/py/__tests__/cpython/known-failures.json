@@ -917,23 +917,12 @@
       }
     },
     "realistic/average-of-n": {
-      "output": {
+      "values": {
         "issues": [
-          32
+          37,
+          33
         ],
-        "reason": "input() raises OSError"
-      },
-      "ending": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
-      },
-      "steps": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
+        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
       }
     },
     "realistic/balanced-parens": {
@@ -986,26 +975,6 @@
         "reason": "comprehension display re-runs code / stale f_locals"
       }
     },
-    "realistic/change-maker": {
-      "output": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
-      },
-      "ending": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
-      },
-      "steps": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
-      }
-    },
     "realistic/dice-simulation": {
       "values": {
         "issues": [
@@ -1024,23 +993,18 @@
       }
     },
     "realistic/gradebook-input": {
-      "output": {
+      "values": {
         "issues": [
-          32
+          37,
+          33
         ],
-        "reason": "input() raises OSError"
+        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
       },
-      "ending": {
+      "final-state": {
         "issues": [
-          32
+          37
         ],
-        "reason": "input() raises OSError"
-      },
-      "steps": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
+        "reason": "numbers shown as JSON numbers"
       }
     },
     "realistic/group-students": {
@@ -1049,46 +1013,6 @@
           33
         ],
         "reason": "comprehension display re-runs code / stale f_locals"
-      }
-    },
-    "realistic/guessing-game": {
-      "output": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
-      },
-      "ending": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
-      },
-      "steps": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
-      }
-    },
-    "realistic/leap-year-input": {
-      "output": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
-      },
-      "ending": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
-      },
-      "steps": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
       }
     },
     "realistic/linked-list": {
@@ -1111,67 +1035,38 @@
     "realistic/matrix-input": {
       "output": {
         "issues": [
-          32
+          33
         ],
-        "reason": "input() raises OSError"
+        "reason": "comprehension display re-runs code / stale f_locals"
       },
       "ending": {
         "issues": [
-          32
+          33
         ],
-        "reason": "input() raises OSError"
+        "reason": "comprehension display re-runs code / stale f_locals"
       },
       "steps": {
         "issues": [
-          32
+          33
         ],
-        "reason": "input() raises OSError"
+        "reason": "comprehension display re-runs code / stale f_locals"
       }
     },
     "realistic/menu-bank": {
-      "output": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
-      },
-      "ending": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
-      },
-      "steps": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
-      },
       "values": {
         "issues": [
-          32
+          37,
+          33
         ],
-        "reason": "input() raises OSError"
+        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
       }
     },
     "realistic/password-checker": {
-      "output": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
-      },
-      "ending": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
-      },
       "steps": {
         "issues": [
-          32
+          33
         ],
-        "reason": "input() raises OSError"
+        "reason": "comprehension display re-runs code / stale f_locals"
       }
     },
     "realistic/permutations": {
@@ -1197,23 +1092,18 @@
       }
     },
     "realistic/quiz-input": {
-      "output": {
+      "values": {
         "issues": [
-          32
+          37,
+          33
         ],
-        "reason": "input() raises OSError"
+        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
       },
-      "ending": {
+      "final-state": {
         "issues": [
-          32
+          37
         ],
-        "reason": "input() raises OSError"
-      },
-      "steps": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
+        "reason": "numbers shown as JSON numbers"
       }
     },
     "realistic/recursion-basics": {
@@ -1230,26 +1120,6 @@
         "reason": "comprehension display re-runs code / stale f_locals"
       }
     },
-    "realistic/safe-age-input": {
-      "output": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
-      },
-      "ending": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
-      },
-      "steps": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
-      }
-    },
     "realistic/selection-sort": {
       "steps": {
         "issues": [
@@ -1259,23 +1129,11 @@
       }
     },
     "realistic/sentence-analyzer": {
-      "output": {
+      "values": {
         "issues": [
-          32
+          33
         ],
-        "reason": "input() raises OSError"
-      },
-      "ending": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
-      },
-      "steps": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
+        "reason": "comprehension display re-runs code / stale f_locals"
       }
     },
     "realistic/shapes-inheritance": {
@@ -1308,43 +1166,11 @@
       }
     },
     "realistic/shopping-list-input": {
-      "output": {
+      "values": {
         "issues": [
-          32
+          33
         ],
-        "reason": "input() raises OSError"
-      },
-      "ending": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
-      },
-      "steps": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
-      }
-    },
-    "realistic/split-scores": {
-      "output": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
-      },
-      "ending": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
-      },
-      "steps": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
+        "reason": "comprehension display re-runs code / stale f_locals"
       }
     },
     "realistic/student-course": {
@@ -1369,44 +1195,19 @@
         "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
       }
     },
-    "realistic/sum-until-sentinel": {
-      "output": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
-      },
-      "ending": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
-      },
-      "steps": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
-      }
-    },
     "realistic/temperature-converter-input": {
-      "output": {
+      "values": {
         "issues": [
-          32
+          37,
+          33
         ],
-        "reason": "input() raises OSError"
+        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
       },
-      "ending": {
+      "final-state": {
         "issues": [
-          32
+          37
         ],
-        "reason": "input() raises OSError"
-      },
-      "steps": {
-        "issues": [
-          32
-        ],
-        "reason": "input() raises OSError"
+        "reason": "numbers shown as JSON numbers"
       }
     },
     "realistic/temperature-table": {

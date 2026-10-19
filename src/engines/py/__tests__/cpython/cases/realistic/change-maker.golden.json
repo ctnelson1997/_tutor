@@ -111,7 +111,7 @@
   {"event":"call","line":6,"stack":["<module>","to_cents"],"locals":{"text":"'$20'"}},
   {"event":"line","line":7,"stack":["<module>","to_cents"],"locals":{"text":"'$20'"}},
   {"event":"exception","line":7,"stack":["<module>","to_cents"],"locals":{"text":"'$20'"},"exc":"ValueError"},
-  {"event":"return","line":7,"stack":["<module>","to_cents"],"locals":{"text":"'$20'"},"value":"None"},
+  {"event":"return","line":7,"stack":["<module>","to_cents"],"locals":{"text":"'$20'"},"value":"None","unwinding":true},
   {"event":"exception","line":24,"stack":["<module>"],"locals":{"DENOMINATIONS":"<list>","to_cents":"<function>","make_change":"<function>","transactions":"4","summary":"<list>","t":"1","price":"1299","paid":"500","change":"163","pieces":"<list>"},"exc":"ValueError"},
   {"event":"line","line":25,"stack":["<module>"],"locals":{"DENOMINATIONS":"<list>","to_cents":"<function>","make_change":"<function>","transactions":"4","summary":"<list>","t":"1","price":"1299","paid":"500","change":"163","pieces":"<list>"}},
   {"event":"line","line":26,"stack":["<module>"],"locals":{"DENOMINATIONS":"<list>","to_cents":"<function>","make_change":"<function>","transactions":"4","summary":"<list>","t":"1","price":"1299","paid":"500","change":"163","pieces":"<list>","e":"<ValueError>"}},

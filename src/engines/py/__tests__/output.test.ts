@@ -17,8 +17,12 @@ beforeAll(async () => {
   py = await loadNodePyodide();
 }, 60_000);
 
-function run(source: string): ExecutionSnapshot[] {
-  const reply: WorkerMessage = runProgram(py, tracer, source);
+function runReply(source: string, stdin = ''): WorkerMessage {
+  return runProgram(py, tracer, source, { stdin });
+}
+
+function run(source: string, stdin = ''): ExecutionSnapshot[] {
+  const reply = runReply(source, stdin);
   if (reply.type !== 'result') throw new Error(reply.message);
   return reply.snapshots;
 }
@@ -85,5 +89,59 @@ describe('output captured at the streams', () => {
     const steps = run('xs = [x * x for x in range(3)]\nprint(xs)\n');
     expect(last(steps).console).toBeUndefined();
     expect(last(steps).stdout).toEqual(['[0, 1, 4]']);
+  });
+});
+
+describe('input() from the stdin panel (#32)', () => {
+  it('reads one line per input(), writing the prompt to stdout and echoing what it read', () => {
+    const steps = run('name = input("Name: ")\nage = int(input("Age: "))\nprint(name, age + 1)\n', 'Ada\n36\n');
+    expect(last(steps).stdout).toEqual(['Name: Age: Ada 37']);
+    expect(last(steps).console).toEqual([
+      { text: 'Name: Ada', stream: 'stdout', input: [[6, 9], [9, 9]] },
+      { text: 'Age: 36', stream: 'stdout', input: [[5, 7], [7, 7]] },
+      { text: 'Ada 37', stream: 'stdout' },
+    ]);
+  });
+
+  it('marks an empty line typed alone as input, so its Enter is too', () => {
+    const steps = run('a = input("> ")\nb = input("> ")\nprint(repr(a), repr(b))\n', '\nq\n');
+    expect(last(steps).console).toEqual([
+      { text: '> ', stream: 'stdout', input: [[2, 2]] },
+      { text: '> q', stream: 'stdout', input: [[2, 3], [3, 3]] },
+      { text: "'' 'q'", stream: 'stdout' },
+    ]);
+  });
+
+  it('shows at each step what has been read so far', () => {
+    const steps = run('a = input()\nb = input()\nprint(a + b)\n', 'x\ny\n');
+    const at = (line: number) => steps.find(s => s.line === line)!;
+    expect(at(1).console).toBeUndefined();
+    expect(at(2).console).toEqual([{ text: 'x', stream: 'stdout', input: [[0, 1], [1, 1]] }]);
+    expect(at(3).console?.map(l => l.text)).toEqual(['x', 'y']);
+  });
+
+  it('treats the last typed line as ended by Enter', () => {
+    const steps = run('n = input("n: ")\nprint("got", n)\n', '5');
+    expect(last(steps).console?.map(l => l.text)).toEqual(['n: 5', 'got 5']);
+  });
+
+  it('raises EOFError when the input runs out, as CPython with a closed stdin', () => {
+    const reply = runReply('first = input()\nsecond = input("more? ")\n', 'only\n');
+    expect(reply.type === 'result' && reply.error).toMatchObject({ kind: 'exception', message: 'EOFError: EOF when reading a line', line: 2 });
+    expect(reply.type === 'result' && reply.snapshots.at(-1)!.stdout).toEqual(['more? ']);
+  });
+
+  it('serves sys.stdin.readline, read and iteration from the same text', () => {
+    const steps = run('import sys\nfirst = sys.stdin.readline()\nrest = [line.strip() for line in sys.stdin]\nprint(repr(first), rest, repr(sys.stdin.read()))\nprint(sys.stdin.name, repr(sys.stdin))\n', 'a\nb\nc\n');
+    expect(last(steps).stdout).toEqual([
+      "'a\\n' ['b', 'c'] ''",
+      "<stdin> <_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>",
+    ]);
+  });
+
+  it('gives sys.stdin back after the run', () => {
+    const before = String(py.runPython('import sys; sys.stdin'));
+    run('x = input()\n', 'a\n');
+    expect(String(py.runPython('import sys; sys.stdin'))).toBe(before);
   });
 });

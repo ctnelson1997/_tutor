@@ -94,7 +94,7 @@
   {"event":"line","line":5,"stack":["<module>"],"locals":{"x":"1.3407807929942597e+154","step":"9"}},
   {"event":"line","line":6,"stack":["<module>"],"locals":{"x":"1.3407807929942597e+154","step":"9"}},
   {"event":"exception","line":6,"stack":["<module>"],"locals":{"x":"1.3407807929942597e+154","step":"9"},"exc":"OverflowError"},
-  {"event":"return","line":6,"stack":["<module>"],"locals":{"x":"1.3407807929942597e+154","step":"9"},"value":"None"}
+  {"event":"return","line":6,"stack":["<module>"],"locals":{"x":"1.3407807929942597e+154","step":"9"},"value":"None","unwinding":true}
  ],
  "truncated": false,
  "stepEvents": 43,

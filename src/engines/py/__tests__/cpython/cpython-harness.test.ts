@@ -6,7 +6,7 @@
  */
 import { afterAll, describe, expect, it } from 'vitest';
 import type { ExecutionSnapshot, RunError, RuntimeValue, StackFrame, WorkerMessage } from '../../../../types/snapshot';
-import { caseHash, expandStack, formatGolden, loadCases, type GoldenEvent, type PyCase, type PyGolden } from './corpus';
+import { caseHash, consoleLines, expandStack, formatGolden, loadCases, type GoldenEvent, type PyCase, type PyGolden } from './corpus';
 import {
   INTERNAL_TEXT,
   RunnerPool,
@@ -17,9 +17,10 @@ import {
   unrepr,
   validateKnownFailures,
   withoutCarets,
+  withoutInput,
   type RunOutcome,
 } from './harness';
-import { consoleLines, record, recordGolden } from './record';
+import { record, recordGolden } from './record';
 
 // ── Builders ──
 
@@ -213,6 +214,23 @@ describe('checkCase', () => {
     expect(r.verdict).toBe('match');
   });
 
+  it('leaves the echoed input out, as CPython shows no echo', () => {
+    expect(withoutInput([
+      { stream: 'stdout', text: 'Name: Ada', input: [[6, 9], [9, 9]] },
+      { stream: 'stdout', text: 'Hi Ada' },
+      { stream: 'stdout', text: '> ', input: [[2, 2]] },
+      { stream: 'stdout', text: '> q', input: [[2, 3], [3, 3]] },
+      { stream: 'stdout', text: 'xy', input: [[0, 2]] },
+      { stream: 'stdout', text: 'Age: 7', input: [[5, 6], [6, 6]] },
+    ])).toEqual([
+      { stream: 'stdout', text: 'Name: Hi Ada' },
+      // 'xy' was read without a newline: the program's own newline after it ends the line.
+      { stream: 'stdout', text: '> > ' },
+      { stream: 'stdout', text: 'Age: ' },
+    ]);
+    expect(withoutInput([{ stream: 'stderr', text: 'e' }])).toEqual([{ stream: 'stderr', text: 'e' }]);
+  });
+
   it('compares stderr lines too, in program order', () => {
     const withErr = golden({ ...g, console: [{ stream: 'stdout', text: '2' }, { stream: 'stderr', text: 'warn' }] });
     const asStdout = good.map((s, i) => (i === good.length - 1 ? { ...s, stdout: ['2', 'warn'] } : s));
@@ -400,8 +418,12 @@ describe('RunnerPool', () => {
     expect(second.reply.type === 'result' && second.reply.snapshots.at(-1)!.stdout).toEqual(['False']);
   }, 60_000);
 
-  it("reports input() failing as in a browser worker, which has no prompt()", async () => {
-    const r = await pool.run('n = input()\n');
-    expect(r.reply.type === 'result' && r.reply.error?.message).toMatch(/OSError/);
+  it('feeds the stdin to input(), echoing it on the console (#32)', async () => {
+    const r = await pool.run('n = input("n? ")\nprint(int(n) * 2)\ninput()\n', '21');
+    expect(r.reply.type === 'result' && r.reply.snapshots.at(-1)!.console).toEqual([
+      { text: 'n? 21', stream: 'stdout', input: [[3, 5], [5, 5]] },
+      { text: '42', stream: 'stdout' },
+    ]);
+    expect(r.reply.type === 'result' && r.reply.error?.message).toBe('EOFError: EOF when reading a line');
   }, 60_000);
 });

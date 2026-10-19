@@ -83,7 +83,7 @@
   {"event":"call","line":6,"stack":["<module>","ratio"],"locals":{"a":"1","b":"0"}},
   {"event":"line","line":7,"stack":["<module>","ratio"],"locals":{"a":"1","b":"0"}},
   {"event":"exception","line":7,"stack":["<module>","ratio"],"locals":{"a":"1","b":"0"},"exc":"ZeroDivisionError"},
-  {"event":"return","line":7,"stack":["<module>","ratio"],"locals":{"a":"1","b":"0"},"value":"None"},
+  {"event":"return","line":7,"stack":["<module>","ratio"],"locals":{"a":"1","b":"0"},"value":"None","unwinding":true},
   {"event":"exception","line":11,"stack":["<module>"],"locals":{"sys":"<module>","traceback":"<module>","warnings":"<module>","ratio":"<function>"},"exc":"ZeroDivisionError"},
   {"event":"line","line":12,"stack":["<module>"],"locals":{"sys":"<module>","traceback":"<module>","warnings":"<module>","ratio":"<function>"}},
   {"event":"line","line":13,"stack":["<module>"],"locals":{"sys":"<module>","traceback":"<module>","warnings":"<module>","ratio":"<function>"}},

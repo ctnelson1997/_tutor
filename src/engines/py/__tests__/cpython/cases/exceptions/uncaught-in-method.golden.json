@@ -68,11 +68,11 @@
   {"event":"call","line":6,"stack":["<module>","fill_order","take"],"locals":{"self":"<Inventory>","item":"'kiwi'","n":"1"}},
   {"event":"line","line":7,"stack":["<module>","fill_order","take"],"locals":{"self":"<Inventory>","item":"'kiwi'","n":"1"}},
   {"event":"exception","line":7,"stack":["<module>","fill_order","take"],"locals":{"self":"<Inventory>","item":"'kiwi'","n":"1"},"exc":"KeyError"},
-  {"event":"return","line":7,"stack":["<module>","fill_order","take"],"locals":{"self":"<Inventory>","item":"'kiwi'","n":"1"},"value":"None"},
+  {"event":"return","line":7,"stack":["<module>","fill_order","take"],"locals":{"self":"<Inventory>","item":"'kiwi'","n":"1"},"value":"None","unwinding":true},
   {"event":"exception","line":15,"stack":["<module>","fill_order"],"locals":{"self":"<Inventory>","order":"<list>","filled":"<list>","item":"'kiwi'","n":"1"},"exc":"KeyError"},
-  {"event":"return","line":15,"stack":["<module>","fill_order"],"locals":{"self":"<Inventory>","order":"<list>","filled":"<list>","item":"'kiwi'","n":"1"},"value":"None"},
+  {"event":"return","line":15,"stack":["<module>","fill_order"],"locals":{"self":"<Inventory>","order":"<list>","filled":"<list>","item":"'kiwi'","n":"1"},"value":"None","unwinding":true},
   {"event":"exception","line":22,"stack":["<module>"],"locals":{"Inventory":"<type>","inv":"<Inventory>"},"exc":"KeyError"},
-  {"event":"return","line":22,"stack":["<module>"],"locals":{"Inventory":"<type>","inv":"<Inventory>"},"value":"None"}
+  {"event":"return","line":22,"stack":["<module>"],"locals":{"Inventory":"<type>","inv":"<Inventory>"},"value":"None","unwinding":true}
  ],
  "truncated": false,
  "stepEvents": 51,

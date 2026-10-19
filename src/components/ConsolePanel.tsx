@@ -1,6 +1,7 @@
 import { memo, useEffect, useMemo, useRef, useCallback, useState } from 'react';
 import { useStore } from '../store/useStore';
 import type { ConsoleLine } from '../types/snapshot';
+import { consoleSegments } from '../utils/consoleSegments';
 
 export default memo(function ConsolePanel() {
   const snapshots = useStore((s) => s.snapshots);
@@ -88,7 +89,13 @@ export default memo(function ConsolePanel() {
         ) : (
           <>
             {lines.map((line, i) => (
-              <div key={i} className={line.stream === 'stderr' ? 'log-error' : undefined}>{line.text}</div>
+              <div key={i} className={line.stream === 'stderr' ? 'log-error' : undefined}>
+                {line.input
+                  ? consoleSegments(line).map((seg, j) => (
+                    seg.input ? <span key={j} className="log-input" title="Input (read from stdin)">{seg.text}</span> : seg.text
+                  ))
+                  : line.text}
+              </div>
             ))}
             {stderr.map((line, i) => (
               <div key={`stderr-${i}`} className="log-error">{line}</div>

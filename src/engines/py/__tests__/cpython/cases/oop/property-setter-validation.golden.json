@@ -83,7 +83,7 @@
   {"event":"line","line":12,"stack":["<module>","celsius"],"locals":{"self":"<Temperature>","value":"-300"}},
   {"event":"line","line":13,"stack":["<module>","celsius"],"locals":{"self":"<Temperature>","value":"-300"}},
   {"event":"exception","line":13,"stack":["<module>","celsius"],"locals":{"self":"<Temperature>","value":"-300"},"exc":"ValueError"},
-  {"event":"return","line":13,"stack":["<module>","celsius"],"locals":{"self":"<Temperature>","value":"-300"},"value":"None"},
+  {"event":"return","line":13,"stack":["<module>","celsius"],"locals":{"self":"<Temperature>","value":"-300"},"value":"None","unwinding":true},
   {"event":"exception","line":25,"stack":["<module>"],"locals":{"Temperature":"<type>","t":"<Temperature>"},"exc":"ValueError"},
   {"event":"line","line":26,"stack":["<module>"],"locals":{"Temperature":"<type>","t":"<Temperature>"}},
   {"event":"line","line":27,"stack":["<module>"],"locals":{"Temperature":"<type>","t":"<Temperature>","e":"<ValueError>"}},

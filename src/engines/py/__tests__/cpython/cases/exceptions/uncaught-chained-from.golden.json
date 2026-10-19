@@ -40,9 +40,9 @@
   {"event":"line","line":8,"stack":["<module>","read_age"],"locals":{"record":"<dict>"}},
   {"event":"line","line":9,"stack":["<module>","read_age"],"locals":{"record":"<dict>","e":"<ValueError>"}},
   {"event":"exception","line":9,"stack":["<module>","read_age"],"locals":{"record":"<dict>","e":"<ValueError>"},"exc":"DataError"},
-  {"event":"return","line":9,"stack":["<module>","read_age"],"locals":{"record":"<dict>"},"value":"None"},
+  {"event":"return","line":9,"stack":["<module>","read_age"],"locals":{"record":"<dict>"},"value":"None","unwinding":true},
   {"event":"exception","line":14,"stack":["<module>"],"locals":{"DataError":"<type>","read_age":"<function>","people":"<list>","ages":"<list>","p":"<dict>"},"exc":"DataError"},
-  {"event":"return","line":14,"stack":["<module>"],"locals":{"DataError":"<type>","read_age":"<function>","people":"<list>","ages":"<list>","p":"<dict>"},"value":"None"}
+  {"event":"return","line":14,"stack":["<module>"],"locals":{"DataError":"<type>","read_age":"<function>","people":"<list>","ages":"<list>","p":"<dict>"},"value":"None","unwinding":true}
  ],
  "truncated": false,
  "stepEvents": 25,

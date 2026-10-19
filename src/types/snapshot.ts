@@ -88,6 +88,13 @@ export interface ColumnRange {
 export interface ConsoleLine {
   text: string;
   stream: 'stdout' | 'stderr';
+  /**
+   * Character ranges `[start, end)` of `text` that echo what the program read
+   * from stdin (Python's input(), #32), as a terminal shows what was typed:
+   * not the program's output. A line that ended with the input's newline (the
+   * Enter that ended a typed line) ends with an empty range at its end.
+   */
+  input?: [number, number][];
 }
 
 export interface ExecutionSnapshot {
@@ -100,8 +107,8 @@ export interface ExecutionSnapshot {
   stdout: string[];
   /**
    * The console in program order, stdout and stderr lines interleaved, once
-   * the program has written to stderr (Java's System.err, printStackTrace).
-   * Without it, the console is `stdout`.
+   * the program has written to stderr (Java's System.err, printStackTrace) or
+   * read stdin (Python's input(), echoed). Without it, the console is `stdout`.
    */
   console?: ConsoleLine[];
   condition?: ConditionResult;

@@ -26,8 +26,8 @@ import { availableParallelism } from 'node:os';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { TIMEOUT_REPLY, WORKER_TIMEOUT } from '../../run';
-import type { ExecutionSnapshot, RuntimeValue, WorkerMessage } from '../../../../types/snapshot';
-import { KNOWN_FAILURES_PATH, SYNTAX_ERRORS_CATEGORY, expandStack, type GoldenEvent, type GoldenLine, type PyCase, type PyGolden } from './corpus';
+import type { ConsoleLine, ExecutionSnapshot, RuntimeValue, WorkerMessage } from '../../../../types/snapshot';
+import { KNOWN_FAILURES_PATH, SYNTAX_ERRORS_CATEGORY, consoleLines, expandStack, type ConsoleChunk, type GoldenEvent, type GoldenLine, type PyCase, type PyGolden } from './corpus';
 import type { RunnerMessage, RunRequest } from './runner';
 
 /** The step cap every engine stops at. */
@@ -233,14 +233,38 @@ export function compareValue(refRepr: string, shown: RuntimeValue): string | nul
 // ── Output ──
 
 /**
- * The console at the last step, line by line with its stream: the step's
- * `console` once the program used stderr, else stdout's lines (#31).
+ * The console without the input echoed into it (#32), as CPython's console
+ * is (stdin isn't a terminal): each line's input ranges removed, and a line
+ * the input's newline ended (an empty range at its end) joined to the next.
+ */
+export function withoutInput(lines: ConsoleLine[]): GoldenLine[] {
+  if (!lines.some(l => l.input?.length)) return lines.map(({ text, stream }) => ({ text, stream }));
+  const chunks: ConsoleChunk[] = lines.map(line => {
+    const ranges = line.input ?? [];
+    let text = '';
+    let pos = 0;
+    for (const [start, end] of ranges) {
+      text += line.text.slice(pos, start);
+      pos = end;
+    }
+    text += line.text.slice(pos);
+    const last = ranges[ranges.length - 1];
+    const endedByInput = last !== undefined && last[0] === last[1] && last[1] === line.text.length;
+    return { stream: line.stream, text: endedByInput ? text : text + '\n' };
+  });
+  return consoleLines(chunks);
+}
+
+/**
+ * The program's console at the last step, line by line with its stream: the
+ * step's `console` once the program used stderr or read stdin (#31, #32),
+ * without the echoed input, else stdout's lines.
  */
 export function shownConsole(reply: WorkerMessage): GoldenLine[] {
   if (reply.type !== 'result') return [];
   const last = reply.snapshots[reply.snapshots.length - 1];
   if (!last) return [];
-  return last.console ?? last.stdout.map(text => ({ text, stream: 'stdout' as const }));
+  return last.console ? withoutInput(last.console) : last.stdout.map(text => ({ text, stream: 'stdout' as const }));
 }
 
 function stoppedAtCap(reply: WorkerMessage): boolean {
@@ -420,7 +444,7 @@ function compareSteps(c: PyCase, golden: PyGolden, reply: WorkerMessage): StepCo
       if (importedNames.has(name)) continue;
       extra.add(`${top.name}.${name}`);
     }
-    if (e.event === 'return' && e.value !== undefined && top.name !== '<module>') {
+    if (e.event === 'return' && e.value !== undefined && !e.unwinding && top.name !== '<module>') {
       const rv = shown.get('return ↵');
       if (!rv) returnDiffs.push(`step ${i} ${top.name}: no return ↵ (returns ${e.value})`);
       else {

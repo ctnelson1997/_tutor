@@ -88,12 +88,43 @@ _USER_FILE = 'main.py'
 # wrote its first characters).
 
 _out_lines = ['']       # stdout split on newlines; the last entry is the open line
-_console = []           # every line as [stream, text], in program order
+_console = []           # every line as [stream, text, input ranges or None], in program order
 _console_open = False   # the last line of _console has no newline yet
 _stderr_used = False
+_stdin_used = False
+_output_count = 0       # writes and echoes so far
+_output_seen = 0        # ... when the last step was taken
+
+def _console_add(stream, s, echo):
+    # Adds s to the console's lines; an echo marks its characters as input.
+    global _console_open, _output_count
+    _output_count += 1
+    for i, part in enumerate(s.split('\\n')):
+        if i > 0:
+            if not _console_open:
+                _console.append([stream, '', None])
+            if echo:
+                # The line ends with the input's newline: an empty range at its end.
+                line = _console[-1]
+                line[2] = (line[2] or []) + [[len(line[1]), len(line[1])]]
+            _console_open = False
+        if part:
+            if not _console_open:
+                _console.append([stream, '', None])
+                _console_open = True
+            line = _console[-1]
+            start = len(line[1])
+            line[1] += part
+            if echo:
+                ranges = line[2] or []
+                if ranges and ranges[-1][1] == start:
+                    ranges[-1][1] = len(line[1])
+                else:
+                    ranges.append([start, len(line[1])])
+                line[2] = ranges
 
 def _write(stream, s):
-    global _console_open, _stderr_used
+    global _stderr_used
     if stream == 'stderr' and s.startswith(_USER_FILE + ':') and ': RuntimeWarning: assigning None to unbound local ' in s:
         # CPython 3.12 warns when the tracer reads a frame's f_locals while an
         # inlined comprehension's hidden locals exist: the tracer's doing, not
@@ -101,20 +132,19 @@ def _write(stream, s):
         return
     if stream == 'stderr':
         _stderr_used = True
-    parts = s.split('\\n')
     if stream == 'stdout':
+        parts = s.split('\\n')
         _out_lines[-1] += parts[0]
         _out_lines.extend(parts[1:])
-    for i, part in enumerate(parts):
-        if i > 0:
-            if not _console_open:
-                _console.append([stream, ''])
-            _console_open = False
-        if part:
-            if not _console_open:
-                _console.append([stream, ''])
-                _console_open = True
-            _console[-1][1] += part
+    _console_add(stream, s, False)
+
+def _echo(s):
+    # What the program read from stdin shows on the console, marked as input,
+    # where a terminal shows what was typed: after input()'s prompt (#32). It
+    # isn't the program's output, so stdout doesn't hold it.
+    global _stdin_used
+    _stdin_used = True
+    _console_add('stdout', s, True)
 
 class _TutorStream(_io.TextIOBase):
     # sys.stdout or sys.stderr while the program runs: a text stream that records what is written.
@@ -158,9 +188,93 @@ class _TutorStream(_io.TextIOBase):
     def __repr__(self):
         return "<_io.TextIOWrapper name='<" + self._stream + ">' mode='w' encoding='utf-8'>"
 
+class _TutorStdin(_io.TextIOBase):
+    # sys.stdin while the program runs: the input typed in the stdin panel
+    # (#32). input() writes its prompt to sys.stdout and reads a line here, as
+    # CPython does when stdin isn't a terminal; at the end, EOFError. What is
+    # read is echoed on the console.
+
+    def __init__(self, text):
+        self._text = text
+        self._pos = 0
+
+    @property
+    def encoding(self):
+        return 'utf-8'
+
+    @property
+    def errors(self):
+        return 'strict'
+
+    @property
+    def name(self):
+        return '<stdin>'
+
+    @property
+    def mode(self):
+        return 'r'
+
+    def readable(self):
+        return True
+
+    def isatty(self):
+        return False
+
+    def _take(self, n):
+        if self.closed:
+            raise ValueError('I/O operation on closed file.')
+        end = len(self._text) if n is None or n < 0 else min(len(self._text), self._pos + n)
+        s = self._text[self._pos:end]
+        self._pos = end
+        if s:
+            _echo(s)
+        return s
+
+    def read(self, size=-1):
+        return self._take(size)
+
+    def readline(self, size=-1):
+        newline = self._text.find(chr(10), self._pos)
+        n = (len(self._text) if newline < 0 else newline + 1) - self._pos
+        if size is not None and size >= 0:
+            n = min(n, size)
+        return self._take(n)
+
+    def __repr__(self):
+        return "<_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>"
+
 def _stdout_shown():
     # stdout's lines, without the empty line after a final newline
     return _out_lines[:-1] if _out_lines[-1] == '' else list(_out_lines)
+
+def _console_shown():
+    # every line with its stream (and its echoed input), once stderr or stdin was used
+    if not (_stderr_used or _stdin_used):
+        return None
+    return [
+        {"text": t, "stream": st, "input": [list(r) for r in rs]} if rs else {"text": t, "stream": st}
+        for st, t, rs in _console
+    ]
+
+def _with_output(snapshot):
+    # The output as it is now, on a step.
+    global _output_seen
+    _output_seen = _output_count
+    snapshot["stdout"] = _stdout_shown()
+    console = _console_shown()
+    if console is not None:
+        snapshot["console"] = console
+    return snapshot
+
+def _finish_output():
+    # Output written after the last step (input()'s prompt before an EOFError,
+    # a print on the line that raised, sys.exit()'s message) gets a step of its
+    # own, the last step's state with the output now.
+    global _step_counter
+    if not _snapshots or _output_count == _output_seen:
+        return
+    _snapshots.append(_with_output(dict(_snapshots[-1], step=_step_counter)))
+    _step_counter += 1
 
 # ── Comprehension detection (Python 3.12+ inlined comprehensions) ──
 
@@ -495,10 +609,8 @@ def _capture_snapshot(line, current_locals, return_value=None, has_return=False,
         "line": line,
         "callStack": stack,
         "heap": heap_objects,
-        "stdout": _stdout_shown(),
     }
-    if _stderr_used:
-        snapshot["console"] = [{"text": t, "stream": st} for st, t in _console]
+    _with_output(snapshot)
     if column_range and column_range[0] is not None and column_range[1] is not None:
         snapshot["columnRange"] = {"startCol": column_range[0], "endCol": column_range[1]}
     if condition:
@@ -752,10 +864,10 @@ def _traceback_text(e, source_code):
     out.append(_exception_text(e))
     return chr(10).join(out)
 
-def run_traced(source_code):
+def run_traced(source_code, stdin_text=''):
     global _snapshots, _call_stack, _heap_map, _heap_counter, _step_counter, _baseline_keys, _active_comp, _continuation_lines
     global _stop_reason, _start_time, _events, _unwinding, _work
-    global _out_lines, _console, _console_open, _stderr_used
+    global _out_lines, _console, _console_open, _stderr_used, _stdin_used, _output_count, _output_seen
     _stop_reason = None
     _start_time = time.time()
     _events = 0
@@ -766,6 +878,9 @@ def run_traced(source_code):
     _console = []
     _console_open = False
     _stderr_used = False
+    _stdin_used = False
+    _output_count = 0
+    _output_seen = 0
     _call_stack = []
     _heap_map = {}
     _heap_counter = 0
@@ -793,8 +908,12 @@ def run_traced(source_code):
     _linecache.cache[_USER_FILE] = (len(source_code), None, source_code.splitlines(True), _USER_FILE)
 
     # The streams are the program's from compiling on (a SyntaxWarning is
-    # output), and the tracer's again once it ends.
-    saved_streams = (sys.stdout, sys.stderr)
+    # output), and the tracer's again once it ends. Each line typed in the
+    # stdin panel ends with Enter, the last one too.
+    if stdin_text and not stdin_text.endswith(chr(10)):
+        stdin_text += chr(10)
+    saved_streams = (sys.stdin, sys.stdout, sys.stderr)
+    sys.stdin = _TutorStdin(stdin_text)
     sys.stdout = _TutorStream('stdout', 'strict')
     sys.stderr = _TutorStream('stderr', 'backslashreplace')
     try:
@@ -815,8 +934,13 @@ def run_traced(source_code):
             exec(code, namespace)
         except _TutorStop:
             pass
-        except SystemExit:
-            pass  # raise SystemExit ends the program
+        except SystemExit as e:
+            # sys.exit() ends the program; as CPython ends, a code that isn't
+            # None or an int is printed to stderr.
+            sys.settrace(None)
+            if e.code is not None and not isinstance(e.code, int):
+                sys.stderr.write(str(e.code) + chr(10))
+            _finish_output()
         except BaseException as e:
             # Any other exception the program raised is its own, KeyboardInterrupt
             # and BaseException subclasses included, as CPython reports them.
@@ -825,10 +949,11 @@ def run_traced(source_code):
             line = _user_line(e)
             if line is not None:
                 error["line"] = line
+            _finish_output()
         finally:
             sys.settrace(None)
     finally:
-        sys.stdout, sys.stderr = saved_streams
+        sys.stdin, sys.stdout, sys.stderr = saved_streams
 
     if _stop_reason == "steps":
         error = {"kind": "limit", "message": f"Stopped after {_MAX_SNAPSHOTS} steps, the most that can be shown. Your code may contain an infinite loop."}

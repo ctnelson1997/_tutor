@@ -30,7 +30,7 @@ describe('getTracerCode', () => {
   // ── Entry point ──
 
   it('defines run_traced function', () => {
-    expect(code).toContain('def run_traced(source_code):');
+    expect(code).toContain("def run_traced(source_code, stdin_text=''):");
   });
 
   it('run_traced resets all global state', () => {
@@ -623,7 +623,7 @@ describe('getTracerCode', () => {
     expect(code).toContain('"line": line');
     expect(code).toContain('"callStack": stack');
     expect(code).toContain('"heap": heap_objects');
-    expect(code).toContain('"stdout": _stdout_shown()');
+    expect(code).toContain('snapshot["stdout"] = _stdout_shown()');
     expect(code).toContain('snapshot["console"]');
   });
 

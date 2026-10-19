@@ -36,6 +36,11 @@ describe('pyEngine', () => {
     expect(ext).toBeDefined();
   });
 
+  it('reads stdin with input(), so the editor shows the stdin panel (#32)', () => {
+    expect(pyEngine.stdin?.reader).toBe('input()');
+    expect(pyEngine.stdin?.placeholder).toMatch(/input\(\)/);
+  });
+
   it('execute is a function', () => {
     expect(typeof pyEngine.execute).toBe('function');
   });

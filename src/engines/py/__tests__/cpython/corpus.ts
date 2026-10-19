@@ -71,6 +71,8 @@ export interface GoldenEvent {
   locals: Record<string, string>;
   /** A return event's value, as a reference repr. */
   value?: string;
+  /** A return event that is the frame unwinding (an exception passing through it): no value is returned. */
+  unwinding?: true;
   /** An exception event's exception class. */
   exc?: string;
 }
@@ -105,6 +107,39 @@ export interface PyGolden {
 }
 
 export const MAX_GOLDEN_EVENTS = 8000;
+
+/** A chunk one stream received, in the order the program wrote it. */
+export interface ConsoleChunk {
+  stream: 'stdout' | 'stderr';
+  text: string;
+}
+
+/**
+ * The console as lines: each line belongs to the stream that wrote its first
+ * characters (as JavaTutor's console does, #22), and a final line without a
+ * newline is kept.
+ */
+export function consoleLines(chunks: ConsoleChunk[]): GoldenLine[] {
+  const lines: GoldenLine[] = [];
+  let open: GoldenLine | null = null;
+  for (const { stream, text } of chunks) {
+    text.split('\n').forEach((part, i) => {
+      if (i > 0) {
+        // A newline ends the open line, or is an empty line of its own.
+        if (!open) lines.push({ stream, text: '' });
+        open = null;
+      }
+      if (part) {
+        if (!open) {
+          open = { stream, text: '' };
+          lines.push(open);
+        }
+        open.text += part;
+      }
+    });
+  }
+  return lines;
+}
 
 /** An event's stack with each `name*n` run written out: one name per frame. */
 export function expandStack(stack: string[]): string[] {

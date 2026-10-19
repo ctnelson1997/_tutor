@@ -64,13 +64,13 @@
   {"event":"call","line":2,"stack":["<module>","report","average_scores","parse_score"],"locals":{"text":"'8O'"}},
   {"event":"line","line":3,"stack":["<module>","report","average_scores","parse_score"],"locals":{"text":"'8O'"}},
   {"event":"exception","line":3,"stack":["<module>","report","average_scores","parse_score"],"locals":{"text":"'8O'"},"exc":"ValueError"},
-  {"event":"return","line":3,"stack":["<module>","report","average_scores","parse_score"],"locals":{"text":"'8O'"},"value":"None"},
+  {"event":"return","line":3,"stack":["<module>","report","average_scores","parse_score"],"locals":{"text":"'8O'"},"value":"None","unwinding":true},
   {"event":"exception","line":9,"stack":["<module>","report","average_scores"],"locals":{"texts":"<list>","total":"70","t":"'8O'"},"exc":"ValueError"},
-  {"event":"return","line":9,"stack":["<module>","report","average_scores"],"locals":{"texts":"<list>","total":"70","t":"'8O'"},"value":"None"},
+  {"event":"return","line":9,"stack":["<module>","report","average_scores"],"locals":{"texts":"<list>","total":"70","t":"'8O'"},"value":"None","unwinding":true},
   {"event":"exception","line":13,"stack":["<module>","report"],"locals":{"name":"'Bo'","texts":"<list>"},"exc":"ValueError"},
-  {"event":"return","line":13,"stack":["<module>","report"],"locals":{"name":"'Bo'","texts":"<list>"},"value":"None"},
+  {"event":"return","line":13,"stack":["<module>","report"],"locals":{"name":"'Bo'","texts":"<list>"},"value":"None","unwinding":true},
   {"event":"exception","line":18,"stack":["<module>"],"locals":{"parse_score":"<function>","average_scores":"<function>","report":"<function>"},"exc":"ValueError"},
-  {"event":"return","line":18,"stack":["<module>"],"locals":{"parse_score":"<function>","average_scores":"<function>","report":"<function>"},"value":"None"}
+  {"event":"return","line":18,"stack":["<module>"],"locals":{"parse_score":"<function>","average_scores":"<function>","report":"<function>"},"value":"None","unwinding":true}
  ],
  "truncated": false,
  "stepEvents": 52,

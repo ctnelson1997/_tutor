@@ -34,6 +34,8 @@ type PyCallable = ((...args: unknown[]) => unknown) & { destroy?: () => void };
 const withTracer = new WeakSet<object>();
 
 export interface RunOptions {
+  /** What input() and sys.stdin read: the text of the stdin panel (#32). */
+  stdin?: string;
   /**
    * How long the tracer lets a program run before stopping it with its steps
    * (8.5 s by default, before the worker's kill). The CPython suite turns it
@@ -65,7 +67,7 @@ export function runProgram(pyodide: PyodideApi, tracerCode: string, source: stri
     // a program ending in a quote or a backslash runs as written.
     const runTraced = pyodide.globals.get('run_traced') as PyCallable;
     try {
-      return JSON.parse(runTraced(source) as string) as WorkerMessage;
+      return JSON.parse(runTraced(source, options.stdin ?? '') as string) as WorkerMessage;
     } finally {
       runTraced.destroy?.();
     }

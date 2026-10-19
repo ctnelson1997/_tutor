@@ -219,7 +219,7 @@
   {"event":"call","line":9,"stack":["<module>","area"],"locals":{"self":"<Shape>"}},
   {"event":"line","line":10,"stack":["<module>","area"],"locals":{"self":"<Shape>"}},
   {"event":"exception","line":10,"stack":["<module>","area"],"locals":{"self":"<Shape>"},"exc":"NotImplementedError"},
-  {"event":"return","line":10,"stack":["<module>","area"],"locals":{"self":"<Shape>"},"value":"None"},
+  {"event":"return","line":10,"stack":["<module>","area"],"locals":{"self":"<Shape>"},"value":"None","unwinding":true},
   {"event":"exception","line":62,"stack":["<module>"],"locals":{"math":"<module>","Shape":"<type>","Rectangle":"<type>","Square":"<type>","Circle":"<type>","shapes":"<list>","shape":"<Rectangle>","biggest":"<Square>","total_area":"59.56637061435917"},"exc":"NotImplementedError"},
   {"event":"line","line":63,"stack":["<module>"],"locals":{"math":"<module>","Shape":"<type>","Rectangle":"<type>","Square":"<type>","Circle":"<type>","shapes":"<list>","shape":"<Rectangle>","biggest":"<Square>","total_area":"59.56637061435917"}},
   {"event":"line","line":64,"stack":["<module>"],"locals":{"math":"<module>","Shape":"<type>","Rectangle":"<type>","Square":"<type>","Circle":"<type>","shapes":"<list>","shape":"<Rectangle>","biggest":"<Square>","total_area":"59.56637061435917"}},

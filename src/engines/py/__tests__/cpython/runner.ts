@@ -3,7 +3,8 @@
  * (forked with tsx by harness.ts) that runs each program it is sent through
  * runProgram, the worker's own code, in a fresh Pyodide set up as the
  * browser's worker has it:
- *   - stdin is Pyodide's default in a Web Worker, which has no prompt();
+ *   - the case's stdin goes to runProgram, as the stdin panel's text does;
+ *     Pyodide's own stdin is a Web Worker's default, which has no prompt();
  *   - what reaches Pyodide's own stdout and stderr goes to the browser's
  *     console, which students don't see: it is reported as lost.
  *
@@ -56,7 +57,7 @@ process.on('message', (req: RunRequest) => {
       send({ id: req.id, type: 'started' });
       const cpu = threadCpuUsage();
       const t0 = performance.now();
-      const reply = runProgram(py, tracerCode, req.source, { timeBudgetSeconds: Infinity, workBudget: SUITE_WORK_BUDGET });
+      const reply = runProgram(py, tracerCode, req.source, { stdin: req.stdin ?? '', timeBudgetSeconds: Infinity, workBudget: SUITE_WORK_BUDGET });
       const used = threadCpuUsage(cpu);
       send({
         id: req.id,

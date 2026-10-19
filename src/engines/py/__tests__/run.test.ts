@@ -8,9 +8,10 @@ import { INTERNAL_ERROR, TIMEOUT_REPLY, WORKER_TIMEOUT, runProgram, type Pyodide
 
 const OK = JSON.stringify({ type: 'result', snapshots: [] });
 
-function fakePyodide(runTraced: (source: string) => unknown = () => OK) {
+function fakePyodide(runTraced: (source: string, stdin: string) => unknown = () => OK) {
   const ran: string[] = [];
   const sources: string[] = [];
+  const stdins: string[] = [];
   let destroyed = 0;
   const py: PyodideApi = {
     runPython(code: string) {
@@ -20,11 +21,11 @@ function fakePyodide(runTraced: (source: string) => unknown = () => OK) {
     globals: {
       get(name: string) {
         if (name !== 'run_traced') return undefined;
-        return Object.assign((source: string) => { sources.push(source); return runTraced(source); }, { destroy: () => { destroyed++; } });
+        return Object.assign((source: string, stdin: string) => { sources.push(source); stdins.push(stdin); return runTraced(source, stdin); }, { destroy: () => { destroyed++; } });
       },
     },
   };
-  return { py, ran, sources, destroyed: () => destroyed };
+  return { py, ran, sources, stdins, destroyed: () => destroyed };
 }
 
 afterEach(() => vi.restoreAllMocks());
@@ -46,6 +47,13 @@ describe('runProgram', () => {
     expect(sources).toEqual(tricky);
     // The source never becomes Python code.
     expect(ran.some(code => tricky.some(t => code.includes(t)))).toBe(false);
+  });
+
+  it("passes the stdin panel's text to run_traced, empty when there is none (#32)", () => {
+    const { py, stdins } = fakePyodide();
+    runProgram(py, 'TRACER', 'x = input()', { stdin: 'Ada' });
+    runProgram(py, 'TRACER', 'x = 1');
+    expect(stdins).toEqual(['Ada', '']);
   });
 
   it("reports PyTutor's own failure as an internal error, with the details only in the console (#30)", () => {

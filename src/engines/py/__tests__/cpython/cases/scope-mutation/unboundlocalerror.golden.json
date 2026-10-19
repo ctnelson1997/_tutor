@@ -32,9 +32,9 @@
   {"event":"line","line":10,"stack":["<module>","add_to_total"],"locals":{"n":"5"}},
   {"event":"line","line":11,"stack":["<module>","add_to_total"],"locals":{"n":"5"}},
   {"event":"exception","line":11,"stack":["<module>","add_to_total"],"locals":{"n":"5"},"exc":"UnboundLocalError"},
-  {"event":"return","line":11,"stack":["<module>","add_to_total"],"locals":{"n":"5"},"value":"None"},
+  {"event":"return","line":11,"stack":["<module>","add_to_total"],"locals":{"n":"5"},"value":"None","unwinding":true},
   {"event":"exception","line":14,"stack":["<module>"],"locals":{"total":"10","show_total":"<function>","add_to_total":"<function>"},"exc":"UnboundLocalError"},
-  {"event":"return","line":14,"stack":["<module>"],"locals":{"total":"10","show_total":"<function>","add_to_total":"<function>"},"value":"None"}
+  {"event":"return","line":14,"stack":["<module>"],"locals":{"total":"10","show_total":"<function>","add_to_total":"<function>"},"value":"None","unwinding":true}
  ],
  "truncated": false,
  "stepEvents": 14,

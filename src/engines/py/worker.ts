@@ -6,7 +6,7 @@
  *
  * Protocol:
  *   Main → Worker:  { type: 'init' }          → triggers Pyodide load
- *   Main → Worker:  { type: 'run', source }    → execute Python code
+ *   Main → Worker:  { type: 'run', source, stdin, tracerCode } → execute Python code, input() reading stdin
  *   Worker → Main:  { type: 'ready' }          → Pyodide loaded
  *   Worker → Main:  { type: 'result', snapshots } or { type: 'error', message, line? }
  */
@@ -50,7 +50,7 @@ _self.onmessage = async (e: MessageEvent) => {
       _self.postMessage({ type: 'error', message: 'Python engine not loaded yet.' });
       return;
     }
-    _self.postMessage(runProgram(pyodide, data.tracerCode, data.source));
+    _self.postMessage(runProgram(pyodide, data.tracerCode, data.source, { stdin: data.stdin ?? '' }));
     return;
   }
 };
