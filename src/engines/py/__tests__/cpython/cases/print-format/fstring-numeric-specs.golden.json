@@ -1,0 +1,98 @@
+{
+ "stdout": "3.142 3 3.1415926500\n1,234,567.891 1,234,567.89 1,000,000 1_000_000\n00003.14 -0003.14 00007.00\nff FF 0xff 0XFF 00ff\n11111111 0b11111111 00000101 377 0o377\n45.670000% 45.7% 100% 0.5%\n1.234568e+06 1.23e+06 1.230000E-04\n1.23457e+06 0.0001234 1e+20 100\n+255 -255  255 -255\n2 4 0.12 0.38\n10000000000000000.000000 0.33333333333333331483\n12,345,678,901,234,567,890\nÿ A\n3.14 11111111 1,234,567.9\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "3.142 3 3.1415926500"
+  },
+  {
+   "stream": "stdout",
+   "text": "1,234,567.891 1,234,567.89 1,000,000 1_000_000"
+  },
+  {
+   "stream": "stdout",
+   "text": "00003.14 -0003.14 00007.00"
+  },
+  {
+   "stream": "stdout",
+   "text": "ff FF 0xff 0XFF 00ff"
+  },
+  {
+   "stream": "stdout",
+   "text": "11111111 0b11111111 00000101 377 0o377"
+  },
+  {
+   "stream": "stdout",
+   "text": "45.670000% 45.7% 100% 0.5%"
+  },
+  {
+   "stream": "stdout",
+   "text": "1.234568e+06 1.23e+06 1.230000E-04"
+  },
+  {
+   "stream": "stdout",
+   "text": "1.23457e+06 0.0001234 1e+20 100"
+  },
+  {
+   "stream": "stdout",
+   "text": "+255 -255  255 -255"
+  },
+  {
+   "stream": "stdout",
+   "text": "2 4 0.12 0.38"
+  },
+  {
+   "stream": "stdout",
+   "text": "10000000000000000.000000 0.33333333333333331483"
+  },
+  {
+   "stream": "stdout",
+   "text": "12,345,678,901,234,567,890"
+  },
+  {
+   "stream": "stdout",
+   "text": "ÿ A"
+  },
+  {
+   "stream": "stdout",
+   "text": "3.14 11111111 1,234,567.9"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"x":"3.14159265"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"x":"3.14159265","big":"1234567.891"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"x":"3.14159265","big":"1234567.891","n":"255"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"x":"3.14159265","big":"1234567.891","n":"255","frac":"0.4567"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"x":"3.14159265","big":"1234567.891","n":"255","frac":"0.4567"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"x":"3.14159265","big":"1234567.891","n":"255","frac":"0.4567"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"x":"3.14159265","big":"1234567.891","n":"255","frac":"0.4567"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"x":"3.14159265","big":"1234567.891","n":"255","frac":"0.4567"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"x":"3.14159265","big":"1234567.891","n":"255","frac":"0.4567"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"x":"3.14159265","big":"1234567.891","n":"255","frac":"0.4567"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"x":"3.14159265","big":"1234567.891","n":"255","frac":"0.4567"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"x":"3.14159265","big":"1234567.891","n":"255","frac":"0.4567"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"x":"3.14159265","big":"1234567.891","n":"255","frac":"0.4567"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"x":"3.14159265","big":"1234567.891","n":"255","frac":"0.4567"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"x":"3.14159265","big":"1234567.891","n":"255","frac":"0.4567"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"x":"3.14159265","big":"1234567.891","n":"255","frac":"0.4567"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"x":"3.14159265","big":"1234567.891","n":"255","frac":"0.4567"}},
+  {"event":"return","line":19,"stack":["<module>"],"locals":{"x":"3.14159265","big":"1234567.891","n":"255","frac":"0.4567"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 20,
+ "finalGlobals": {
+  "x": "3.14159265",
+  "big": "1234567.891",
+  "n": "255",
+  "frac": "0.4567"
+ },
+ "continuation": [],
+ "sourceSha256": "67cee072a80907878e9ffeafd6de5dc2c75b16639fb98d7f3259850d6cab31b7"
+}

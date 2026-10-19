@@ -1,0 +1,751 @@
+/**
+ * CPython differential harness (#29): runs a case through PyTutor exactly as
+ * the browser's worker does (runner.ts: a PySession, a fresh interpreter for each), and
+ * compares the run with what CPython did (the golden).
+ *
+ * The checks, each its own test in cpython-differential.test.ts:
+ *   output       the console at the last step is CPython's stdout (a run
+ *                stopped at the step cap shows a prefix).
+ *   ending       the run ends as CPython's did: normally, with the same
+ *                uncaught exception, at the step cap for an endless loop, or,
+ *                for a program CPython rejects, with a compile error: its
+ *                SyntaxError and line, and on the console what CPython prints.
+ *   traceback    an uncaught exception's traceback is CPython's, byte for
+ *                byte (chained exceptions and carets included).
+ *   steps        each step is a CPython event at the same line with the same
+ *                stack of frames, in order, and every line CPython ran has one.
+ *   variables    each step's innermost frame shows the variables CPython's has,
+ *                in its order (the module's in the order they first appeared).
+ *   values       and with CPython's values (and `return ↵` with the return value).
+ *   final-state  the last step's module frame holds the final globals.
+ *   refs, lines, names, reachable   snapshot invariants.
+ *
+ * PyTutor's deliberate rules are part of the comparison, not exceptions per
+ * case: the lines inside a multi-line statement are one step, a list, set or
+ * dict comprehension has a frame of its own (its iterations matched to
+ * CPython's events in the frame around it), and a class body's bookkeeping is
+ * hidden.
+ */
+import { fork, type ChildProcess } from 'node:child_process';
+import { availableParallelism } from 'node:os';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { TIMEOUT_REPLY, WORKER_TIMEOUT } from '../../run';
+import type { ConsoleLine, ExecutionSnapshot, RuntimeValue, WorkerMessage } from '../../../../types/snapshot';
+import { KNOWN_FAILURES_PATH, SYNTAX_ERRORS_CATEGORY, consoleLines, expandStack, type ConsoleChunk, type GoldenEvent, type GoldenLine, type PyCase, type PyGolden } from './corpus';
+import type { RunnerMessage, RunRequest } from './runner';
+
+/** The step cap every engine stops at. */
+export const MAX_STEPS = 5000;
+
+// ── Running cases ──
+
+/** How a run went: the worker's reply (TIMEOUT_REPLY when the worker would have been killed), and what else was seen. */
+export interface RunOutcome {
+  reply: WorkerMessage;
+  /** The run's CPU time (for reports only: it varies with the machine). */
+  cpuMs: number;
+  /** The run never finished (HARD_KILL_MS): the reply is TIMEOUT_REPLY, as the worker's kill gives. */
+  killed: boolean;
+  /** What reached Pyodide's own stdout and stderr: the browser's console, which students don't see. */
+  lostStdout: string;
+  lostStderr: string;
+}
+
+/**
+ * A run still going after this long never finishes: the worker's kill. Time
+ * decides nothing else: a run near the worker's 10 s would be killed on one
+ * machine and not on another, and the suite must give the same result
+ * everywhere. A run that draws too much stops instead at the runner's work
+ * budget (SUITE_WORK_BUDGET), as the tracer's time budget would stop it; what
+ * is left is a program that runs without trace events (one long C call).
+ */
+const HARD_KILL_MS = 60_000;
+
+const RUNNER_PATH = fileURLToPath(new URL('./runner.ts', import.meta.url));
+
+interface Runner {
+  child: ChildProcess;
+  busy: boolean;
+  /** The end of what the runner wrote to stderr (Pyodide logs the browser-like stdin's error there), for a crash's message. */
+  stderr: string;
+}
+
+/** Child processes running cases, each case in a fresh Pyodide (runner.ts). */
+export class RunnerPool {
+  private runners = new Set<Runner>();
+  private waiting: Array<(r: Runner) => void> = [];
+  private nextId = 0;
+  private closed = false;
+
+  readonly size: number;
+
+  constructor(size = Math.max(2, Math.min(8, availableParallelism() - 4))) {
+    this.size = size;
+  }
+
+  private spawn(): Runner {
+    const child = fork(RUNNER_PATH, [], {
+      execArgv: ['--import', 'tsx'],
+      serialization: 'advanced',
+      stdio: ['ignore', 'ignore', 'pipe', 'ipc'],
+    });
+    const runner: Runner = { child, busy: false, stderr: '' };
+    child.stderr!.on('data', (d: Buffer) => { runner.stderr = (runner.stderr + d.toString('utf8')).slice(-4000); });
+    this.runners.add(runner);
+    child.on('exit', () => this.runners.delete(runner));
+    return runner;
+  }
+
+  private acquire(): Promise<Runner> {
+    for (const r of this.runners) {
+      if (!r.busy) { r.busy = true; return Promise.resolve(r); }
+    }
+    if (this.runners.size < this.size) {
+      const r = this.spawn();
+      r.busy = true;
+      return Promise.resolve(r);
+    }
+    return new Promise(resolve => this.waiting.push(resolve));
+  }
+
+  private release(r: Runner, alive: boolean): void {
+    if (!alive) {
+      this.runners.delete(r);
+      r.child.kill();
+    }
+    const next = this.waiting.shift();
+    if (!next) { if (alive) r.busy = false; return; }
+    if (alive) { next(r); return; }
+    const fresh = this.spawn();
+    fresh.busy = true;
+    next(fresh);
+  }
+
+  /** Run a program as the worker does; a run longer than the worker allows comes back as TIMEOUT_REPLY. */
+  async run(source: string, stdin: string | null = null): Promise<RunOutcome> {
+    if (this.closed) throw new Error('the runner pool is closed');
+    const runner = await this.acquire();
+    const id = this.nextId++;
+    return new Promise<RunOutcome>((resolve, reject) => {
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      const finish = (alive: boolean) => {
+        clearTimeout(timer);
+        runner.child.off('message', onMessage);
+        runner.child.off('exit', onExit);
+        this.release(runner, alive);
+      };
+      const onMessage = (m: RunnerMessage) => {
+        if (m.id !== id) return;
+        if (m.type === 'started') {
+          timer = setTimeout(() => {
+            finish(false);
+            resolve({ reply: TIMEOUT_REPLY, cpuMs: HARD_KILL_MS, killed: true, lostStdout: '', lostStderr: '' });
+          }, HARD_KILL_MS);
+          return;
+        }
+        finish(true);
+        if (m.type === 'failed') { reject(new Error(`the runner failed: ${m.message}`)); return; }
+        resolve({ reply: m.reply, cpuMs: m.cpuMs, killed: false, lostStdout: m.lostStdout, lostStderr: m.lostStderr });
+      };
+      const onExit = (code: number | null) => {
+        finish(false);
+        reject(new Error(`the runner exited (${code}) during a run:
+${runner.stderr}`));
+      };
+      runner.child.on('message', onMessage);
+      runner.child.on('exit', onExit);
+      runner.child.send({ id, source, stdin } satisfies RunRequest);
+    });
+  }
+
+  close(): void {
+    this.closed = true;
+    for (const r of this.runners) r.child.kill();
+    this.runners.clear();
+  }
+}
+
+/** Run a corpus case through PyTutor. */
+export function runCase(pool: RunnerPool, c: PyCase): Promise<RunOutcome> {
+  return pool.run(c.source, c.stdin);
+}
+
+// ── Checks ──
+
+export const OUTPUT_CHECKS = ['output', 'ending', 'traceback'] as const;
+export const STEP_CHECKS = ['steps', 'variables', 'values', 'final-state'] as const;
+export const INVARIANTS = ['refs', 'lines', 'names', 'reachable'] as const;
+export const CHECKS = [...OUTPUT_CHECKS, ...STEP_CHECKS, ...INVARIANTS] as const;
+export type CheckName = typeof CHECKS[number];
+
+/** How a case compares with CPython, as #28's table counts it. */
+export type Verdict = 'match' | 'wrong-output' | 'wrong-state' | 'error' | 'compile';
+
+export interface CaseResult {
+  /** Each check's problems: empty when it passes (or doesn't apply to this run). */
+  checks: Record<CheckName, string[]>;
+  verdict: Verdict;
+}
+
+const MAX_PROBLEMS = 6;
+const quote = (s: string) => JSON.stringify(s.length > 90 ? s.slice(0, 90) + '…' : s);
+
+// ── Values: the reference repr of what a step shows ──
+
+/** The value a Python repr stands for, when it is a str literal (`'a\nb'`); null otherwise. */
+export function unrepr(s: string): string | null {
+  const m = /^([rbu]*)(['"])([\s\S]*)\2$/.exec(s);
+  if (!m || m[1]) return null;
+  return m[3].replace(/\\(x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8}|.)/g, (_, c: string) => {
+    if (c[0] === 'x' || c[0] === 'u' || c[0] === 'U') return c.length > 1 ? String.fromCodePoint(parseInt(c.slice(1), 16)) : c;
+    const escapes: Record<string, string> = { n: '\n', t: '\t', r: '\r', '\\': '\\', "'": "'", '"': '"', a: '\x07', b: '\b', f: '\f', v: '\v', 0: '\0' };
+    return escapes[c] ?? '\\' + c;
+  });
+}
+
+type Shown = string | { str: string } | { ref: string };
+
+/** What a step shows for a value: the text of a primitive as Python writes it, a string's characters, or a heap reference. */
+export function shownValue(v: RuntimeValue): Shown {
+  switch (v.type) {
+    // What the UI shows: the engine's text (display, #37), else the value rendered by type.
+    case 'null': return v.display ?? 'null';
+    case 'boolean': return v.display ?? String(v.value);
+    case 'number':
+      return v.display ?? String(v.value);
+    case 'string': return { str: String(v.value) };
+    case 'ref': return { ref: v.heapId };
+    default: return JSON.stringify(v);
+  }
+}
+
+/** null when the shown value is CPython's (a reference repr), else what differs. */
+export function compareValue(refRepr: string, shown: RuntimeValue): string | null {
+  if (refRepr.endsWith('…')) return null;
+  const s = shownValue(shown);
+  const showsAs = `${refRepr} shown as ${typeof s === 'string' ? s : JSON.stringify(shown)}`;
+  // An int past Python's digit limit is shown by its size, as the reference repr has it (#34).
+  if (/^<int with \d+ digits>$/.test(refRepr)) return s === refRepr ? null : showsAs;
+  if (refRepr.startsWith('<') && refRepr.endsWith('>')) {
+    return typeof s === 'object' && 'ref' in s ? null : showsAs;
+  }
+  const raw = unrepr(refRepr);
+  if (raw !== null) return typeof s === 'object' && 'str' in s && s.str === raw ? null : showsAs;
+  return s === refRepr ? null : showsAs;
+}
+
+// ── Output ──
+
+/**
+ * The console without the input echoed into it (#32), as CPython's console
+ * is (stdin isn't a terminal): each line's input ranges removed, and a line
+ * the input's newline ended (an empty range at its end) joined to the next.
+ */
+export function withoutInput(lines: ConsoleLine[]): GoldenLine[] {
+  if (!lines.some(l => l.input?.length)) return lines.map(({ text, stream }) => ({ text, stream }));
+  const chunks: ConsoleChunk[] = lines.map(line => {
+    const ranges = line.input ?? [];
+    let text = '';
+    let pos = 0;
+    for (const [start, end] of ranges) {
+      text += line.text.slice(pos, start);
+      pos = end;
+    }
+    text += line.text.slice(pos);
+    const last = ranges[ranges.length - 1];
+    const endedByInput = last !== undefined && last[0] === last[1] && last[1] === line.text.length;
+    return { stream: line.stream, text: endedByInput ? text : text + '\n' };
+  });
+  return consoleLines(chunks);
+}
+
+/**
+ * The program's console at the last step, line by line with its stream: the
+ * step's `console` once the program used stderr or read stdin (#31, #32),
+ * without the echoed input, else stdout's lines.
+ */
+export function shownConsole(reply: WorkerMessage): GoldenLine[] {
+  if (reply.type !== 'result') return [];
+  const last = reply.snapshots[reply.snapshots.length - 1];
+  if (!last) return [];
+  return last.console ? withoutInput(last.console) : last.stdout.map(text => ({ text, stream: 'stdout' as const }));
+}
+
+function stoppedAtCap(reply: WorkerMessage): boolean {
+  return reply.type === 'result' && reply.error?.kind === 'limit';
+}
+
+const lineText = (l: GoldenLine | undefined) => (l ? `${quote(l.text)}${l.stream === 'stderr' ? ' (stderr)' : ''}` : '(nothing)');
+
+function checkOutput(golden: PyGolden, outcome: RunOutcome): string[] {
+  const { reply } = outcome;
+  if (golden.compileError || reply.type !== 'result') {
+    return golden.compileError || !golden.console.length ? [] : [`CPython printed ${quote(golden.stdout + golden.stderr)}; PyTutor stopped before any step`];
+  }
+  // stdout and stderr in program order, each line with its stream.
+  const want = golden.console;
+  const got = shownConsole(reply);
+  const problems: string[] = [];
+  const prefixOnly = stoppedAtCap(reply) || golden.endless;
+  const n = prefixOnly ? Math.min(want.length, got.length) : Math.max(want.length, got.length);
+  for (let i = 0; i < n; i++) {
+    const a = want[i];
+    const b = got[i];
+    if (a && b && a.stream === b.stream) {
+      // A stopped run's last line may be cut short.
+      if (a.text === b.text || (prefixOnly && i === n - 1 && (a.text.startsWith(b.text) || b.text.startsWith(a.text)))) continue;
+    }
+    problems.push(`console line ${i + 1}: CPython ${lineText(a)} | PyTutor ${lineText(b)}`);
+    break;
+  }
+  if (outcome.lostStdout) problems.push(`written to Pyodide's stdout, the browser's console, never shown: ${quote(outcome.lostStdout)}`);
+  if (outcome.lostStderr) problems.push(`written to Pyodide's stderr, the browser's console, never shown: ${quote(outcome.lostStderr)}`);
+  return problems;
+}
+
+// ── How the run ends ──
+
+/** An uncaught exception as PyTutor reports it: `ValueError: msg`, or the class alone. */
+export function exceptionText(e: { class: string; message: string }): string {
+  return e.message ? `${e.class}: ${e.message}` : e.class;
+}
+
+/** Whether the step cap is expected: an endless program, or one CPython takes thousands of steps for. */
+export function capExpected(golden: PyGolden): boolean {
+  return golden.endless || golden.truncated || golden.stepEvents >= MAX_STEPS * 0.9;
+}
+
+/** Engine text that must never reach a student. */
+export const INTERNAL_TEXT = /run_traced|<user_code>|_tutor|tracer|pyodide|JsException|File "<exec>"|Traceback \(most recent call last\):\s*$/;
+
+type EndingKind = 'none' | 'missing' | 'extra' | 'message' | 'stopped' | 'compile';
+
+function checkEnding(golden: PyGolden, outcome: RunOutcome): { problems: string[]; kind: EndingKind } {
+  const none = { problems: [], kind: 'none' as const };
+  const { reply } = outcome;
+  if (golden.compileError) {
+    // A compile error (#40): no steps, CPython's message and line, the line
+    // marked, and the console showing what python main.py prints.
+    const want = golden.compileError;
+    const text = `${want.class}: ${want.msg}`;
+    if (reply.type === 'error') return { problems: [`CPython: ${text} (line ${want.line}); PyTutor stops with ${quote(reply.message)}, not a compile error`], kind: 'compile' };
+    const err = reply.error;
+    const problems: string[] = [];
+    if (reply.snapshots.length > 0) problems.push(`CPython rejects the program, but PyTutor took ${reply.snapshots.length} step(s)`);
+    if (!err) problems.push(`CPython: ${text} (line ${want.line}); PyTutor reports no error`);
+    else {
+      if (err.kind !== 'compile') problems.push(`PyTutor reports a ${err.kind} error, not a compile error`);
+      if (err.message !== text) problems.push(`CPython: ${text} | PyTutor: ${err.message}`);
+      if (err.line !== want.line || err.lines?.join() !== String(want.line)) problems.push(`CPython: line ${want.line} | PyTutor: line ${err.line ?? '?'}, lines ${err.lines?.join(', ') ?? '?'}`);
+      // The compiler's warnings first (CPython 3.12 prints a SyntaxWarning
+      // again from its second pass over a program it rejects), then the error.
+      const shown = [...golden.console.map(l => l.text), want.text.replace(/\n$/, '')].join('\n');
+      if (err.stderr !== shown) problems.push(`the console shows ${quote(err.stderr ?? '')}, CPython prints ${quote(shown)}`);
+    }
+    return problems.length ? { problems, kind: 'compile' } : none;
+  }
+  if (outcome.killed) {
+    return { problems: [`the run never finishes (the worker is killed after ${WORKER_TIMEOUT / 1000} s): every step is lost`], kind: 'stopped' };
+  }
+  if (reply.type === 'error') return { problems: [`stopped before any step: ${quote(reply.message)}`], kind: 'stopped' };
+  const err = reply.error;
+  if (err?.kind === 'limit') {
+    // An endless program may stop however it stops; any other only at the step cap, and only if CPython's trace is that long.
+    if (golden.endless || (capExpected(golden) && reply.snapshots.length >= MAX_STEPS)) return none;
+    return { problems: [`stopped after ${reply.snapshots.length} steps (${quote(err.message)}); CPython's trace has ${golden.stepEvents} events`], kind: 'extra' };
+  }
+  if (golden.endless) {
+    return { problems: [`CPython never finishes (an endless loop); PyTutor ${err ? `ends with ${err.kind}: ${err.message}` : 'ends normally'}`], kind: 'missing' };
+  }
+  const want = golden.exception ? exceptionText(golden.exception) : null;
+  if (want && err?.kind !== 'exception') return { problems: [`CPython: uncaught ${want}; PyTutor: ${err ? `${err.kind}: ${err.message}` : 'no error'}`], kind: 'missing' };
+  if (!want && err) return { problems: [`CPython ends normally; PyTutor ends with ${err.kind}: ${quote(err.message)}`], kind: 'extra' };
+  if (want && err && err.message !== want) return { problems: [`CPython: uncaught ${want} | PyTutor: ${err.message}`], kind: 'message' };
+  return none;
+}
+
+function checkTraceback(golden: PyGolden, reply: WorkerMessage): string[] {
+  if (!golden.exception || !golden.traceback || reply.type !== 'result' || reply.error?.kind !== 'exception' || !reply.error.stderr) return [];
+  // The console shows the traceback without its last newline.
+  const want = golden.traceback.replace(/\r/g, '').replace(/\n$/, '');
+  const got = reply.error.stderr;
+  if (want === got) return [];
+  const a = want.split('\n');
+  const b = got.split('\n');
+  let i = 0;
+  while (i < a.length && i < b.length && a[i] === b[i]) i++;
+  return [`traceback line ${i + 1}: CPython ${a[i] === undefined ? '(nothing)' : quote(a[i])} | PyTutor ${b[i] === undefined ? '(nothing)' : quote(b[i])}`];
+}
+
+// ── Steps against the reference trace ──
+
+/** A class body's bookkeeping, which PyTutor hides. */
+const HIDDEN_CLASS_NAMES = new Set(['__classcell__', '__class__', '__module__', '__qualname__', '__doc__', '__firstlineno__', '__static_attributes__', '__annotations__']);
+/**
+ * PyTutor's frame for a list, set or dict comprehension, its own as before
+ * 3.12 (#33), where CPython 3.12 runs the comprehension inlined in the frame
+ * around it.
+ */
+const INLINED_COMPREHENSION = /^(list|set|dict) comprehension$/;
+/** CPython's names for the frames PyTutor names in words. */
+const CPYTHON_FRAME_NAMES: Record<string, string> = { 'generator expression': '<genexpr>' };
+
+interface StepComparison {
+  steps: string[];
+  variables: string[];
+  values: string[];
+}
+
+/** The reference events steps are matched against: all but the module's `call` event at line 0, their stacks written out. */
+export function referenceEvents(golden: PyGolden): GoldenEvent[] {
+  return golden.events.filter(e => !(e.event === 'call' && e.line === 0)).map(e => ({ ...e, stack: expandStack(e.stack) }));
+}
+
+function compareSteps(c: PyCase, golden: PyGolden, reply: WorkerMessage): StepComparison {
+  const out: StepComparison = { steps: [], variables: [], values: [] };
+  if (golden.compileError || reply.type !== 'result' || golden.endless) return out;
+  const snaps = reply.snapshots;
+  const limited = reply.error?.kind === 'limit';
+  const importedNames = new Set([...c.source.matchAll(/^\s*import\s+([\w., ]+)$/gm)].flatMap(m => m[1].split(',').map(x => x.trim().split(/\s+as\s+/).pop()!.split('.')[0])));
+  const events = referenceEvents(golden);
+  const matched = new Array<boolean>(events.length).fill(false);
+  const words = sourceWords(c.source);
+  // The names each event's frame started with (its call event's): a class
+  // body's that the source never names came from a metaclass's __prepare__
+  // (an Enum's _generate_next_value_), which PyTutor hides as Python's own.
+  const startNames: Set<string>[] = [];
+  // The module's variables in the order they first appeared, as PyTutor lists
+  // them, and how many had appeared by each event.
+  const moduleOrder: string[] = [];
+  const moduleSeen: number[] = [];
+  {
+    const starts: Set<string>[] = [];
+    events.forEach((e, k) => {
+      const depth = e.stack.length;
+      if (e.event === 'call') starts[depth] = new Set(Object.keys(e.locals ?? {}));
+      startNames[k] = starts[depth] ?? new Set();
+      if (e.stack[depth - 1] === '<module>' && depth === 1) {
+        for (const name of Object.keys(e.locals ?? {})) if (!moduleOrder.includes(name)) moduleOrder.push(name);
+      }
+      moduleSeen[k] = moduleOrder.length;
+    });
+  }
+  const continuation = new Set(golden.continuation);
+  let j = 0;
+  let misaligned = 0;
+  const firstMisaligned: string[] = [];
+  const valueDiffs: string[] = [];
+  const missing = new Set<string>();
+  const extra = new Set<string>();
+  const misordered: string[] = [];
+  const returnDiffs: string[] = [];
+  snaps.forEach((s, i) => {
+    const top = s.callStack[s.callStack.length - 1];
+    const inComprehension = INLINED_COMPREHENSION.test(top.name);
+    // A comprehension returning its collection: CPython's inlined comprehension has no event for it.
+    if (inComprehension && top.variables.some(v => v.name === 'return ↵')) return;
+    // A comprehension's iterations are CPython's events in the frame around it.
+    const names = s.callStack.filter(f => !INLINED_COMPREHENSION.test(f.name)).map(f => CPYTHON_FRAME_NAMES[f.name] ?? f.name);
+    // A step showing `return ↵` is a return event; any other, a call or line
+    // event (or the module's return, the last step). A frame an exception
+    // leaves gets no step for its return.
+    const returns = top.variables.some(v => v.name === 'return ↵');
+    // Up to 60 events ahead, not counting the ones no step stands for (an
+    // exception passing through, a frame unwinding: hundreds after a RecursionError).
+    let found = -1;
+    for (let k = j, seen = 0; k < events.length && seen < 60; k++) {
+      const e = events[k];
+      if (e.event === 'exception' || e.unwinding) continue;
+      seen++;
+      if (returns !== (e.event === 'return' && e.stack.length > 1)) continue;
+      if (e.line === s.line && e.stack.length === names.length && e.stack.every((n, q) => n === names[q])) { found = k; break; }
+    }
+    if (found < 0) {
+      // The last step repeating the one before with the output written since
+      // (input()'s prompt before an EOFError, sys.exit()'s message): PyTutor's, not an event.
+      const before = snaps[i - 1];
+      if (i === snaps.length - 1 && before && before.line === s.line && before.callStack.map(f => f.name).join('>') === s.callStack.map(f => f.name).join('>')) return;
+      misaligned++;
+      if (firstMisaligned.length < 3) firstMisaligned.push(`step ${i} line ${s.line} [${s.callStack.map(f => f.name).join(' > ')}]`);
+      return;
+    }
+    matched[found] = true;
+    j = found + 1;
+    const e = events[found];
+    const shown = new Map((top.variables ?? []).map(v => [v.name, v.value]));
+    // The recorder couldn't read this frame's variables (see `!unreadable` in record.ts): nothing to compare.
+    if (Object.keys(e.locals ?? {}).some(name => name.startsWith('!'))) return;
+    if (inComprehension) {
+      // Its variables are in CPython's frame around it: a function's shows
+      // them; a module's hides them (a global of the same name is another variable).
+      if (e.stack[e.stack.length - 1] === '<module>') return;
+      for (const [name, v] of shown) {
+        const rep = e.locals[name];
+        if (rep === undefined) continue;
+        const d = compareValue(rep, v);
+        if (d) valueDiffs.push(`step ${i} ${top.name}.${name}: ${d}`);
+      }
+      return;
+    }
+    for (const [name, rep] of Object.entries(e.locals ?? {})) {
+      // CPython's own (a generator expression's `.0`), a class body's bookkeeping, modules.
+      if (name.startsWith('.') || rep === '<module>' || HIDDEN_CLASS_NAMES.has(name)) continue;
+      if (startNames[found].has(name) && !words.has(name)) continue;
+      const v = shown.get(name);
+      if (!v) { missing.add(`${top.name}.${name}`); continue; }
+      const d = compareValue(rep, v);
+      if (d) valueDiffs.push(`step ${i} ${top.name}.${name}: ${d}`);
+    }
+    for (const [name, v] of shown) {
+      if (name === 'return ↵' || name in (e.locals ?? {})) continue;
+      // The recorder leaves the module's dunder names out.
+      if (top.name === '<module>' && /^__\w+__$/.test(name)) continue;
+      const h = v.type === 'ref' ? s.heap.find(x => x.id === v.heapId) : null;
+      if (h && /module/.test(h.objectType)) continue;
+      if (importedNames.has(name)) continue;
+      extra.add(`${top.name}.${name}`);
+    }
+    // The order: a function's and a class body's as CPython's frame has them,
+    // the module's as they first appeared.
+    const expected = top.name === '<module>' && e.stack.length === 1 ? moduleOrder.slice(0, moduleSeen[found]) : Object.keys(e.locals ?? {});
+    const both = new Set(expected.filter(name => shown.has(name)));
+    const shownOrder = [...shown.keys()].filter(name => both.has(name));
+    const expectedOrder = expected.filter(name => both.has(name));
+    if (shownOrder.join() !== expectedOrder.join() && misordered.length < 3) misordered.push(`step ${i} ${top.name}: ${shownOrder.join(', ')} (CPython: ${expectedOrder.join(', ')})`);
+    if (e.event === 'return' && e.value !== undefined && !e.unwinding && top.name !== '<module>') {
+      const rv = shown.get('return ↵');
+      if (!rv) returnDiffs.push(`step ${i} ${top.name}: no return ↵ (returns ${e.value})`);
+      else {
+        const d = compareValue(e.value, rv);
+        if (d) returnDiffs.push(`step ${i} ${top.name} return: ${d}`);
+      }
+    }
+  });
+  const covered = limited ? j : events.length;
+  const skipped: GoldenEvent[] = [];
+  const unreturned: GoldenEvent[] = [];
+  for (let k = 0; k < covered; k++) {
+    const e = events[k];
+    if (matched[k]) continue;
+    if (e.event === 'line' && !continuation.has(e.line)) skipped.push(e);
+    // A function returning (not unwinding) with no step showing its `return ↵`.
+    if (e.event === 'return' && !e.unwinding && e.stack.length > 1) unreturned.push(e);
+  }
+  if (misaligned) out.steps.push(`${misaligned} step(s) match no CPython event in order, first: ${firstMisaligned.join('; ')}`);
+  if (skipped.length) {
+    const lines = [...new Set(skipped.map(e => e.line))];
+    out.steps.push(`${skipped.length} CPython line event(s) have no step, lines ${lines.slice(0, 12).join(', ')}${lines.length > 12 ? ', …' : ''}`);
+  }
+  if (unreturned.length) {
+    const first = unreturned[0];
+    out.steps.push(`${unreturned.length} return(s) have no step showing return ↵, first: ${first.stack[first.stack.length - 1]} at line ${first.line} (returns ${first.value})`);
+  }
+  if (missing.size) out.variables.push(`not shown: ${[...missing].slice(0, 8).join(', ')}`);
+  if (extra.size) out.variables.push(`shown but not in CPython's frame: ${[...extra].slice(0, 8).join(', ')}`);
+  if (misordered.length) out.variables.push(`shown in another order: ${misordered.join(' ; ')}`);
+  if (valueDiffs.length) out.values.push(`${valueDiffs.length} value(s), first: ${valueDiffs.slice(0, 3).join(' ; ')}`);
+  if (returnDiffs.length) out.values.push(...returnDiffs.slice(0, 3));
+  return out;
+}
+
+function checkFinalState(golden: PyGolden, reply: WorkerMessage): string[] {
+  if (golden.compileError || reply.type !== 'result' || reply.error) return [];
+  const last = reply.snapshots[reply.snapshots.length - 1];
+  if (!last) return ['no steps'];
+  const shown = new Map((last.callStack[0]?.variables ?? []).map(v => [v.name, v.value]));
+  const problems: string[] = [];
+  for (const [name, rep] of Object.entries(golden.finalGlobals)) {
+    if (rep === '<module>') continue;
+    const v = shown.get(name);
+    if (!v) { problems.push(`${name} isn't shown in the module frame`); continue; }
+    const d = compareValue(rep, v);
+    if (d) problems.push(`${name}: ${d}`);
+    if (problems.length >= MAX_PROBLEMS) break;
+  }
+  return problems;
+}
+
+// ── Snapshot invariants ──
+
+/** Every value in a snapshot, with where it is. */
+function* valuesOf(s: ExecutionSnapshot): Generator<[string, RuntimeValue]> {
+  for (const f of s.callStack) {
+    for (const v of f.variables ?? []) yield [`${f.name}.${v.name}`, v.value];
+    if (f.thisArg) yield [`${f.name}.this`, f.thisArg];
+  }
+  for (const h of s.heap) {
+    for (const p of h.properties ?? []) {
+      yield [`heap ${h.id}.${p.key}`, p.value];
+      if (p.keyValue) yield [`heap ${h.id} key ${p.key}`, p.keyValue];
+    }
+  }
+}
+
+function firstViolations(snapshots: ExecutionSnapshot[], check: (s: ExecutionSnapshot) => string[]): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const s of snapshots) {
+    for (const v of check(s)) {
+      if (seen.has(v)) continue;
+      seen.add(v);
+      out.push(`step ${s.step}: ${v}`);
+      if (out.length >= MAX_PROBLEMS) return out;
+    }
+  }
+  return out;
+}
+
+function checkRefs(snapshots: ExecutionSnapshot[]): string[] {
+  return firstViolations(snapshots, s => {
+    const ids = new Set(s.heap.map(h => h.id));
+    const out: string[] = [];
+    for (const [where, v] of valuesOf(s)) if (v.type === 'ref' && !ids.has(v.heapId)) out.push(`${where} refers to missing heap object ${v.heapId}`);
+    return out;
+  });
+}
+
+function checkLines(snapshots: ExecutionSnapshot[], lineCount: number): string[] {
+  return firstViolations(snapshots, s => (Number.isInteger(s.line) && s.line >= 1 && s.line <= lineCount ? [] : [`line ${s.line} isn't a line of the program (1–${lineCount})`]));
+}
+
+/** The name PyTutor shows that isn't the program's own, on purpose: a return value. */
+const SHOWN_NAMES = (name: string) => name === 'return ↵';
+
+/** The words of a program's source: the names it can define. */
+function sourceWords(source: string): Set<string> {
+  return new Set(source.match(/[A-Za-z_][A-Za-z0-9_]*/g) ?? []);
+}
+
+/** A source word, or one Python mangled from it (`_Account__secret` for `__secret`). */
+function isProgramName(name: string, words: Set<string>): boolean {
+  if (words.has(name)) return true;
+  const i = name.indexOf('__', 1);
+  return name.startsWith('_') && i > 1 && words.has(name.slice(i));
+}
+
+function checkNames(c: PyCase, reply: WorkerMessage): { problems: string[]; internal: boolean } {
+  const words = sourceWords(c.source);
+  const problems: string[] = [];
+  let internal = false;
+  const message = reply.type === 'error' ? reply.message : reply.error?.message;
+  if (message && INTERNAL_TEXT.test(message)) {
+    internal = true;
+    problems.push(`the error shows the engine's internals: ${quote(message)}`);
+  }
+  if (reply.type === 'result') {
+    problems.push(...firstViolations(reply.snapshots, s => {
+      const found: string[] = [];
+      for (const f of s.callStack) {
+        for (const v of f.variables ?? []) {
+          if (!SHOWN_NAMES(v.name) && !words.has(v.name)) found.push(`variable ${f.name}.${v.name} isn't the program's`);
+        }
+      }
+      // No library internals (#38): a class shows the attributes the program
+      // names, an object its private attributes only when the program names them.
+      for (const h of s.heap) {
+        for (const p of h.properties) {
+          if (h.objectType === 'class' ? !isProgramName(p.key, words) : h.objectType === 'object' && p.key.startsWith('_') && !isProgramName(p.key, words)) {
+            found.push(`attribute ${h.label ?? h.objectType}.${p.key} isn't the program's`);
+          }
+        }
+      }
+      return found;
+    }));
+  }
+  return { problems: problems.slice(0, MAX_PROBLEMS), internal };
+}
+
+function checkReachable(snapshots: ExecutionSnapshot[]): string[] {
+  return firstViolations(snapshots, s => {
+    const edges = new Map<string, string[]>();
+    for (const h of s.heap) {
+      const out: string[] = [];
+      for (const p of h.properties ?? []) {
+        if (p.value.type === 'ref') out.push(p.value.heapId);
+        if (p.keyValue?.type === 'ref') out.push(p.keyValue.heapId);
+      }
+      edges.set(h.id, out);
+    }
+    const stack: string[] = [];
+    for (const f of s.callStack) {
+      for (const v of f.variables ?? []) if (v.value.type === 'ref') stack.push(v.value.heapId);
+      if (f.thisArg?.type === 'ref') stack.push(f.thisArg.heapId);
+    }
+    const seen = new Set<string>();
+    while (stack.length) {
+      const id = stack.pop()!;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      stack.push(...(edges.get(id) ?? []));
+    }
+    return s.heap.filter(h => !seen.has(h.id)).map(h => `heap object ${h.id} (${h.objectType}${h.label ? ' ' + h.label : ''}) is drawn but unreachable`);
+  });
+}
+
+// ── All checks ──
+
+export function checkCase(c: PyCase, golden: PyGolden, outcome: RunOutcome): CaseResult {
+  const { reply } = outcome;
+  const snapshots = reply.type === 'result' ? reply.snapshots : [];
+  const ending = checkEnding(golden, outcome);
+  const steps = compareSteps(c, golden, reply);
+  const names = checkNames(c, reply);
+  const checks: Record<CheckName, string[]> = {
+    output: checkOutput(golden, outcome),
+    ending: ending.problems,
+    traceback: checkTraceback(golden, reply),
+    steps: steps.steps,
+    variables: steps.variables,
+    values: steps.values,
+    'final-state': checkFinalState(golden, reply),
+    refs: checkRefs(snapshots),
+    lines: checkLines(snapshots, c.source.split('\n').length),
+    names: names.problems,
+    reachable: checkReachable(snapshots),
+  };
+  return { checks, verdict: verdictOf(c, checks, ending.kind, names.internal) };
+}
+
+function verdictOf(c: PyCase, checks: Record<CheckName, string[]>, ending: EndingKind, internal: boolean): Verdict {
+  const fails = (n: CheckName) => checks[n].length > 0;
+  if (c.category === SYNTAX_ERRORS_CATEGORY) return fails('ending') ? 'compile' : 'match';
+  if (ending === 'stopped') return 'error';
+  if (fails('output') || ending === 'missing') return 'wrong-output';
+  if (ending === 'extra' || internal) return 'error';
+  if (CHECKS.some(fails)) return 'wrong-state';
+  return 'match';
+}
+
+// ── Known failures ──
+
+export interface KnownFailure {
+  /** The roadmap issues (#28) the failure waits on, main one first. */
+  issues: number[];
+  /** The symptom, in a few words. */
+  reason: string;
+}
+
+/** case id → check → why it fails today. */
+export type KnownFailures = Record<string, Partial<Record<CheckName, KnownFailure>>>;
+
+export function loadKnownFailures(path = KNOWN_FAILURES_PATH): KnownFailures {
+  const raw = JSON.parse(readFileSync(path, 'utf8')) as { failures?: KnownFailures };
+  return raw.failures ?? {};
+}
+
+export function validateKnownFailures(known: KnownFailures, caseIds: Set<string>): string[] {
+  const out: string[] = [];
+  for (const [id, byCheck] of Object.entries(known)) {
+    if (!caseIds.has(id)) out.push(`${id}: no such case`);
+    for (const [name, f] of Object.entries(byCheck)) {
+      const where = `${id}.${name}`;
+      if (!(CHECKS as readonly string[]).includes(name)) out.push(`${where}: not a check (${CHECKS.join(', ')})`);
+      if (!f || !Array.isArray(f.issues) || f.issues.length === 0 || !f.issues.every(n => Number.isInteger(n) && n > 0)) {
+        out.push(`${where}: needs "issues": [<issue number>, ...]`);
+      }
+      if (!f || typeof f.reason !== 'string' || f.reason.trim() === '') out.push(`${where}: needs a "reason"`);
+    }
+  }
+  return out;
+}

@@ -1,0 +1,92 @@
+{
+ "stdout": "0.3 Decimal('0.3') True\n0.1000000000000000055511151231257827021181583404541015625\n2.68 2.68\n0.142857 0.1428571428571428571428571429\n2.50 2.5 [Decimal('0.1'), Decimal('2.50')]\n1E+3 0.01 1001 -0\n0.3 7 1.500\n1.40 {'apple': Decimal('0.35'), 'pear': Decimal('1.05')}\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "0.3 Decimal('0.3') True"
+  },
+  {
+   "stream": "stdout",
+   "text": "0.1000000000000000055511151231257827021181583404541015625"
+  },
+  {
+   "stream": "stdout",
+   "text": "2.68 2.68"
+  },
+  {
+   "stream": "stdout",
+   "text": "0.142857 0.1428571428571428571428571429"
+  },
+  {
+   "stream": "stdout",
+   "text": "2.50 2.5 [Decimal('0.1'), Decimal('2.50')]"
+  },
+  {
+   "stream": "stdout",
+   "text": "1E+3 0.01 1001 -0"
+  },
+  {
+   "stream": "stdout",
+   "text": "0.3 7 1.500"
+  },
+  {
+   "stream": "stdout",
+   "text": "1.40 {'apple': Decimal('0.35'), 'pear': Decimal('1.05')}"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"Decimal":"<type>","ROUND_HALF_UP":"'ROUND_HALF_UP'","localcontext":"<builtin_function_or_method>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"Decimal":"<type>","ROUND_HALF_UP":"'ROUND_HALF_UP'","localcontext":"<builtin_function_or_method>","a":"<Decimal>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"Decimal":"<type>","ROUND_HALF_UP":"'ROUND_HALF_UP'","localcontext":"<builtin_function_or_method>","a":"<Decimal>","b":"<Decimal>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"Decimal":"<type>","ROUND_HALF_UP":"'ROUND_HALF_UP'","localcontext":"<builtin_function_or_method>","a":"<Decimal>","b":"<Decimal>","c":"<Decimal>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"Decimal":"<type>","ROUND_HALF_UP":"'ROUND_HALF_UP'","localcontext":"<builtin_function_or_method>","a":"<Decimal>","b":"<Decimal>","c":"<Decimal>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"Decimal":"<type>","ROUND_HALF_UP":"'ROUND_HALF_UP'","localcontext":"<builtin_function_or_method>","a":"<Decimal>","b":"<Decimal>","c":"<Decimal>","d":"<Decimal>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"Decimal":"<type>","ROUND_HALF_UP":"'ROUND_HALF_UP'","localcontext":"<builtin_function_or_method>","a":"<Decimal>","b":"<Decimal>","c":"<Decimal>","d":"<Decimal>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"Decimal":"<type>","ROUND_HALF_UP":"'ROUND_HALF_UP'","localcontext":"<builtin_function_or_method>","a":"<Decimal>","b":"<Decimal>","c":"<Decimal>","d":"<Decimal>","price":"<Decimal>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"Decimal":"<type>","ROUND_HALF_UP":"'ROUND_HALF_UP'","localcontext":"<builtin_function_or_method>","a":"<Decimal>","b":"<Decimal>","c":"<Decimal>","d":"<Decimal>","price":"<Decimal>","rounded":"<Decimal>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"Decimal":"<type>","ROUND_HALF_UP":"'ROUND_HALF_UP'","localcontext":"<builtin_function_or_method>","a":"<Decimal>","b":"<Decimal>","c":"<Decimal>","d":"<Decimal>","price":"<Decimal>","rounded":"<Decimal>","bankers":"<Decimal>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"Decimal":"<type>","ROUND_HALF_UP":"'ROUND_HALF_UP'","localcontext":"<builtin_function_or_method>","a":"<Decimal>","b":"<Decimal>","c":"<Decimal>","d":"<Decimal>","price":"<Decimal>","rounded":"<Decimal>","bankers":"<Decimal>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"Decimal":"<type>","ROUND_HALF_UP":"'ROUND_HALF_UP'","localcontext":"<builtin_function_or_method>","a":"<Decimal>","b":"<Decimal>","c":"<Decimal>","d":"<Decimal>","price":"<Decimal>","rounded":"<Decimal>","bankers":"<Decimal>","ctx":"<Context>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"Decimal":"<type>","ROUND_HALF_UP":"'ROUND_HALF_UP'","localcontext":"<builtin_function_or_method>","a":"<Decimal>","b":"<Decimal>","c":"<Decimal>","d":"<Decimal>","price":"<Decimal>","rounded":"<Decimal>","bankers":"<Decimal>","ctx":"<Context>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"Decimal":"<type>","ROUND_HALF_UP":"'ROUND_HALF_UP'","localcontext":"<builtin_function_or_method>","a":"<Decimal>","b":"<Decimal>","c":"<Decimal>","d":"<Decimal>","price":"<Decimal>","rounded":"<Decimal>","bankers":"<Decimal>","ctx":"<Context>","seventh":"<Decimal>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"Decimal":"<type>","ROUND_HALF_UP":"'ROUND_HALF_UP'","localcontext":"<builtin_function_or_method>","a":"<Decimal>","b":"<Decimal>","c":"<Decimal>","d":"<Decimal>","price":"<Decimal>","rounded":"<Decimal>","bankers":"<Decimal>","ctx":"<Context>","seventh":"<Decimal>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"Decimal":"<type>","ROUND_HALF_UP":"'ROUND_HALF_UP'","localcontext":"<builtin_function_or_method>","a":"<Decimal>","b":"<Decimal>","c":"<Decimal>","d":"<Decimal>","price":"<Decimal>","rounded":"<Decimal>","bankers":"<Decimal>","ctx":"<Context>","seventh":"<Decimal>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"Decimal":"<type>","ROUND_HALF_UP":"'ROUND_HALF_UP'","localcontext":"<builtin_function_or_method>","a":"<Decimal>","b":"<Decimal>","c":"<Decimal>","d":"<Decimal>","price":"<Decimal>","rounded":"<Decimal>","bankers":"<Decimal>","ctx":"<Context>","seventh":"<Decimal>","total":"<Decimal>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"Decimal":"<type>","ROUND_HALF_UP":"'ROUND_HALF_UP'","localcontext":"<builtin_function_or_method>","a":"<Decimal>","b":"<Decimal>","c":"<Decimal>","d":"<Decimal>","price":"<Decimal>","rounded":"<Decimal>","bankers":"<Decimal>","ctx":"<Context>","seventh":"<Decimal>","total":"<Decimal>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Decimal":"<type>","ROUND_HALF_UP":"'ROUND_HALF_UP'","localcontext":"<builtin_function_or_method>","a":"<Decimal>","b":"<Decimal>","c":"<Decimal>","d":"<Decimal>","price":"<Decimal>","rounded":"<Decimal>","bankers":"<Decimal>","ctx":"<Context>","seventh":"<Decimal>","total":"<Decimal>","sci":"<Decimal>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"Decimal":"<type>","ROUND_HALF_UP":"'ROUND_HALF_UP'","localcontext":"<builtin_function_or_method>","a":"<Decimal>","b":"<Decimal>","c":"<Decimal>","d":"<Decimal>","price":"<Decimal>","rounded":"<Decimal>","bankers":"<Decimal>","ctx":"<Context>","seventh":"<Decimal>","total":"<Decimal>","sci":"<Decimal>","small":"<Decimal>"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"Decimal":"<type>","ROUND_HALF_UP":"'ROUND_HALF_UP'","localcontext":"<builtin_function_or_method>","a":"<Decimal>","b":"<Decimal>","c":"<Decimal>","d":"<Decimal>","price":"<Decimal>","rounded":"<Decimal>","bankers":"<Decimal>","ctx":"<Context>","seventh":"<Decimal>","total":"<Decimal>","sci":"<Decimal>","small":"<Decimal>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"Decimal":"<type>","ROUND_HALF_UP":"'ROUND_HALF_UP'","localcontext":"<builtin_function_or_method>","a":"<Decimal>","b":"<Decimal>","c":"<Decimal>","d":"<Decimal>","price":"<Decimal>","rounded":"<Decimal>","bankers":"<Decimal>","ctx":"<Context>","seventh":"<Decimal>","total":"<Decimal>","sci":"<Decimal>","small":"<Decimal>"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"Decimal":"<type>","ROUND_HALF_UP":"'ROUND_HALF_UP'","localcontext":"<builtin_function_or_method>","a":"<Decimal>","b":"<Decimal>","c":"<Decimal>","d":"<Decimal>","price":"<Decimal>","rounded":"<Decimal>","bankers":"<Decimal>","ctx":"<Context>","seventh":"<Decimal>","total":"<Decimal>","sci":"<Decimal>","small":"<Decimal>","cart":"<dict>"}},
+  {"event":"return","line":24,"stack":["<module>"],"locals":{"Decimal":"<type>","ROUND_HALF_UP":"'ROUND_HALF_UP'","localcontext":"<builtin_function_or_method>","a":"<Decimal>","b":"<Decimal>","c":"<Decimal>","d":"<Decimal>","price":"<Decimal>","rounded":"<Decimal>","bankers":"<Decimal>","ctx":"<Context>","seventh":"<Decimal>","total":"<Decimal>","sci":"<Decimal>","small":"<Decimal>","cart":"<dict>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 26,
+ "finalGlobals": {
+  "Decimal": "<type>",
+  "ROUND_HALF_UP": "'ROUND_HALF_UP'",
+  "localcontext": "<builtin_function_or_method>",
+  "a": "<Decimal>",
+  "b": "<Decimal>",
+  "c": "<Decimal>",
+  "d": "<Decimal>",
+  "price": "<Decimal>",
+  "rounded": "<Decimal>",
+  "bankers": "<Decimal>",
+  "ctx": "<Context>",
+  "seventh": "<Decimal>",
+  "total": "<Decimal>",
+  "sci": "<Decimal>",
+  "small": "<Decimal>",
+  "cart": "<dict>"
+ },
+ "continuation": [],
+ "sourceSha256": "a74171d60e5659cce38a4a94f286b3bfd22efa861a0e67b6d1e8da44a8621c3c"
+}

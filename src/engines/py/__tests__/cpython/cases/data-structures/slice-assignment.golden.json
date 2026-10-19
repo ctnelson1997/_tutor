@@ -1,0 +1,107 @@
+{
+ "stdout": "[0, 'a', 'b', 'c', 'd', 3, 4, 5]\n[0, 'a', 4, 5]\n[0, 9, 9, 'a', 4, 5]\n['x', 9, 'y', 'a', 'z', 5]\nValueError: attempt to assign sequence of size 2 to extended slice of size 3\n[9, 'y', 'z', 5]\n[9, 'y', 'z']\n[0, 1, 2, 3] True [0, 1, 2, 3]\n[0, 1, 2, 3, 'h', 'i']\n[0, 1, 2, 3, [1, 2]] 5\n[0, 3, [1, 2]]\n[[1], [7, 8, 9], [2]] True\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[0, 'a', 'b', 'c', 'd', 3, 4, 5]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[0, 'a', 4, 5]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[0, 9, 9, 'a', 4, 5]"
+  },
+  {
+   "stream": "stdout",
+   "text": "['x', 9, 'y', 'a', 'z', 5]"
+  },
+  {
+   "stream": "stdout",
+   "text": "ValueError: attempt to assign sequence of size 2 to extended slice of size 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "[9, 'y', 'z', 5]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[9, 'y', 'z']"
+  },
+  {
+   "stream": "stdout",
+   "text": "[0, 1, 2, 3] True [0, 1, 2, 3]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[0, 1, 2, 3, 'h', 'i']"
+  },
+  {
+   "stream": "stdout",
+   "text": "[0, 1, 2, 3, [1, 2]] 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "[0, 3, [1, 2]]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[[1], [7, 8, 9], [2]] True"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"data":"<list>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
+  {"event":"exception","line":13,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"},"exc":"ValueError"},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>","e":"<ValueError>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
+  {"event":"line","line":29,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>","matrix":"<list>"}},
+  {"event":"line","line":30,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>","matrix":"<list>","middle":"<list>"}},
+  {"event":"line","line":31,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>","matrix":"<list>","middle":"<list>"}},
+  {"event":"line","line":32,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>","matrix":"<list>","middle":"<list>"}},
+  {"event":"return","line":32,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>","matrix":"<list>","middle":"<list>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 36,
+ "finalGlobals": {
+  "data": "<list>",
+  "alias": "<list>",
+  "matrix": "<list>",
+  "middle": "<list>"
+ },
+ "continuation": [],
+ "sourceSha256": "b6c1506bc5cc4c3e1fd612b8127064988919da19e1d34c44aed5830435b0a1fd"
+}

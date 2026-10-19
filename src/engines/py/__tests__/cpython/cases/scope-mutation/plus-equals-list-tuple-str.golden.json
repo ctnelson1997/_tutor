@@ -1,0 +1,87 @@
+{
+ "stdout": "[1, 2, 3] [1, 2, 3] True\n[1, 2, 3, 4] [1, 2, 3] False\n(1, 2, 3) (1, 2) False\nabc ab False\n[0, 'x', 'y', 'z']\n[1, 99] hi hi!\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[1, 2, 3] [1, 2, 3] True"
+  },
+  {
+   "stream": "stdout",
+   "text": "[1, 2, 3, 4] [1, 2, 3] False"
+  },
+  {
+   "stream": "stdout",
+   "text": "(1, 2, 3) (1, 2) False"
+  },
+  {
+   "stream": "stdout",
+   "text": "abc ab False"
+  },
+  {
+   "stream": "stdout",
+   "text": "[0, 'x', 'y', 'z']"
+  },
+  {
+   "stream": "stdout",
+   "text": "[1, 99] hi hi!"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"lst":"<list>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"lst":"<list>","lst_alias":"<list>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"lst":"<list>","lst_alias":"<list>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"lst":"<list>","lst_alias":"<list>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"lst":"<list>","lst_alias":"<list>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"lst":"<list>","lst_alias":"<list>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"lst":"<list>","lst_alias":"<list>","tup":"<tuple>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"lst":"<list>","lst_alias":"<list>","tup":"<tuple>","tup_alias":"<tuple>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"lst":"<list>","lst_alias":"<list>","tup":"<tuple>","tup_alias":"<tuple>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"lst":"<list>","lst_alias":"<list>","tup":"<tuple>","tup_alias":"<tuple>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"lst":"<list>","lst_alias":"<list>","tup":"<tuple>","tup_alias":"<tuple>","s":"'ab'"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"lst":"<list>","lst_alias":"<list>","tup":"<tuple>","tup_alias":"<tuple>","s":"'ab'","s_alias":"'ab'"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"lst":"<list>","lst_alias":"<list>","tup":"<tuple>","tup_alias":"<tuple>","s":"'abc'","s_alias":"'ab'"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"lst":"<list>","lst_alias":"<list>","tup":"<tuple>","tup_alias":"<tuple>","s":"'abc'","s_alias":"'ab'"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"lst":"<list>","lst_alias":"<list>","tup":"<tuple>","tup_alias":"<tuple>","s":"'abc'","s_alias":"'ab'","chars":"<list>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"lst":"<list>","lst_alias":"<list>","tup":"<tuple>","tup_alias":"<tuple>","s":"'abc'","s_alias":"'ab'","chars":"<list>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"lst":"<list>","lst_alias":"<list>","tup":"<tuple>","tup_alias":"<tuple>","s":"'abc'","s_alias":"'ab'","chars":"<list>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"lst":"<list>","lst_alias":"<list>","tup":"<tuple>","tup_alias":"<tuple>","s":"'abc'","s_alias":"'ab'","chars":"<list>","add_item":"<function>"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"lst":"<list>","lst_alias":"<list>","tup":"<tuple>","tup_alias":"<tuple>","s":"'abc'","s_alias":"'ab'","chars":"<list>","add_item":"<function>","add_char":"<function>"}},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"lst":"<list>","lst_alias":"<list>","tup":"<tuple>","tup_alias":"<tuple>","s":"'abc'","s_alias":"'ab'","chars":"<list>","add_item":"<function>","add_char":"<function>","outer":"<list>"}},
+  {"event":"call","line":20,"stack":["<module>","add_item"],"locals":{"items":"<list>"}},
+  {"event":"line","line":21,"stack":["<module>","add_item"],"locals":{"items":"<list>"}},
+  {"event":"return","line":21,"stack":["<module>","add_item"],"locals":{"items":"<list>"},"value":"None"},
+  {"event":"line","line":29,"stack":["<module>"],"locals":{"lst":"<list>","lst_alias":"<list>","tup":"<tuple>","tup_alias":"<tuple>","s":"'abc'","s_alias":"'ab'","chars":"<list>","add_item":"<function>","add_char":"<function>","outer":"<list>"}},
+  {"event":"line","line":30,"stack":["<module>"],"locals":{"lst":"<list>","lst_alias":"<list>","tup":"<tuple>","tup_alias":"<tuple>","s":"'abc'","s_alias":"'ab'","chars":"<list>","add_item":"<function>","add_char":"<function>","outer":"<list>","word":"'hi'"}},
+  {"event":"call","line":23,"stack":["<module>","add_char"],"locals":{"text":"'hi'"}},
+  {"event":"line","line":24,"stack":["<module>","add_char"],"locals":{"text":"'hi'"}},
+  {"event":"line","line":25,"stack":["<module>","add_char"],"locals":{"text":"'hi!'"}},
+  {"event":"return","line":25,"stack":["<module>","add_char"],"locals":{"text":"'hi!'"},"value":"'hi!'"},
+  {"event":"line","line":31,"stack":["<module>"],"locals":{"lst":"<list>","lst_alias":"<list>","tup":"<tuple>","tup_alias":"<tuple>","s":"'abc'","s_alias":"'ab'","chars":"<list>","add_item":"<function>","add_char":"<function>","outer":"<list>","word":"'hi'","shouted":"'hi!'"}},
+  {"event":"return","line":31,"stack":["<module>"],"locals":{"lst":"<list>","lst_alias":"<list>","tup":"<tuple>","tup_alias":"<tuple>","s":"'abc'","s_alias":"'ab'","chars":"<list>","add_item":"<function>","add_char":"<function>","outer":"<list>","word":"'hi'","shouted":"'hi!'"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 33,
+ "finalGlobals": {
+  "lst": "<list>",
+  "lst_alias": "<list>",
+  "tup": "<tuple>",
+  "tup_alias": "<tuple>",
+  "s": "'abc'",
+  "s_alias": "'ab'",
+  "chars": "<list>",
+  "add_item": "<function>",
+  "add_char": "<function>",
+  "outer": "<list>",
+  "word": "'hi'",
+  "shouted": "'hi!'"
+ },
+ "continuation": [],
+ "sourceSha256": "5eaa73727f738a27bf52fa9ca172bbee43e842dcb89a60b0a8b2e891727b860d"
+}

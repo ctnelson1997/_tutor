@@ -1,0 +1,21 @@
+{
+ "stdout": "",
+ "stderr": "",
+ "console": [],
+ "exception": null,
+ "traceback": null,
+ "compileError": {
+  "class": "IndentationError",
+  "msg": "unindent does not match any outer indentation level",
+  "line": 6,
+  "offset": 31,
+  "text": "  File \"main.py\", line 6\n    return total / len(nums)\n                            ^\nIndentationError: unindent does not match any outer indentation level\n"
+ },
+ "endless": false,
+ "events": [],
+ "truncated": false,
+ "stepEvents": 0,
+ "finalGlobals": {},
+ "continuation": [],
+ "sourceSha256": "418aff6dbcdeb5ca72849cc1f72c82cae86e657cf5cab9e5ca7c64f41a47e92c"
+}

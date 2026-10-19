@@ -19,11 +19,21 @@ export interface CodeFlag {
 export interface HeapTypeDisplay {
   label: string;
   variant: string;
+  /** What an object of this type with no properties shows: a text ("empty object" if not given), or null for nothing (a Python module, drawn by its name only). */
+  empty?: string | null;
 }
 
-/** Options passed to an engine's execute(). `stdin` feeds Java's Scanner. */
+/** Options passed to an engine's execute(). `stdin` feeds Java's Scanner and Python's input(). */
 export interface EngineExecuteOptions {
   stdin?: string;
+}
+
+/** How the stdin panel describes the input a language reads (shown when the engine reads stdin). */
+export interface StdinDescription {
+  /** What reads it, shown in the panel's title (`Scanner`, `input()`). */
+  reader: string;
+  /** The empty textarea's hint. */
+  placeholder: string;
 }
 
 export interface LanguageEngine {
@@ -35,4 +45,6 @@ export interface LanguageEngine {
   sandboxCode: string;
   analyzeCode?: (code: string) => CodeFlag[];
   heapTypeConfig?: Record<string, HeapTypeDisplay>;
+  /** The program can read input typed in the stdin panel (the store's `stdin`). */
+  stdin?: StdinDescription;
 }

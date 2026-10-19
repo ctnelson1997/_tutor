@@ -1,0 +1,95 @@
+{
+ "stdout": "['Python is a programming', 'language that lets you', 'work quickly and', 'integrate systems more', 'effectively.']\nPython is a programming\nlanguage that lets you work\nquickly and integrate systems\nmore effectively.\n'\\ndef greet():\\n    print(\"hi\")\\ngreet()\\n'\nPython is a programming language [...]\nPython is a programming language that...\n> line one\n> line two\na a a a\na a a a\na a\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "['Python is a programming', 'language that lets you', 'work quickly and', 'integrate systems more', 'effectively.']"
+  },
+  {
+   "stream": "stdout",
+   "text": "Python is a programming"
+  },
+  {
+   "stream": "stdout",
+   "text": "language that lets you work"
+  },
+  {
+   "stream": "stdout",
+   "text": "quickly and integrate systems"
+  },
+  {
+   "stream": "stdout",
+   "text": "more effectively."
+  },
+  {
+   "stream": "stdout",
+   "text": "'\\ndef greet():\\n    print(\"hi\")\\ngreet()\\n'"
+  },
+  {
+   "stream": "stdout",
+   "text": "Python is a programming language [...]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Python is a programming language that..."
+  },
+  {
+   "stream": "stdout",
+   "text": "> line one"
+  },
+  {
+   "stream": "stdout",
+   "text": "> line two"
+  },
+  {
+   "stream": "stdout",
+   "text": "a a a a"
+  },
+  {
+   "stream": "stdout",
+   "text": "a a a a"
+  },
+  {
+   "stream": "stdout",
+   "text": "a a"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"textwrap":"<module>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"textwrap":"<module>","para":"'Python is a programming language that lets you work quickly and integrate systems more effectively.'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"textwrap":"<module>","para":"'Python is a programming language that lets you work quickly and integrate systems more effectively.'","lines":"<list>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"textwrap":"<module>","para":"'Python is a programming language that lets you work quickly and integrate systems more effectively.'","lines":"<list>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"textwrap":"<module>","para":"'Python is a programming language that lets you work quickly and integrate systems more effectively.'","lines":"<list>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"textwrap":"<module>","para":"'Python is a programming language that lets you work quickly and integrate systems more effectively.'","lines":"<list>","code":"'\\n    def greet():\\n        print(\"hi\")\\n    greet()\\n'"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"textwrap":"<module>","para":"'Python is a programming language that lets you work quickly and integrate systems more effectively.'","lines":"<list>","code":"'\\n    def greet():\\n        print(\"hi\")\\n    greet()\\n'","clean":"'\\ndef greet():\\n    print(\"hi\")\\ngreet()\\n'"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"textwrap":"<module>","para":"'Python is a programming language that lets you work quickly and integrate systems more effectively.'","lines":"<list>","code":"'\\n    def greet():\\n        print(\"hi\")\\n    greet()\\n'","clean":"'\\ndef greet():\\n    print(\"hi\")\\ngreet()\\n'"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"textwrap":"<module>","para":"'Python is a programming language that lets you work quickly and integrate systems more effectively.'","lines":"<list>","code":"'\\n    def greet():\\n        print(\"hi\")\\n    greet()\\n'","clean":"'\\ndef greet():\\n    print(\"hi\")\\ngreet()\\n'"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"textwrap":"<module>","para":"'Python is a programming language that lets you work quickly and integrate systems more effectively.'","lines":"<list>","code":"'\\n    def greet():\\n        print(\"hi\")\\n    greet()\\n'","clean":"'\\ndef greet():\\n    print(\"hi\")\\ngreet()\\n'"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"textwrap":"<module>","para":"'Python is a programming language that lets you work quickly and integrate systems more effectively.'","lines":"<list>","code":"'\\n    def greet():\\n        print(\"hi\")\\n    greet()\\n'","clean":"'\\ndef greet():\\n    print(\"hi\")\\ngreet()\\n'"}},
+  {"event":"return","line":19,"stack":["<module>"],"locals":{"textwrap":"<module>","para":"'Python is a programming language that lets you work quickly and integrate systems more effectively.'","lines":"<list>","code":"'\\n    def greet():\\n        print(\"hi\")\\n    greet()\\n'","clean":"'\\ndef greet():\\n    print(\"hi\")\\ngreet()\\n'"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 14,
+ "finalGlobals": {
+  "textwrap": "<module>",
+  "para": "'Python is a programming language that lets you work quickly and integrate systems more effectively.'",
+  "lines": "<list>",
+  "code": "'\\n    def greet():\\n        print(\"hi\")\\n    greet()\\n'",
+  "clean": "'\\ndef greet():\\n    print(\"hi\")\\ngreet()\\n'"
+ },
+ "continuation": [
+  5,
+  10,
+  11,
+  12,
+  13
+ ],
+ "sourceSha256": "1764f422e120e57b69dcde889f56c726d88e2d317592d14e195e521d35f8d073"
+}

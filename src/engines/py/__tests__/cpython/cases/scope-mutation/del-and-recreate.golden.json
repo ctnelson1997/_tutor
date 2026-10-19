@@ -1,0 +1,93 @@
+{
+ "stdout": "10\nNameError: name 'x' is not defined\nnow a string\n[1, 4]\n{'a': 1, 'c': 3}\n[7]\n[8] [7]\n[2]\nnow a string [8] [7]\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "10"
+  },
+  {
+   "stream": "stdout",
+   "text": "NameError: name 'x' is not defined"
+  },
+  {
+   "stream": "stdout",
+   "text": "now a string"
+  },
+  {
+   "stream": "stdout",
+   "text": "[1, 4]"
+  },
+  {
+   "stream": "stdout",
+   "text": "{'a': 1, 'c': 3}"
+  },
+  {
+   "stream": "stdout",
+   "text": "[7]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[8] [7]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[2]"
+  },
+  {
+   "stream": "stdout",
+   "text": "now a string [8] [7]"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"x":"10"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"x":"10"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{}},
+  {"event":"exception","line":6,"stack":["<module>"],"locals":{},"exc":"NameError"},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"err":"<NameError>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"x":"'now a string'"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"x":"'now a string'"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"x":"'now a string'","nums":"<list>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"x":"'now a string'","nums":"<list>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"x":"'now a string'","nums":"<list>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"x":"'now a string'","nums":"<list>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"x":"'now a string'","nums":"<list>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"x":"'now a string'","nums":"<list>","d":"<dict>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"x":"'now a string'","nums":"<list>","d":"<dict>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"x":"'now a string'","nums":"<list>","d":"<dict>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"x":"'now a string'","nums":"<list>","d":"<dict>","a":"<list>","b":"<list>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"x":"'now a string'","nums":"<list>","d":"<dict>","b":"<list>"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"x":"'now a string'","nums":"<list>","d":"<dict>","b":"<list>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"x":"'now a string'","nums":"<list>","d":"<dict>","b":"<list>","a":"<list>"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"x":"'now a string'","nums":"<list>","d":"<dict>","b":"<list>","a":"<list>"}},
+  {"event":"line","line":31,"stack":["<module>"],"locals":{"x":"'now a string'","nums":"<list>","d":"<dict>","b":"<list>","a":"<list>","f":"<function>"}},
+  {"event":"call","line":25,"stack":["<module>","f"],"locals":{}},
+  {"event":"line","line":26,"stack":["<module>","f"],"locals":{}},
+  {"event":"line","line":27,"stack":["<module>","f"],"locals":{"local":"1"}},
+  {"event":"line","line":28,"stack":["<module>","f"],"locals":{}},
+  {"event":"line","line":29,"stack":["<module>","f"],"locals":{"local":"<list>"}},
+  {"event":"return","line":29,"stack":["<module>","f"],"locals":{"local":"<list>"},"value":"<list>"},
+  {"event":"line","line":32,"stack":["<module>"],"locals":{"x":"'now a string'","nums":"<list>","d":"<dict>","b":"<list>","a":"<list>","f":"<function>"}},
+  {"event":"line","line":33,"stack":["<module>"],"locals":{"x":"'now a string'","b":"<list>","a":"<list>","f":"<function>"}},
+  {"event":"return","line":33,"stack":["<module>"],"locals":{"x":"'now a string'","b":"<list>","a":"<list>","f":"<function>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 34,
+ "finalGlobals": {
+  "x": "'now a string'",
+  "b": "<list>",
+  "a": "<list>",
+  "f": "<function>"
+ },
+ "continuation": [],
+ "sourceSha256": "595090c24d78d038624fc42b57b7aaec40335c5d04f5d5ac59467f3a1045723e"
+}

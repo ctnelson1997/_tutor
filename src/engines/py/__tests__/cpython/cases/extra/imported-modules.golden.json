@@ -1,0 +1,35 @@
+{
+ "stdout": "{\"a\": [1, 2], \"pi\": 3.14} True\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "{\"a\": [1, 2], \"pi\": 3.14} True"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"json":"<module>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"json":"<module>","math":"<module>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"json":"<module>","math":"<module>","data":"<dict>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"json":"<module>","math":"<module>","data":"<dict>","text":"'{\"a\": [1, 2], \"pi\": 3.14}'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"json":"<module>","math":"<module>","data":"<dict>","text":"'{\"a\": [1, 2], \"pi\": 3.14}'","back":"<dict>"}},
+  {"event":"return","line":7,"stack":["<module>"],"locals":{"json":"<module>","math":"<module>","data":"<dict>","text":"'{\"a\": [1, 2], \"pi\": 3.14}'","back":"<dict>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 8,
+ "finalGlobals": {
+  "json": "<module>",
+  "math": "<module>",
+  "data": "<dict>",
+  "text": "'{\"a\": [1, 2], \"pi\": 3.14}'",
+  "back": "<dict>"
+ },
+ "continuation": [],
+ "sourceSha256": "d6fe3c6ed17655dd7b2e75babfed8ea47793c1a3d2ed0eeea863d91d6c8ec530"
+}

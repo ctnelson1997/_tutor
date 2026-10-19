@@ -1,0 +1,52 @@
+{
+ "stdout": "back on screen\n\"into the buffer\\n{'a': [1, 2]}\\n\"\nstderr held: 'hidden warning\\n'\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "back on screen"
+  },
+  {
+   "stream": "stdout",
+   "text": "\"into the buffer\\n{'a': [1, 2]}\\n\""
+  },
+  {
+   "stream": "stdout",
+   "text": "stderr held: 'hidden warning\\n'"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"io":"<module>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"io":"<module>","sys":"<module>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"io":"<module>","sys":"<module>","buffer":"<StringIO>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"io":"<module>","sys":"<module>","buffer":"<StringIO>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"io":"<module>","sys":"<module>","buffer":"<StringIO>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"io":"<module>","sys":"<module>","buffer":"<StringIO>","data":"<dict>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"io":"<module>","sys":"<module>","buffer":"<StringIO>","data":"<dict>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"io":"<module>","sys":"<module>","buffer":"<StringIO>","data":"<dict>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"io":"<module>","sys":"<module>","buffer":"<StringIO>","data":"<dict>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"io":"<module>","sys":"<module>","buffer":"<StringIO>","data":"<dict>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"io":"<module>","sys":"<module>","buffer":"<StringIO>","data":"<dict>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"io":"<module>","sys":"<module>","buffer":"<StringIO>","data":"<dict>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"io":"<module>","sys":"<module>","buffer":"<StringIO>","data":"<dict>","captured":"'hidden warning\\n'"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"io":"<module>","sys":"<module>","buffer":"<StringIO>","data":"<dict>","captured":"'hidden warning\\n'"}},
+  {"event":"return","line":17,"stack":["<module>"],"locals":{"io":"<module>","sys":"<module>","buffer":"<StringIO>","data":"<dict>","captured":"'hidden warning\\n'"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 17,
+ "finalGlobals": {
+  "io": "<module>",
+  "sys": "<module>",
+  "buffer": "<StringIO>",
+  "data": "<dict>",
+  "captured": "'hidden warning\\n'"
+ },
+ "continuation": [],
+ "sourceSha256": "17436dddbba4b978d7af05ba8f5046be013fea8b6f8416b3af38e76aa17ec2aa"
+}

@@ -1,0 +1,79 @@
+{
+ "stdout": "83.85714285714286 88 92\n2.5 2 3\n13.133 12.1588 172.4762\n2.3333333333333335 2.0 ['a', 'b']\n[75.0, 88.0, 92.0]\n2.5 float\n1/4\nStatisticsError: mean requires at least one data point\nStatisticsError: stdev requires at least two data points\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "83.85714285714286 88 92"
+  },
+  {
+   "stream": "stdout",
+   "text": "2.5 2 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "13.133 12.1588 172.4762"
+  },
+  {
+   "stream": "stdout",
+   "text": "2.3333333333333335 2.0 ['a', 'b']"
+  },
+  {
+   "stream": "stdout",
+   "text": "[75.0, 88.0, 92.0]"
+  },
+  {
+   "stream": "stdout",
+   "text": "2.5 float"
+  },
+  {
+   "stream": "stdout",
+   "text": "1/4"
+  },
+  {
+   "stream": "stdout",
+   "text": "StatisticsError: mean requires at least one data point"
+  },
+  {
+   "stream": "stdout",
+   "text": "StatisticsError: stdev requires at least two data points"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"st":"<module>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"st":"<module>","scores":"<list>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"st":"<module>","scores":"<list>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"st":"<module>","scores":"<list>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"st":"<module>","scores":"<list>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"st":"<module>","scores":"<list>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"st":"<module>","scores":"<list>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"st":"<module>","scores":"<list>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"st":"<module>","scores":"<list>","Fraction":"<ABCMeta>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"st":"<module>","scores":"<list>","Fraction":"<ABCMeta>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"st":"<module>","scores":"<list>","Fraction":"<ABCMeta>"}},
+  {"event":"exception","line":14,"stack":["<module>"],"locals":{"st":"<module>","scores":"<list>","Fraction":"<ABCMeta>"},"exc":"StatisticsError"},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"st":"<module>","scores":"<list>","Fraction":"<ABCMeta>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"st":"<module>","scores":"<list>","Fraction":"<ABCMeta>","e":"<StatisticsError>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"st":"<module>","scores":"<list>","Fraction":"<ABCMeta>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"st":"<module>","scores":"<list>","Fraction":"<ABCMeta>"}},
+  {"event":"exception","line":18,"stack":["<module>"],"locals":{"st":"<module>","scores":"<list>","Fraction":"<ABCMeta>"},"exc":"StatisticsError"},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"st":"<module>","scores":"<list>","Fraction":"<ABCMeta>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"st":"<module>","scores":"<list>","Fraction":"<ABCMeta>","e":"<StatisticsError>"}},
+  {"event":"return","line":20,"stack":["<module>"],"locals":{"st":"<module>","scores":"<list>","Fraction":"<ABCMeta>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 20,
+ "finalGlobals": {
+  "st": "<module>",
+  "scores": "<list>",
+  "Fraction": "<ABCMeta>"
+ },
+ "continuation": [],
+ "sourceSha256": "a51ca4cc3df5989a4bedc2c6c726272f7124ad93094e63cdd51471f6e785b80e"
+}

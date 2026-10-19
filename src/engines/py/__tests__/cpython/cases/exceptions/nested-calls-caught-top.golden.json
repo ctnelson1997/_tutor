@@ -1,0 +1,166 @@
+{
+ "stdout": "level1 start\n level2 start\n  level3 start\n  level3 never reached when out of range\n level2 end\nlevel1 finally\n40\nlevel1 start\n level2 start\n  level3 start\nlevel1 finally\ncaught at top: list index out of range\nlevel1 start\n level2 start\n  level3 start\n  level3 never reached when out of range\n level2 end\nlevel1 finally\n60\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "level1 start"
+  },
+  {
+   "stream": "stdout",
+   "text": " level2 start"
+  },
+  {
+   "stream": "stdout",
+   "text": "  level3 start"
+  },
+  {
+   "stream": "stdout",
+   "text": "  level3 never reached when out of range"
+  },
+  {
+   "stream": "stdout",
+   "text": " level2 end"
+  },
+  {
+   "stream": "stdout",
+   "text": "level1 finally"
+  },
+  {
+   "stream": "stdout",
+   "text": "40"
+  },
+  {
+   "stream": "stdout",
+   "text": "level1 start"
+  },
+  {
+   "stream": "stdout",
+   "text": " level2 start"
+  },
+  {
+   "stream": "stdout",
+   "text": "  level3 start"
+  },
+  {
+   "stream": "stdout",
+   "text": "level1 finally"
+  },
+  {
+   "stream": "stdout",
+   "text": "caught at top: list index out of range"
+  },
+  {
+   "stream": "stdout",
+   "text": "level1 start"
+  },
+  {
+   "stream": "stdout",
+   "text": " level2 start"
+  },
+  {
+   "stream": "stdout",
+   "text": "  level3 start"
+  },
+  {
+   "stream": "stdout",
+   "text": "  level3 never reached when out of range"
+  },
+  {
+   "stream": "stdout",
+   "text": " level2 end"
+  },
+  {
+   "stream": "stdout",
+   "text": "level1 finally"
+  },
+  {
+   "stream": "stdout",
+   "text": "60"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"level3":"<function>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"level3":"<function>","level2":"<function>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"level3":"<function>","level2":"<function>","level1":"<function>"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"level3":"<function>","level2":"<function>","level1":"<function>","data":"<list>"}},
+  {"event":"call","line":14,"stack":["<module>","level1"],"locals":{"items":"<list>","i":"1"}},
+  {"event":"line","line":15,"stack":["<module>","level1"],"locals":{"items":"<list>","i":"1"}},
+  {"event":"line","line":16,"stack":["<module>","level1"],"locals":{"items":"<list>","i":"1"}},
+  {"event":"line","line":17,"stack":["<module>","level1"],"locals":{"items":"<list>","i":"1"}},
+  {"event":"call","line":8,"stack":["<module>","level1","level2"],"locals":{"items":"<list>","i":"1"}},
+  {"event":"line","line":9,"stack":["<module>","level1","level2"],"locals":{"items":"<list>","i":"1"}},
+  {"event":"line","line":10,"stack":["<module>","level1","level2"],"locals":{"items":"<list>","i":"1"}},
+  {"event":"call","line":2,"stack":["<module>","level1","level2","level3"],"locals":{"items":"<list>","i":"1"}},
+  {"event":"line","line":3,"stack":["<module>","level1","level2","level3"],"locals":{"items":"<list>","i":"1"}},
+  {"event":"line","line":4,"stack":["<module>","level1","level2","level3"],"locals":{"items":"<list>","i":"1"}},
+  {"event":"line","line":5,"stack":["<module>","level1","level2","level3"],"locals":{"items":"<list>","i":"1","value":"20"}},
+  {"event":"line","line":6,"stack":["<module>","level1","level2","level3"],"locals":{"items":"<list>","i":"1","value":"20"}},
+  {"event":"return","line":6,"stack":["<module>","level1","level2","level3"],"locals":{"items":"<list>","i":"1","value":"20"},"value":"20"},
+  {"event":"line","line":11,"stack":["<module>","level1","level2"],"locals":{"items":"<list>","i":"1","result":"40"}},
+  {"event":"line","line":12,"stack":["<module>","level1","level2"],"locals":{"items":"<list>","i":"1","result":"40"}},
+  {"event":"return","line":12,"stack":["<module>","level1","level2"],"locals":{"items":"<list>","i":"1","result":"40"},"value":"40"},
+  {"event":"line","line":19,"stack":["<module>","level1"],"locals":{"items":"<list>","i":"1"}},
+  {"event":"return","line":19,"stack":["<module>","level1"],"locals":{"items":"<list>","i":"1"},"value":"40"},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"level3":"<function>","level2":"<function>","level1":"<function>","data":"<list>"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"level3":"<function>","level2":"<function>","level1":"<function>","data":"<list>"}},
+  {"event":"call","line":14,"stack":["<module>","level1"],"locals":{"items":"<list>","i":"5"}},
+  {"event":"line","line":15,"stack":["<module>","level1"],"locals":{"items":"<list>","i":"5"}},
+  {"event":"line","line":16,"stack":["<module>","level1"],"locals":{"items":"<list>","i":"5"}},
+  {"event":"line","line":17,"stack":["<module>","level1"],"locals":{"items":"<list>","i":"5"}},
+  {"event":"call","line":8,"stack":["<module>","level1","level2"],"locals":{"items":"<list>","i":"5"}},
+  {"event":"line","line":9,"stack":["<module>","level1","level2"],"locals":{"items":"<list>","i":"5"}},
+  {"event":"line","line":10,"stack":["<module>","level1","level2"],"locals":{"items":"<list>","i":"5"}},
+  {"event":"call","line":2,"stack":["<module>","level1","level2","level3"],"locals":{"items":"<list>","i":"5"}},
+  {"event":"line","line":3,"stack":["<module>","level1","level2","level3"],"locals":{"items":"<list>","i":"5"}},
+  {"event":"line","line":4,"stack":["<module>","level1","level2","level3"],"locals":{"items":"<list>","i":"5"}},
+  {"event":"exception","line":4,"stack":["<module>","level1","level2","level3"],"locals":{"items":"<list>","i":"5"},"exc":"IndexError"},
+  {"event":"return","line":4,"stack":["<module>","level1","level2","level3"],"locals":{"items":"<list>","i":"5"},"value":"None","unwinding":true},
+  {"event":"exception","line":10,"stack":["<module>","level1","level2"],"locals":{"items":"<list>","i":"5"},"exc":"IndexError"},
+  {"event":"return","line":10,"stack":["<module>","level1","level2"],"locals":{"items":"<list>","i":"5"},"value":"None","unwinding":true},
+  {"event":"exception","line":17,"stack":["<module>","level1"],"locals":{"items":"<list>","i":"5"},"exc":"IndexError"},
+  {"event":"line","line":19,"stack":["<module>","level1"],"locals":{"items":"<list>","i":"5"}},
+  {"event":"return","line":19,"stack":["<module>","level1"],"locals":{"items":"<list>","i":"5"},"value":"None","unwinding":true},
+  {"event":"exception","line":24,"stack":["<module>"],"locals":{"level3":"<function>","level2":"<function>","level1":"<function>","data":"<list>"},"exc":"IndexError"},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"level3":"<function>","level2":"<function>","level1":"<function>","data":"<list>"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"level3":"<function>","level2":"<function>","level1":"<function>","data":"<list>","e":"<IndexError>"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"level3":"<function>","level2":"<function>","level1":"<function>","data":"<list>"}},
+  {"event":"call","line":14,"stack":["<module>","level1"],"locals":{"items":"<list>","i":"-1"}},
+  {"event":"line","line":15,"stack":["<module>","level1"],"locals":{"items":"<list>","i":"-1"}},
+  {"event":"line","line":16,"stack":["<module>","level1"],"locals":{"items":"<list>","i":"-1"}},
+  {"event":"line","line":17,"stack":["<module>","level1"],"locals":{"items":"<list>","i":"-1"}},
+  {"event":"call","line":8,"stack":["<module>","level1","level2"],"locals":{"items":"<list>","i":"-1"}},
+  {"event":"line","line":9,"stack":["<module>","level1","level2"],"locals":{"items":"<list>","i":"-1"}},
+  {"event":"line","line":10,"stack":["<module>","level1","level2"],"locals":{"items":"<list>","i":"-1"}},
+  {"event":"call","line":2,"stack":["<module>","level1","level2","level3"],"locals":{"items":"<list>","i":"-1"}},
+  {"event":"line","line":3,"stack":["<module>","level1","level2","level3"],"locals":{"items":"<list>","i":"-1"}},
+  {"event":"line","line":4,"stack":["<module>","level1","level2","level3"],"locals":{"items":"<list>","i":"-1"}},
+  {"event":"line","line":5,"stack":["<module>","level1","level2","level3"],"locals":{"items":"<list>","i":"-1","value":"30"}},
+  {"event":"line","line":6,"stack":["<module>","level1","level2","level3"],"locals":{"items":"<list>","i":"-1","value":"30"}},
+  {"event":"return","line":6,"stack":["<module>","level1","level2","level3"],"locals":{"items":"<list>","i":"-1","value":"30"},"value":"30"},
+  {"event":"line","line":11,"stack":["<module>","level1","level2"],"locals":{"items":"<list>","i":"-1","result":"60"}},
+  {"event":"line","line":12,"stack":["<module>","level1","level2"],"locals":{"items":"<list>","i":"-1","result":"60"}},
+  {"event":"return","line":12,"stack":["<module>","level1","level2"],"locals":{"items":"<list>","i":"-1","result":"60"},"value":"60"},
+  {"event":"line","line":19,"stack":["<module>","level1"],"locals":{"items":"<list>","i":"-1"}},
+  {"event":"return","line":19,"stack":["<module>","level1"],"locals":{"items":"<list>","i":"-1"},"value":"60"},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"level3":"<function>","level2":"<function>","level1":"<function>","data":"<list>","answer":"60"}},
+  {"event":"return","line":28,"stack":["<module>"],"locals":{"level3":"<function>","level2":"<function>","level1":"<function>","data":"<list>","answer":"60"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 63,
+ "finalGlobals": {
+  "level3": "<function>",
+  "level2": "<function>",
+  "level1": "<function>",
+  "data": "<list>",
+  "answer": "60"
+ },
+ "continuation": [],
+ "sourceSha256": "5a185208a09b5c450315de80241e2f22d3eaa525af00263f58aed30cebd9f89e"
+}

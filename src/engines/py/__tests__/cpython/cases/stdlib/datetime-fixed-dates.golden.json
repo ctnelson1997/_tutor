@@ -1,0 +1,107 @@
+{
+ "stdout": "2024-02-27 datetime.date(2024, 2, 27)\n2024-02-27 Tue Feb 27 1\n2024-02-28 Wed Feb 28 2\n2024-02-29 Thu Feb 29 3\n2024-03-01 Fri Mar 01 4\n302 days, 0:00:00 302 timedelta\n28 days, 0:00:00 29 days, 0:00:00\n2024-07-04 14:30:00 2024-07-05 01:15:00 2024-07-05 1\n2024-07-04 14:30 2024-07-04T14:30:00\n2001-09-09 01:46:40 2001 False\n6 2030-06-15\n1 day, 0:01:30 1209600.0\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "2024-02-27 datetime.date(2024, 2, 27)"
+  },
+  {
+   "stream": "stdout",
+   "text": "2024-02-27 Tue Feb 27 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "2024-02-28 Wed Feb 28 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "2024-02-29 Thu Feb 29 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "2024-03-01 Fri Mar 01 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "302 days, 0:00:00 302 timedelta"
+  },
+  {
+   "stream": "stdout",
+   "text": "28 days, 0:00:00 29 days, 0:00:00"
+  },
+  {
+   "stream": "stdout",
+   "text": "2024-07-04 14:30:00 2024-07-05 01:15:00 2024-07-05 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "2024-07-04 14:30 2024-07-04T14:30:00"
+  },
+  {
+   "stream": "stdout",
+   "text": "2001-09-09 01:46:40 2001 False"
+  },
+  {
+   "stream": "stdout",
+   "text": "6 2030-06-15"
+  },
+  {
+   "stream": "stdout",
+   "text": "1 day, 0:01:30 1209600.0"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"date":"<type>","datetime":"<type>","timedelta":"<type>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"date":"<type>","datetime":"<type>","timedelta":"<type>","start":"<date>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"date":"<type>","datetime":"<type>","timedelta":"<type>","start":"<date>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"date":"<type>","datetime":"<type>","timedelta":"<type>","start":"<date>","i":"0"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"date":"<type>","datetime":"<type>","timedelta":"<type>","start":"<date>","i":"0","d":"<date>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"date":"<type>","datetime":"<type>","timedelta":"<type>","start":"<date>","i":"0","d":"<date>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"date":"<type>","datetime":"<type>","timedelta":"<type>","start":"<date>","i":"1","d":"<date>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"date":"<type>","datetime":"<type>","timedelta":"<type>","start":"<date>","i":"1","d":"<date>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"date":"<type>","datetime":"<type>","timedelta":"<type>","start":"<date>","i":"1","d":"<date>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"date":"<type>","datetime":"<type>","timedelta":"<type>","start":"<date>","i":"2","d":"<date>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"date":"<type>","datetime":"<type>","timedelta":"<type>","start":"<date>","i":"2","d":"<date>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"date":"<type>","datetime":"<type>","timedelta":"<type>","start":"<date>","i":"2","d":"<date>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"date":"<type>","datetime":"<type>","timedelta":"<type>","start":"<date>","i":"3","d":"<date>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"date":"<type>","datetime":"<type>","timedelta":"<type>","start":"<date>","i":"3","d":"<date>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"date":"<type>","datetime":"<type>","timedelta":"<type>","start":"<date>","i":"3","d":"<date>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"date":"<type>","datetime":"<type>","timedelta":"<type>","start":"<date>","i":"3","d":"<date>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"date":"<type>","datetime":"<type>","timedelta":"<type>","start":"<date>","i":"3","d":"<date>","deadline":"<date>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"date":"<type>","datetime":"<type>","timedelta":"<type>","start":"<date>","i":"3","d":"<date>","deadline":"<date>","left":"<timedelta>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"date":"<type>","datetime":"<type>","timedelta":"<type>","start":"<date>","i":"3","d":"<date>","deadline":"<date>","left":"<timedelta>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"date":"<type>","datetime":"<type>","timedelta":"<type>","start":"<date>","i":"3","d":"<date>","deadline":"<date>","left":"<timedelta>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"date":"<type>","datetime":"<type>","timedelta":"<type>","start":"<date>","i":"3","d":"<date>","deadline":"<date>","left":"<timedelta>","meeting":"<datetime>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"date":"<type>","datetime":"<type>","timedelta":"<type>","start":"<date>","i":"3","d":"<date>","deadline":"<date>","left":"<timedelta>","meeting":"<datetime>","later":"<datetime>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"date":"<type>","datetime":"<type>","timedelta":"<type>","start":"<date>","i":"3","d":"<date>","deadline":"<date>","left":"<timedelta>","meeting":"<datetime>","later":"<datetime>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"date":"<type>","datetime":"<type>","timedelta":"<type>","start":"<date>","i":"3","d":"<date>","deadline":"<date>","left":"<timedelta>","meeting":"<datetime>","later":"<datetime>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"date":"<type>","datetime":"<type>","timedelta":"<type>","start":"<date>","i":"3","d":"<date>","deadline":"<date>","left":"<timedelta>","meeting":"<datetime>","later":"<datetime>","parsed":"<datetime>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"date":"<type>","datetime":"<type>","timedelta":"<type>","start":"<date>","i":"3","d":"<date>","deadline":"<date>","left":"<timedelta>","meeting":"<datetime>","later":"<datetime>","parsed":"<datetime>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"date":"<type>","datetime":"<type>","timedelta":"<type>","start":"<date>","i":"3","d":"<date>","deadline":"<date>","left":"<timedelta>","meeting":"<datetime>","later":"<datetime>","parsed":"<datetime>"}},
+  {"event":"return","line":20,"stack":["<module>"],"locals":{"date":"<type>","datetime":"<type>","timedelta":"<type>","start":"<date>","i":"3","d":"<date>","deadline":"<date>","left":"<timedelta>","meeting":"<datetime>","later":"<datetime>","parsed":"<datetime>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 30,
+ "finalGlobals": {
+  "date": "<type>",
+  "datetime": "<type>",
+  "timedelta": "<type>",
+  "start": "<date>",
+  "i": "3",
+  "d": "<date>",
+  "deadline": "<date>",
+  "left": "<timedelta>",
+  "meeting": "<datetime>",
+  "later": "<datetime>",
+  "parsed": "<datetime>"
+ },
+ "continuation": [],
+ "sourceSha256": "c989deed6d656a45e1bff5977c9bfcd67f3e6b25741c3918353a274e8d172ddb"
+}

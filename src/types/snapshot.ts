@@ -7,7 +7,9 @@ export interface PrimitiveValue {
   /**
    * The text to show, when the engine renders the value itself, e.g. Java's
    * `'B'` for a char (not `"B"`), `5.0` for a double, `"a\nb"` for a string
-   * with a line break. Without it the UI renders `value` by `type`.
+   * with a line break; Python's `5.0`, `-0.0`, `1e+16`, `True`, `None`, a big
+   * int's every digit (its `value` the digits as text too), `(3+4j)`. Without
+   * it the UI renders `value` by `type`.
    */
   display?: string;
 }
@@ -88,6 +90,13 @@ export interface ColumnRange {
 export interface ConsoleLine {
   text: string;
   stream: 'stdout' | 'stderr';
+  /**
+   * Character ranges `[start, end)` of `text` that echo what the program read
+   * from stdin (Python's input(), #32), as a terminal shows what was typed:
+   * not the program's output. A line that ended with the input's newline (the
+   * Enter that ended a typed line) ends with an empty range at its end.
+   */
+  input?: [number, number][];
 }
 
 export interface ExecutionSnapshot {
@@ -100,8 +109,8 @@ export interface ExecutionSnapshot {
   stdout: string[];
   /**
    * The console in program order, stdout and stderr lines interleaved, once
-   * the program has written to stderr (Java's System.err, printStackTrace).
-   * Without it, the console is `stdout`.
+   * the program has written to stderr (Java's System.err, printStackTrace) or
+   * read stdin (Python's input(), echoed). Without it, the console is `stdout`.
    */
   console?: ConsoleLine[];
   condition?: ConditionResult;

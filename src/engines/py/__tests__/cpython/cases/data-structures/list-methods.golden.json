@@ -1,0 +1,115 @@
+{
+ "stdout": "[9, 4, 1, 7, 3, 5]\n9 5 1 [4, 7, 3]\n['b', 'n', 'a', 'n', 'a'] 2 1 3\n['Fig', 'apple', 'date', 'pear']\n['apple', 'date', 'Fig', 'pear']\n['apple', 'date', 'pear', 'Fig']\n['Fig', 'pear', 'date', 'apple']\nNone\n[4, 7, 3, 2, 2, [8]] 2 6\nValueError: list.remove(x): x not in list\nValueError: 42 is not in list\n[] [4, 7, 3, 2, 2, [8]]\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[9, 4, 1, 7, 3, 5]"
+  },
+  {
+   "stream": "stdout",
+   "text": "9 5 1 [4, 7, 3]"
+  },
+  {
+   "stream": "stdout",
+   "text": "['b', 'n', 'a', 'n', 'a'] 2 1 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "['Fig', 'apple', 'date', 'pear']"
+  },
+  {
+   "stream": "stdout",
+   "text": "['apple', 'date', 'Fig', 'pear']"
+  },
+  {
+   "stream": "stdout",
+   "text": "['apple', 'date', 'pear', 'Fig']"
+  },
+  {
+   "stream": "stdout",
+   "text": "['Fig', 'pear', 'date', 'apple']"
+  },
+  {
+   "stream": "stdout",
+   "text": "None"
+  },
+  {
+   "stream": "stdout",
+   "text": "[4, 7, 3, 2, 2, [8]] 2 6"
+  },
+  {
+   "stream": "stdout",
+   "text": "ValueError: list.remove(x): x not in list"
+  },
+  {
+   "stream": "stdout",
+   "text": "ValueError: 42 is not in list"
+  },
+  {
+   "stream": "stdout",
+   "text": "[] [4, 7, 3, 2, 2, [8]]"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"nums":"<list>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"nums":"<list>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"nums":"<list>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"nums":"<list>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"nums":"<list>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"nums":"<list>","first":"9"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>","words":"<list>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>","words":"<list>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>","words":"<list>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>","words":"<list>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>","words":"<list>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>","words":"<list>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>","words":"<list>"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>","words":"<list>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>","words":"<list>"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>","words":"<list>","result":"None"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>","words":"<list>","result":"None"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>","words":"<list>","result":"None"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>","words":"<list>","result":"None"}},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>","words":"<list>","result":"None"}},
+  {"event":"line","line":29,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>","words":"<list>","result":"None"}},
+  {"event":"exception","line":29,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>","words":"<list>","result":"None"},"exc":"ValueError"},
+  {"event":"line","line":30,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>","words":"<list>","result":"None"}},
+  {"event":"line","line":31,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>","words":"<list>","result":"None","e":"<ValueError>"}},
+  {"event":"line","line":32,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>","words":"<list>","result":"None"}},
+  {"event":"line","line":33,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>","words":"<list>","result":"None"}},
+  {"event":"exception","line":33,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>","words":"<list>","result":"None"},"exc":"ValueError"},
+  {"event":"line","line":34,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>","words":"<list>","result":"None"}},
+  {"event":"line","line":35,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>","words":"<list>","result":"None","e":"<ValueError>"}},
+  {"event":"line","line":36,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>","words":"<list>","result":"None"}},
+  {"event":"line","line":37,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>","words":"<list>","result":"None","copy":"<list>"}},
+  {"event":"line","line":38,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>","words":"<list>","result":"None","copy":"<list>"}},
+  {"event":"return","line":38,"stack":["<module>"],"locals":{"nums":"<list>","first":"9","last":"5","middle":"1","letters":"<list>","words":"<list>","result":"None","copy":"<list>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 39,
+ "finalGlobals": {
+  "nums": "<list>",
+  "first": "9",
+  "last": "5",
+  "middle": "1",
+  "letters": "<list>",
+  "words": "<list>",
+  "result": "None",
+  "copy": "<list>"
+ },
+ "continuation": [],
+ "sourceSha256": "7eb31cbfd17bb43a7fcad98bcce18f89b9e3e00404abdf78d2b595d18d063b04"
+}

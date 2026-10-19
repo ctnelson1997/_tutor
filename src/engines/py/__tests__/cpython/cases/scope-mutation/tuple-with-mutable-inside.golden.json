@@ -1,0 +1,77 @@
+{
+ "stdout": "([1, 2, 3], 'label')\nTypeError: 'tuple' object does not support item assignment\n([1, 2, 3, 4], 'label')\nTypeError: 'tuple' object does not support item assignment\nTypeError: unhashable type: 'list'\n{(1, 2): 'fine'}\n(([], 'label'), ([], 'label'))\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "([1, 2, 3], 'label')"
+  },
+  {
+   "stream": "stdout",
+   "text": "TypeError: 'tuple' object does not support item assignment"
+  },
+  {
+   "stream": "stdout",
+   "text": "([1, 2, 3, 4], 'label')"
+  },
+  {
+   "stream": "stdout",
+   "text": "TypeError: 'tuple' object does not support item assignment"
+  },
+  {
+   "stream": "stdout",
+   "text": "TypeError: unhashable type: 'list'"
+  },
+  {
+   "stream": "stdout",
+   "text": "{(1, 2): 'fine'}"
+  },
+  {
+   "stream": "stdout",
+   "text": "(([], 'label'), ([], 'label'))"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"t":"<tuple>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"t":"<tuple>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"t":"<tuple>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"t":"<tuple>"}},
+  {"event":"exception","line":6,"stack":["<module>"],"locals":{"t":"<tuple>"},"exc":"TypeError"},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"t":"<tuple>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"t":"<tuple>","err":"<TypeError>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"t":"<tuple>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"t":"<tuple>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"t":"<tuple>"}},
+  {"event":"exception","line":11,"stack":["<module>"],"locals":{"t":"<tuple>"},"exc":"TypeError"},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"t":"<tuple>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"t":"<tuple>","err":"<TypeError>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"t":"<tuple>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"t":"<tuple>","key_ok":"<tuple>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"t":"<tuple>","key_ok":"<tuple>","d":"<dict>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"t":"<tuple>","key_ok":"<tuple>","d":"<dict>"}},
+  {"event":"exception","line":17,"stack":["<module>"],"locals":{"t":"<tuple>","key_ok":"<tuple>","d":"<dict>"},"exc":"TypeError"},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"t":"<tuple>","key_ok":"<tuple>","d":"<dict>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"t":"<tuple>","key_ok":"<tuple>","d":"<dict>","err":"<TypeError>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"t":"<tuple>","key_ok":"<tuple>","d":"<dict>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"t":"<tuple>","key_ok":"<tuple>","d":"<dict>"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"t":"<tuple>","key_ok":"<tuple>","d":"<dict>","frozen":"<tuple>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"t":"<tuple>","key_ok":"<tuple>","d":"<dict>","frozen":"<tuple>"}},
+  {"event":"return","line":23,"stack":["<module>"],"locals":{"t":"<tuple>","key_ok":"<tuple>","d":"<dict>","frozen":"<tuple>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 24,
+ "finalGlobals": {
+  "t": "<tuple>",
+  "key_ok": "<tuple>",
+  "d": "<dict>",
+  "frozen": "<tuple>"
+ },
+ "continuation": [],
+ "sourceSha256": "431cefa6257a8cf795469a51c81534f51ac9415757c1d247c77000eb28471748"
+}

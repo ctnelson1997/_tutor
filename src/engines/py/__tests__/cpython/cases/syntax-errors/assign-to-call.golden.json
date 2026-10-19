@@ -1,0 +1,21 @@
+{
+ "stdout": "",
+ "stderr": "",
+ "console": [],
+ "exception": null,
+ "traceback": null,
+ "compileError": {
+  "class": "SyntaxError",
+  "msg": "cannot assign to function call here. Maybe you meant '==' instead of '='?",
+  "line": 6,
+  "offset": 1,
+  "text": "  File \"main.py\", line 6\n    get_score() = 100\n    ^^^^^^^^^^^\nSyntaxError: cannot assign to function call here. Maybe you meant '==' instead of '='?\n"
+ },
+ "endless": false,
+ "events": [],
+ "truncated": false,
+ "stepEvents": 0,
+ "finalGlobals": {},
+ "continuation": [],
+ "sourceSha256": "c0c0953f2ea2ee91f7ab82e9dd1ed2b1ec68ed0fc1b6db0dd384492aefd9f740"
+}

@@ -1,0 +1,139 @@
+{
+ "stdout": "enter plain\ninside plain\nexit plain: None None\n['enter', 'exit']\nenter suppressing\nabout to fail\nexit suppressing: ValueError invalid literal for int() with base 10: 'nope'\nafter suppressed block ['enter', 'exit']\nenter propagating\nexit propagating: IndexError pop from empty list\ncaught outside: pop from empty list\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "enter plain"
+  },
+  {
+   "stream": "stdout",
+   "text": "inside plain"
+  },
+  {
+   "stream": "stdout",
+   "text": "exit plain: None None"
+  },
+  {
+   "stream": "stdout",
+   "text": "['enter', 'exit']"
+  },
+  {
+   "stream": "stdout",
+   "text": "enter suppressing"
+  },
+  {
+   "stream": "stdout",
+   "text": "about to fail"
+  },
+  {
+   "stream": "stdout",
+   "text": "exit suppressing: ValueError invalid literal for int() with base 10: 'nope'"
+  },
+  {
+   "stream": "stdout",
+   "text": "after suppressed block ['enter', 'exit']"
+  },
+  {
+   "stream": "stdout",
+   "text": "enter propagating"
+  },
+  {
+   "stream": "stdout",
+   "text": "exit propagating: IndexError pop from empty list"
+  },
+  {
+   "stream": "stdout",
+   "text": "caught outside: pop from empty list"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"call","line":2,"stack":["<module>","Tracker"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>","Tracker"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>","Tracker"],"locals":{"__module__":"'__main__'","__qualname__":"'Tracker'"}},
+  {"event":"line","line":8,"stack":["<module>","Tracker"],"locals":{"__module__":"'__main__'","__qualname__":"'Tracker'","__init__":"<function>"}},
+  {"event":"line","line":13,"stack":["<module>","Tracker"],"locals":{"__module__":"'__main__'","__qualname__":"'Tracker'","__init__":"<function>","__enter__":"<function>"}},
+  {"event":"return","line":13,"stack":["<module>","Tracker"],"locals":{"__module__":"'__main__'","__qualname__":"'Tracker'","__init__":"<function>","__enter__":"<function>","__exit__":"<function>"},"value":"None"},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"Tracker":"<type>"}},
+  {"event":"call","line":3,"stack":["<module>","__init__"],"locals":{"self":"<Tracker>","name":"'plain'","suppress":"False"}},
+  {"event":"line","line":4,"stack":["<module>","__init__"],"locals":{"self":"<Tracker>","name":"'plain'","suppress":"False"}},
+  {"event":"line","line":5,"stack":["<module>","__init__"],"locals":{"self":"<Tracker>","name":"'plain'","suppress":"False"}},
+  {"event":"line","line":6,"stack":["<module>","__init__"],"locals":{"self":"<Tracker>","name":"'plain'","suppress":"False"}},
+  {"event":"return","line":6,"stack":["<module>","__init__"],"locals":{"self":"<Tracker>","name":"'plain'","suppress":"False"},"value":"None"},
+  {"event":"call","line":8,"stack":["<module>","__enter__"],"locals":{"self":"<Tracker>"}},
+  {"event":"line","line":9,"stack":["<module>","__enter__"],"locals":{"self":"<Tracker>"}},
+  {"event":"line","line":10,"stack":["<module>","__enter__"],"locals":{"self":"<Tracker>"}},
+  {"event":"line","line":11,"stack":["<module>","__enter__"],"locals":{"self":"<Tracker>"}},
+  {"event":"return","line":11,"stack":["<module>","__enter__"],"locals":{"self":"<Tracker>"},"value":"<Tracker>"},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Tracker":"<type>","t":"<Tracker>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"Tracker":"<type>","t":"<Tracker>"}},
+  {"event":"call","line":13,"stack":["<module>","__exit__"],"locals":{"self":"<Tracker>","exc_type":"None","exc":"None","tb":"None"}},
+  {"event":"line","line":14,"stack":["<module>","__exit__"],"locals":{"self":"<Tracker>","exc_type":"None","exc":"None","tb":"None"}},
+  {"event":"line","line":15,"stack":["<module>","__exit__"],"locals":{"self":"<Tracker>","exc_type":"None","exc":"None","tb":"None","kind":"None"}},
+  {"event":"line","line":16,"stack":["<module>","__exit__"],"locals":{"self":"<Tracker>","exc_type":"None","exc":"None","tb":"None","kind":"None"}},
+  {"event":"line","line":17,"stack":["<module>","__exit__"],"locals":{"self":"<Tracker>","exc_type":"None","exc":"None","tb":"None","kind":"None"}},
+  {"event":"return","line":17,"stack":["<module>","__exit__"],"locals":{"self":"<Tracker>","exc_type":"None","exc":"None","tb":"None","kind":"None"},"value":"False"},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"Tracker":"<type>","t":"<Tracker>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"Tracker":"<type>","t":"<Tracker>"}},
+  {"event":"call","line":3,"stack":["<module>","__init__"],"locals":{"self":"<Tracker>","name":"'suppressing'","suppress":"True"}},
+  {"event":"line","line":4,"stack":["<module>","__init__"],"locals":{"self":"<Tracker>","name":"'suppressing'","suppress":"True"}},
+  {"event":"line","line":5,"stack":["<module>","__init__"],"locals":{"self":"<Tracker>","name":"'suppressing'","suppress":"True"}},
+  {"event":"line","line":6,"stack":["<module>","__init__"],"locals":{"self":"<Tracker>","name":"'suppressing'","suppress":"True"}},
+  {"event":"return","line":6,"stack":["<module>","__init__"],"locals":{"self":"<Tracker>","name":"'suppressing'","suppress":"True"},"value":"None"},
+  {"event":"call","line":8,"stack":["<module>","__enter__"],"locals":{"self":"<Tracker>"}},
+  {"event":"line","line":9,"stack":["<module>","__enter__"],"locals":{"self":"<Tracker>"}},
+  {"event":"line","line":10,"stack":["<module>","__enter__"],"locals":{"self":"<Tracker>"}},
+  {"event":"line","line":11,"stack":["<module>","__enter__"],"locals":{"self":"<Tracker>"}},
+  {"event":"return","line":11,"stack":["<module>","__enter__"],"locals":{"self":"<Tracker>"},"value":"<Tracker>"},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"Tracker":"<type>","t":"<Tracker>","t2":"<Tracker>"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"Tracker":"<type>","t":"<Tracker>","t2":"<Tracker>"}},
+  {"event":"exception","line":25,"stack":["<module>"],"locals":{"Tracker":"<type>","t":"<Tracker>","t2":"<Tracker>"},"exc":"ValueError"},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"Tracker":"<type>","t":"<Tracker>","t2":"<Tracker>"}},
+  {"event":"call","line":13,"stack":["<module>","__exit__"],"locals":{"self":"<Tracker>","exc_type":"<type>","exc":"<ValueError>","tb":"<traceback>"}},
+  {"event":"line","line":14,"stack":["<module>","__exit__"],"locals":{"self":"<Tracker>","exc_type":"<type>","exc":"<ValueError>","tb":"<traceback>"}},
+  {"event":"line","line":15,"stack":["<module>","__exit__"],"locals":{"self":"<Tracker>","exc_type":"<type>","exc":"<ValueError>","tb":"<traceback>","kind":"'ValueError'"}},
+  {"event":"line","line":16,"stack":["<module>","__exit__"],"locals":{"self":"<Tracker>","exc_type":"<type>","exc":"<ValueError>","tb":"<traceback>","kind":"'ValueError'"}},
+  {"event":"line","line":17,"stack":["<module>","__exit__"],"locals":{"self":"<Tracker>","exc_type":"<type>","exc":"<ValueError>","tb":"<traceback>","kind":"'ValueError'"}},
+  {"event":"return","line":17,"stack":["<module>","__exit__"],"locals":{"self":"<Tracker>","exc_type":"<type>","exc":"<ValueError>","tb":"<traceback>","kind":"'ValueError'"},"value":"True"},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"Tracker":"<type>","t":"<Tracker>","t2":"<Tracker>"}},
+  {"event":"line","line":29,"stack":["<module>"],"locals":{"Tracker":"<type>","t":"<Tracker>","t2":"<Tracker>"}},
+  {"event":"line","line":30,"stack":["<module>"],"locals":{"Tracker":"<type>","t":"<Tracker>","t2":"<Tracker>"}},
+  {"event":"call","line":3,"stack":["<module>","__init__"],"locals":{"self":"<Tracker>","name":"'propagating'","suppress":"False"}},
+  {"event":"line","line":4,"stack":["<module>","__init__"],"locals":{"self":"<Tracker>","name":"'propagating'","suppress":"False"}},
+  {"event":"line","line":5,"stack":["<module>","__init__"],"locals":{"self":"<Tracker>","name":"'propagating'","suppress":"False"}},
+  {"event":"line","line":6,"stack":["<module>","__init__"],"locals":{"self":"<Tracker>","name":"'propagating'","suppress":"False"}},
+  {"event":"return","line":6,"stack":["<module>","__init__"],"locals":{"self":"<Tracker>","name":"'propagating'","suppress":"False"},"value":"None"},
+  {"event":"call","line":8,"stack":["<module>","__enter__"],"locals":{"self":"<Tracker>"}},
+  {"event":"line","line":9,"stack":["<module>","__enter__"],"locals":{"self":"<Tracker>"}},
+  {"event":"line","line":10,"stack":["<module>","__enter__"],"locals":{"self":"<Tracker>"}},
+  {"event":"line","line":11,"stack":["<module>","__enter__"],"locals":{"self":"<Tracker>"}},
+  {"event":"return","line":11,"stack":["<module>","__enter__"],"locals":{"self":"<Tracker>"},"value":"<Tracker>"},
+  {"event":"line","line":31,"stack":["<module>"],"locals":{"Tracker":"<type>","t":"<Tracker>","t2":"<Tracker>"}},
+  {"event":"exception","line":31,"stack":["<module>"],"locals":{"Tracker":"<type>","t":"<Tracker>","t2":"<Tracker>"},"exc":"IndexError"},
+  {"event":"line","line":30,"stack":["<module>"],"locals":{"Tracker":"<type>","t":"<Tracker>","t2":"<Tracker>"}},
+  {"event":"call","line":13,"stack":["<module>","__exit__"],"locals":{"self":"<Tracker>","exc_type":"<type>","exc":"<IndexError>","tb":"<traceback>"}},
+  {"event":"line","line":14,"stack":["<module>","__exit__"],"locals":{"self":"<Tracker>","exc_type":"<type>","exc":"<IndexError>","tb":"<traceback>"}},
+  {"event":"line","line":15,"stack":["<module>","__exit__"],"locals":{"self":"<Tracker>","exc_type":"<type>","exc":"<IndexError>","tb":"<traceback>","kind":"'IndexError'"}},
+  {"event":"line","line":16,"stack":["<module>","__exit__"],"locals":{"self":"<Tracker>","exc_type":"<type>","exc":"<IndexError>","tb":"<traceback>","kind":"'IndexError'"}},
+  {"event":"line","line":17,"stack":["<module>","__exit__"],"locals":{"self":"<Tracker>","exc_type":"<type>","exc":"<IndexError>","tb":"<traceback>","kind":"'IndexError'"}},
+  {"event":"return","line":17,"stack":["<module>","__exit__"],"locals":{"self":"<Tracker>","exc_type":"<type>","exc":"<IndexError>","tb":"<traceback>","kind":"'IndexError'"},"value":"False"},
+  {"event":"line","line":32,"stack":["<module>"],"locals":{"Tracker":"<type>","t":"<Tracker>","t2":"<Tracker>"}},
+  {"event":"line","line":33,"stack":["<module>"],"locals":{"Tracker":"<type>","t":"<Tracker>","t2":"<Tracker>","e":"<IndexError>"}},
+  {"event":"return","line":33,"stack":["<module>"],"locals":{"Tracker":"<type>","t":"<Tracker>","t2":"<Tracker>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 72,
+ "finalGlobals": {
+  "Tracker": "<type>",
+  "t": "<Tracker>",
+  "t2": "<Tracker>"
+ },
+ "continuation": [],
+ "sourceSha256": "4e115aa4bcdb78f5bfaf84091b2cba6808b033010fa9971cdb3e86c6d458fc58"
+}

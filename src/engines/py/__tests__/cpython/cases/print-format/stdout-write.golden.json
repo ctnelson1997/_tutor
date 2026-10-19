@@ -1,0 +1,81 @@
+{
+ "stdout": "hello world\nwrite returned 5\nabcde\n[2, 3, 0]\n3.0|'q'\nabc\nline1\nline2\ndone\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "hello world"
+  },
+  {
+   "stream": "stdout",
+   "text": "write returned 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "abcde"
+  },
+  {
+   "stream": "stdout",
+   "text": "[2, 3, 0]"
+  },
+  {
+   "stream": "stdout",
+   "text": "3.0|'q'"
+  },
+  {
+   "stream": "stdout",
+   "text": "abc"
+  },
+  {
+   "stream": "stdout",
+   "text": "line1"
+  },
+  {
+   "stream": "stdout",
+   "text": "line2"
+  },
+  {
+   "stream": "stdout",
+   "text": "done"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"sys":"<module>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"sys":"<module>","written":"5"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"sys":"<module>","written":"5"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"sys":"<module>","written":"5"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"sys":"<module>","written":"5","counts":"<list>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"sys":"<module>","written":"5","counts":"<list>","word":"'ab'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"sys":"<module>","written":"5","counts":"<list>","word":"'ab'"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"sys":"<module>","written":"5","counts":"<list>","word":"'cde'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"sys":"<module>","written":"5","counts":"<list>","word":"'cde'"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"sys":"<module>","written":"5","counts":"<list>","word":"''"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"sys":"<module>","written":"5","counts":"<list>","word":"''"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"sys":"<module>","written":"5","counts":"<list>","word":"''"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"sys":"<module>","written":"5","counts":"<list>","word":"''"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"sys":"<module>","written":"5","counts":"<list>","word":"''"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"sys":"<module>","written":"5","counts":"<list>","word":"''"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"sys":"<module>","written":"5","counts":"<list>","word":"''"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"sys":"<module>","written":"5","counts":"<list>","word":"''"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"sys":"<module>","written":"5","counts":"<list>","word":"''"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"sys":"<module>","written":"5","counts":"<list>","word":"''"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"sys":"<module>","written":"5","counts":"<list>","word":"''"}},
+  {"event":"return","line":17,"stack":["<module>"],"locals":{"sys":"<module>","written":"5","counts":"<list>","word":"''"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 23,
+ "finalGlobals": {
+  "sys": "<module>",
+  "written": "5",
+  "counts": "<list>",
+  "word": "''"
+ },
+ "continuation": [],
+ "sourceSha256": "41921e9dba323645bcfb2b01585460b08ce1235adfb360f46a4fa0fcbdeb91f2"
+}

@@ -1,0 +1,92 @@
+{
+ "stdout": "Enter a number (-1 to stop): Enter a number (-1 to stop): Enter a number (-1 to stop): Enter a number (-1 to stop): Enter a number (-1 to stop): Enter a number (-1 to stop): Enter a number (-1 to stop): \nYou entered 6 numbers: [12, 7, 30, -4, 15, 8]\nSum: 68\nLargest: 30\nAverage: 11.33\nEven numbers: [12, 30, -4, 8]\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Enter a number (-1 to stop): Enter a number (-1 to stop): Enter a number (-1 to stop): Enter a number (-1 to stop): Enter a number (-1 to stop): Enter a number (-1 to stop): Enter a number (-1 to stop): "
+  },
+  {
+   "stream": "stdout",
+   "text": "You entered 6 numbers: [12, 7, 30, -4, 15, 8]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Sum: 68"
+  },
+  {
+   "stream": "stdout",
+   "text": "Largest: 30"
+  },
+  {
+   "stream": "stdout",
+   "text": "Average: 11.33"
+  },
+  {
+   "stream": "stdout",
+   "text": "Even numbers: [12, 30, -4, 8]"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"SENTINEL":"-1"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"0"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"0","value":"12"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"0","value":"12"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"0","value":"12"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"12","value":"12"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"12","value":"7"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"12","value":"7"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"12","value":"7"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"19","value":"7"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"19","value":"30"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"19","value":"30"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"19","value":"30"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"49","value":"30"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"49","value":"-4"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"49","value":"-4"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"49","value":"-4"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"45","value":"-4"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"45","value":"15"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"45","value":"15"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"45","value":"15"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"60","value":"15"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"60","value":"8"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"60","value":"8"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"60","value":"8"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"68","value":"8"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"68","value":"-1"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"68","value":"-1"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"68","value":"-1"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"68","value":"-1"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"68","value":"-1"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"68","value":"-1"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"68","value":"-1"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"68","value":"-1"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"68","value":"-1"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"68","value":"-1"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"68","value":"-1"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"68","value":"-1"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"68","value":"-1"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"68","value":"-1"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"68","value":"-1","evens":"<list>"}},
+  {"event":"return","line":19,"stack":["<module>"],"locals":{"SENTINEL":"-1","numbers":"<list>","total":"68","value":"-1","evens":"<list>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 45,
+ "finalGlobals": {
+  "SENTINEL": "-1",
+  "numbers": "<list>",
+  "total": "68",
+  "value": "-1",
+  "evens": "<list>"
+ },
+ "continuation": [],
+ "sourceSha256": "9ab56ffccfb08b0cefe0c93cf91538609f3437ef4070a9b25e472c2f2e8ae9a4"
+}

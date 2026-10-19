@@ -358,8 +358,8 @@ export default function EditorPanel() {
         style={{ minHeight: 0 }}
       />
 
-      {/* Standard input for Scanner (Java only) */}
-      {language === 'java' && <StdinPanel />}
+      {/* Standard input, for an engine whose programs read it (Java's Scanner, Python's input()) */}
+      {engine?.stdin && <StdinPanel {...engine.stdin} />}
     </div>
   );
 }

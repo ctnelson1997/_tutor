@@ -1,0 +1,114 @@
+{
+ "stdout": "1 Ann\n2 Bo\n3 Cy\n[('Ann', 88), ('Bo', 92), ('Cy', 75)]\n0 Bo 92\n1 Ann 88\n2 Cy 75\n{'Ann': 88, 'Bo': 92, 'Cy': 75}\n('Ann', 'Bo', 'Cy') (88, 92, 75)\n[[1, 4], [2, 5], [3, 6]]\n[('a', 1), ('b', 2)] []\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "1 Ann"
+  },
+  {
+   "stream": "stdout",
+   "text": "2 Bo"
+  },
+  {
+   "stream": "stdout",
+   "text": "3 Cy"
+  },
+  {
+   "stream": "stdout",
+   "text": "[('Ann', 88), ('Bo', 92), ('Cy', 75)]"
+  },
+  {
+   "stream": "stdout",
+   "text": "0 Bo 92"
+  },
+  {
+   "stream": "stdout",
+   "text": "1 Ann 88"
+  },
+  {
+   "stream": "stdout",
+   "text": "2 Cy 75"
+  },
+  {
+   "stream": "stdout",
+   "text": "{'Ann': 88, 'Bo': 92, 'Cy': 75}"
+  },
+  {
+   "stream": "stdout",
+   "text": "('Ann', 'Bo', 'Cy') (88, 92, 75)"
+  },
+  {
+   "stream": "stdout",
+   "text": "[[1, 4], [2, 5], [3, 6]]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[('a', 1), ('b', 2)] []"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"names":"<list>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","i":"1","name":"'Ann'"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","i":"1","name":"'Ann'"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","i":"2","name":"'Bo'"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","i":"2","name":"'Bo'"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","i":"3","name":"'Cy'"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","i":"3","name":"'Cy'"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","i":"3","name":"'Cy'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","i":"3","name":"'Cy'","pairs":"<list>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","i":"3","name":"'Cy'","pairs":"<list>"}},
+  {"event":"call","line":8,"stack":["<module>","<lambda>"],"locals":{"p":"<tuple>"}},
+  {"event":"line","line":8,"stack":["<module>","<lambda>"],"locals":{"p":"<tuple>"}},
+  {"event":"return","line":8,"stack":["<module>","<lambda>"],"locals":{"p":"<tuple>"},"value":"-88"},
+  {"event":"call","line":8,"stack":["<module>","<lambda>"],"locals":{"p":"<tuple>"}},
+  {"event":"line","line":8,"stack":["<module>","<lambda>"],"locals":{"p":"<tuple>"}},
+  {"event":"return","line":8,"stack":["<module>","<lambda>"],"locals":{"p":"<tuple>"},"value":"-92"},
+  {"event":"call","line":8,"stack":["<module>","<lambda>"],"locals":{"p":"<tuple>"}},
+  {"event":"line","line":8,"stack":["<module>","<lambda>"],"locals":{"p":"<tuple>"}},
+  {"event":"return","line":8,"stack":["<module>","<lambda>"],"locals":{"p":"<tuple>"},"value":"-75"},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","i":"3","name":"'Bo'","pairs":"<list>","rank":"0","score":"92"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","i":"3","name":"'Bo'","pairs":"<list>","rank":"0","score":"92"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","i":"3","name":"'Ann'","pairs":"<list>","rank":"1","score":"88"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","i":"3","name":"'Ann'","pairs":"<list>","rank":"1","score":"88"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","i":"3","name":"'Cy'","pairs":"<list>","rank":"2","score":"75"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","i":"3","name":"'Cy'","pairs":"<list>","rank":"2","score":"75"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","i":"3","name":"'Cy'","pairs":"<list>","rank":"2","score":"75"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","i":"3","name":"'Cy'","pairs":"<list>","rank":"2","score":"75","gradebook":"<dict>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","i":"3","name":"'Cy'","pairs":"<list>","rank":"2","score":"75","gradebook":"<dict>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","i":"3","name":"'Cy'","pairs":"<list>","rank":"2","score":"75","gradebook":"<dict>","who":"<tuple>","pts":"<tuple>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","i":"3","name":"'Cy'","pairs":"<list>","rank":"2","score":"75","gradebook":"<dict>","who":"<tuple>","pts":"<tuple>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","i":"3","name":"'Cy'","pairs":"<list>","rank":"2","score":"75","gradebook":"<dict>","who":"<tuple>","pts":"<tuple>","matrix":"<list>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","i":"3","name":"'Cy'","pairs":"<list>","rank":"2","score":"75","gradebook":"<dict>","who":"<tuple>","pts":"<tuple>","matrix":"<list>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","i":"3","name":"'Cy'","pairs":"<list>","rank":"2","score":"75","gradebook":"<dict>","who":"<tuple>","pts":"<tuple>","matrix":"<list>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","i":"3","name":"'Cy'","pairs":"<list>","rank":"2","score":"75","gradebook":"<dict>","who":"<tuple>","pts":"<tuple>","matrix":"<list>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","i":"3","name":"'Cy'","pairs":"<list>","rank":"2","score":"75","gradebook":"<dict>","who":"<tuple>","pts":"<tuple>","matrix":"<list>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","i":"3","name":"'Cy'","pairs":"<list>","rank":"2","score":"75","gradebook":"<dict>","who":"<tuple>","pts":"<tuple>","matrix":"<list>","z":"<zip>"}},
+  {"event":"return","line":17,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","i":"3","name":"'Cy'","pairs":"<list>","rank":"2","score":"75","gradebook":"<dict>","who":"<tuple>","pts":"<tuple>","matrix":"<list>","z":"<zip>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 40,
+ "finalGlobals": {
+  "names": "<list>",
+  "scores": "<list>",
+  "i": "3",
+  "name": "'Cy'",
+  "pairs": "<list>",
+  "rank": "2",
+  "score": "75",
+  "gradebook": "<dict>",
+  "who": "<tuple>",
+  "pts": "<tuple>",
+  "matrix": "<list>",
+  "z": "<zip>"
+ },
+ "continuation": [],
+ "sourceSha256": "a511eaae305bebf6cecd65c6a4bf8c7b0876c36109a70a9a0f476b6b5ae7b92c"
+}

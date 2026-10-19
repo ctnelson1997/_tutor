@@ -17,6 +17,10 @@ export const javaEngine: LanguageEngine = {
   }
 }`,
   analyzeCode,
+  stdin: {
+    reader: 'Scanner',
+    placeholder: 'Type input here — each nextInt()/next()/nextLine() reads from this, like typing into a terminal.',
+  },
   heapTypeConfig: {
     array: { label: 'Array', variant: 'info' },
     object: { label: 'Object', variant: 'warning' },

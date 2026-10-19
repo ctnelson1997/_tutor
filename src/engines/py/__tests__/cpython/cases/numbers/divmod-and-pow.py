@@ -1,0 +1,20 @@
+# divmod with negatives and floats, pow with a modulus and negative exponents, and a fractional power of a negative giving a complex
+q1 = divmod(17, 5)
+q2 = divmod(-17, 5)
+q3 = divmod(17, -5)
+q4 = divmod(7.5, 2)
+q5 = divmod(-7.5, 2)
+print(q1, q2, q3, q4, q5)
+p1 = pow(2, 10)
+p2 = pow(2, 10, 1000)
+p3 = pow(3, -1, 7)
+p4 = 2 ** -1
+p5 = 10 ** -3
+print(p1, p2, p3, p4, p5)
+root = (-8) ** (1 / 3)
+print(root, type(root).__name__)
+print(0 ** 0, 0.0 ** 0, (-2) ** 2, -2 ** 2, 2 ** 3 ** 2)
+print(abs(-7), abs(-7.5), abs(3 - 4j))
+print(pow(2, 0.5), 4 ** 0.5, 27 ** (1 / 3))
+quotient, remainder = divmod(100, 7)
+print(quotient, remainder)

@@ -1,0 +1,30 @@
+{
+ "stdout": "Alice\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Alice"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":1,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{"person":"<dict>"}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"person":"<dict>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"person":"<dict>","name":"'Alice'"}},
+  {"event":"return","line":4,"stack":["<module>"],"locals":{"person":"<dict>","name":"'Alice'"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 6,
+ "finalGlobals": {
+  "person": "<dict>",
+  "name": "'Alice'"
+ },
+ "continuation": [],
+ "sourceSha256": "6db7077967a60760c452a9feb45a10ae9aa764730f02a365d2680efd4cb42051"
+}

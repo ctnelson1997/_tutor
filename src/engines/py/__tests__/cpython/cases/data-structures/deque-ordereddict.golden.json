@@ -1,0 +1,114 @@
+{
+ "stdout": "deque(['b', 'c', 'd', 'a'])\ndeque(['d', 'a', 'b', 'c'])\ndeque([2, 1, 'd', 'a', 'b', 'c']) 2 c\ndeque([2, 3, 4], maxlen=3)\ndeque([0, 2, 3], maxlen=3) 3\ndeque([3, 7, 8], maxlen=3) True 1\n2 c [1, 'd', 'a', 'b'] 4\ndeque([1, 'z', 'd', 'b']) 1\nOrderedDict({'z': 122, 'y': 121, 'x': 120})\n('z', 122) ('x', 120) OrderedDict({'y': 121})\nFalse True True\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "deque(['b', 'c', 'd', 'a'])"
+  },
+  {
+   "stream": "stdout",
+   "text": "deque(['d', 'a', 'b', 'c'])"
+  },
+  {
+   "stream": "stdout",
+   "text": "deque([2, 1, 'd', 'a', 'b', 'c']) 2 c"
+  },
+  {
+   "stream": "stdout",
+   "text": "deque([2, 3, 4], maxlen=3)"
+  },
+  {
+   "stream": "stdout",
+   "text": "deque([0, 2, 3], maxlen=3) 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "deque([3, 7, 8], maxlen=3) True 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "2 c [1, 'd', 'a', 'b'] 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "deque([1, 'z', 'd', 'b']) 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "OrderedDict({'z': 122, 'y': 121, 'x': 120})"
+  },
+  {
+   "stream": "stdout",
+   "text": "('z', 122) ('x', 120) OrderedDict({'y': 121})"
+  },
+  {
+   "stream": "stdout",
+   "text": "False True True"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>","front":"2"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>","front":"2","back":"'c'"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>","front":"2","back":"'c'"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>","front":"2","back":"'c'"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>","front":"2","back":"'c'"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>","front":"2","back":"'c'"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>","front":"2","back":"'c'","cache":"<OrderedDict>"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>","front":"2","back":"'c'","cache":"<OrderedDict>","key":"'x'"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>","front":"2","back":"'c'","cache":"<OrderedDict>","key":"'x'"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>","front":"2","back":"'c'","cache":"<OrderedDict>","key":"'y'"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>","front":"2","back":"'c'","cache":"<OrderedDict>","key":"'y'"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>","front":"2","back":"'c'","cache":"<OrderedDict>","key":"'z'"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>","front":"2","back":"'c'","cache":"<OrderedDict>","key":"'z'"}},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>","front":"2","back":"'c'","cache":"<OrderedDict>","key":"'z'"}},
+  {"event":"line","line":29,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>","front":"2","back":"'c'","cache":"<OrderedDict>","key":"'z'"}},
+  {"event":"line","line":30,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>","front":"2","back":"'c'","cache":"<OrderedDict>","key":"'z'"}},
+  {"event":"line","line":31,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>","front":"2","back":"'c'","cache":"<OrderedDict>","key":"'z'"}},
+  {"event":"line","line":32,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>","front":"2","back":"'c'","cache":"<OrderedDict>","key":"'z'","oldest":"<tuple>"}},
+  {"event":"line","line":33,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>","front":"2","back":"'c'","cache":"<OrderedDict>","key":"'z'","oldest":"<tuple>","newest":"<tuple>"}},
+  {"event":"line","line":34,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>","front":"2","back":"'c'","cache":"<OrderedDict>","key":"'z'","oldest":"<tuple>","newest":"<tuple>"}},
+  {"event":"line","line":35,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>","front":"2","back":"'c'","cache":"<OrderedDict>","key":"'z'","oldest":"<tuple>","newest":"<tuple>","o1":"<OrderedDict>"}},
+  {"event":"line","line":36,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>","front":"2","back":"'c'","cache":"<OrderedDict>","key":"'z'","oldest":"<tuple>","newest":"<tuple>","o1":"<OrderedDict>","o2":"<OrderedDict>"}},
+  {"event":"return","line":36,"stack":["<module>"],"locals":{"deque":"<type>","OrderedDict":"<type>","line":"<deque>","window":"<deque>","front":"2","back":"'c'","cache":"<OrderedDict>","key":"'z'","oldest":"<tuple>","newest":"<tuple>","o1":"<OrderedDict>","o2":"<OrderedDict>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 40,
+ "finalGlobals": {
+  "deque": "<type>",
+  "OrderedDict": "<type>",
+  "line": "<deque>",
+  "window": "<deque>",
+  "front": "2",
+  "back": "'c'",
+  "cache": "<OrderedDict>",
+  "key": "'z'",
+  "oldest": "<tuple>",
+  "newest": "<tuple>",
+  "o1": "<OrderedDict>",
+  "o2": "<OrderedDict>"
+ },
+ "continuation": [],
+ "sourceSha256": "d0830ecfe018b9176e915a0b0ee882d14194d1bb3df2599ad13a641add70bebb"
+}

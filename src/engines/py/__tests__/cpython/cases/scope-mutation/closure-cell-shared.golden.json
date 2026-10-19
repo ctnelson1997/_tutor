@@ -1,0 +1,95 @@
+{
+ "stdout": "125\n125 5\n125 125\nTrue False\n2\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "125"
+  },
+  {
+   "stream": "stdout",
+   "text": "125 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "125 125"
+  },
+  {
+   "stream": "stdout",
+   "text": "True False"
+  },
+  {
+   "stream": "stdout",
+   "text": "2"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"make_account":"<function>"}},
+  {"event":"call","line":2,"stack":["<module>","make_account"],"locals":{"balance":"100"}},
+  {"event":"line","line":3,"stack":["<module>","make_account"],"locals":{"balance":"100"}},
+  {"event":"line","line":7,"stack":["<module>","make_account"],"locals":{"balance":"100","deposit":"<function>"}},
+  {"event":"line","line":9,"stack":["<module>","make_account"],"locals":{"balance":"100","deposit":"<function>","get":"<function>"}},
+  {"event":"return","line":9,"stack":["<module>","make_account"],"locals":{"balance":"100","deposit":"<function>","get":"<function>"},"value":"<tuple>"},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"make_account":"<function>","deposit":"<function>","get":"<function>"}},
+  {"event":"call","line":3,"stack":["<module>","deposit"],"locals":{"amount":"25","balance":"100"}},
+  {"event":"line","line":5,"stack":["<module>","deposit"],"locals":{"amount":"25","balance":"100"}},
+  {"event":"line","line":6,"stack":["<module>","deposit"],"locals":{"amount":"25","balance":"125"}},
+  {"event":"return","line":6,"stack":["<module>","deposit"],"locals":{"amount":"25","balance":"125"},"value":"125"},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"make_account":"<function>","deposit":"<function>","get":"<function>"}},
+  {"event":"call","line":7,"stack":["<module>","get"],"locals":{"balance":"125"}},
+  {"event":"line","line":8,"stack":["<module>","get"],"locals":{"balance":"125"}},
+  {"event":"return","line":8,"stack":["<module>","get"],"locals":{"balance":"125"},"value":"125"},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"make_account":"<function>","deposit":"<function>","get":"<function>"}},
+  {"event":"call","line":2,"stack":["<module>","make_account"],"locals":{"balance":"0"}},
+  {"event":"line","line":3,"stack":["<module>","make_account"],"locals":{"balance":"0"}},
+  {"event":"line","line":7,"stack":["<module>","make_account"],"locals":{"balance":"0","deposit":"<function>"}},
+  {"event":"line","line":9,"stack":["<module>","make_account"],"locals":{"balance":"0","deposit":"<function>","get":"<function>"}},
+  {"event":"return","line":9,"stack":["<module>","make_account"],"locals":{"balance":"0","deposit":"<function>","get":"<function>"},"value":"<tuple>"},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"make_account":"<function>","deposit":"<function>","get":"<function>","deposit2":"<function>","get2":"<function>"}},
+  {"event":"call","line":3,"stack":["<module>","deposit"],"locals":{"amount":"5","balance":"0"}},
+  {"event":"line","line":5,"stack":["<module>","deposit"],"locals":{"amount":"5","balance":"0"}},
+  {"event":"line","line":6,"stack":["<module>","deposit"],"locals":{"amount":"5","balance":"5"}},
+  {"event":"return","line":6,"stack":["<module>","deposit"],"locals":{"amount":"5","balance":"5"},"value":"5"},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"make_account":"<function>","deposit":"<function>","get":"<function>","deposit2":"<function>","get2":"<function>"}},
+  {"event":"call","line":7,"stack":["<module>","get"],"locals":{"balance":"125"}},
+  {"event":"line","line":8,"stack":["<module>","get"],"locals":{"balance":"125"}},
+  {"event":"return","line":8,"stack":["<module>","get"],"locals":{"balance":"125"},"value":"125"},
+  {"event":"call","line":7,"stack":["<module>","get"],"locals":{"balance":"5"}},
+  {"event":"line","line":8,"stack":["<module>","get"],"locals":{"balance":"5"}},
+  {"event":"return","line":8,"stack":["<module>","get"],"locals":{"balance":"5"},"value":"5"},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"make_account":"<function>","deposit":"<function>","get":"<function>","deposit2":"<function>","get2":"<function>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"make_account":"<function>","deposit":"<function>","get":"<function>","deposit2":"<function>","get2":"<function>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"make_account":"<function>","deposit":"<function>","get":"<function>","deposit2":"<function>","get2":"<function>"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"make_account":"<function>","deposit":"<function>","get":"<function>","deposit2":"<function>","get2":"<function>","outer":"<function>"}},
+  {"event":"call","line":20,"stack":["<module>","outer"],"locals":{}},
+  {"event":"line","line":21,"stack":["<module>","outer"],"locals":{}},
+  {"event":"line","line":22,"stack":["<module>","outer"],"locals":{"x":"1"}},
+  {"event":"line","line":23,"stack":["<module>","outer"],"locals":{"x":"1","f":"<function>"}},
+  {"event":"line","line":24,"stack":["<module>","outer"],"locals":{"x":"2","f":"<function>"}},
+  {"event":"return","line":24,"stack":["<module>","outer"],"locals":{"x":"2","f":"<function>"},"value":"<function>"},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"make_account":"<function>","deposit":"<function>","get":"<function>","deposit2":"<function>","get2":"<function>","outer":"<function>","late":"<function>"}},
+  {"event":"call","line":22,"stack":["<module>","<lambda>"],"locals":{"x":"2"}},
+  {"event":"line","line":22,"stack":["<module>","<lambda>"],"locals":{"x":"2"}},
+  {"event":"return","line":22,"stack":["<module>","<lambda>"],"locals":{"x":"2"},"value":"2"},
+  {"event":"return","line":27,"stack":["<module>"],"locals":{"make_account":"<function>","deposit":"<function>","get":"<function>","deposit2":"<function>","get2":"<function>","outer":"<function>","late":"<function>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 50,
+ "finalGlobals": {
+  "make_account": "<function>",
+  "deposit": "<function>",
+  "get": "<function>",
+  "deposit2": "<function>",
+  "get2": "<function>",
+  "outer": "<function>",
+  "late": "<function>"
+ },
+ "continuation": [],
+ "sourceSha256": "068a40837ffcb1195997ec3c384670d58e4f98a5d0129221c080369854fdf04e"
+}

@@ -1,0 +1,144 @@
+{
+ "stdout": "plain | 'plain'\nit's | \"it's\"\nsay \"hi\" | 'say \"hi\"'\nboth ' and \" | 'both \\' and \"'\ntab\tnewline\nback\\slash | 'tab\\tnewline\\nback\\\\slash'\n0.1 0.1 0.3333333333333333 2.0\nNone None True ''\n['plain', \"it's\", 'say \"hi\"']\nTrue\n('both \\' and \"',) {\"it's\": 'say \"hi\"'}\n\"'plain'\"\n27 22\n[1, 1.0, '1', None, ['tab\\tnewline\\nback\\\\slash']]\n[1, 1.0, '1', None, ['tab\\tnewline\\nback\\\\slash']]\n1, 1.0, '1', None, ['tab\\tnewline\\nback\\\\slash']\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "plain | 'plain'"
+  },
+  {
+   "stream": "stdout",
+   "text": "it's | \"it's\""
+  },
+  {
+   "stream": "stdout",
+   "text": "say \"hi\" | 'say \"hi\"'"
+  },
+  {
+   "stream": "stdout",
+   "text": "both ' and \" | 'both \\' and \"'"
+  },
+  {
+   "stream": "stdout",
+   "text": "tab\tnewline"
+  },
+  {
+   "stream": "stdout",
+   "text": "back\\slash | 'tab\\tnewline\\nback\\\\slash'"
+  },
+  {
+   "stream": "stdout",
+   "text": "0.1 0.1 0.3333333333333333 2.0"
+  },
+  {
+   "stream": "stdout",
+   "text": "None None True ''"
+  },
+  {
+   "stream": "stdout",
+   "text": "['plain', \"it's\", 'say \"hi\"']"
+  },
+  {
+   "stream": "stdout",
+   "text": "True"
+  },
+  {
+   "stream": "stdout",
+   "text": "('both \\' and \"',) {\"it's\": 'say \"hi\"'}"
+  },
+  {
+   "stream": "stdout",
+   "text": "\"'plain'\""
+  },
+  {
+   "stream": "stdout",
+   "text": "27 22"
+  },
+  {
+   "stream": "stdout",
+   "text": "[1, 1.0, '1', None, ['tab\\tnewline\\nback\\\\slash']]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[1, 1.0, '1', None, ['tab\\tnewline\\nback\\\\slash']]"
+  },
+  {
+   "stream": "stdout",
+   "text": "1, 1.0, '1', None, ['tab\\tnewline\\nback\\\\slash']"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"s1":"'plain'"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\""}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\"","s3":"'say \"hi\"'"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\"","s3":"'say \"hi\"'","s4":"'both \\' and \"'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\"","s3":"'say \"hi\"'","s4":"'both \\' and \"'","s5":"'tab\\tnewline\\nback\\\\slash'"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\"","s3":"'say \"hi\"'","s4":"'both \\' and \"'","s5":"'tab\\tnewline\\nback\\\\slash'","s":"'plain'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\"","s3":"'say \"hi\"'","s4":"'both \\' and \"'","s5":"'tab\\tnewline\\nback\\\\slash'","s":"'plain'"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\"","s3":"'say \"hi\"'","s4":"'both \\' and \"'","s5":"'tab\\tnewline\\nback\\\\slash'","s":"\"it's\""}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\"","s3":"'say \"hi\"'","s4":"'both \\' and \"'","s5":"'tab\\tnewline\\nback\\\\slash'","s":"\"it's\""}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\"","s3":"'say \"hi\"'","s4":"'both \\' and \"'","s5":"'tab\\tnewline\\nback\\\\slash'","s":"'say \"hi\"'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\"","s3":"'say \"hi\"'","s4":"'both \\' and \"'","s5":"'tab\\tnewline\\nback\\\\slash'","s":"'say \"hi\"'"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\"","s3":"'say \"hi\"'","s4":"'both \\' and \"'","s5":"'tab\\tnewline\\nback\\\\slash'","s":"'both \\' and \"'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\"","s3":"'say \"hi\"'","s4":"'both \\' and \"'","s5":"'tab\\tnewline\\nback\\\\slash'","s":"'both \\' and \"'"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\"","s3":"'say \"hi\"'","s4":"'both \\' and \"'","s5":"'tab\\tnewline\\nback\\\\slash'","s":"'tab\\tnewline\\nback\\\\slash'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\"","s3":"'say \"hi\"'","s4":"'both \\' and \"'","s5":"'tab\\tnewline\\nback\\\\slash'","s":"'tab\\tnewline\\nback\\\\slash'"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\"","s3":"'say \"hi\"'","s4":"'both \\' and \"'","s5":"'tab\\tnewline\\nback\\\\slash'","s":"'tab\\tnewline\\nback\\\\slash'"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\"","s3":"'say \"hi\"'","s4":"'both \\' and \"'","s5":"'tab\\tnewline\\nback\\\\slash'","s":"'tab\\tnewline\\nback\\\\slash'","x":"0.1"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\"","s3":"'say \"hi\"'","s4":"'both \\' and \"'","s5":"'tab\\tnewline\\nback\\\\slash'","s":"'tab\\tnewline\\nback\\\\slash'","x":"0.1","y":"0.3333333333333333"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\"","s3":"'say \"hi\"'","s4":"'both \\' and \"'","s5":"'tab\\tnewline\\nback\\\\slash'","s":"'tab\\tnewline\\nback\\\\slash'","x":"0.1","y":"0.3333333333333333","z":"2.0"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\"","s3":"'say \"hi\"'","s4":"'both \\' and \"'","s5":"'tab\\tnewline\\nback\\\\slash'","s":"'tab\\tnewline\\nback\\\\slash'","x":"0.1","y":"0.3333333333333333","z":"2.0"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\"","s3":"'say \"hi\"'","s4":"'both \\' and \"'","s5":"'tab\\tnewline\\nback\\\\slash'","s":"'tab\\tnewline\\nback\\\\slash'","x":"0.1","y":"0.3333333333333333","z":"2.0"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\"","s3":"'say \"hi\"'","s4":"'both \\' and \"'","s5":"'tab\\tnewline\\nback\\\\slash'","s":"'tab\\tnewline\\nback\\\\slash'","x":"0.1","y":"0.3333333333333333","z":"2.0","words":"<list>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\"","s3":"'say \"hi\"'","s4":"'both \\' and \"'","s5":"'tab\\tnewline\\nback\\\\slash'","s":"'tab\\tnewline\\nback\\\\slash'","x":"0.1","y":"0.3333333333333333","z":"2.0","words":"<list>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\"","s3":"'say \"hi\"'","s4":"'both \\' and \"'","s5":"'tab\\tnewline\\nback\\\\slash'","s":"'tab\\tnewline\\nback\\\\slash'","x":"0.1","y":"0.3333333333333333","z":"2.0","words":"<list>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\"","s3":"'say \"hi\"'","s4":"'both \\' and \"'","s5":"'tab\\tnewline\\nback\\\\slash'","s":"'tab\\tnewline\\nback\\\\slash'","x":"0.1","y":"0.3333333333333333","z":"2.0","words":"<list>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\"","s3":"'say \"hi\"'","s4":"'both \\' and \"'","s5":"'tab\\tnewline\\nback\\\\slash'","s":"'tab\\tnewline\\nback\\\\slash'","x":"0.1","y":"0.3333333333333333","z":"2.0","words":"<list>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\"","s3":"'say \"hi\"'","s4":"'both \\' and \"'","s5":"'tab\\tnewline\\nback\\\\slash'","s":"'tab\\tnewline\\nback\\\\slash'","x":"0.1","y":"0.3333333333333333","z":"2.0","words":"<list>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\"","s3":"'say \"hi\"'","s4":"'both \\' and \"'","s5":"'tab\\tnewline\\nback\\\\slash'","s":"'tab\\tnewline\\nback\\\\slash'","x":"0.1","y":"0.3333333333333333","z":"2.0","words":"<list>","mixed":"<list>"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\"","s3":"'say \"hi\"'","s4":"'both \\' and \"'","s5":"'tab\\tnewline\\nback\\\\slash'","s":"'tab\\tnewline\\nback\\\\slash'","x":"0.1","y":"0.3333333333333333","z":"2.0","words":"<list>","mixed":"<list>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\"","s3":"'say \"hi\"'","s4":"'both \\' and \"'","s5":"'tab\\tnewline\\nback\\\\slash'","s":"'tab\\tnewline\\nback\\\\slash'","x":"0.1","y":"0.3333333333333333","z":"2.0","words":"<list>","mixed":"<list>"}},
+  {"event":"call","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>"}},
+  {"event":"line","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>"}},
+  {"event":"return","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","v":"1"},"value":"'1'"},
+  {"event":"call","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","v":"1"}},
+  {"event":"line","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","v":"1"}},
+  {"event":"return","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","v":"1.0"},"value":"'1.0'"},
+  {"event":"call","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","v":"1.0"}},
+  {"event":"line","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","v":"1.0"}},
+  {"event":"return","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","v":"'1'"},"value":"\"'1'\""},
+  {"event":"call","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","v":"'1'"}},
+  {"event":"line","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","v":"'1'"}},
+  {"event":"return","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","v":"None"},"value":"'None'"},
+  {"event":"call","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","v":"None"}},
+  {"event":"line","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","v":"None"}},
+  {"event":"return","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","v":"<list>"},"value":"\"['tab\\\\tnewline\\\\nback\\\\\\\\slash']\""},
+  {"event":"call","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","v":"<list>"}},
+  {"event":"line","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","v":"<list>"}},
+  {"event":"return","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","v":"<list>"},"value":"None"},
+  {"event":"return","line":23,"stack":["<module>"],"locals":{"s1":"'plain'","s2":"\"it's\"","s3":"'say \"hi\"'","s4":"'both \\' and \"'","s5":"'tab\\tnewline\\nback\\\\slash'","s":"'tab\\tnewline\\nback\\\\slash'","x":"0.1","y":"0.3333333333333333","z":"2.0","words":"<list>","mixed":"<list>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 51,
+ "finalGlobals": {
+  "s1": "'plain'",
+  "s2": "\"it's\"",
+  "s3": "'say \"hi\"'",
+  "s4": "'both \\' and \"'",
+  "s5": "'tab\\tnewline\\nback\\\\slash'",
+  "s": "'tab\\tnewline\\nback\\\\slash'",
+  "x": "0.1",
+  "y": "0.3333333333333333",
+  "z": "2.0",
+  "words": "<list>",
+  "mixed": "<list>"
+ },
+ "continuation": [],
+ "sourceSha256": "64c1a942f4da241df3ccd13290970fab809f1970e5882430c54ba6fb916261f6"
+}

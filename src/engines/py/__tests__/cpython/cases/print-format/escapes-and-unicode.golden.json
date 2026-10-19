@@ -1,0 +1,99 @@
+{
+ "stdout": "café α 日本語 🐍\n4 1 3 1\n5 4\n'café' '日本語' '🐍'\n'caf\\xe9' '\\u65e5\\u672c\\u8a9e' '\\U0001f40d'\nback\\slash single'quote double\"quote\nbell-free AB A C\nC:\\new\\table 12 'C:\\\\new\\\\table'\ncafé 🐍🐍🐍 CAFÉ 🐍🐍🐍\n233 é 0x1f40d\n['café', '日本語']\nångström ångström mörtsgnÅ\n   日本語|  🐍  |\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "café α 日本語 🐍"
+  },
+  {
+   "stream": "stdout",
+   "text": "4 1 3 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "5 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "'café' '日本語' '🐍'"
+  },
+  {
+   "stream": "stdout",
+   "text": "'caf\\xe9' '\\u65e5\\u672c\\u8a9e' '\\U0001f40d'"
+  },
+  {
+   "stream": "stdout",
+   "text": "back\\slash single'quote double\"quote"
+  },
+  {
+   "stream": "stdout",
+   "text": "bell-free AB A C"
+  },
+  {
+   "stream": "stdout",
+   "text": "C:\\new\\table 12 'C:\\\\new\\\\table'"
+  },
+  {
+   "stream": "stdout",
+   "text": "café 🐍🐍🐍 CAFÉ 🐍🐍🐍"
+  },
+  {
+   "stream": "stdout",
+   "text": "233 é 0x1f40d"
+  },
+  {
+   "stream": "stdout",
+   "text": "['café', '日本語']"
+  },
+  {
+   "stream": "stdout",
+   "text": "ångström ångström mörtsgnÅ"
+  },
+  {
+   "stream": "stdout",
+   "text": "   日本語|  🐍  |"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"s":"'café'"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"s":"'café'","alpha":"'α'"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"s":"'café'","alpha":"'α'","cjk":"'日本語'"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"s":"'café'","alpha":"'α'","cjk":"'日本語'","emoji":"'🐍'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"s":"'café'","alpha":"'α'","cjk":"'日本語'","emoji":"'🐍'"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"s":"'café'","alpha":"'α'","cjk":"'日本語'","emoji":"'🐍'"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"s":"'café'","alpha":"'α'","cjk":"'日本語'","emoji":"'🐍'"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"s":"'café'","alpha":"'α'","cjk":"'日本語'","emoji":"'🐍'"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"s":"'café'","alpha":"'α'","cjk":"'日本語'","emoji":"'🐍'"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"s":"'café'","alpha":"'α'","cjk":"'日本語'","emoji":"'🐍'"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"s":"'café'","alpha":"'α'","cjk":"'日本語'","emoji":"'🐍'"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"s":"'café'","alpha":"'α'","cjk":"'日本語'","emoji":"'🐍'","path":"'C:\\\\new\\\\table'"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"s":"'café'","alpha":"'α'","cjk":"'日本語'","emoji":"'🐍'","path":"'C:\\\\new\\\\table'"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"s":"'café'","alpha":"'α'","cjk":"'日本語'","emoji":"'🐍'","path":"'C:\\\\new\\\\table'","combined":"'café 🐍🐍🐍'"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"s":"'café'","alpha":"'α'","cjk":"'日本語'","emoji":"'🐍'","path":"'C:\\\\new\\\\table'","combined":"'café 🐍🐍🐍'"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"s":"'café'","alpha":"'α'","cjk":"'日本語'","emoji":"'🐍'","path":"'C:\\\\new\\\\table'","combined":"'café 🐍🐍🐍'"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"s":"'café'","alpha":"'α'","cjk":"'日本語'","emoji":"'🐍'","path":"'C:\\\\new\\\\table'","combined":"'café 🐍🐍🐍'"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"s":"'café'","alpha":"'α'","cjk":"'日本語'","emoji":"'🐍'","path":"'C:\\\\new\\\\table'","combined":"'café 🐍🐍🐍'","accented":"'Ångström'"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"s":"'café'","alpha":"'α'","cjk":"'日本語'","emoji":"'🐍'","path":"'C:\\\\new\\\\table'","combined":"'café 🐍🐍🐍'","accented":"'Ångström'"}},
+  {"event":"return","line":21,"stack":["<module>"],"locals":{"s":"'café'","alpha":"'α'","cjk":"'日本語'","emoji":"'🐍'","path":"'C:\\\\new\\\\table'","combined":"'café 🐍🐍🐍'","accented":"'Ångström'"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 22,
+ "finalGlobals": {
+  "s": "'café'",
+  "alpha": "'α'",
+  "cjk": "'日本語'",
+  "emoji": "'🐍'",
+  "path": "'C:\\\\new\\\\table'",
+  "combined": "'café 🐍🐍🐍'",
+  "accented": "'Ångström'"
+ },
+ "continuation": [],
+ "sourceSha256": "cb501bdbb42abc8e681afd818156905a2a1578cbaaa487557403487d0748e59f"
+}

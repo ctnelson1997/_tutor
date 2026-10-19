@@ -1,0 +1,21 @@
+{
+ "stdout": "",
+ "stderr": "",
+ "console": [],
+ "exception": null,
+ "traceback": null,
+ "compileError": {
+  "class": "SyntaxError",
+  "msg": "unterminated string literal (detected at line 5)",
+  "line": 5,
+  "offset": 11,
+  "text": "  File \"main.py\", line 5\n    message = \"Welcome to the class, + last\n              ^\nSyntaxError: unterminated string literal (detected at line 5)\n"
+ },
+ "endless": false,
+ "events": [],
+ "truncated": false,
+ "stepEvents": 0,
+ "finalGlobals": {},
+ "continuation": [],
+ "sourceSha256": "82e56f569a421b9cadf46d545bc081d25f3757c9bfe3f446171a2e2a762f98d7"
+}

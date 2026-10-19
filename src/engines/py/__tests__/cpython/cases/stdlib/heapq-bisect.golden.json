@@ -1,0 +1,110 @@
+{
+ "stdout": "[(1, 'deploy'), (1, 'fix bug'), (2, 'review'), (3, 'write tests')]\n['deploy', 'fix bug', 'review', 'write tests']\n[1, 3, 2, 5, 9, 8] 1\n[9, 8, 5] ['fig', 'pear']\n['F', 'D', 'C', 'B', 'A', 'A']\n[5, 10, 20, 25, 30] 2 3\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[(1, 'deploy'), (1, 'fix bug'), (2, 'review'), (3, 'write tests')]"
+  },
+  {
+   "stream": "stdout",
+   "text": "['deploy', 'fix bug', 'review', 'write tests']"
+  },
+  {
+   "stream": "stdout",
+   "text": "[1, 3, 2, 5, 9, 8] 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "[9, 8, 5] ['fig', 'pear']"
+  },
+  {
+   "stream": "stdout",
+   "text": "['F', 'D', 'C', 'B', 'A', 'A']"
+  },
+  {
+   "stream": "stdout",
+   "text": "[5, 10, 20, 25, 30] 2 3"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"heapq":"<module>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>","priority":"1","name":"'deploy'"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>","priority":"1","name":"'deploy'"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>","priority":"1","name":"'deploy'"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>","priority":"1","name":"'fix bug'"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>","priority":"1","name":"'fix bug'"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>","priority":"1","name":"'fix bug'"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>","priority":"2","name":"'review'"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>","priority":"2","name":"'review'"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>","priority":"2","name":"'review'"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>","priority":"3","name":"'write tests'"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>","priority":"3","name":"'write tests'"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>","priority":"3","name":"'write tests'"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>","priority":"3","name":"'write tests'"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>","priority":"3","name":"'write tests'","nums":"<list>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>","priority":"3","name":"'write tests'","nums":"<list>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>","priority":"3","name":"'write tests'","nums":"<list>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>","priority":"3","name":"'write tests'","nums":"<list>"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>","priority":"3","name":"'write tests'","nums":"<list>","grade":"<function>"}},
+  {"event":"call","line":21,"stack":["<module>","grade"],"locals":{"score":"33","cutoffs":"<list>","letters":"'FDCBA'"}},
+  {"event":"line","line":22,"stack":["<module>","grade"],"locals":{"score":"33","cutoffs":"<list>","letters":"'FDCBA'"}},
+  {"event":"return","line":22,"stack":["<module>","grade"],"locals":{"score":"33","cutoffs":"<list>","letters":"'FDCBA'"},"value":"'F'"},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>","priority":"3","name":"'write tests'","nums":"<list>","grade":"<function>"}},
+  {"event":"call","line":21,"stack":["<module>","grade"],"locals":{"score":"60","cutoffs":"<list>","letters":"'FDCBA'"}},
+  {"event":"line","line":22,"stack":["<module>","grade"],"locals":{"score":"60","cutoffs":"<list>","letters":"'FDCBA'"}},
+  {"event":"return","line":22,"stack":["<module>","grade"],"locals":{"score":"60","cutoffs":"<list>","letters":"'FDCBA'"},"value":"'D'"},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>","priority":"3","name":"'write tests'","nums":"<list>","grade":"<function>"}},
+  {"event":"call","line":21,"stack":["<module>","grade"],"locals":{"score":"77","cutoffs":"<list>","letters":"'FDCBA'"}},
+  {"event":"line","line":22,"stack":["<module>","grade"],"locals":{"score":"77","cutoffs":"<list>","letters":"'FDCBA'"}},
+  {"event":"return","line":22,"stack":["<module>","grade"],"locals":{"score":"77","cutoffs":"<list>","letters":"'FDCBA'"},"value":"'C'"},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>","priority":"3","name":"'write tests'","nums":"<list>","grade":"<function>"}},
+  {"event":"call","line":21,"stack":["<module>","grade"],"locals":{"score":"89","cutoffs":"<list>","letters":"'FDCBA'"}},
+  {"event":"line","line":22,"stack":["<module>","grade"],"locals":{"score":"89","cutoffs":"<list>","letters":"'FDCBA'"}},
+  {"event":"return","line":22,"stack":["<module>","grade"],"locals":{"score":"89","cutoffs":"<list>","letters":"'FDCBA'"},"value":"'B'"},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>","priority":"3","name":"'write tests'","nums":"<list>","grade":"<function>"}},
+  {"event":"call","line":21,"stack":["<module>","grade"],"locals":{"score":"90","cutoffs":"<list>","letters":"'FDCBA'"}},
+  {"event":"line","line":22,"stack":["<module>","grade"],"locals":{"score":"90","cutoffs":"<list>","letters":"'FDCBA'"}},
+  {"event":"return","line":22,"stack":["<module>","grade"],"locals":{"score":"90","cutoffs":"<list>","letters":"'FDCBA'"},"value":"'A'"},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>","priority":"3","name":"'write tests'","nums":"<list>","grade":"<function>"}},
+  {"event":"call","line":21,"stack":["<module>","grade"],"locals":{"score":"100","cutoffs":"<list>","letters":"'FDCBA'"}},
+  {"event":"line","line":22,"stack":["<module>","grade"],"locals":{"score":"100","cutoffs":"<list>","letters":"'FDCBA'"}},
+  {"event":"return","line":22,"stack":["<module>","grade"],"locals":{"score":"100","cutoffs":"<list>","letters":"'FDCBA'"},"value":"'A'"},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>","priority":"3","name":"'write tests'","nums":"<list>","grade":"<function>"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>","priority":"3","name":"'write tests'","nums":"<list>","grade":"<function>"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>","priority":"3","name":"'write tests'","nums":"<list>","grade":"<function>","sorted_list":"<list>"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>","priority":"3","name":"'write tests'","nums":"<list>","grade":"<function>","sorted_list":"<list>"}},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>","priority":"3","name":"'write tests'","nums":"<list>","grade":"<function>","sorted_list":"<list>"}},
+  {"event":"return","line":28,"stack":["<module>"],"locals":{"heapq":"<module>","bisect":"<module>","tasks":"<list>","order":"<list>","priority":"3","name":"'write tests'","nums":"<list>","grade":"<function>","sorted_list":"<list>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 59,
+ "finalGlobals": {
+  "heapq": "<module>",
+  "bisect": "<module>",
+  "tasks": "<list>",
+  "order": "<list>",
+  "priority": "3",
+  "name": "'write tests'",
+  "nums": "<list>",
+  "grade": "<function>",
+  "sorted_list": "<list>"
+ },
+ "continuation": [],
+ "sourceSha256": "e8b96e86d7a6969cf82405c722bf4495bf29b1a03ede1542157487c23e386dff"
+}

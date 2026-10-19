@@ -1,0 +1,70 @@
+{
+ "stdout": "[[1, 2], [3, 4], 5] [[1, 2], [3, 4], 50]\n[[1, 2, 9], [3, 4], 5] [[1, 2, 9], [3, 4], 50] [[1, 2, 9], [3, 4], 5] [[1, 2, 9], [3, 4], 5]\nFalse True True\nTrue True\n[[1, 2, 9], ['changed', 4], 5] [5, ['changed', 4], [1, 2, 9]]\n3 3\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[[1, 2], [3, 4], 5] [[1, 2], [3, 4], 50]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[[1, 2, 9], [3, 4], 5] [[1, 2, 9], [3, 4], 50] [[1, 2, 9], [3, 4], 5] [[1, 2, 9], [3, 4], 5]"
+  },
+  {
+   "stream": "stdout",
+   "text": "False True True"
+  },
+  {
+   "stream": "stdout",
+   "text": "True True"
+  },
+  {
+   "stream": "stdout",
+   "text": "[[1, 2, 9], ['changed', 4], 5] [5, ['changed', 4], [1, 2, 9]]"
+  },
+  {
+   "stream": "stdout",
+   "text": "3 3"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"a":"<list>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","d":"<list>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","d":"<list>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","d":"<list>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","d":"<list>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","d":"<list>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","d":"<list>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","d":"<list>","t":"<tuple>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","d":"<list>","t":"<tuple>","s":"'hello'"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","d":"<list>","t":"<tuple>","s":"'hello'"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","d":"<list>","t":"<tuple>","s":"'hello'","e":"<list>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","d":"<list>","t":"<tuple>","s":"'hello'","e":"<list>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","d":"<list>","t":"<tuple>","s":"'hello'","e":"<list>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","d":"<list>","t":"<tuple>","s":"'hello'","e":"<list>","part":"<list>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","d":"<list>","t":"<tuple>","s":"'hello'","e":"<list>","part":"<list>"}},
+  {"event":"return","line":19,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","d":"<list>","t":"<tuple>","s":"'hello'","e":"<list>","part":"<list>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 20,
+ "finalGlobals": {
+  "a": "<list>",
+  "b": "<list>",
+  "c": "<list>",
+  "d": "<list>",
+  "t": "<tuple>",
+  "s": "'hello'",
+  "e": "<list>",
+  "part": "<list>"
+ },
+ "continuation": [],
+ "sourceSha256": "6cbc5cf4ef9319a5d184a3e1bd33bc3e2ec26894ec4c707562f0e83d1c0a1fd5"
+}

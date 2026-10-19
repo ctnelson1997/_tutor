@@ -1,0 +1,113 @@
+{
+ "stdout": "Child init\nLeft init\nRight init\nBase init\n['Base', 'Right', 'Left', 'Child']\nLeft>Right>Base\n['Child', 'Left', 'Right', 'Base', 'object']\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Child init"
+  },
+  {
+   "stream": "stdout",
+   "text": "Left init"
+  },
+  {
+   "stream": "stdout",
+   "text": "Right init"
+  },
+  {
+   "stream": "stdout",
+   "text": "Base init"
+  },
+  {
+   "stream": "stdout",
+   "text": "['Base', 'Right', 'Left', 'Child']"
+  },
+  {
+   "stream": "stdout",
+   "text": "Left>Right>Base"
+  },
+  {
+   "stream": "stdout",
+   "text": "['Child', 'Left', 'Right', 'Base', 'object']"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"call","line":2,"stack":["<module>","Base"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>","Base"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>","Base"],"locals":{"__module__":"'__main__'","__qualname__":"'Base'"}},
+  {"event":"line","line":7,"stack":["<module>","Base"],"locals":{"__module__":"'__main__'","__qualname__":"'Base'","__init__":"<function>"}},
+  {"event":"return","line":7,"stack":["<module>","Base"],"locals":{"__module__":"'__main__'","__qualname__":"'Base'","__init__":"<function>","hello":"<function>"},"value":"None"},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"Base":"<type>"}},
+  {"event":"call","line":10,"stack":["<module>","Left"],"locals":{}},
+  {"event":"line","line":10,"stack":["<module>","Left"],"locals":{}},
+  {"event":"line","line":11,"stack":["<module>","Left"],"locals":{"__module__":"'__main__'","__qualname__":"'Left'"}},
+  {"event":"line","line":16,"stack":["<module>","Left"],"locals":{"__module__":"'__main__'","__qualname__":"'Left'","__init__":"<function>"}},
+  {"event":"return","line":16,"stack":["<module>","Left"],"locals":{"__module__":"'__main__'","__qualname__":"'Left'","__init__":"<function>","hello":"<function>","__classcell__":"<cell>"},"value":"<cell>"},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"Base":"<type>","Left":"<type>"}},
+  {"event":"call","line":19,"stack":["<module>","Right"],"locals":{}},
+  {"event":"line","line":19,"stack":["<module>","Right"],"locals":{}},
+  {"event":"line","line":20,"stack":["<module>","Right"],"locals":{"__module__":"'__main__'","__qualname__":"'Right'"}},
+  {"event":"line","line":25,"stack":["<module>","Right"],"locals":{"__module__":"'__main__'","__qualname__":"'Right'","__init__":"<function>"}},
+  {"event":"return","line":25,"stack":["<module>","Right"],"locals":{"__module__":"'__main__'","__qualname__":"'Right'","__init__":"<function>","hello":"<function>","__classcell__":"<cell>"},"value":"<cell>"},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"Base":"<type>","Left":"<type>","Right":"<type>"}},
+  {"event":"call","line":28,"stack":["<module>","Child"],"locals":{}},
+  {"event":"line","line":28,"stack":["<module>","Child"],"locals":{}},
+  {"event":"line","line":29,"stack":["<module>","Child"],"locals":{"__module__":"'__main__'","__qualname__":"'Child'"}},
+  {"event":"return","line":29,"stack":["<module>","Child"],"locals":{"__module__":"'__main__'","__qualname__":"'Child'","__init__":"<function>","__classcell__":"<cell>"},"value":"<cell>"},
+  {"event":"line","line":34,"stack":["<module>"],"locals":{"Base":"<type>","Left":"<type>","Right":"<type>","Child":"<type>"}},
+  {"event":"call","line":29,"stack":["<module>","__init__"],"locals":{"self":"<Child>","__class__":"<type>"}},
+  {"event":"line","line":30,"stack":["<module>","__init__"],"locals":{"self":"<Child>","__class__":"<type>"}},
+  {"event":"line","line":31,"stack":["<module>","__init__"],"locals":{"self":"<Child>","__class__":"<type>"}},
+  {"event":"call","line":11,"stack":["<module>","__init__*2"],"locals":{"self":"<Child>","__class__":"<type>"}},
+  {"event":"line","line":12,"stack":["<module>","__init__*2"],"locals":{"self":"<Child>","__class__":"<type>"}},
+  {"event":"line","line":13,"stack":["<module>","__init__*2"],"locals":{"self":"<Child>","__class__":"<type>"}},
+  {"event":"call","line":20,"stack":["<module>","__init__*3"],"locals":{"self":"<Child>","__class__":"<type>"}},
+  {"event":"line","line":21,"stack":["<module>","__init__*3"],"locals":{"self":"<Child>","__class__":"<type>"}},
+  {"event":"line","line":22,"stack":["<module>","__init__*3"],"locals":{"self":"<Child>","__class__":"<type>"}},
+  {"event":"call","line":3,"stack":["<module>","__init__*4"],"locals":{"self":"<Child>"}},
+  {"event":"line","line":4,"stack":["<module>","__init__*4"],"locals":{"self":"<Child>"}},
+  {"event":"line","line":5,"stack":["<module>","__init__*4"],"locals":{"self":"<Child>"}},
+  {"event":"return","line":5,"stack":["<module>","__init__*4"],"locals":{"self":"<Child>"},"value":"None"},
+  {"event":"line","line":23,"stack":["<module>","__init__*3"],"locals":{"self":"<Child>","__class__":"<type>"}},
+  {"event":"return","line":23,"stack":["<module>","__init__*3"],"locals":{"self":"<Child>","__class__":"<type>"},"value":"None"},
+  {"event":"line","line":14,"stack":["<module>","__init__*2"],"locals":{"self":"<Child>","__class__":"<type>"}},
+  {"event":"return","line":14,"stack":["<module>","__init__*2"],"locals":{"self":"<Child>","__class__":"<type>"},"value":"None"},
+  {"event":"line","line":32,"stack":["<module>","__init__"],"locals":{"self":"<Child>","__class__":"<type>"}},
+  {"event":"return","line":32,"stack":["<module>","__init__"],"locals":{"self":"<Child>","__class__":"<type>"},"value":"None"},
+  {"event":"line","line":35,"stack":["<module>"],"locals":{"Base":"<type>","Left":"<type>","Right":"<type>","Child":"<type>","c":"<Child>"}},
+  {"event":"line","line":36,"stack":["<module>"],"locals":{"Base":"<type>","Left":"<type>","Right":"<type>","Child":"<type>","c":"<Child>"}},
+  {"event":"call","line":16,"stack":["<module>","hello"],"locals":{"self":"<Child>","__class__":"<type>"}},
+  {"event":"line","line":17,"stack":["<module>","hello"],"locals":{"self":"<Child>","__class__":"<type>"}},
+  {"event":"call","line":25,"stack":["<module>","hello*2"],"locals":{"self":"<Child>","__class__":"<type>"}},
+  {"event":"line","line":26,"stack":["<module>","hello*2"],"locals":{"self":"<Child>","__class__":"<type>"}},
+  {"event":"call","line":7,"stack":["<module>","hello*3"],"locals":{"self":"<Child>"}},
+  {"event":"line","line":8,"stack":["<module>","hello*3"],"locals":{"self":"<Child>"}},
+  {"event":"return","line":8,"stack":["<module>","hello*3"],"locals":{"self":"<Child>"},"value":"'Base'"},
+  {"event":"return","line":26,"stack":["<module>","hello*2"],"locals":{"self":"<Child>","__class__":"<type>"},"value":"'Right>Base'"},
+  {"event":"return","line":17,"stack":["<module>","hello"],"locals":{"self":"<Child>","__class__":"<type>"},"value":"'Left>Right>Base'"},
+  {"event":"line","line":37,"stack":["<module>"],"locals":{"Base":"<type>","Left":"<type>","Right":"<type>","Child":"<type>","c":"<Child>"}},
+  {"event":"line","line":37,"stack":["<module>"],"locals":{"Base":"<type>","Left":"<type>","Right":"<type>","Child":"<type>","c":"<Child>"}},
+  {"event":"line","line":37,"stack":["<module>"],"locals":{"Base":"<type>","Left":"<type>","Right":"<type>","Child":"<type>","c":"<Child>"}},
+  {"event":"line","line":37,"stack":["<module>"],"locals":{"Base":"<type>","Left":"<type>","Right":"<type>","Child":"<type>","c":"<Child>"}},
+  {"event":"line","line":37,"stack":["<module>"],"locals":{"Base":"<type>","Left":"<type>","Right":"<type>","Child":"<type>","c":"<Child>"}},
+  {"event":"line","line":37,"stack":["<module>"],"locals":{"Base":"<type>","Left":"<type>","Right":"<type>","Child":"<type>","c":"<Child>"}},
+  {"event":"return","line":37,"stack":["<module>"],"locals":{"Base":"<type>","Left":"<type>","Right":"<type>","Child":"<type>","c":"<Child>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 62,
+ "finalGlobals": {
+  "Base": "<type>",
+  "Left": "<type>",
+  "Right": "<type>",
+  "Child": "<type>",
+  "c": "<Child>"
+ },
+ "continuation": [],
+ "sourceSha256": "71a37a1292b1ec46630bdb178532eb43db800f059724bcb11fba8317f934522e"
+}

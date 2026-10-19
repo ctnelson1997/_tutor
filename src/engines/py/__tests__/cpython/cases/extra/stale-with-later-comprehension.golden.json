@@ -1,0 +1,45 @@
+{
+ "stdout": "c\nc ['X']\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "c"
+  },
+  {
+   "stream": "stdout",
+   "text": "c ['X']"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"name":"'a'"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"name":"'a'"}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{"name":"'a'","last":"'a'"}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"name":"'b'","last":"'a'"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"name":"'b'","last":"'a'"}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{"name":"'b'","last":"'b'"}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"name":"'c'","last":"'b'"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"name":"'c'","last":"'b'"}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{"name":"'c'","last":"'c'"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"name":"'c'","last":"'c'"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"name":"'c'","last":"'c'"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"name":"'c'","last":"'c'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"name":"'c'","last":"'c'","upper":"<list>"}},
+  {"event":"return","line":7,"stack":["<module>"],"locals":{"name":"'c'","last":"'c'","upper":"<list>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 16,
+ "finalGlobals": {
+  "name": "'c'",
+  "last": "'c'",
+  "upper": "<list>"
+ },
+ "continuation": [],
+ "sourceSha256": "94861efa09f028244748a18bb66b3eb350a2ed83b4a448409b952f3f58654523"
+}

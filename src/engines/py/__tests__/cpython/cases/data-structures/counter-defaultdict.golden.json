@@ -1,0 +1,130 @@
+{
+ "stdout": "Counter({'red': 3, 'blue': 2, 'green': 1}) [('red', 3)]\nCounter({'red': 2, 'blue': 2, 'green': -1, 'pink': -1})\nCounter({'red': 2, 'blue': 2}) 2\n0 False\nCounter({'y': 5, 'x': 4, 'z': 2}) Counter({'x': 2}) Counter({'x': 1, 'y': 1}) Counter({'y': 4, 'x': 3, 'z': 2})\n['x', 'x', 'x', 'y'] ['x', 'x', 'x', 'x', 'y', 'y', 'y', 'y', 'y', 'z', 'z']\nCounter({'red': 2, 'blue': 2, 'green': -1})\ndefaultdict(<class 'list'>, {1: [2, 3], 2: [3]})\nFalse None 2\n[] 3 defaultdict(<class 'list'>, {1: [2, 3], 2: [3], 3: []})\n{'t': {'tea': 2, 'toe': 1}, 'a': {'ant': 1}}\nKeyError: 'b'\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Counter({'red': 3, 'blue': 2, 'green': 1}) [('red', 3)]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Counter({'red': 2, 'blue': 2, 'green': -1, 'pink': -1})"
+  },
+  {
+   "stream": "stdout",
+   "text": "Counter({'red': 2, 'blue': 2}) 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "0 False"
+  },
+  {
+   "stream": "stdout",
+   "text": "Counter({'y': 5, 'x': 4, 'z': 2}) Counter({'x': 2}) Counter({'x': 1, 'y': 1}) Counter({'y': 4, 'x': 3, 'z': 2})"
+  },
+  {
+   "stream": "stdout",
+   "text": "['x', 'x', 'x', 'y'] ['x', 'x', 'x', 'x', 'y', 'y', 'y', 'y', 'y', 'z', 'z']"
+  },
+  {
+   "stream": "stdout",
+   "text": "Counter({'red': 2, 'blue': 2, 'green': -1})"
+  },
+  {
+   "stream": "stdout",
+   "text": "defaultdict(<class 'list'>, {1: [2, 3], 2: [3]})"
+  },
+  {
+   "stream": "stdout",
+   "text": "False None 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "[] 3 defaultdict(<class 'list'>, {1: [2, 3], 2: [3], 3: []})"
+  },
+  {
+   "stream": "stdout",
+   "text": "{'t': {'tea': 2, 'toe': 1}, 'a': {'ant': 1}}"
+  },
+  {
+   "stream": "stdout",
+   "text": "KeyError: 'b'"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"1","dst":"2"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"1","dst":"2"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"1","dst":"3"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"1","dst":"3"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"2","dst":"3"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"2","dst":"3"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"2","dst":"3"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"2","dst":"3"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"2","dst":"3"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"2","dst":"3","neighbors":"<list>"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"2","dst":"3","neighbors":"<list>"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"2","dst":"3","neighbors":"<list>","counts":"<defaultdict>"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"2","dst":"3","neighbors":"<list>","counts":"<defaultdict>","word":"'tea'"}},
+  {"event":"call","line":24,"stack":["<module>","<lambda>"],"locals":{}},
+  {"event":"line","line":24,"stack":["<module>","<lambda>"],"locals":{}},
+  {"event":"return","line":24,"stack":["<module>","<lambda>"],"locals":{},"value":"<defaultdict>"},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"2","dst":"3","neighbors":"<list>","counts":"<defaultdict>","word":"'tea'"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"2","dst":"3","neighbors":"<list>","counts":"<defaultdict>","word":"'toe'"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"2","dst":"3","neighbors":"<list>","counts":"<defaultdict>","word":"'toe'"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"2","dst":"3","neighbors":"<list>","counts":"<defaultdict>","word":"'ant'"}},
+  {"event":"call","line":24,"stack":["<module>","<lambda>"],"locals":{}},
+  {"event":"line","line":24,"stack":["<module>","<lambda>"],"locals":{}},
+  {"event":"return","line":24,"stack":["<module>","<lambda>"],"locals":{},"value":"<defaultdict>"},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"2","dst":"3","neighbors":"<list>","counts":"<defaultdict>","word":"'ant'"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"2","dst":"3","neighbors":"<list>","counts":"<defaultdict>","word":"'tea'"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"2","dst":"3","neighbors":"<list>","counts":"<defaultdict>","word":"'tea'"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"2","dst":"3","neighbors":"<list>","counts":"<defaultdict>","word":"'tea'"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"2","dst":"3","neighbors":"<list>","counts":"<defaultdict>","word":"'tea'"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"2","dst":"3","neighbors":"<list>","counts":"<defaultdict>","word":"'tea'"}},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"2","dst":"3","neighbors":"<list>","counts":"<defaultdict>","word":"'tea'"}},
+  {"event":"line","line":29,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"2","dst":"3","neighbors":"<list>","counts":"<defaultdict>","word":"'tea'","plain":"<defaultdict>"}},
+  {"event":"line","line":30,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"2","dst":"3","neighbors":"<list>","counts":"<defaultdict>","word":"'tea'","plain":"<defaultdict>"}},
+  {"event":"exception","line":30,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"2","dst":"3","neighbors":"<list>","counts":"<defaultdict>","word":"'tea'","plain":"<defaultdict>"},"exc":"KeyError"},
+  {"event":"line","line":31,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"2","dst":"3","neighbors":"<list>","counts":"<defaultdict>","word":"'tea'","plain":"<defaultdict>"}},
+  {"event":"line","line":32,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"2","dst":"3","neighbors":"<list>","counts":"<defaultdict>","word":"'tea'","plain":"<defaultdict>","e":"<KeyError>"}},
+  {"event":"return","line":32,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","votes":"<Counter>","a":"<Counter>","b":"<Counter>","graph":"<defaultdict>","src":"2","dst":"3","neighbors":"<list>","counts":"<defaultdict>","word":"'tea'","plain":"<defaultdict>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 51,
+ "finalGlobals": {
+  "Counter": "<type>",
+  "defaultdict": "<type>",
+  "votes": "<Counter>",
+  "a": "<Counter>",
+  "b": "<Counter>",
+  "graph": "<defaultdict>",
+  "src": "2",
+  "dst": "3",
+  "neighbors": "<list>",
+  "counts": "<defaultdict>",
+  "word": "'tea'",
+  "plain": "<defaultdict>"
+ },
+ "continuation": [],
+ "sourceSha256": "bbd43b3cb5706e52ec733910c0875def47ebc9275a6f458a4743045347116c69"
+}

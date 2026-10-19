@@ -1,0 +1,79 @@
+{
+ "stdout": "{'title': 'Dune', 'pages': 412}\n{'title': 'Dune', 'pages': 412}\nTrue\n5 {'title': 'Dune', 'pages': 412, 'rating': 5}\nDune {'title': 'changed copy', 'pages': 420, 'rating': 5}\nFalse True\n['genre']\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "{'title': 'Dune', 'pages': 412}"
+  },
+  {
+   "stream": "stdout",
+   "text": "{'title': 'Dune', 'pages': 412}"
+  },
+  {
+   "stream": "stdout",
+   "text": "True"
+  },
+  {
+   "stream": "stdout",
+   "text": "5 {'title': 'Dune', 'pages': 412, 'rating': 5}"
+  },
+  {
+   "stream": "stdout",
+   "text": "Dune {'title': 'changed copy', 'pages': 420, 'rating': 5}"
+  },
+  {
+   "stream": "stdout",
+   "text": "False True"
+  },
+  {
+   "stream": "stdout",
+   "text": "['genre']"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"call","line":2,"stack":["<module>","Book"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>","Book"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>","Book"],"locals":{"__module__":"'__main__'","__qualname__":"'Book'"}},
+  {"event":"line","line":5,"stack":["<module>","Book"],"locals":{"__module__":"'__main__'","__qualname__":"'Book'","genre":"'fiction'"}},
+  {"event":"return","line":5,"stack":["<module>","Book"],"locals":{"__module__":"'__main__'","__qualname__":"'Book'","genre":"'fiction'","__init__":"<function>"},"value":"None"},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"Book":"<type>"}},
+  {"event":"call","line":5,"stack":["<module>","__init__"],"locals":{"self":"<Book>","title":"'Dune'","pages":"412"}},
+  {"event":"line","line":6,"stack":["<module>","__init__"],"locals":{"self":"<Book>","title":"'Dune'","pages":"412"}},
+  {"event":"line","line":7,"stack":["<module>","__init__"],"locals":{"self":"<Book>","title":"'Dune'","pages":"412"}},
+  {"event":"return","line":7,"stack":["<module>","__init__"],"locals":{"self":"<Book>","title":"'Dune'","pages":"412"},"value":"None"},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"Book":"<type>","b":"<Book>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"Book":"<type>","b":"<Book>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"Book":"<type>","b":"<Book>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"Book":"<type>","b":"<Book>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"Book":"<type>","b":"<Book>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"Book":"<type>","b":"<Book>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"Book":"<type>","b":"<Book>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"Book":"<type>","b":"<Book>","info":"<dict>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"Book":"<type>","b":"<Book>","info":"<dict>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"Book":"<type>","b":"<Book>","info":"<dict>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Book":"<type>","b":"<Book>","info":"<dict>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Book":"<type>","b":"<Book>","info":"<dict>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Book":"<type>","b":"<Book>","info":"<dict>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Book":"<type>","b":"<Book>","info":"<dict>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Book":"<type>","b":"<Book>","info":"<dict>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Book":"<type>","b":"<Book>","info":"<dict>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Book":"<type>","b":"<Book>","info":"<dict>"}},
+  {"event":"return","line":20,"stack":["<module>"],"locals":{"Book":"<type>","b":"<Book>","info":"<dict>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 30,
+ "finalGlobals": {
+  "Book": "<type>",
+  "b": "<Book>",
+  "info": "<dict>"
+ },
+ "continuation": [],
+ "sourceSha256": "cd5e34f967588ae1a5d83d133a9d86aa3fa89ffe4896a259d460b4e2e86f5b74"
+}

@@ -36,6 +36,11 @@ describe('pyEngine', () => {
     expect(ext).toBeDefined();
   });
 
+  it('reads stdin with input(), so the editor shows the stdin panel (#32)', () => {
+    expect(pyEngine.stdin?.reader).toBe('input()');
+    expect(pyEngine.stdin?.placeholder).toMatch(/input\(\)/);
+  });
+
   it('execute is a function', () => {
     expect(typeof pyEngine.execute).toBe('function');
   });
@@ -59,6 +64,9 @@ describe('pyEngine.heapTypeConfig', () => {
     set: { label: 'Set', variant: 'warning' },
     function: { label: 'Function', variant: 'dark' },
     object: { label: 'Object', variant: 'warning' },
+    class: { label: 'Class', variant: 'primary' },
+    module: { label: 'Module', variant: 'secondary' },
+    complex: { label: 'complex', variant: 'primary' },
   };
 
   for (const [type, expected] of Object.entries(expectedTypes)) {
@@ -69,6 +77,11 @@ describe('pyEngine.heapTypeConfig', () => {
       expect(config.variant).toBe(expected.variant);
     });
   }
+
+  it('draws a class without attributes as such, and a module with no body (#38)', () => {
+    expect(pyEngine.heapTypeConfig!.class.empty).toBe('no attributes');
+    expect(pyEngine.heapTypeConfig!.module.empty).toBeNull();
+  });
 
   it('every config entry has label and variant strings', () => {
     for (const [key, config] of Object.entries(pyEngine.heapTypeConfig!)) {

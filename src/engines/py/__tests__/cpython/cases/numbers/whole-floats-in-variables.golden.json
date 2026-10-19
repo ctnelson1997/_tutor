@@ -1,0 +1,81 @@
+{
+ "stdout": "5.0 5.0 3.0 1024.0 1000.0 3.0 1.0 1000000000000000.0\nTrue True 5 float\n[1, 1.0, 2, 2.0]\n{1: 'float overwrote'}\n{1.0: 'int second'}\n(0.0, -2.0) 3 3.0 2.0\n5 5.0 4.0 2.0 1.0\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "5.0 5.0 3.0 1024.0 1000.0 3.0 1.0 1000000000000000.0"
+  },
+  {
+   "stream": "stdout",
+   "text": "True True 5 float"
+  },
+  {
+   "stream": "stdout",
+   "text": "[1, 1.0, 2, 2.0]"
+  },
+  {
+   "stream": "stdout",
+   "text": "{1: 'float overwrote'}"
+  },
+  {
+   "stream": "stdout",
+   "text": "{1.0: 'int second'}"
+  },
+  {
+   "stream": "stdout",
+   "text": "(0.0, -2.0) 3 3.0 2.0"
+  },
+  {
+   "stream": "stdout",
+   "text": "5 5.0 4.0 2.0 1.0"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"x":"5.0"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"x":"5.0","y":"5.0"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"x":"5.0","y":"5.0","z":"3.0"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"x":"5.0","y":"5.0","z":"3.0","w":"1024.0"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"x":"5.0","y":"5.0","z":"3.0","w":"1024.0","t":"1000.0"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"x":"5.0","y":"5.0","z":"3.0","w":"1024.0","t":"1000.0","u":"3.0"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"x":"5.0","y":"5.0","z":"3.0","w":"1024.0","t":"1000.0","u":"3.0","v":"1.0"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"x":"5.0","y":"5.0","z":"3.0","w":"1024.0","t":"1000.0","u":"3.0","v":"1.0","big":"1000000000000000.0"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"x":"5.0","y":"5.0","z":"3.0","w":"1024.0","t":"1000.0","u":"3.0","v":"1.0","big":"1000000000000000.0"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"x":"5.0","y":"5.0","z":"3.0","w":"1024.0","t":"1000.0","u":"3.0","v":"1.0","big":"1000000000000000.0"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"x":"5.0","y":"5.0","z":"3.0","w":"1024.0","t":"1000.0","u":"3.0","v":"1.0","big":"1000000000000000.0","mixed":"<list>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"x":"5.0","y":"5.0","z":"3.0","w":"1024.0","t":"1000.0","u":"3.0","v":"1.0","big":"1000000000000000.0","mixed":"<list>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"x":"5.0","y":"5.0","z":"3.0","w":"1024.0","t":"1000.0","u":"3.0","v":"1.0","big":"1000000000000000.0","mixed":"<list>","d":"<dict>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"x":"5.0","y":"5.0","z":"3.0","w":"1024.0","t":"1000.0","u":"3.0","v":"1.0","big":"1000000000000000.0","mixed":"<list>","d":"<dict>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"x":"5.0","y":"5.0","z":"3.0","w":"1024.0","t":"1000.0","u":"3.0","v":"1.0","big":"1000000000000000.0","mixed":"<list>","d":"<dict>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"x":"5.0","y":"5.0","z":"3.0","w":"1024.0","t":"1000.0","u":"3.0","v":"1.0","big":"1000000000000000.0","mixed":"<list>","d":"<dict>","e":"<dict>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"x":"5.0","y":"5.0","z":"3.0","w":"1024.0","t":"1000.0","u":"3.0","v":"1.0","big":"1000000000000000.0","mixed":"<list>","d":"<dict>","e":"<dict>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"x":"5.0","y":"5.0","z":"3.0","w":"1024.0","t":"1000.0","u":"3.0","v":"1.0","big":"1000000000000000.0","mixed":"<list>","d":"<dict>","e":"<dict>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"x":"5.0","y":"5.0","z":"3.0","w":"1024.0","t":"1000.0","u":"3.0","v":"1.0","big":"1000000000000000.0","mixed":"<list>","d":"<dict>","e":"<dict>","point":"<tuple>"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"x":"5.0","y":"5.0","z":"3.0","w":"1024.0","t":"1000.0","u":"3.0","v":"1.0","big":"1000000000000000.0","mixed":"<list>","d":"<dict>","e":"<dict>","point":"<tuple>"}},
+  {"event":"return","line":22,"stack":["<module>"],"locals":{"x":"5.0","y":"5.0","z":"3.0","w":"1024.0","t":"1000.0","u":"3.0","v":"1.0","big":"1000000000000000.0","mixed":"<list>","d":"<dict>","e":"<dict>","point":"<tuple>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 23,
+ "finalGlobals": {
+  "x": "5.0",
+  "y": "5.0",
+  "z": "3.0",
+  "w": "1024.0",
+  "t": "1000.0",
+  "u": "3.0",
+  "v": "1.0",
+  "big": "1000000000000000.0",
+  "mixed": "<list>",
+  "d": "<dict>",
+  "e": "<dict>",
+  "point": "<tuple>"
+ },
+ "continuation": [],
+ "sourceSha256": "f92acc0ccfa1ba6bcf4632a24d3800c7e1948cdffbc3f799c6c98d3da80623d3"
+}

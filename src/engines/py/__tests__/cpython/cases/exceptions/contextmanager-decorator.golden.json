@@ -1,0 +1,140 @@
+{
+ "stdout": "[intro]\n  heading is INTRO\n[/intro]\n[lookup]\n  looking up\n  handled KeyError inside the manager: 'missing'\n[/lookup]\ncontinued after lookup\n[broken]\n[/broken]\noutside got: boom\n  dividing\n['open intro', 'close intro', 'open lookup', 'close lookup', 'open broken', 'close broken']\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[intro]"
+  },
+  {
+   "stream": "stdout",
+   "text": "  heading is INTRO"
+  },
+  {
+   "stream": "stdout",
+   "text": "[/intro]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[lookup]"
+  },
+  {
+   "stream": "stdout",
+   "text": "  looking up"
+  },
+  {
+   "stream": "stdout",
+   "text": "  handled KeyError inside the manager: 'missing'"
+  },
+  {
+   "stream": "stdout",
+   "text": "[/lookup]"
+  },
+  {
+   "stream": "stdout",
+   "text": "continued after lookup"
+  },
+  {
+   "stream": "stdout",
+   "text": "[broken]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[/broken]"
+  },
+  {
+   "stream": "stdout",
+   "text": "outside got: boom"
+  },
+  {
+   "stream": "stdout",
+   "text": "  dividing"
+  },
+  {
+   "stream": "stdout",
+   "text": "['open intro', 'close intro', 'open lookup', 'close lookup', 'open broken', 'close broken']"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>","section":"<function>"}},
+  {"event":"call","line":6,"stack":["<module>","section"],"locals":{"title":"'intro'"}},
+  {"event":"line","line":8,"stack":["<module>","section"],"locals":{"title":"'intro'"}},
+  {"event":"line","line":9,"stack":["<module>","section"],"locals":{"title":"'intro'"}},
+  {"event":"line","line":10,"stack":["<module>","section"],"locals":{"title":"'intro'"}},
+  {"event":"line","line":11,"stack":["<module>","section"],"locals":{"title":"'intro'"}},
+  {"event":"return","line":11,"stack":["<module>","section"],"locals":{"title":"'intro'"},"value":"'INTRO'"},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>","section":"<function>","heading":"'INTRO'"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>","section":"<function>","heading":"'INTRO'"}},
+  {"event":"call","line":11,"stack":["<module>","section"],"locals":{"title":"'intro'"}},
+  {"event":"line","line":15,"stack":["<module>","section"],"locals":{"title":"'intro'"}},
+  {"event":"line","line":16,"stack":["<module>","section"],"locals":{"title":"'intro'"}},
+  {"event":"return","line":16,"stack":["<module>","section"],"locals":{"title":"'intro'"},"value":"None"},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>","section":"<function>","heading":"'INTRO'"}},
+  {"event":"call","line":6,"stack":["<module>","section"],"locals":{"title":"'lookup'"}},
+  {"event":"line","line":8,"stack":["<module>","section"],"locals":{"title":"'lookup'"}},
+  {"event":"line","line":9,"stack":["<module>","section"],"locals":{"title":"'lookup'"}},
+  {"event":"line","line":10,"stack":["<module>","section"],"locals":{"title":"'lookup'"}},
+  {"event":"line","line":11,"stack":["<module>","section"],"locals":{"title":"'lookup'"}},
+  {"event":"return","line":11,"stack":["<module>","section"],"locals":{"title":"'lookup'"},"value":"'LOOKUP'"},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>","section":"<function>","heading":"'INTRO'"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>","section":"<function>","heading":"'INTRO'"}},
+  {"event":"exception","line":23,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>","section":"<function>","heading":"'INTRO'"},"exc":"KeyError"},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>","section":"<function>","heading":"'INTRO'"}},
+  {"event":"call","line":11,"stack":["<module>","section"],"locals":{"title":"'lookup'"}},
+  {"event":"exception","line":11,"stack":["<module>","section"],"locals":{"title":"'lookup'"},"exc":"KeyError"},
+  {"event":"line","line":12,"stack":["<module>","section"],"locals":{"title":"'lookup'"}},
+  {"event":"line","line":13,"stack":["<module>","section"],"locals":{"title":"'lookup'","e":"<KeyError>"}},
+  {"event":"line","line":15,"stack":["<module>","section"],"locals":{"title":"'lookup'"}},
+  {"event":"line","line":16,"stack":["<module>","section"],"locals":{"title":"'lookup'"}},
+  {"event":"return","line":16,"stack":["<module>","section"],"locals":{"title":"'lookup'"},"value":"None"},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>","section":"<function>","heading":"'INTRO'"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>","section":"<function>","heading":"'INTRO'"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>","section":"<function>","heading":"'INTRO'"}},
+  {"event":"call","line":6,"stack":["<module>","section"],"locals":{"title":"'broken'"}},
+  {"event":"line","line":8,"stack":["<module>","section"],"locals":{"title":"'broken'"}},
+  {"event":"line","line":9,"stack":["<module>","section"],"locals":{"title":"'broken'"}},
+  {"event":"line","line":10,"stack":["<module>","section"],"locals":{"title":"'broken'"}},
+  {"event":"line","line":11,"stack":["<module>","section"],"locals":{"title":"'broken'"}},
+  {"event":"return","line":11,"stack":["<module>","section"],"locals":{"title":"'broken'"},"value":"'BROKEN'"},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>","section":"<function>","heading":"'INTRO'"}},
+  {"event":"exception","line":28,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>","section":"<function>","heading":"'INTRO'"},"exc":"ValueError"},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>","section":"<function>","heading":"'INTRO'"}},
+  {"event":"call","line":11,"stack":["<module>","section"],"locals":{"title":"'broken'"}},
+  {"event":"exception","line":11,"stack":["<module>","section"],"locals":{"title":"'broken'"},"exc":"ValueError"},
+  {"event":"line","line":12,"stack":["<module>","section"],"locals":{"title":"'broken'"}},
+  {"event":"line","line":15,"stack":["<module>","section"],"locals":{"title":"'broken'"}},
+  {"event":"line","line":16,"stack":["<module>","section"],"locals":{"title":"'broken'"}},
+  {"event":"return","line":16,"stack":["<module>","section"],"locals":{"title":"'broken'"},"value":"None","unwinding":true},
+  {"event":"line","line":29,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>","section":"<function>","heading":"'INTRO'"}},
+  {"event":"line","line":30,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>","section":"<function>","heading":"'INTRO'","e":"<ValueError>"}},
+  {"event":"line","line":32,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>","section":"<function>","heading":"'INTRO'"}},
+  {"event":"line","line":33,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>","section":"<function>","heading":"'INTRO'"}},
+  {"event":"line","line":34,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>","section":"<function>","heading":"'INTRO'"}},
+  {"event":"exception","line":34,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>","section":"<function>","heading":"'INTRO'"},"exc":"ZeroDivisionError"},
+  {"event":"line","line":32,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>","section":"<function>","heading":"'INTRO'"}},
+  {"event":"line","line":35,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>","section":"<function>","heading":"'INTRO'"}},
+  {"event":"return","line":35,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>","section":"<function>","heading":"'INTRO'"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 60,
+ "finalGlobals": {
+  "contextmanager": "<function>",
+  "suppress": "<ABCMeta>",
+  "events": "<list>",
+  "section": "<function>",
+  "heading": "'INTRO'"
+ },
+ "continuation": [],
+ "sourceSha256": "6d616df09e119a72bfaa59e4773b88f8a3b711e31095e947dab6a64923b7a602"
+}

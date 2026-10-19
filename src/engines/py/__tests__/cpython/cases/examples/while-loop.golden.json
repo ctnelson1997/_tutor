@@ -1,0 +1,44 @@
+{
+ "stdout": "0\n1\n2\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "0"
+  },
+  {
+   "stream": "stdout",
+   "text": "1"
+  },
+  {
+   "stream": "stdout",
+   "text": "2"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":1,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{"count":"0"}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"count":"0"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"count":"0"}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{"count":"1"}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"count":"1"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"count":"1"}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{"count":"2"}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"count":"2"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"count":"2"}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{"count":"3"}},
+  {"event":"return","line":2,"stack":["<module>"],"locals":{"count":"3"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 13,
+ "finalGlobals": {
+  "count": "3"
+ },
+ "continuation": [],
+ "sourceSha256": "d085a43f19ae8ecf136e1a71b2e0a9d5622f877d1fc9d8d309dfd2e6d939a1ce"
+}

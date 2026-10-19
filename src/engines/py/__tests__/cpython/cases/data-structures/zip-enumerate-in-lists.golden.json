@@ -1,0 +1,118 @@
+{
+ "stdout": "[('ann', 88), ('bo', 92), ('cy', 75)]\n[(1, 'ann'), (2, 'bo'), (3, 'cy')]\n('ann', 88) [('bo', 92), ('cy', 75)] []\n('ann', 'bo', 'cy') (88, 92, 75)\n[('ann', 88, 'x'), ('bo', 92, 'y'), ('cy', 75, 'z')]\n{0: 'a', 1: 'b', 2: 'c'}\n0 ann 88\n1 bo 92\n2 cy 75\nValueError: zip() argument 2 is longer than argument 1\n(0, 'p') [(1, 'q')]\n[(1, 4), (2, 5), (3, 6)] []\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[('ann', 88), ('bo', 92), ('cy', 75)]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[(1, 'ann'), (2, 'bo'), (3, 'cy')]"
+  },
+  {
+   "stream": "stdout",
+   "text": "('ann', 88) [('bo', 92), ('cy', 75)] []"
+  },
+  {
+   "stream": "stdout",
+   "text": "('ann', 'bo', 'cy') (88, 92, 75)"
+  },
+  {
+   "stream": "stdout",
+   "text": "[('ann', 88, 'x'), ('bo', 92, 'y'), ('cy', 75, 'z')]"
+  },
+  {
+   "stream": "stdout",
+   "text": "{0: 'a', 1: 'b', 2: 'c'}"
+  },
+  {
+   "stream": "stdout",
+   "text": "0 ann 88"
+  },
+  {
+   "stream": "stdout",
+   "text": "1 bo 92"
+  },
+  {
+   "stream": "stdout",
+   "text": "2 cy 75"
+  },
+  {
+   "stream": "stdout",
+   "text": "ValueError: zip() argument 2 is longer than argument 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "(0, 'p') [(1, 'q')]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[(1, 4), (2, 5), (3, 6)] []"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"names":"<list>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>","indexed":"<list>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>","indexed":"<list>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>","indexed":"<list>","lazy":"<zip>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>","indexed":"<list>","lazy":"<zip>","first":"<tuple>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>","indexed":"<list>","lazy":"<zip>","first":"<tuple>","rest":"<list>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>","indexed":"<list>","lazy":"<zip>","first":"<tuple>","rest":"<list>","again":"<list>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>","indexed":"<list>","lazy":"<zip>","first":"<tuple>","rest":"<list>","again":"<list>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>","indexed":"<list>","lazy":"<zip>","first":"<tuple>","rest":"<list>","again":"<list>","who":"<tuple>","marks":"<tuple>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>","indexed":"<list>","lazy":"<zip>","first":"<tuple>","rest":"<list>","again":"<list>","who":"<tuple>","marks":"<tuple>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>","indexed":"<list>","lazy":"<zip>","first":"<tuple>","rest":"<list>","again":"<list>","who":"<tuple>","marks":"<tuple>","triples":"<list>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>","indexed":"<list>","lazy":"<zip>","first":"<tuple>","rest":"<list>","again":"<list>","who":"<tuple>","marks":"<tuple>","triples":"<list>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>","indexed":"<list>","lazy":"<zip>","first":"<tuple>","rest":"<list>","again":"<list>","who":"<tuple>","marks":"<tuple>","triples":"<list>","table":"<dict>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>","indexed":"<list>","lazy":"<zip>","first":"<tuple>","rest":"<list>","again":"<list>","who":"<tuple>","marks":"<tuple>","triples":"<list>","table":"<dict>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>","indexed":"<list>","lazy":"<zip>","first":"<tuple>","rest":"<list>","again":"<list>","who":"<tuple>","marks":"<tuple>","triples":"<list>","table":"<dict>","i":"0","name":"'ann'","score":"88"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>","indexed":"<list>","lazy":"<zip>","first":"<tuple>","rest":"<list>","again":"<list>","who":"<tuple>","marks":"<tuple>","triples":"<list>","table":"<dict>","i":"0","name":"'ann'","score":"88"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>","indexed":"<list>","lazy":"<zip>","first":"<tuple>","rest":"<list>","again":"<list>","who":"<tuple>","marks":"<tuple>","triples":"<list>","table":"<dict>","i":"1","name":"'bo'","score":"92"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>","indexed":"<list>","lazy":"<zip>","first":"<tuple>","rest":"<list>","again":"<list>","who":"<tuple>","marks":"<tuple>","triples":"<list>","table":"<dict>","i":"1","name":"'bo'","score":"92"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>","indexed":"<list>","lazy":"<zip>","first":"<tuple>","rest":"<list>","again":"<list>","who":"<tuple>","marks":"<tuple>","triples":"<list>","table":"<dict>","i":"2","name":"'cy'","score":"75"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>","indexed":"<list>","lazy":"<zip>","first":"<tuple>","rest":"<list>","again":"<list>","who":"<tuple>","marks":"<tuple>","triples":"<list>","table":"<dict>","i":"2","name":"'cy'","score":"75"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>","indexed":"<list>","lazy":"<zip>","first":"<tuple>","rest":"<list>","again":"<list>","who":"<tuple>","marks":"<tuple>","triples":"<list>","table":"<dict>","i":"2","name":"'cy'","score":"75"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>","indexed":"<list>","lazy":"<zip>","first":"<tuple>","rest":"<list>","again":"<list>","who":"<tuple>","marks":"<tuple>","triples":"<list>","table":"<dict>","i":"2","name":"'cy'","score":"75"}},
+  {"event":"exception","line":22,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>","indexed":"<list>","lazy":"<zip>","first":"<tuple>","rest":"<list>","again":"<list>","who":"<tuple>","marks":"<tuple>","triples":"<list>","table":"<dict>","i":"2","name":"'cy'","score":"75"},"exc":"ValueError"},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>","indexed":"<list>","lazy":"<zip>","first":"<tuple>","rest":"<list>","again":"<list>","who":"<tuple>","marks":"<tuple>","triples":"<list>","table":"<dict>","i":"2","name":"'cy'","score":"75"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>","indexed":"<list>","lazy":"<zip>","first":"<tuple>","rest":"<list>","again":"<list>","who":"<tuple>","marks":"<tuple>","triples":"<list>","table":"<dict>","i":"2","name":"'cy'","score":"75","e":"<ValueError>"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>","indexed":"<list>","lazy":"<zip>","first":"<tuple>","rest":"<list>","again":"<list>","who":"<tuple>","marks":"<tuple>","triples":"<list>","table":"<dict>","i":"2","name":"'cy'","score":"75"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>","indexed":"<list>","lazy":"<zip>","first":"<tuple>","rest":"<list>","again":"<list>","who":"<tuple>","marks":"<tuple>","triples":"<list>","table":"<dict>","i":"2","name":"'cy'","score":"75","counter":"<enumerate>"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>","indexed":"<list>","lazy":"<zip>","first":"<tuple>","rest":"<list>","again":"<list>","who":"<tuple>","marks":"<tuple>","triples":"<list>","table":"<dict>","i":"2","name":"'cy'","score":"75","counter":"<enumerate>"}},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>","indexed":"<list>","lazy":"<zip>","first":"<tuple>","rest":"<list>","again":"<list>","who":"<tuple>","marks":"<tuple>","triples":"<list>","table":"<dict>","i":"2","name":"'cy'","score":"75","counter":"<enumerate>","columns":"<list>"}},
+  {"event":"return","line":28,"stack":["<module>"],"locals":{"names":"<list>","scores":"<list>","pairs":"<list>","indexed":"<list>","lazy":"<zip>","first":"<tuple>","rest":"<list>","again":"<list>","who":"<tuple>","marks":"<tuple>","triples":"<list>","table":"<dict>","i":"2","name":"'cy'","score":"75","counter":"<enumerate>","columns":"<list>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 34,
+ "finalGlobals": {
+  "names": "<list>",
+  "scores": "<list>",
+  "pairs": "<list>",
+  "indexed": "<list>",
+  "lazy": "<zip>",
+  "first": "<tuple>",
+  "rest": "<list>",
+  "again": "<list>",
+  "who": "<tuple>",
+  "marks": "<tuple>",
+  "triples": "<list>",
+  "table": "<dict>",
+  "i": "2",
+  "name": "'cy'",
+  "score": "75",
+  "counter": "<enumerate>",
+  "columns": "<list>"
+ },
+ "continuation": [],
+ "sourceSha256": "7e43fc8c82f547f6107da1ab8d56a597abcffd2e29541a2b3485e62cfd57d90f"
+}

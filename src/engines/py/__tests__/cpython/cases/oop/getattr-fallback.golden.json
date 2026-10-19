@@ -1,0 +1,116 @@
+{
+ "stdout": "made config\n  __getattr__('debug')\nTrue\n  __getattr__('level')\n3\n2\n  __getattr__('color')\nFalse\n  __getattr__('color')\ndefault\nblue\n4\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "made config"
+  },
+  {
+   "stream": "stdout",
+   "text": "  __getattr__('debug')"
+  },
+  {
+   "stream": "stdout",
+   "text": "True"
+  },
+  {
+   "stream": "stdout",
+   "text": "  __getattr__('level')"
+  },
+  {
+   "stream": "stdout",
+   "text": "3"
+  },
+  {
+   "stream": "stdout",
+   "text": "2"
+  },
+  {
+   "stream": "stdout",
+   "text": "  __getattr__('color')"
+  },
+  {
+   "stream": "stdout",
+   "text": "False"
+  },
+  {
+   "stream": "stdout",
+   "text": "  __getattr__('color')"
+  },
+  {
+   "stream": "stdout",
+   "text": "default"
+  },
+  {
+   "stream": "stdout",
+   "text": "blue"
+  },
+  {
+   "stream": "stdout",
+   "text": "4"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"call","line":2,"stack":["<module>","Config"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>","Config"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>","Config"],"locals":{"__module__":"'__main__'","__qualname__":"'Config'"}},
+  {"event":"line","line":7,"stack":["<module>","Config"],"locals":{"__module__":"'__main__'","__qualname__":"'Config'","__init__":"<function>"}},
+  {"event":"return","line":7,"stack":["<module>","Config"],"locals":{"__module__":"'__main__'","__qualname__":"'Config'","__init__":"<function>","__getattr__":"<function>"},"value":"None"},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"Config":"<type>"}},
+  {"event":"call","line":3,"stack":["<module>","__init__"],"locals":{"self":"<Config>","values":"<dict>"}},
+  {"event":"line","line":4,"stack":["<module>","__init__"],"locals":{"self":"<Config>","values":"<dict>"}},
+  {"event":"line","line":5,"stack":["<module>","__init__"],"locals":{"self":"<Config>","values":"<dict>"}},
+  {"event":"return","line":5,"stack":["<module>","__init__"],"locals":{"self":"<Config>","values":"<dict>"},"value":"None"},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"Config":"<type>","cfg":"<Config>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"Config":"<type>","cfg":"<Config>"}},
+  {"event":"call","line":7,"stack":["<module>","__getattr__"],"locals":{"self":"<Config>","name":"'debug'"}},
+  {"event":"line","line":8,"stack":["<module>","__getattr__"],"locals":{"self":"<Config>","name":"'debug'"}},
+  {"event":"line","line":9,"stack":["<module>","__getattr__"],"locals":{"self":"<Config>","name":"'debug'"}},
+  {"event":"line","line":10,"stack":["<module>","__getattr__"],"locals":{"self":"<Config>","name":"'debug'"}},
+  {"event":"line","line":11,"stack":["<module>","__getattr__"],"locals":{"self":"<Config>","name":"'debug'"}},
+  {"event":"return","line":11,"stack":["<module>","__getattr__"],"locals":{"self":"<Config>","name":"'debug'"},"value":"True"},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"Config":"<type>","cfg":"<Config>"}},
+  {"event":"call","line":7,"stack":["<module>","__getattr__"],"locals":{"self":"<Config>","name":"'level'"}},
+  {"event":"line","line":8,"stack":["<module>","__getattr__"],"locals":{"self":"<Config>","name":"'level'"}},
+  {"event":"line","line":9,"stack":["<module>","__getattr__"],"locals":{"self":"<Config>","name":"'level'"}},
+  {"event":"line","line":10,"stack":["<module>","__getattr__"],"locals":{"self":"<Config>","name":"'level'"}},
+  {"event":"line","line":11,"stack":["<module>","__getattr__"],"locals":{"self":"<Config>","name":"'level'"}},
+  {"event":"return","line":11,"stack":["<module>","__getattr__"],"locals":{"self":"<Config>","name":"'level'"},"value":"3"},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"Config":"<type>","cfg":"<Config>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"Config":"<type>","cfg":"<Config>"}},
+  {"event":"call","line":7,"stack":["<module>","__getattr__"],"locals":{"self":"<Config>","name":"'color'"}},
+  {"event":"line","line":8,"stack":["<module>","__getattr__"],"locals":{"self":"<Config>","name":"'color'"}},
+  {"event":"line","line":9,"stack":["<module>","__getattr__"],"locals":{"self":"<Config>","name":"'color'"}},
+  {"event":"line","line":10,"stack":["<module>","__getattr__"],"locals":{"self":"<Config>","name":"'color'"}},
+  {"event":"line","line":12,"stack":["<module>","__getattr__"],"locals":{"self":"<Config>","name":"'color'"}},
+  {"event":"exception","line":12,"stack":["<module>","__getattr__"],"locals":{"self":"<Config>","name":"'color'"},"exc":"AttributeError"},
+  {"event":"return","line":12,"stack":["<module>","__getattr__"],"locals":{"self":"<Config>","name":"'color'"},"value":"None","unwinding":true},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Config":"<type>","cfg":"<Config>"}},
+  {"event":"call","line":7,"stack":["<module>","__getattr__"],"locals":{"self":"<Config>","name":"'color'"}},
+  {"event":"line","line":8,"stack":["<module>","__getattr__"],"locals":{"self":"<Config>","name":"'color'"}},
+  {"event":"line","line":9,"stack":["<module>","__getattr__"],"locals":{"self":"<Config>","name":"'color'"}},
+  {"event":"line","line":10,"stack":["<module>","__getattr__"],"locals":{"self":"<Config>","name":"'color'"}},
+  {"event":"line","line":12,"stack":["<module>","__getattr__"],"locals":{"self":"<Config>","name":"'color'"}},
+  {"event":"exception","line":12,"stack":["<module>","__getattr__"],"locals":{"self":"<Config>","name":"'color'"},"exc":"AttributeError"},
+  {"event":"return","line":12,"stack":["<module>","__getattr__"],"locals":{"self":"<Config>","name":"'color'"},"value":"None","unwinding":true},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"Config":"<type>","cfg":"<Config>"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"Config":"<type>","cfg":"<Config>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"Config":"<type>","cfg":"<Config>"}},
+  {"event":"return","line":23,"stack":["<module>"],"locals":{"Config":"<type>","cfg":"<Config>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 46,
+ "finalGlobals": {
+  "Config": "<type>",
+  "cfg": "<Config>"
+ },
+ "continuation": [],
+ "sourceSha256": "3856e9218ffa422762c2ac44fe502bf715c8aa20aa97994af1df0de93427baee"
+}

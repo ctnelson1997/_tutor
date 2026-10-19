@@ -1,0 +1,143 @@
+{
+ "stdout": "{'name': 'ann', 'age': 30, 'admin': False}\n{'name': 'bo', 'age': 25, 'admin': True}\nTypeError: make_user() takes 2 positional arguments but 3 were given\nTypeError: make_user() got some positional-only arguments passed as keyword arguments: 'name'\nTypeError: make_user() missing 1 required positional argument: 'age'\nTypeError: make_user() got an unexpected keyword argument 'root'\n(1, 2, 3) (1, 5, 9) (1, 2, 0)\n10 [20, 30, 40] 50\n{'y': 5, 'z': -1, 'x': 0} [1, 2, 3, 'a', 'b']\n1-2-3\n3 None\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "{'name': 'ann', 'age': 30, 'admin': False}"
+  },
+  {
+   "stream": "stdout",
+   "text": "{'name': 'bo', 'age': 25, 'admin': True}"
+  },
+  {
+   "stream": "stdout",
+   "text": "TypeError: make_user() takes 2 positional arguments but 3 were given"
+  },
+  {
+   "stream": "stdout",
+   "text": "TypeError: make_user() got some positional-only arguments passed as keyword arguments: 'name'"
+  },
+  {
+   "stream": "stdout",
+   "text": "TypeError: make_user() missing 1 required positional argument: 'age'"
+  },
+  {
+   "stream": "stdout",
+   "text": "TypeError: make_user() got an unexpected keyword argument 'root'"
+  },
+  {
+   "stream": "stdout",
+   "text": "(1, 2, 3) (1, 5, 9) (1, 2, 0)"
+  },
+  {
+   "stream": "stdout",
+   "text": "10 [20, 30, 40] 50"
+  },
+  {
+   "stream": "stdout",
+   "text": "{'y': 5, 'z': -1, 'x': 0} [1, 2, 3, 'a', 'b']"
+  },
+  {
+   "stream": "stdout",
+   "text": "1-2-3"
+  },
+  {
+   "stream": "stdout",
+   "text": "3 None"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"make_user":"<function>"}},
+  {"event":"call","line":2,"stack":["<module>","make_user"],"locals":{"name":"'ann'","age":"30","admin":"False"}},
+  {"event":"line","line":3,"stack":["<module>","make_user"],"locals":{"name":"'ann'","age":"30","admin":"False"}},
+  {"event":"return","line":3,"stack":["<module>","make_user"],"locals":{"name":"'ann'","age":"30","admin":"False"},"value":"<dict>"},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"make_user":"<function>"}},
+  {"event":"call","line":2,"stack":["<module>","make_user"],"locals":{"name":"'bo'","age":"25","admin":"True"}},
+  {"event":"line","line":3,"stack":["<module>","make_user"],"locals":{"name":"'bo'","age":"25","admin":"True"}},
+  {"event":"return","line":3,"stack":["<module>","make_user"],"locals":{"name":"'bo'","age":"25","admin":"True"},"value":"<dict>"},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"make_user":"<function>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"make_user":"<function>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"make_user":"<function>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>"}},
+  {"event":"call","line":7,"stack":["<module>","<lambda>"],"locals":{}},
+  {"event":"line","line":7,"stack":["<module>","<lambda>"],"locals":{}},
+  {"event":"exception","line":7,"stack":["<module>","<lambda>"],"locals":{},"exc":"TypeError"},
+  {"event":"return","line":7,"stack":["<module>","<lambda>"],"locals":{},"value":"None","unwinding":true},
+  {"event":"exception","line":10,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>"},"exc":"TypeError"},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>","e":"<TypeError>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>"}},
+  {"event":"call","line":7,"stack":["<module>","<lambda>"],"locals":{}},
+  {"event":"line","line":7,"stack":["<module>","<lambda>"],"locals":{}},
+  {"event":"exception","line":7,"stack":["<module>","<lambda>"],"locals":{},"exc":"TypeError"},
+  {"event":"return","line":7,"stack":["<module>","<lambda>"],"locals":{},"value":"None","unwinding":true},
+  {"event":"exception","line":10,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>"},"exc":"TypeError"},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>","e":"<TypeError>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>"}},
+  {"event":"call","line":8,"stack":["<module>","<lambda>"],"locals":{}},
+  {"event":"line","line":8,"stack":["<module>","<lambda>"],"locals":{}},
+  {"event":"exception","line":8,"stack":["<module>","<lambda>"],"locals":{},"exc":"TypeError"},
+  {"event":"return","line":8,"stack":["<module>","<lambda>"],"locals":{},"value":"None","unwinding":true},
+  {"event":"exception","line":10,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>"},"exc":"TypeError"},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>","e":"<TypeError>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>"}},
+  {"event":"call","line":8,"stack":["<module>","<lambda>"],"locals":{}},
+  {"event":"line","line":8,"stack":["<module>","<lambda>"],"locals":{}},
+  {"event":"exception","line":8,"stack":["<module>","<lambda>"],"locals":{},"exc":"TypeError"},
+  {"event":"return","line":8,"stack":["<module>","<lambda>"],"locals":{},"value":"None","unwinding":true},
+  {"event":"exception","line":10,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>"},"exc":"TypeError"},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>","e":"<TypeError>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>","point":"<function>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>","point":"<function>","coords":"<list>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>","point":"<function>","coords":"<list>","opts":"<dict>"}},
+  {"event":"call","line":14,"stack":["<module>","point"],"locals":{"x":"1","y":"2","z":"3"}},
+  {"event":"line","line":15,"stack":["<module>","point"],"locals":{"x":"1","y":"2","z":"3"}},
+  {"event":"return","line":15,"stack":["<module>","point"],"locals":{"x":"1","y":"2","z":"3"},"value":"<tuple>"},
+  {"event":"call","line":14,"stack":["<module>","point"],"locals":{"x":"1","y":"5","z":"9"}},
+  {"event":"line","line":15,"stack":["<module>","point"],"locals":{"x":"1","y":"5","z":"9"}},
+  {"event":"return","line":15,"stack":["<module>","point"],"locals":{"x":"1","y":"5","z":"9"},"value":"<tuple>"},
+  {"event":"call","line":14,"stack":["<module>","point"],"locals":{"x":"1","y":"2","z":"0"}},
+  {"event":"line","line":15,"stack":["<module>","point"],"locals":{"x":"1","y":"2","z":"0"}},
+  {"event":"return","line":15,"stack":["<module>","point"],"locals":{"x":"1","y":"2","z":"0"},"value":"<tuple>"},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>","point":"<function>","coords":"<list>","opts":"<dict>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>","point":"<function>","coords":"<list>","opts":"<dict>","first":"10","middle":"<list>","last":"50"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>","point":"<function>","coords":"<list>","opts":"<dict>","first":"10","middle":"<list>","last":"50"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>","point":"<function>","coords":"<list>","opts":"<dict>","first":"10","middle":"<list>","last":"50","merged":"<dict>"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>","point":"<function>","coords":"<list>","opts":"<dict>","first":"10","middle":"<list>","last":"50","merged":"<dict>"}},
+  {"event":"return","line":24,"stack":["<module>"],"locals":{"make_user":"<function>","bad":"<function>","point":"<function>","coords":"<list>","opts":"<dict>","first":"10","middle":"<list>","last":"50","merged":"<dict>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 64,
+ "finalGlobals": {
+  "make_user": "<function>",
+  "bad": "<function>",
+  "point": "<function>",
+  "coords": "<list>",
+  "opts": "<dict>",
+  "first": "10",
+  "middle": "<list>",
+  "last": "50",
+  "merged": "<dict>"
+ },
+ "continuation": [],
+ "sourceSha256": "ea7c8a24ceb5c089c57cb0ab97cfb61f8a50c5e5619cc472e7fa6b44a4caff26"
+}

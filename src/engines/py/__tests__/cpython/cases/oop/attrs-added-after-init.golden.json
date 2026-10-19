@@ -1,0 +1,88 @@
+{
+ "stdout": "80 55 ['drill']\nFalse\n50 []\nFalse\n5 5\nAttributeError: 'Robot' object has no attribute 'speed'\n['color', 'name', 'speed']\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "80 55 ['drill']"
+  },
+  {
+   "stream": "stdout",
+   "text": "False"
+  },
+  {
+   "stream": "stdout",
+   "text": "50 []"
+  },
+  {
+   "stream": "stdout",
+   "text": "False"
+  },
+  {
+   "stream": "stdout",
+   "text": "5 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "AttributeError: 'Robot' object has no attribute 'speed'"
+  },
+  {
+   "stream": "stdout",
+   "text": "['color', 'name', 'speed']"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"call","line":2,"stack":["<module>","Robot"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>","Robot"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>","Robot"],"locals":{"__module__":"'__main__'","__qualname__":"'Robot'"}},
+  {"event":"return","line":3,"stack":["<module>","Robot"],"locals":{"__module__":"'__main__'","__qualname__":"'Robot'","__init__":"<function>"},"value":"None"},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"Robot":"<type>"}},
+  {"event":"call","line":3,"stack":["<module>","__init__"],"locals":{"self":"<Robot>","name":"'R2'"}},
+  {"event":"line","line":4,"stack":["<module>","__init__"],"locals":{"self":"<Robot>","name":"'R2'"}},
+  {"event":"return","line":4,"stack":["<module>","__init__"],"locals":{"self":"<Robot>","name":"'R2'"},"value":"None"},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"Robot":"<type>","r1":"<Robot>"}},
+  {"event":"call","line":3,"stack":["<module>","__init__"],"locals":{"self":"<Robot>","name":"'C3'"}},
+  {"event":"line","line":4,"stack":["<module>","__init__"],"locals":{"self":"<Robot>","name":"'C3'"}},
+  {"event":"return","line":4,"stack":["<module>","__init__"],"locals":{"self":"<Robot>","name":"'C3'"},"value":"None"},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"Robot":"<type>","r1":"<Robot>","r2":"<Robot>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"Robot":"<type>","r1":"<Robot>","r2":"<Robot>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"Robot":"<type>","r1":"<Robot>","r2":"<Robot>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"Robot":"<type>","r1":"<Robot>","r2":"<Robot>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"Robot":"<type>","r1":"<Robot>","r2":"<Robot>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"Robot":"<type>","r1":"<Robot>","r2":"<Robot>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"Robot":"<type>","r1":"<Robot>","r2":"<Robot>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"Robot":"<type>","r1":"<Robot>","r2":"<Robot>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"Robot":"<type>","r1":"<Robot>","r2":"<Robot>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"Robot":"<type>","r1":"<Robot>","r2":"<Robot>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"Robot":"<type>","r1":"<Robot>","r2":"<Robot>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"Robot":"<type>","r1":"<Robot>","r2":"<Robot>","attr":"'speed'"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"Robot":"<type>","r1":"<Robot>","r2":"<Robot>","attr":"'speed'"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"Robot":"<type>","r1":"<Robot>","r2":"<Robot>","attr":"'color'"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"Robot":"<type>","r1":"<Robot>","r2":"<Robot>","attr":"'color'"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Robot":"<type>","r1":"<Robot>","r2":"<Robot>","attr":"'color'"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"Robot":"<type>","r1":"<Robot>","r2":"<Robot>","attr":"'color'"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"Robot":"<type>","r1":"<Robot>","r2":"<Robot>","attr":"'color'"}},
+  {"event":"exception","line":22,"stack":["<module>"],"locals":{"Robot":"<type>","r1":"<Robot>","r2":"<Robot>","attr":"'color'"},"exc":"AttributeError"},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"Robot":"<type>","r1":"<Robot>","r2":"<Robot>","attr":"'color'"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"Robot":"<type>","r1":"<Robot>","r2":"<Robot>","attr":"'color'","e":"<AttributeError>"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"Robot":"<type>","r1":"<Robot>","r2":"<Robot>","attr":"'color'"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"Robot":"<type>","r1":"<Robot>","r2":"<Robot>","attr":"'color'"}},
+  {"event":"return","line":26,"stack":["<module>"],"locals":{"Robot":"<type>","r1":"<Robot>","r2":"<Robot>","attr":"'color'"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 37,
+ "finalGlobals": {
+  "Robot": "<type>",
+  "r1": "<Robot>",
+  "r2": "<Robot>",
+  "attr": "'color'"
+ },
+ "continuation": [],
+ "sourceSha256": "2404b2747f9e184596bdb65ff89adc1352175d28696af5030d0c65e82d2da2a5"
+}

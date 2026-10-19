@@ -1,0 +1,158 @@
+{
+ "stdout": "l l 5 True\n['l', 'e', 'v', 'e', 'l'] ('h', 'i') ['a', 'a', 'a', 'b', 'n', 'n']\n5 n\nFalse True True\nbevel level\nTypeError: 'str' object does not support item assignment\na-b-c ababab abcd\n[(0, 'h'), (1, 'e'), (2, 'y')] y h\n['M', 'X'] 2 2\ns ['t', 'a', 'c', 'k']\n[('a', 'x'), ('b', 'y'), ('c', 'z')] {'a': '1', 'b': '2'}\n[65, 90, 97, 122] B[b{\n3 True ['h', 'i', '😀']\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "l l 5 True"
+  },
+  {
+   "stream": "stdout",
+   "text": "['l', 'e', 'v', 'e', 'l'] ('h', 'i') ['a', 'a', 'a', 'b', 'n', 'n']"
+  },
+  {
+   "stream": "stdout",
+   "text": "5 n"
+  },
+  {
+   "stream": "stdout",
+   "text": "False True True"
+  },
+  {
+   "stream": "stdout",
+   "text": "bevel level"
+  },
+  {
+   "stream": "stdout",
+   "text": "TypeError: 'str' object does not support item assignment"
+  },
+  {
+   "stream": "stdout",
+   "text": "a-b-c ababab abcd"
+  },
+  {
+   "stream": "stdout",
+   "text": "[(0, 'h'), (1, 'e'), (2, 'y')] y h"
+  },
+  {
+   "stream": "stdout",
+   "text": "['M', 'X'] 2 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "s ['t', 'a', 'c', 'k']"
+  },
+  {
+   "stream": "stdout",
+   "text": "[('a', 'x'), ('b', 'y'), ('c', 'z')] {'a': '1', 'b': '2'}"
+  },
+  {
+   "stream": "stdout",
+   "text": "[65, 90, 97, 122] B[b{"
+  },
+  {
+   "stream": "stdout",
+   "text": "3 True ['h', 'i', '😀']"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"word":"'level'"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"word":"'level'"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"0"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"0","ch":"'e'"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"0","ch":"'e'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"1","ch":"'e'"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"1","ch":"'d'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"1","ch":"'d'"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"1","ch":"'u'"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"1","ch":"'u'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"2","ch":"'u'"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"2","ch":"'c'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"2","ch":"'c'"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"2","ch":"'a'"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"2","ch":"'a'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"3","ch":"'a'"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"3","ch":"'t'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"3","ch":"'t'"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"3","ch":"'i'"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"3","ch":"'i'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"4","ch":"'i'"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"4","ch":"'o'"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"4","ch":"'o'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'o'"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'"}},
+  {"event":"exception","line":15,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'"},"exc":"TypeError"},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'","e":"<TypeError>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'","spaced":"'a-b-c'"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'","spaced":"'a-b-c'"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'","spaced":"'a-b-c'"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'","spaced":"'a-b-c'"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'","spaced":"'a-b-c'"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'","spaced":"'a-b-c'"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'","spaced":"'a-b-c'","chars":"<list>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'","spaced":"'a-b-c'","chars":"<list>"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'","spaced":"'a-b-c'","chars":"<list>","first":"'s'","others":"<list>"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'","spaced":"'a-b-c'","chars":"<list>","first":"'s'","others":"<list>"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'","spaced":"'a-b-c'","chars":"<list>","first":"'s'","others":"<list>","pairs":"<list>"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'","spaced":"'a-b-c'","chars":"<list>","first":"'s'","others":"<list>","pairs":"<list>"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'","spaced":"'a-b-c'","chars":"<list>","first":"'s'","others":"<list>","pairs":"<list>"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'","spaced":"'a-b-c'","chars":"<list>","first":"'s'","others":"<list>","pairs":"<list>"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'","spaced":"'a-b-c'","chars":"<list>","first":"'s'","others":"<list>","pairs":"<list>"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'","spaced":"'a-b-c'","chars":"<list>","first":"'s'","others":"<list>","pairs":"<list>"}},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'","spaced":"'a-b-c'","chars":"<list>","first":"'s'","others":"<list>","pairs":"<list>","ords":"<list>"}},
+  {"event":"call","line":28,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>"}},
+  {"event":"line","line":28,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>"}},
+  {"event":"return","line":28,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","o":"65"},"value":"'B'"},
+  {"event":"call","line":28,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","o":"65"}},
+  {"event":"line","line":28,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","o":"65"}},
+  {"event":"return","line":28,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","o":"90"},"value":"'['"},
+  {"event":"call","line":28,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","o":"90"}},
+  {"event":"line","line":28,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","o":"90"}},
+  {"event":"return","line":28,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","o":"97"},"value":"'b'"},
+  {"event":"call","line":28,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","o":"97"}},
+  {"event":"line","line":28,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","o":"97"}},
+  {"event":"return","line":28,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","o":"122"},"value":"'{'"},
+  {"event":"call","line":28,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","o":"122"}},
+  {"event":"line","line":28,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","o":"122"}},
+  {"event":"return","line":28,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","o":"122"},"value":"None"},
+  {"event":"line","line":29,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'","spaced":"'a-b-c'","chars":"<list>","first":"'s'","others":"<list>","pairs":"<list>","ords":"<list>","shifted":"'B[b{'"}},
+  {"event":"line","line":30,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'","spaced":"'a-b-c'","chars":"<list>","first":"'s'","others":"<list>","pairs":"<list>","ords":"<list>","shifted":"'B[b{'"}},
+  {"event":"line","line":31,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'","spaced":"'a-b-c'","chars":"<list>","first":"'s'","others":"<list>","pairs":"<list>","ords":"<list>","shifted":"'B[b{'","emoji":"'hi😀'"}},
+  {"event":"return","line":31,"stack":["<module>"],"locals":{"word":"'level'","letters":"<list>","vowels":"5","ch":"'n'","spaced":"'a-b-c'","chars":"<list>","first":"'s'","others":"<list>","pairs":"<list>","ords":"<list>","shifted":"'B[b{'","emoji":"'hi😀'"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 75,
+ "finalGlobals": {
+  "word": "'level'",
+  "letters": "<list>",
+  "vowels": "5",
+  "ch": "'n'",
+  "spaced": "'a-b-c'",
+  "chars": "<list>",
+  "first": "'s'",
+  "others": "<list>",
+  "pairs": "<list>",
+  "ords": "<list>",
+  "shifted": "'B[b{'",
+  "emoji": "'hi😀'"
+ },
+ "continuation": [],
+ "sourceSha256": "4c0bbe007bb42f22ae7ade2adad35a7510d18f330a2a28092f15d085282ae260"
+}

@@ -1,0 +1,48 @@
+{
+ "stdout": "10\nadding 5\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "10"
+  },
+  {
+   "stream": "stdout",
+   "text": "adding 5"
+  }
+ ],
+ "exception": {
+  "class": "UnboundLocalError",
+  "message": "cannot access local variable 'total' where it is not associated with a value"
+ },
+ "traceback": "Traceback (most recent call last):\n  File \"main.py\", line 14, in <module>\n    result = add_to_total(5)\n             ^^^^^^^^^^^^^^^\n  File \"main.py\", line 11, in add_to_total\n    total = total + n\n            ^^^^^\nUnboundLocalError: cannot access local variable 'total' where it is not associated with a value\n",
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"total":"10"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"total":"10","show_total":"<function>"}},
+  {"event":"call","line":4,"stack":["<module>","show_total"],"locals":{}},
+  {"event":"line","line":5,"stack":["<module>","show_total"],"locals":{}},
+  {"event":"return","line":5,"stack":["<module>","show_total"],"locals":{},"value":"10"},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"total":"10","show_total":"<function>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"total":"10","show_total":"<function>","add_to_total":"<function>"}},
+  {"event":"call","line":9,"stack":["<module>","add_to_total"],"locals":{"n":"5"}},
+  {"event":"line","line":10,"stack":["<module>","add_to_total"],"locals":{"n":"5"}},
+  {"event":"line","line":11,"stack":["<module>","add_to_total"],"locals":{"n":"5"}},
+  {"event":"exception","line":11,"stack":["<module>","add_to_total"],"locals":{"n":"5"},"exc":"UnboundLocalError"},
+  {"event":"return","line":11,"stack":["<module>","add_to_total"],"locals":{"n":"5"},"value":"None","unwinding":true},
+  {"event":"exception","line":14,"stack":["<module>"],"locals":{"total":"10","show_total":"<function>","add_to_total":"<function>"},"exc":"UnboundLocalError"},
+  {"event":"return","line":14,"stack":["<module>"],"locals":{"total":"10","show_total":"<function>","add_to_total":"<function>"},"value":"None","unwinding":true}
+ ],
+ "truncated": false,
+ "stepEvents": 14,
+ "finalGlobals": {
+  "total": "10",
+  "show_total": "<function>",
+  "add_to_total": "<function>"
+ },
+ "continuation": [],
+ "sourceSha256": "1d9abf071bbfab12f82b6dd40570a8723635db8f0c1c8e7c458b0c0d260adf97"
+}

@@ -1,0 +1,37 @@
+{
+ "stdout": "Point(x=3, y=4) Point(x=1, y=2)\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Point(x=3, y=4) Point(x=1, y=2)"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":1,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"namedtuple":"<function>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"namedtuple":"<function>","Point":"<type>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"namedtuple":"<function>","Point":"<type>","p1":"<Point>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"namedtuple":"<function>","Point":"<type>","p1":"<Point>","p2":"<Point>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"namedtuple":"<function>","Point":"<type>","p1":"<Point>","p2":"<Point>","dist_x":"2"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"namedtuple":"<function>","Point":"<type>","p1":"<Point>","p2":"<Point>","dist_x":"2","dist_y":"2"}},
+  {"event":"return","line":8,"stack":["<module>"],"locals":{"namedtuple":"<function>","Point":"<type>","p1":"<Point>","p2":"<Point>","dist_x":"2","dist_y":"2"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 9,
+ "finalGlobals": {
+  "namedtuple": "<function>",
+  "Point": "<type>",
+  "p1": "<Point>",
+  "p2": "<Point>",
+  "dist_x": "2",
+  "dist_y": "2"
+ },
+ "continuation": [],
+ "sourceSha256": "69df784185d0aaa627aa9921f79822c530a497c6d8a3e5b99046851db76b303a"
+}

@@ -1,0 +1,102 @@
+{
+ "stdout": "KeyError | str: 'color' | repr: KeyError('color') | args: ('color',)\nValueError | str: ('bad', 42, [1, 2]) | repr: ValueError('bad', 42, [1, 2]) | args: ('bad', 42, [1, 2])\nRuntimeError | str:  | repr: RuntimeError() | args: ()\nValueError | str: only one | repr: ValueError('only one') | args: ('only one',)\ncolor 4\nmade, not raised True True\nTrue\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "KeyError | str: 'color' | repr: KeyError('color') | args: ('color',)"
+  },
+  {
+   "stream": "stdout",
+   "text": "ValueError | str: ('bad', 42, [1, 2]) | repr: ValueError('bad', 42, [1, 2]) | args: ('bad', 42, [1, 2])"
+  },
+  {
+   "stream": "stdout",
+   "text": "RuntimeError | str:  | repr: RuntimeError() | args: ()"
+  },
+  {
+   "stream": "stdout",
+   "text": "ValueError | str: only one | repr: ValueError('only one') | args: ('only one',)"
+  },
+  {
+   "stream": "stdout",
+   "text": "color 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "made, not raised True True"
+  },
+  {
+   "stream": "stdout",
+   "text": "True"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"caught":"<list>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"caught":"<list>","action":"'key'"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"caught":"<list>","action":"'key'"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"caught":"<list>","action":"'key'"}},
+  {"event":"exception","line":6,"stack":["<module>"],"locals":{"caught":"<list>","action":"'key'"},"exc":"KeyError"},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"caught":"<list>","action":"'key'"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"caught":"<list>","action":"'key'","e":"<KeyError>"}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"caught":"<list>","action":"'key'"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"caught":"<list>","action":"'multi'"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"caught":"<list>","action":"'multi'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"caught":"<list>","action":"'multi'"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"caught":"<list>","action":"'multi'"}},
+  {"event":"exception","line":8,"stack":["<module>"],"locals":{"caught":"<list>","action":"'multi'"},"exc":"ValueError"},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"caught":"<list>","action":"'multi'"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"caught":"<list>","action":"'multi'","e":"<ValueError>"}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"caught":"<list>","action":"'multi'"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"caught":"<list>","action":"'empty'"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"caught":"<list>","action":"'empty'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"caught":"<list>","action":"'empty'"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"caught":"<list>","action":"'empty'"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"caught":"<list>","action":"'empty'"}},
+  {"event":"exception","line":10,"stack":["<module>"],"locals":{"caught":"<list>","action":"'empty'"},"exc":"RuntimeError"},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"caught":"<list>","action":"'empty'"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"caught":"<list>","action":"'empty'","e":"<RuntimeError>"}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"caught":"<list>","action":"'empty'"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"caught":"<list>","action":"'value'"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"caught":"<list>","action":"'value'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"caught":"<list>","action":"'value'"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"caught":"<list>","action":"'value'"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"caught":"<list>","action":"'value'"}},
+  {"event":"exception","line":11,"stack":["<module>"],"locals":{"caught":"<list>","action":"'value'"},"exc":"ValueError"},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"caught":"<list>","action":"'value'"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"caught":"<list>","action":"'value'","e":"<ValueError>"}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"caught":"<list>","action":"'value'"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"caught":"<list>","action":"'value'"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"caught":"<list>","action":"'value'","e":"<KeyError>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"caught":"<list>","action":"'value'","e":"<KeyError>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"caught":"<list>","action":"'value'","e":"<ValueError>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"caught":"<list>","action":"'value'","e":"<ValueError>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"caught":"<list>","action":"'value'","e":"<RuntimeError>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"caught":"<list>","action":"'value'","e":"<RuntimeError>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"caught":"<list>","action":"'value'","e":"<ValueError>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"caught":"<list>","action":"'value'","e":"<ValueError>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"caught":"<list>","action":"'value'","e":"<ValueError>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"caught":"<list>","action":"'value'","e":"<ValueError>","first":"<KeyError>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"caught":"<list>","action":"'value'","e":"<ValueError>","first":"<KeyError>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"caught":"<list>","action":"'value'","e":"<ValueError>","first":"<KeyError>","err":"<ValueError>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"caught":"<list>","action":"'value'","e":"<ValueError>","first":"<KeyError>","err":"<ValueError>"}},
+  {"event":"return","line":21,"stack":["<module>"],"locals":{"caught":"<list>","action":"'value'","e":"<ValueError>","first":"<KeyError>","err":"<ValueError>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 47,
+ "finalGlobals": {
+  "caught": "<list>",
+  "action": "'value'",
+  "e": "<ValueError>",
+  "first": "<KeyError>",
+  "err": "<ValueError>"
+ },
+ "continuation": [],
+ "sourceSha256": "1fd3451a8cf5e84472cd77085b81a3847828b15bb3787935bb71db0b9def93a9"
+}

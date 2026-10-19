@@ -1,0 +1,110 @@
+{
+ "stdout": "[2, 4, 6] [0, 3, 6, 9] [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]\n[7, 8, 9] [0, 1, 2] [9, 8, 7]\n[8, 6, 4] [] [] [0, 1]\n[1, 0] [9, 8, 7, 6]\npormig ming gramm gnimmargorp\n[0, 2, 4, 6, 8] pormig [7, 8, 9]\n0 None 2 (0, 10, 2)\n(20, 30, 40) tuple (50, 30, 10)\n[[7, 8, 9], [4, 5, 6], [1, 2, 3]] [[3, 2, 1], [6, 5, 4], [9, 8, 7]] [2, 5, 8]\nTrue\nTrue False\nValueError: slice step cannot be zero\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[2, 4, 6] [0, 3, 6, 9] [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[7, 8, 9] [0, 1, 2] [9, 8, 7]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[8, 6, 4] [] [] [0, 1]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[1, 0] [9, 8, 7, 6]"
+  },
+  {
+   "stream": "stdout",
+   "text": "pormig ming gramm gnimmargorp"
+  },
+  {
+   "stream": "stdout",
+   "text": "[0, 2, 4, 6, 8] pormig [7, 8, 9]"
+  },
+  {
+   "stream": "stdout",
+   "text": "0 None 2 (0, 10, 2)"
+  },
+  {
+   "stream": "stdout",
+   "text": "(20, 30, 40) tuple (50, 30, 10)"
+  },
+  {
+   "stream": "stdout",
+   "text": "[[7, 8, 9], [4, 5, 6], [1, 2, 3]] [[3, 2, 1], [6, 5, 4], [9, 8, 7]] [2, 5, 8]"
+  },
+  {
+   "stream": "stdout",
+   "text": "True"
+  },
+  {
+   "stream": "stdout",
+   "text": "True False"
+  },
+  {
+   "stream": "stdout",
+   "text": "ValueError: slice step cannot be zero"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"nums":"<list>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"nums":"<list>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"nums":"<list>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"nums":"<list>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"nums":"<list>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"nums":"<list>","word":"'programming'"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"nums":"<list>","word":"'programming'"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"nums":"<list>","word":"'programming'","evens":"<slice>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"nums":"<list>","word":"'programming'","evens":"<slice>","last_three":"<slice>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"nums":"<list>","word":"'programming'","evens":"<slice>","last_three":"<slice>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"nums":"<list>","word":"'programming'","evens":"<slice>","last_three":"<slice>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"nums":"<list>","word":"'programming'","evens":"<slice>","last_three":"<slice>","tup":"<tuple>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"nums":"<list>","word":"'programming'","evens":"<slice>","last_three":"<slice>","tup":"<tuple>","part":"<tuple>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"nums":"<list>","word":"'programming'","evens":"<slice>","last_three":"<slice>","tup":"<tuple>","part":"<tuple>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"nums":"<list>","word":"'programming'","evens":"<slice>","last_three":"<slice>","tup":"<tuple>","part":"<tuple>","grid":"<list>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"nums":"<list>","word":"'programming'","evens":"<slice>","last_three":"<slice>","tup":"<tuple>","part":"<tuple>","grid":"<list>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"nums":"<list>","word":"'programming'","evens":"<slice>","last_three":"<slice>","tup":"<tuple>","part":"<tuple>","grid":"<list>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"nums":"<list>","word":"'programming'","evens":"<slice>","last_three":"<slice>","tup":"<tuple>","part":"<tuple>","grid":"<list>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"nums":"<list>","word":"'programming'","evens":"<slice>","last_three":"<slice>","tup":"<tuple>","part":"<tuple>","grid":"<list>","column":"<list>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"nums":"<list>","word":"'programming'","evens":"<slice>","last_three":"<slice>","tup":"<tuple>","part":"<tuple>","grid":"<list>","column":"<list>","flipped":"<list>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"nums":"<list>","word":"'programming'","evens":"<slice>","last_three":"<slice>","tup":"<tuple>","part":"<tuple>","grid":"<list>","column":"<list>","flipped":"<list>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"nums":"<list>","word":"'programming'","evens":"<slice>","last_three":"<slice>","tup":"<tuple>","part":"<tuple>","grid":"<list>","column":"<list>","flipped":"<list>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"nums":"<list>","word":"'programming'","evens":"<slice>","last_three":"<slice>","tup":"<tuple>","part":"<tuple>","grid":"<list>","column":"<list>","flipped":"<list>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"nums":"<list>","word":"'programming'","evens":"<slice>","last_three":"<slice>","tup":"<tuple>","part":"<tuple>","grid":"<list>","column":"<list>","flipped":"<list>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"nums":"<list>","word":"'programming'","evens":"<slice>","last_three":"<slice>","tup":"<tuple>","part":"<tuple>","grid":"<list>","column":"<list>","flipped":"<list>"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"nums":"<list>","word":"'programming'","evens":"<slice>","last_three":"<slice>","tup":"<tuple>","part":"<tuple>","grid":"<list>","column":"<list>","flipped":"<list>","copy":"<list>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"nums":"<list>","word":"'programming'","evens":"<slice>","last_three":"<slice>","tup":"<tuple>","part":"<tuple>","grid":"<list>","column":"<list>","flipped":"<list>","copy":"<list>"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"nums":"<list>","word":"'programming'","evens":"<slice>","last_three":"<slice>","tup":"<tuple>","part":"<tuple>","grid":"<list>","column":"<list>","flipped":"<list>","copy":"<list>"}},
+  {"event":"exception","line":24,"stack":["<module>"],"locals":{"nums":"<list>","word":"'programming'","evens":"<slice>","last_three":"<slice>","tup":"<tuple>","part":"<tuple>","grid":"<list>","column":"<list>","flipped":"<list>","copy":"<list>"},"exc":"ValueError"},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"nums":"<list>","word":"'programming'","evens":"<slice>","last_three":"<slice>","tup":"<tuple>","part":"<tuple>","grid":"<list>","column":"<list>","flipped":"<list>","copy":"<list>"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"nums":"<list>","word":"'programming'","evens":"<slice>","last_three":"<slice>","tup":"<tuple>","part":"<tuple>","grid":"<list>","column":"<list>","flipped":"<list>","copy":"<list>","e":"<ValueError>"}},
+  {"event":"return","line":26,"stack":["<module>"],"locals":{"nums":"<list>","word":"'programming'","evens":"<slice>","last_three":"<slice>","tup":"<tuple>","part":"<tuple>","grid":"<list>","column":"<list>","flipped":"<list>","copy":"<list>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 33,
+ "finalGlobals": {
+  "nums": "<list>",
+  "word": "'programming'",
+  "evens": "<slice>",
+  "last_three": "<slice>",
+  "tup": "<tuple>",
+  "part": "<tuple>",
+  "grid": "<list>",
+  "column": "<list>",
+  "flipped": "<list>",
+  "copy": "<list>"
+ },
+ "continuation": [],
+ "sourceSha256": "5ba63bad5f16924b1938a6d06470e828cdb96d3bcd304249c4f8d212e9284365"
+}

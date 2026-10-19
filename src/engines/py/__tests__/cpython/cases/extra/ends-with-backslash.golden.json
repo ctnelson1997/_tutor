@@ -1,0 +1,39 @@
+{
+ "stdout": "C:\\Users\\ada\n12 2\n['C:', 'Users', 'ada']\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "C:\\Users\\ada"
+  },
+  {
+   "stream": "stdout",
+   "text": "12 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "['C:', 'Users', 'ada']"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"path":"'C:\\\\Users\\\\ada'"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"path":"'C:\\\\Users\\\\ada'"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"path":"'C:\\\\Users\\\\ada'"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"path":"'C:\\\\Users\\\\ada'","parts":"<list>"}},
+  {"event":"return","line":6,"stack":["<module>"],"locals":{"path":"'C:\\\\Users\\\\ada'","parts":"<list>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 7,
+ "finalGlobals": {
+  "path": "'C:\\\\Users\\\\ada'",
+  "parts": "<list>"
+ },
+ "continuation": [],
+ "sourceSha256": "03c5caba4bea9d5cf6927c21672455109aef17083cf9ac31d30cd6c912493e01"
+}

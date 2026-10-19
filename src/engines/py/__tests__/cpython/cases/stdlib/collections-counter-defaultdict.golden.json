@@ -1,0 +1,118 @@
+{
+ "stdout": "Counter({'the': 3, 'and': 2, 'cat': 1, 'zebra': 1, 'bird': 1})\n[('the', 3), ('and', 2)] 3 0\n[('i', 4), ('m', 1), ('p', 2), ('s', 4)]\nCounter({'i': 3, 's': 2, 'p': 2}) True\n6 13\n{3: ['the', 'cat', 'and', 'the', 'and', 'the'], 5: ['zebra'], 4: ['bird']}\n5 0 6\ndefaultdict int\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Counter({'the': 3, 'and': 2, 'cat': 1, 'zebra': 1, 'bird': 1})"
+  },
+  {
+   "stream": "stdout",
+   "text": "[('the', 3), ('and', 2)] 3 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "[('i', 4), ('m', 1), ('p', 2), ('s', 4)]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Counter({'i': 3, 's': 2, 'p': 2}) True"
+  },
+  {
+   "stream": "stdout",
+   "text": "6 13"
+  },
+  {
+   "stream": "stdout",
+   "text": "{3: ['the', 'cat', 'and', 'the', 'and', 'the'], 5: ['zebra'], 4: ['bird']}"
+  },
+  {
+   "stream": "stdout",
+   "text": "5 0 6"
+  },
+  {
+   "stream": "stdout",
+   "text": "defaultdict int"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'the'"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'the'"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'cat'"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'cat'"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'and'"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'and'"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'the'"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'the'"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'zebra'"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'zebra'"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'and'"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'and'"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'the'"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'the'"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'","tally":"<defaultdict>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'","tally":"<defaultdict>","ch":"'a'"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'","tally":"<defaultdict>","ch":"'a'"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'","tally":"<defaultdict>","ch":"'b'"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'","tally":"<defaultdict>","ch":"'b'"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'","tally":"<defaultdict>","ch":"'r'"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'","tally":"<defaultdict>","ch":"'r'"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'","tally":"<defaultdict>","ch":"'a'"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'","tally":"<defaultdict>","ch":"'a'"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'","tally":"<defaultdict>","ch":"'c'"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'","tally":"<defaultdict>","ch":"'c'"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'","tally":"<defaultdict>","ch":"'a'"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'","tally":"<defaultdict>","ch":"'a'"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'","tally":"<defaultdict>","ch":"'d'"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'","tally":"<defaultdict>","ch":"'d'"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'","tally":"<defaultdict>","ch":"'a'"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'","tally":"<defaultdict>","ch":"'a'"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'","tally":"<defaultdict>","ch":"'b'"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'","tally":"<defaultdict>","ch":"'b'"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'","tally":"<defaultdict>","ch":"'r'"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'","tally":"<defaultdict>","ch":"'r'"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'","tally":"<defaultdict>","ch":"'a'"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'","tally":"<defaultdict>","ch":"'a'"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'","tally":"<defaultdict>","ch":"'a'"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'","tally":"<defaultdict>","ch":"'a'"}},
+  {"event":"return","line":23,"stack":["<module>"],"locals":{"Counter":"<type>","defaultdict":"<type>","text":"'the cat and the zebra and the bird'","words":"<Counter>","letters":"<Counter>","more":"<Counter>","by_length":"<defaultdict>","w":"'bird'","tally":"<defaultdict>","ch":"'a'"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 58,
+ "finalGlobals": {
+  "Counter": "<type>",
+  "defaultdict": "<type>",
+  "text": "'the cat and the zebra and the bird'",
+  "words": "<Counter>",
+  "letters": "<Counter>",
+  "more": "<Counter>",
+  "by_length": "<defaultdict>",
+  "w": "'bird'",
+  "tally": "<defaultdict>",
+  "ch": "'a'"
+ },
+ "continuation": [],
+ "sourceSha256": "79b65042c9481d7636182714991c86f85a1acc523d6a9907141baba6896f0ad0"
+}

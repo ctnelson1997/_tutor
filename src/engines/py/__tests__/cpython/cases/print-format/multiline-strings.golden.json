@@ -1,0 +1,139 @@
+{
+ "stdout": "Roses are red,\n  Violets are blue,\nPython is neat.\n['Roses are red,', '  Violets are blue,', 'Python is neat.']\n3 50\nfirst\n  second\nthird\n'first\\n  second\\nthird\\n'\none two three\n==========\n  TITLE   \n==========\nline A\nline B\n\n2 line A\nline B\nthe quick brown\nfox jumps over\nthe lazy dog\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Roses are red,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  Violets are blue,"
+  },
+  {
+   "stream": "stdout",
+   "text": "Python is neat."
+  },
+  {
+   "stream": "stdout",
+   "text": "['Roses are red,', '  Violets are blue,', 'Python is neat.']"
+  },
+  {
+   "stream": "stdout",
+   "text": "3 50"
+  },
+  {
+   "stream": "stdout",
+   "text": "first"
+  },
+  {
+   "stream": "stdout",
+   "text": "  second"
+  },
+  {
+   "stream": "stdout",
+   "text": "third"
+  },
+  {
+   "stream": "stdout",
+   "text": "'first\\n  second\\nthird\\n'"
+  },
+  {
+   "stream": "stdout",
+   "text": "one two three"
+  },
+  {
+   "stream": "stdout",
+   "text": "=========="
+  },
+  {
+   "stream": "stdout",
+   "text": "  TITLE   "
+  },
+  {
+   "stream": "stdout",
+   "text": "=========="
+  },
+  {
+   "stream": "stdout",
+   "text": "line A"
+  },
+  {
+   "stream": "stdout",
+   "text": "line B"
+  },
+  {
+   "stream": "stdout",
+   "text": ""
+  },
+  {
+   "stream": "stdout",
+   "text": "2 line A"
+  },
+  {
+   "stream": "stdout",
+   "text": "line B"
+  },
+  {
+   "stream": "stdout",
+   "text": "the quick brown"
+  },
+  {
+   "stream": "stdout",
+   "text": "fox jumps over"
+  },
+  {
+   "stream": "stdout",
+   "text": "the lazy dog"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"textwrap":"<module>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"textwrap":"<module>","poem":"'Roses are red,\\n  Violets are blue,\\nPython is neat.'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"textwrap":"<module>","poem":"'Roses are red,\\n  Violets are blue,\\nPython is neat.'"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"textwrap":"<module>","poem":"'Roses are red,\\n  Violets are blue,\\nPython is neat.'","lines":"<list>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"textwrap":"<module>","poem":"'Roses are red,\\n  Violets are blue,\\nPython is neat.'","lines":"<list>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"textwrap":"<module>","poem":"'Roses are red,\\n  Violets are blue,\\nPython is neat.'","lines":"<list>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"textwrap":"<module>","poem":"'Roses are red,\\n  Violets are blue,\\nPython is neat.'","lines":"<list>","block":"'first\\n  second\\nthird\\n'"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"textwrap":"<module>","poem":"'Roses are red,\\n  Violets are blue,\\nPython is neat.'","lines":"<list>","block":"'first\\n  second\\nthird\\n'"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"textwrap":"<module>","poem":"'Roses are red,\\n  Violets are blue,\\nPython is neat.'","lines":"<list>","block":"'first\\n  second\\nthird\\n'"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"textwrap":"<module>","poem":"'Roses are red,\\n  Violets are blue,\\nPython is neat.'","lines":"<list>","block":"'first\\n  second\\nthird\\n'","joined":"'one two three'"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"textwrap":"<module>","poem":"'Roses are red,\\n  Violets are blue,\\nPython is neat.'","lines":"<list>","block":"'first\\n  second\\nthird\\n'","joined":"'one two three'"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"textwrap":"<module>","poem":"'Roses are red,\\n  Violets are blue,\\nPython is neat.'","lines":"<list>","block":"'first\\n  second\\nthird\\n'","joined":"'one two three'","banner":"'==========\\n  TITLE   \\n=========='"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"textwrap":"<module>","poem":"'Roses are red,\\n  Violets are blue,\\nPython is neat.'","lines":"<list>","block":"'first\\n  second\\nthird\\n'","joined":"'one two three'","banner":"'==========\\n  TITLE   \\n=========='"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"textwrap":"<module>","poem":"'Roses are red,\\n  Violets are blue,\\nPython is neat.'","lines":"<list>","block":"'first\\n  second\\nthird\\n'","joined":"'one two three'","banner":"'==========\\n  TITLE   \\n=========='","para":"'line A\\nline B\\n'"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"textwrap":"<module>","poem":"'Roses are red,\\n  Violets are blue,\\nPython is neat.'","lines":"<list>","block":"'first\\n  second\\nthird\\n'","joined":"'one two three'","banner":"'==========\\n  TITLE   \\n=========='","para":"'line A\\nline B\\n'"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"textwrap":"<module>","poem":"'Roses are red,\\n  Violets are blue,\\nPython is neat.'","lines":"<list>","block":"'first\\n  second\\nthird\\n'","joined":"'one two three'","banner":"'==========\\n  TITLE   \\n=========='","para":"'line A\\nline B\\n'"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"textwrap":"<module>","poem":"'Roses are red,\\n  Violets are blue,\\nPython is neat.'","lines":"<list>","block":"'first\\n  second\\nthird\\n'","joined":"'one two three'","banner":"'==========\\n  TITLE   \\n=========='","para":"'line A\\nline B\\n'","wrapped":"'the quick brown\\nfox jumps over\\nthe lazy dog'"}},
+  {"event":"return","line":27,"stack":["<module>"],"locals":{"textwrap":"<module>","poem":"'Roses are red,\\n  Violets are blue,\\nPython is neat.'","lines":"<list>","block":"'first\\n  second\\nthird\\n'","joined":"'one two three'","banner":"'==========\\n  TITLE   \\n=========='","para":"'line A\\nline B\\n'","wrapped":"'the quick brown\\nfox jumps over\\nthe lazy dog'"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 20,
+ "finalGlobals": {
+  "textwrap": "<module>",
+  "poem": "'Roses are red,\\n  Violets are blue,\\nPython is neat.'",
+  "lines": "<list>",
+  "block": "'first\\n  second\\nthird\\n'",
+  "joined": "'one two three'",
+  "banner": "'==========\\n  TITLE   \\n=========='",
+  "para": "'line A\\nline B\\n'",
+  "wrapped": "'the quick brown\\nfox jumps over\\nthe lazy dog'"
+ },
+ "continuation": [
+  4,
+  5,
+  11,
+  12,
+  13,
+  14,
+  18,
+  19
+ ],
+ "sourceSha256": "dbe18981eba54dcf513162616a241fc9eb75350a7b369138cdb2b21745d4a026"
+}

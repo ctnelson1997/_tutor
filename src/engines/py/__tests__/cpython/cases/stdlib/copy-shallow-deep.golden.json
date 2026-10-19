@@ -1,0 +1,95 @@
+{
+ "stdout": "[[99, 2], [3, 4], [5, 6]]\n[[99, 2], [3, 4]]\n[[1, 2], [3, 4]]\nTrue False True False\nA ['Ann', 'Bo', 'Cy']\nB ['Ann', 'Bo', 'Cy']\nA ['Ann', 'Bo']\n[[0, 'X', 0], [0, 'X', 0], [0, 'X', 0]]\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[[99, 2], [3, 4], [5, 6]]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[[99, 2], [3, 4]]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[[1, 2], [3, 4]]"
+  },
+  {
+   "stream": "stdout",
+   "text": "True False True False"
+  },
+  {
+   "stream": "stdout",
+   "text": "A ['Ann', 'Bo', 'Cy']"
+  },
+  {
+   "stream": "stdout",
+   "text": "B ['Ann', 'Bo', 'Cy']"
+  },
+  {
+   "stream": "stdout",
+   "text": "A ['Ann', 'Bo']"
+  },
+  {
+   "stream": "stdout",
+   "text": "[[0, 'X', 0], [0, 'X', 0], [0, 'X', 0]]"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"copy":"<module>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"copy":"<module>","grid":"<list>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"copy":"<module>","grid":"<list>","alias":"<list>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"copy":"<module>","grid":"<list>","alias":"<list>","shallow":"<list>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"copy":"<module>","grid":"<list>","alias":"<list>","shallow":"<list>","deep":"<list>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"copy":"<module>","grid":"<list>","alias":"<list>","shallow":"<list>","deep":"<list>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"copy":"<module>","grid":"<list>","alias":"<list>","shallow":"<list>","deep":"<list>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"copy":"<module>","grid":"<list>","alias":"<list>","shallow":"<list>","deep":"<list>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"copy":"<module>","grid":"<list>","alias":"<list>","shallow":"<list>","deep":"<list>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"copy":"<module>","grid":"<list>","alias":"<list>","shallow":"<list>","deep":"<list>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"copy":"<module>","grid":"<list>","alias":"<list>","shallow":"<list>","deep":"<list>"}},
+  {"event":"call","line":15,"stack":["<module>","Team"],"locals":{}},
+  {"event":"line","line":15,"stack":["<module>","Team"],"locals":{}},
+  {"event":"line","line":16,"stack":["<module>","Team"],"locals":{"__module__":"'__main__'","__qualname__":"'Team'"}},
+  {"event":"return","line":16,"stack":["<module>","Team"],"locals":{"__module__":"'__main__'","__qualname__":"'Team'","__init__":"<function>"},"value":"None"},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"copy":"<module>","grid":"<list>","alias":"<list>","shallow":"<list>","deep":"<list>","Team":"<type>"}},
+  {"event":"call","line":16,"stack":["<module>","__init__"],"locals":{"self":"<Team>","name":"'A'","members":"<list>"}},
+  {"event":"line","line":17,"stack":["<module>","__init__"],"locals":{"self":"<Team>","name":"'A'","members":"<list>"}},
+  {"event":"line","line":18,"stack":["<module>","__init__"],"locals":{"self":"<Team>","name":"'A'","members":"<list>"}},
+  {"event":"return","line":18,"stack":["<module>","__init__"],"locals":{"self":"<Team>","name":"'A'","members":"<list>"},"value":"None"},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"copy":"<module>","grid":"<list>","alias":"<list>","shallow":"<list>","deep":"<list>","Team":"<type>","a":"<Team>"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"copy":"<module>","grid":"<list>","alias":"<list>","shallow":"<list>","deep":"<list>","Team":"<type>","a":"<Team>","b":"<Team>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"copy":"<module>","grid":"<list>","alias":"<list>","shallow":"<list>","deep":"<list>","Team":"<type>","a":"<Team>","b":"<Team>","c":"<Team>"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"copy":"<module>","grid":"<list>","alias":"<list>","shallow":"<list>","deep":"<list>","Team":"<type>","a":"<Team>","b":"<Team>","c":"<Team>"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"copy":"<module>","grid":"<list>","alias":"<list>","shallow":"<list>","deep":"<list>","Team":"<type>","a":"<Team>","b":"<Team>","c":"<Team>"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"copy":"<module>","grid":"<list>","alias":"<list>","shallow":"<list>","deep":"<list>","Team":"<type>","a":"<Team>","b":"<Team>","c":"<Team>"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"copy":"<module>","grid":"<list>","alias":"<list>","shallow":"<list>","deep":"<list>","Team":"<type>","a":"<Team>","b":"<Team>","c":"<Team>"}},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"copy":"<module>","grid":"<list>","alias":"<list>","shallow":"<list>","deep":"<list>","Team":"<type>","a":"<Team>","b":"<Team>","c":"<Team>"}},
+  {"event":"line","line":29,"stack":["<module>"],"locals":{"copy":"<module>","grid":"<list>","alias":"<list>","shallow":"<list>","deep":"<list>","Team":"<type>","a":"<Team>","b":"<Team>","c":"<Team>","row":"<list>"}},
+  {"event":"line","line":30,"stack":["<module>"],"locals":{"copy":"<module>","grid":"<list>","alias":"<list>","shallow":"<list>","deep":"<list>","Team":"<type>","a":"<Team>","b":"<Team>","c":"<Team>","row":"<list>","board":"<list>"}},
+  {"event":"line","line":31,"stack":["<module>"],"locals":{"copy":"<module>","grid":"<list>","alias":"<list>","shallow":"<list>","deep":"<list>","Team":"<type>","a":"<Team>","b":"<Team>","c":"<Team>","row":"<list>","board":"<list>"}},
+  {"event":"return","line":31,"stack":["<module>"],"locals":{"copy":"<module>","grid":"<list>","alias":"<list>","shallow":"<list>","deep":"<list>","Team":"<type>","a":"<Team>","b":"<Team>","c":"<Team>","row":"<list>","board":"<list>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 34,
+ "finalGlobals": {
+  "copy": "<module>",
+  "grid": "<list>",
+  "alias": "<list>",
+  "shallow": "<list>",
+  "deep": "<list>",
+  "Team": "<type>",
+  "a": "<Team>",
+  "b": "<Team>",
+  "c": "<Team>",
+  "row": "<list>",
+  "board": "<list>"
+ },
+ "continuation": [],
+ "sourceSha256": "9fa45446cf63d2efe5e75696adba8317b1ab2ef59794083fea138a75d7ccd89d"
+}

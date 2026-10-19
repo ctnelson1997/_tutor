@@ -1,0 +1,93 @@
+{
+ "stdout": "3.141592653589793 2.718281828459045 6.283185307179586\n-3 -2 -2 4 -2\n4.0 1.4142135623730951 4 5.0\n12 12 3628800 10 20\n1.0 3.0 3.0 10.0\n1.0 -1.0 180.0 3.141592653589793\nFalse True\nTrue -inf True True\n1.0 1.0\n1024.0 1024 3.0 3\n28.27 False -1.0\nValueError: math domain error\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "3.141592653589793 2.718281828459045 6.283185307179586"
+  },
+  {
+   "stream": "stdout",
+   "text": "-3 -2 -2 4 -2"
+  },
+  {
+   "stream": "stdout",
+   "text": "4.0 1.4142135623730951 4 5.0"
+  },
+  {
+   "stream": "stdout",
+   "text": "12 12 3628800 10 20"
+  },
+  {
+   "stream": "stdout",
+   "text": "1.0 3.0 3.0 10.0"
+  },
+  {
+   "stream": "stdout",
+   "text": "1.0 -1.0 180.0 3.141592653589793"
+  },
+  {
+   "stream": "stdout",
+   "text": "False True"
+  },
+  {
+   "stream": "stdout",
+   "text": "True -inf True True"
+  },
+  {
+   "stream": "stdout",
+   "text": "1.0 1.0"
+  },
+  {
+   "stream": "stdout",
+   "text": "1024.0 1024 3.0 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "28.27 False -1.0"
+  },
+  {
+   "stream": "stdout",
+   "text": "ValueError: math domain error"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"math":"<module>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"math":"<module>","pi":"3.141592653589793","sqrt":"<builtin_function_or_method>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"math":"<module>","pi":"3.141592653589793","sqrt":"<builtin_function_or_method>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"math":"<module>","pi":"3.141592653589793","sqrt":"<builtin_function_or_method>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"math":"<module>","pi":"3.141592653589793","sqrt":"<builtin_function_or_method>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"math":"<module>","pi":"3.141592653589793","sqrt":"<builtin_function_or_method>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"math":"<module>","pi":"3.141592653589793","sqrt":"<builtin_function_or_method>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"math":"<module>","pi":"3.141592653589793","sqrt":"<builtin_function_or_method>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"math":"<module>","pi":"3.141592653589793","sqrt":"<builtin_function_or_method>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"math":"<module>","pi":"3.141592653589793","sqrt":"<builtin_function_or_method>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"math":"<module>","pi":"3.141592653589793","sqrt":"<builtin_function_or_method>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"math":"<module>","pi":"3.141592653589793","sqrt":"<builtin_function_or_method>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"math":"<module>","pi":"3.141592653589793","sqrt":"<builtin_function_or_method>","area":"28.274333882308138"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"math":"<module>","pi":"3.141592653589793","sqrt":"<builtin_function_or_method>","area":"28.274333882308138","nan":"nan"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"math":"<module>","pi":"3.141592653589793","sqrt":"<builtin_function_or_method>","area":"28.274333882308138","nan":"nan"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"math":"<module>","pi":"3.141592653589793","sqrt":"<builtin_function_or_method>","area":"28.274333882308138","nan":"nan"}},
+  {"event":"exception","line":19,"stack":["<module>"],"locals":{"math":"<module>","pi":"3.141592653589793","sqrt":"<builtin_function_or_method>","area":"28.274333882308138","nan":"nan"},"exc":"ValueError"},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"math":"<module>","pi":"3.141592653589793","sqrt":"<builtin_function_or_method>","area":"28.274333882308138","nan":"nan"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"math":"<module>","pi":"3.141592653589793","sqrt":"<builtin_function_or_method>","area":"28.274333882308138","nan":"nan","e":"<ValueError>"}},
+  {"event":"return","line":21,"stack":["<module>"],"locals":{"math":"<module>","pi":"3.141592653589793","sqrt":"<builtin_function_or_method>","area":"28.274333882308138","nan":"nan"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 21,
+ "finalGlobals": {
+  "math": "<module>",
+  "pi": "3.141592653589793",
+  "sqrt": "<builtin_function_or_method>",
+  "area": "28.274333882308138",
+  "nan": "nan"
+ },
+ "continuation": [],
+ "sourceSha256": "097bf2772ff993056c3eec018071bbdf4502edf40ba701468d71d9a6e10cdf52"
+}

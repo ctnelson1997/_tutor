@@ -1,0 +1,133 @@
+{
+ "stdout": "(1, 2)\n[Point(1, 2), Point(-3, 4)]\n(1, 2) and Point(1, 2)\n(-3, 4) Point(-3, 4)\n{'origin': Point(0, 0)}\nOnlyRepr() OnlyRepr() [OnlyRepr()]\n(Point(1, 2),)\npoint: (1, 2)\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "(1, 2)"
+  },
+  {
+   "stream": "stdout",
+   "text": "[Point(1, 2), Point(-3, 4)]"
+  },
+  {
+   "stream": "stdout",
+   "text": "(1, 2) and Point(1, 2)"
+  },
+  {
+   "stream": "stdout",
+   "text": "(-3, 4) Point(-3, 4)"
+  },
+  {
+   "stream": "stdout",
+   "text": "{'origin': Point(0, 0)}"
+  },
+  {
+   "stream": "stdout",
+   "text": "OnlyRepr() OnlyRepr() [OnlyRepr()]"
+  },
+  {
+   "stream": "stdout",
+   "text": "(Point(1, 2),)"
+  },
+  {
+   "stream": "stdout",
+   "text": "point: (1, 2)"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"call","line":2,"stack":["<module>","Point"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>","Point"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>","Point"],"locals":{"__module__":"'__main__'","__qualname__":"'Point'"}},
+  {"event":"line","line":7,"stack":["<module>","Point"],"locals":{"__module__":"'__main__'","__qualname__":"'Point'","__init__":"<function>"}},
+  {"event":"line","line":10,"stack":["<module>","Point"],"locals":{"__module__":"'__main__'","__qualname__":"'Point'","__init__":"<function>","__repr__":"<function>"}},
+  {"event":"return","line":10,"stack":["<module>","Point"],"locals":{"__module__":"'__main__'","__qualname__":"'Point'","__init__":"<function>","__repr__":"<function>","__str__":"<function>"},"value":"None"},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"Point":"<type>"}},
+  {"event":"call","line":13,"stack":["<module>","OnlyRepr"],"locals":{}},
+  {"event":"line","line":13,"stack":["<module>","OnlyRepr"],"locals":{}},
+  {"event":"line","line":14,"stack":["<module>","OnlyRepr"],"locals":{"__module__":"'__main__'","__qualname__":"'OnlyRepr'"}},
+  {"event":"return","line":14,"stack":["<module>","OnlyRepr"],"locals":{"__module__":"'__main__'","__qualname__":"'OnlyRepr'","__repr__":"<function>"},"value":"None"},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"Point":"<type>","OnlyRepr":"<type>"}},
+  {"event":"call","line":3,"stack":["<module>","__init__"],"locals":{"self":"<Point>","x":"1","y":"2"}},
+  {"event":"line","line":4,"stack":["<module>","__init__"],"locals":{"self":"<Point>","x":"1","y":"2"}},
+  {"event":"line","line":5,"stack":["<module>","__init__"],"locals":{"self":"<Point>","x":"1","y":"2"}},
+  {"event":"return","line":5,"stack":["<module>","__init__"],"locals":{"self":"<Point>","x":"1","y":"2"},"value":"None"},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"Point":"<type>","OnlyRepr":"<type>","p":"<Point>"}},
+  {"event":"call","line":3,"stack":["<module>","__init__"],"locals":{"self":"<Point>","x":"-3","y":"4"}},
+  {"event":"line","line":4,"stack":["<module>","__init__"],"locals":{"self":"<Point>","x":"-3","y":"4"}},
+  {"event":"line","line":5,"stack":["<module>","__init__"],"locals":{"self":"<Point>","x":"-3","y":"4"}},
+  {"event":"return","line":5,"stack":["<module>","__init__"],"locals":{"self":"<Point>","x":"-3","y":"4"},"value":"None"},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"Point":"<type>","OnlyRepr":"<type>","p":"<Point>","q":"<Point>"}},
+  {"event":"call","line":10,"stack":["<module>","__str__"],"locals":{"self":"<Point>"}},
+  {"event":"line","line":11,"stack":["<module>","__str__"],"locals":{"self":"<Point>"}},
+  {"event":"return","line":11,"stack":["<module>","__str__"],"locals":{"self":"<Point>"},"value":"'(1, 2)'"},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Point":"<type>","OnlyRepr":"<type>","p":"<Point>","q":"<Point>"}},
+  {"event":"call","line":7,"stack":["<module>","__repr__"],"locals":{"self":"<Point>"}},
+  {"event":"line","line":8,"stack":["<module>","__repr__"],"locals":{"self":"<Point>"}},
+  {"event":"return","line":8,"stack":["<module>","__repr__"],"locals":{"self":"<Point>"},"value":"'Point(1, 2)'"},
+  {"event":"call","line":7,"stack":["<module>","__repr__"],"locals":{"self":"<Point>"}},
+  {"event":"line","line":8,"stack":["<module>","__repr__"],"locals":{"self":"<Point>"}},
+  {"event":"return","line":8,"stack":["<module>","__repr__"],"locals":{"self":"<Point>"},"value":"'Point(-3, 4)'"},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"Point":"<type>","OnlyRepr":"<type>","p":"<Point>","q":"<Point>"}},
+  {"event":"call","line":10,"stack":["<module>","__str__"],"locals":{"self":"<Point>"}},
+  {"event":"line","line":11,"stack":["<module>","__str__"],"locals":{"self":"<Point>"}},
+  {"event":"return","line":11,"stack":["<module>","__str__"],"locals":{"self":"<Point>"},"value":"'(1, 2)'"},
+  {"event":"call","line":7,"stack":["<module>","__repr__"],"locals":{"self":"<Point>"}},
+  {"event":"line","line":8,"stack":["<module>","__repr__"],"locals":{"self":"<Point>"}},
+  {"event":"return","line":8,"stack":["<module>","__repr__"],"locals":{"self":"<Point>"},"value":"'Point(1, 2)'"},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"Point":"<type>","OnlyRepr":"<type>","p":"<Point>","q":"<Point>"}},
+  {"event":"call","line":10,"stack":["<module>","__str__"],"locals":{"self":"<Point>"}},
+  {"event":"line","line":11,"stack":["<module>","__str__"],"locals":{"self":"<Point>"}},
+  {"event":"return","line":11,"stack":["<module>","__str__"],"locals":{"self":"<Point>"},"value":"'(-3, 4)'"},
+  {"event":"call","line":7,"stack":["<module>","__repr__"],"locals":{"self":"<Point>"}},
+  {"event":"line","line":8,"stack":["<module>","__repr__"],"locals":{"self":"<Point>"}},
+  {"event":"return","line":8,"stack":["<module>","__repr__"],"locals":{"self":"<Point>"},"value":"'Point(-3, 4)'"},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"Point":"<type>","OnlyRepr":"<type>","p":"<Point>","q":"<Point>"}},
+  {"event":"call","line":3,"stack":["<module>","__init__"],"locals":{"self":"<Point>","x":"0","y":"0"}},
+  {"event":"line","line":4,"stack":["<module>","__init__"],"locals":{"self":"<Point>","x":"0","y":"0"}},
+  {"event":"line","line":5,"stack":["<module>","__init__"],"locals":{"self":"<Point>","x":"0","y":"0"}},
+  {"event":"return","line":5,"stack":["<module>","__init__"],"locals":{"self":"<Point>","x":"0","y":"0"},"value":"None"},
+  {"event":"call","line":7,"stack":["<module>","__repr__"],"locals":{"self":"<Point>"}},
+  {"event":"line","line":8,"stack":["<module>","__repr__"],"locals":{"self":"<Point>"}},
+  {"event":"return","line":8,"stack":["<module>","__repr__"],"locals":{"self":"<Point>"},"value":"'Point(0, 0)'"},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"Point":"<type>","OnlyRepr":"<type>","p":"<Point>","q":"<Point>"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"Point":"<type>","OnlyRepr":"<type>","p":"<Point>","q":"<Point>","o":"<OnlyRepr>"}},
+  {"event":"call","line":14,"stack":["<module>","__repr__"],"locals":{"self":"<OnlyRepr>"}},
+  {"event":"line","line":15,"stack":["<module>","__repr__"],"locals":{"self":"<OnlyRepr>"}},
+  {"event":"return","line":15,"stack":["<module>","__repr__"],"locals":{"self":"<OnlyRepr>"},"value":"'OnlyRepr()'"},
+  {"event":"call","line":14,"stack":["<module>","__repr__"],"locals":{"self":"<OnlyRepr>"}},
+  {"event":"line","line":15,"stack":["<module>","__repr__"],"locals":{"self":"<OnlyRepr>"}},
+  {"event":"return","line":15,"stack":["<module>","__repr__"],"locals":{"self":"<OnlyRepr>"},"value":"'OnlyRepr()'"},
+  {"event":"call","line":14,"stack":["<module>","__repr__"],"locals":{"self":"<OnlyRepr>"}},
+  {"event":"line","line":15,"stack":["<module>","__repr__"],"locals":{"self":"<OnlyRepr>"}},
+  {"event":"return","line":15,"stack":["<module>","__repr__"],"locals":{"self":"<OnlyRepr>"},"value":"'OnlyRepr()'"},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"Point":"<type>","OnlyRepr":"<type>","p":"<Point>","q":"<Point>","o":"<OnlyRepr>"}},
+  {"event":"call","line":7,"stack":["<module>","__repr__"],"locals":{"self":"<Point>"}},
+  {"event":"line","line":8,"stack":["<module>","__repr__"],"locals":{"self":"<Point>"}},
+  {"event":"return","line":8,"stack":["<module>","__repr__"],"locals":{"self":"<Point>"},"value":"'Point(1, 2)'"},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"Point":"<type>","OnlyRepr":"<type>","p":"<Point>","q":"<Point>","o":"<OnlyRepr>"}},
+  {"event":"call","line":10,"stack":["<module>","__str__"],"locals":{"self":"<Point>"}},
+  {"event":"line","line":11,"stack":["<module>","__str__"],"locals":{"self":"<Point>"}},
+  {"event":"return","line":11,"stack":["<module>","__str__"],"locals":{"self":"<Point>"},"value":"'(1, 2)'"},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"Point":"<type>","OnlyRepr":"<type>","p":"<Point>","q":"<Point>","o":"<OnlyRepr>","label":"'point: (1, 2)'"}},
+  {"event":"return","line":28,"stack":["<module>"],"locals":{"Point":"<type>","OnlyRepr":"<type>","p":"<Point>","q":"<Point>","o":"<OnlyRepr>","label":"'point: (1, 2)'"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 77,
+ "finalGlobals": {
+  "Point": "<type>",
+  "OnlyRepr": "<type>",
+  "p": "<Point>",
+  "q": "<Point>",
+  "o": "<OnlyRepr>",
+  "label": "'point: (1, 2)'"
+ },
+ "continuation": [],
+ "sourceSha256": "fe1789dfa1b47e7a17f22aa5a10606fe0455053bc56d109ce195c35a65228b3d"
+}

@@ -1,0 +1,92 @@
+{
+ "stdout": "Ng\n{'math': {'teacher': 'Ng', 'students': 24}, 'art': {'teacher': 'Oz', 'students': 15}, 'music': {'teacher': 'Py', 'students': 9}}\n{'teacher': 'Ng', 'students': 24, 'room': 'B2'}\n{'east': {'floor': 2}, 'west': {'floor': 2}} True\n30 False 4\n54\n{'a': {'b': {'c': {'d': 1, 'e': 2}}}}\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Ng"
+  },
+  {
+   "stream": "stdout",
+   "text": "{'math': {'teacher': 'Ng', 'students': 24}, 'art': {'teacher': 'Oz', 'students': 15}, 'music': {'teacher': 'Py', 'students': 9}}"
+  },
+  {
+   "stream": "stdout",
+   "text": "{'teacher': 'Ng', 'students': 24, 'room': 'B2'}"
+  },
+  {
+   "stream": "stdout",
+   "text": "{'east': {'floor': 2}, 'west': {'floor': 2}} True"
+  },
+  {
+   "stream": "stdout",
+   "text": "30 False 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "54"
+  },
+  {
+   "stream": "stdout",
+   "text": "{'a': {'b': {'c': {'d': 1, 'e': 2}}}}"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"school":"<dict>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"school":"<dict>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"school":"<dict>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"school":"<dict>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"school":"<dict>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"school":"<dict>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"school":"<dict>","room":"<dict>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"school":"<dict>","room":"<dict>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"school":"<dict>","room":"<dict>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"school":"<dict>","room":"<dict>","shared":"<dict>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"school":"<dict>","room":"<dict>","shared":"<dict>","building":"<dict>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"school":"<dict>","room":"<dict>","shared":"<dict>","building":"<dict>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"school":"<dict>","room":"<dict>","shared":"<dict>","building":"<dict>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"school":"<dict>","room":"<dict>","shared":"<dict>","building":"<dict>","backup":"<dict>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"school":"<dict>","room":"<dict>","shared":"<dict>","building":"<dict>","backup":"<dict>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"school":"<dict>","room":"<dict>","shared":"<dict>","building":"<dict>","backup":"<dict>"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"school":"<dict>","room":"<dict>","shared":"<dict>","building":"<dict>","backup":"<dict>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"school":"<dict>","room":"<dict>","shared":"<dict>","building":"<dict>","backup":"<dict>","total":"0"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"school":"<dict>","room":"<dict>","shared":"<dict>","building":"<dict>","backup":"<dict>","total":"0","subject":"'math'","info":"<dict>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"school":"<dict>","room":"<dict>","shared":"<dict>","building":"<dict>","backup":"<dict>","total":"30","subject":"'math'","info":"<dict>"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"school":"<dict>","room":"<dict>","shared":"<dict>","building":"<dict>","backup":"<dict>","total":"30","subject":"'art'","info":"<dict>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"school":"<dict>","room":"<dict>","shared":"<dict>","building":"<dict>","backup":"<dict>","total":"45","subject":"'art'","info":"<dict>"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"school":"<dict>","room":"<dict>","shared":"<dict>","building":"<dict>","backup":"<dict>","total":"45","subject":"'music'","info":"<dict>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"school":"<dict>","room":"<dict>","shared":"<dict>","building":"<dict>","backup":"<dict>","total":"54","subject":"'music'","info":"<dict>"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"school":"<dict>","room":"<dict>","shared":"<dict>","building":"<dict>","backup":"<dict>","total":"54","subject":"'music'","info":"<dict>"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"school":"<dict>","room":"<dict>","shared":"<dict>","building":"<dict>","backup":"<dict>","total":"54","subject":"'music'","info":"<dict>"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"school":"<dict>","room":"<dict>","shared":"<dict>","building":"<dict>","backup":"<dict>","total":"54","subject":"'music'","info":"<dict>","deep":"<dict>"}},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"school":"<dict>","room":"<dict>","shared":"<dict>","building":"<dict>","backup":"<dict>","total":"54","subject":"'music'","info":"<dict>","deep":"<dict>"}},
+  {"event":"return","line":28,"stack":["<module>"],"locals":{"school":"<dict>","room":"<dict>","shared":"<dict>","building":"<dict>","backup":"<dict>","total":"54","subject":"'music'","info":"<dict>","deep":"<dict>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 33,
+ "finalGlobals": {
+  "school": "<dict>",
+  "room": "<dict>",
+  "shared": "<dict>",
+  "building": "<dict>",
+  "backup": "<dict>",
+  "total": "54",
+  "subject": "'music'",
+  "info": "<dict>",
+  "deep": "<dict>"
+ },
+ "continuation": [
+  3,
+  4,
+  5
+ ],
+ "sourceSha256": "9a923c5064d4373bcbdd0de12d3aa470a8d75ecfc33c391cfa38a67cafda536d"
+}

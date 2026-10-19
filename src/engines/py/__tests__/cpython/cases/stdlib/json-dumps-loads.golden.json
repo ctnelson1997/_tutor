@@ -1,0 +1,129 @@
+{
+ "stdout": "{\"name\": \"Ann\", \"age\": 20, \"grades\": [90, 85.5], \"active\": true, \"advisor\": null, \"pos\": [3, 4], \"7\": \"lucky\"}\n{\n  \"a\": [\n    true,\n    null\n  ],\n  \"b\": 1,\n  \"c\": {\n    \"y\": 1.5,\n    \"z\": 0\n  }\n}\n[1,\"two\",3.0]\n{'name': 'Ann', 'age': 20, 'grades': [90, 85.5], 'active': True, 'advisor': None, 'pos': [3, 4], '7': 'lucky'}\nFalse [3, 4] lucky float\n[1] False\n\"caf\\u00e9 \\\"quoted\\\"\" \"café\"\nJSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)\nTypeError: Object of type set is not JSON serializable\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "{\"name\": \"Ann\", \"age\": 20, \"grades\": [90, 85.5], \"active\": true, \"advisor\": null, \"pos\": [3, 4], \"7\": \"lucky\"}"
+  },
+  {
+   "stream": "stdout",
+   "text": "{"
+  },
+  {
+   "stream": "stdout",
+   "text": "  \"a\": ["
+  },
+  {
+   "stream": "stdout",
+   "text": "    true,"
+  },
+  {
+   "stream": "stdout",
+   "text": "    null"
+  },
+  {
+   "stream": "stdout",
+   "text": "  ],"
+  },
+  {
+   "stream": "stdout",
+   "text": "  \"b\": 1,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  \"c\": {"
+  },
+  {
+   "stream": "stdout",
+   "text": "    \"y\": 1.5,"
+  },
+  {
+   "stream": "stdout",
+   "text": "    \"z\": 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "  }"
+  },
+  {
+   "stream": "stdout",
+   "text": "}"
+  },
+  {
+   "stream": "stdout",
+   "text": "[1,\"two\",3.0]"
+  },
+  {
+   "stream": "stdout",
+   "text": "{'name': 'Ann', 'age': 20, 'grades': [90, 85.5], 'active': True, 'advisor': None, 'pos': [3, 4], '7': 'lucky'}"
+  },
+  {
+   "stream": "stdout",
+   "text": "False [3, 4] lucky float"
+  },
+  {
+   "stream": "stdout",
+   "text": "[1] False"
+  },
+  {
+   "stream": "stdout",
+   "text": "\"caf\\u00e9 \\\"quoted\\\"\" \"café\""
+  },
+  {
+   "stream": "stdout",
+   "text": "JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+  },
+  {
+   "stream": "stdout",
+   "text": "TypeError: Object of type set is not JSON serializable"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"json":"<module>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"json":"<module>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"json":"<module>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"json":"<module>","student":"<dict>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"json":"<module>","student":"<dict>","text":"'{\"name\": \"Ann\", \"age\": 20, \"grades\": [90, 85.5], \"active\": true, \"advisor\": null, \"pos\": [3, 4], \"7\": \"lucky\"}'"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"json":"<module>","student":"<dict>","text":"'{\"name\": \"Ann\", \"age\": 20, \"grades\": [90, 85.5], \"active\": true, \"advisor\": null, \"pos\": [3, 4], \"7\": \"lucky\"}'"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"json":"<module>","student":"<dict>","text":"'{\"name\": \"Ann\", \"age\": 20, \"grades\": [90, 85.5], \"active\": true, \"advisor\": null, \"pos\": [3, 4], \"7\": \"lucky\"}'"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"json":"<module>","student":"<dict>","text":"'{\"name\": \"Ann\", \"age\": 20, \"grades\": [90, 85.5], \"active\": true, \"advisor\": null, \"pos\": [3, 4], \"7\": \"lucky\"}'"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"json":"<module>","student":"<dict>","text":"'{\"name\": \"Ann\", \"age\": 20, \"grades\": [90, 85.5], \"active\": true, \"advisor\": null, \"pos\": [3, 4], \"7\": \"lucky\"}'","back":"<dict>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"json":"<module>","student":"<dict>","text":"'{\"name\": \"Ann\", \"age\": 20, \"grades\": [90, 85.5], \"active\": true, \"advisor\": null, \"pos\": [3, 4], \"7\": \"lucky\"}'","back":"<dict>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"json":"<module>","student":"<dict>","text":"'{\"name\": \"Ann\", \"age\": 20, \"grades\": [90, 85.5], \"active\": true, \"advisor\": null, \"pos\": [3, 4], \"7\": \"lucky\"}'","back":"<dict>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"json":"<module>","student":"<dict>","text":"'{\"name\": \"Ann\", \"age\": 20, \"grades\": [90, 85.5], \"active\": true, \"advisor\": null, \"pos\": [3, 4], \"7\": \"lucky\"}'","back":"<dict>","data":"<dict>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"json":"<module>","student":"<dict>","text":"'{\"name\": \"Ann\", \"age\": 20, \"grades\": [90, 85.5], \"active\": true, \"advisor\": null, \"pos\": [3, 4], \"7\": \"lucky\"}'","back":"<dict>","data":"<dict>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"json":"<module>","student":"<dict>","text":"'{\"name\": \"Ann\", \"age\": 20, \"grades\": [90, 85.5], \"active\": true, \"advisor\": null, \"pos\": [3, 4], \"7\": \"lucky\"}'","back":"<dict>","data":"<dict>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"json":"<module>","student":"<dict>","text":"'{\"name\": \"Ann\", \"age\": 20, \"grades\": [90, 85.5], \"active\": true, \"advisor\": null, \"pos\": [3, 4], \"7\": \"lucky\"}'","back":"<dict>","data":"<dict>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"json":"<module>","student":"<dict>","text":"'{\"name\": \"Ann\", \"age\": 20, \"grades\": [90, 85.5], \"active\": true, \"advisor\": null, \"pos\": [3, 4], \"7\": \"lucky\"}'","back":"<dict>","data":"<dict>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"json":"<module>","student":"<dict>","text":"'{\"name\": \"Ann\", \"age\": 20, \"grades\": [90, 85.5], \"active\": true, \"advisor\": null, \"pos\": [3, 4], \"7\": \"lucky\"}'","back":"<dict>","data":"<dict>"}},
+  {"event":"exception","line":17,"stack":["<module>"],"locals":{"json":"<module>","student":"<dict>","text":"'{\"name\": \"Ann\", \"age\": 20, \"grades\": [90, 85.5], \"active\": true, \"advisor\": null, \"pos\": [3, 4], \"7\": \"lucky\"}'","back":"<dict>","data":"<dict>"},"exc":"JSONDecodeError"},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"json":"<module>","student":"<dict>","text":"'{\"name\": \"Ann\", \"age\": 20, \"grades\": [90, 85.5], \"active\": true, \"advisor\": null, \"pos\": [3, 4], \"7\": \"lucky\"}'","back":"<dict>","data":"<dict>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"json":"<module>","student":"<dict>","text":"'{\"name\": \"Ann\", \"age\": 20, \"grades\": [90, 85.5], \"active\": true, \"advisor\": null, \"pos\": [3, 4], \"7\": \"lucky\"}'","back":"<dict>","data":"<dict>","e":"<JSONDecodeError>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"json":"<module>","student":"<dict>","text":"'{\"name\": \"Ann\", \"age\": 20, \"grades\": [90, 85.5], \"active\": true, \"advisor\": null, \"pos\": [3, 4], \"7\": \"lucky\"}'","back":"<dict>","data":"<dict>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"json":"<module>","student":"<dict>","text":"'{\"name\": \"Ann\", \"age\": 20, \"grades\": [90, 85.5], \"active\": true, \"advisor\": null, \"pos\": [3, 4], \"7\": \"lucky\"}'","back":"<dict>","data":"<dict>"}},
+  {"event":"exception","line":21,"stack":["<module>"],"locals":{"json":"<module>","student":"<dict>","text":"'{\"name\": \"Ann\", \"age\": 20, \"grades\": [90, 85.5], \"active\": true, \"advisor\": null, \"pos\": [3, 4], \"7\": \"lucky\"}'","back":"<dict>","data":"<dict>"},"exc":"TypeError"},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"json":"<module>","student":"<dict>","text":"'{\"name\": \"Ann\", \"age\": 20, \"grades\": [90, 85.5], \"active\": true, \"advisor\": null, \"pos\": [3, 4], \"7\": \"lucky\"}'","back":"<dict>","data":"<dict>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"json":"<module>","student":"<dict>","text":"'{\"name\": \"Ann\", \"age\": 20, \"grades\": [90, 85.5], \"active\": true, \"advisor\": null, \"pos\": [3, 4], \"7\": \"lucky\"}'","back":"<dict>","data":"<dict>","e":"<TypeError>"}},
+  {"event":"return","line":23,"stack":["<module>"],"locals":{"json":"<module>","student":"<dict>","text":"'{\"name\": \"Ann\", \"age\": 20, \"grades\": [90, 85.5], \"active\": true, \"advisor\": null, \"pos\": [3, 4], \"7\": \"lucky\"}'","back":"<dict>","data":"<dict>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 26,
+ "finalGlobals": {
+  "json": "<module>",
+  "student": "<dict>",
+  "text": "'{\"name\": \"Ann\", \"age\": 20, \"grades\": [90, 85.5], \"active\": true, \"advisor\": null, \"pos\": [3, 4], \"7\": \"lucky\"}'",
+  "back": "<dict>",
+  "data": "<dict>"
+ },
+ "continuation": [
+  5
+ ],
+ "sourceSha256": "1c6a486359a85dcb769c4eee4132df37e73697243fe536d05da353c740b253fb"
+}

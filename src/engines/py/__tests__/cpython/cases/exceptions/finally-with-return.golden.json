@@ -1,0 +1,100 @@
+{
+ "stdout": "  in try\n  in finally\nfrom try\nfinally value\nswallowed\n[0, 'f0', 'f1', 2, 'f2', 'f3']\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "  in try"
+  },
+  {
+   "stream": "stdout",
+   "text": "  in finally"
+  },
+  {
+   "stream": "stdout",
+   "text": "from try"
+  },
+  {
+   "stream": "stdout",
+   "text": "finally value"
+  },
+  {
+   "stream": "stdout",
+   "text": "swallowed"
+  },
+  {
+   "stream": "stdout",
+   "text": "[0, 'f0', 'f1', 2, 'f2', 'f3']"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"tidy":"<function>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"tidy":"<function>","override":"<function>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"tidy":"<function>","override":"<function>","swallow":"<function>"}},
+  {"event":"line","line":34,"stack":["<module>"],"locals":{"tidy":"<function>","override":"<function>","swallow":"<function>","loop_with_finally":"<function>"}},
+  {"event":"call","line":2,"stack":["<module>","tidy"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>","tidy"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>","tidy"],"locals":{}},
+  {"event":"line","line":5,"stack":["<module>","tidy"],"locals":{}},
+  {"event":"line","line":7,"stack":["<module>","tidy"],"locals":{}},
+  {"event":"return","line":7,"stack":["<module>","tidy"],"locals":{},"value":"'from try'"},
+  {"event":"line","line":35,"stack":["<module>"],"locals":{"tidy":"<function>","override":"<function>","swallow":"<function>","loop_with_finally":"<function>"}},
+  {"event":"call","line":9,"stack":["<module>","override"],"locals":{}},
+  {"event":"line","line":10,"stack":["<module>","override"],"locals":{}},
+  {"event":"line","line":11,"stack":["<module>","override"],"locals":{}},
+  {"event":"line","line":13,"stack":["<module>","override"],"locals":{}},
+  {"event":"return","line":13,"stack":["<module>","override"],"locals":{},"value":"'finally value'"},
+  {"event":"line","line":36,"stack":["<module>"],"locals":{"tidy":"<function>","override":"<function>","swallow":"<function>","loop_with_finally":"<function>"}},
+  {"event":"call","line":15,"stack":["<module>","swallow"],"locals":{}},
+  {"event":"line","line":16,"stack":["<module>","swallow"],"locals":{}},
+  {"event":"line","line":17,"stack":["<module>","swallow"],"locals":{}},
+  {"event":"exception","line":17,"stack":["<module>","swallow"],"locals":{},"exc":"ZeroDivisionError"},
+  {"event":"line","line":19,"stack":["<module>","swallow"],"locals":{}},
+  {"event":"return","line":19,"stack":["<module>","swallow"],"locals":{},"value":"'swallowed'"},
+  {"event":"line","line":37,"stack":["<module>"],"locals":{"tidy":"<function>","override":"<function>","swallow":"<function>","loop_with_finally":"<function>"}},
+  {"event":"call","line":21,"stack":["<module>","loop_with_finally"],"locals":{}},
+  {"event":"line","line":22,"stack":["<module>","loop_with_finally"],"locals":{}},
+  {"event":"line","line":23,"stack":["<module>","loop_with_finally"],"locals":{"out":"<list>"}},
+  {"event":"line","line":24,"stack":["<module>","loop_with_finally"],"locals":{"out":"<list>","i":"0"}},
+  {"event":"line","line":25,"stack":["<module>","loop_with_finally"],"locals":{"out":"<list>","i":"0"}},
+  {"event":"line","line":27,"stack":["<module>","loop_with_finally"],"locals":{"out":"<list>","i":"0"}},
+  {"event":"line","line":29,"stack":["<module>","loop_with_finally"],"locals":{"out":"<list>","i":"0"}},
+  {"event":"line","line":31,"stack":["<module>","loop_with_finally"],"locals":{"out":"<list>","i":"0"}},
+  {"event":"line","line":23,"stack":["<module>","loop_with_finally"],"locals":{"out":"<list>","i":"0"}},
+  {"event":"line","line":24,"stack":["<module>","loop_with_finally"],"locals":{"out":"<list>","i":"1"}},
+  {"event":"line","line":25,"stack":["<module>","loop_with_finally"],"locals":{"out":"<list>","i":"1"}},
+  {"event":"line","line":26,"stack":["<module>","loop_with_finally"],"locals":{"out":"<list>","i":"1"}},
+  {"event":"line","line":31,"stack":["<module>","loop_with_finally"],"locals":{"out":"<list>","i":"1"}},
+  {"event":"line","line":23,"stack":["<module>","loop_with_finally"],"locals":{"out":"<list>","i":"1"}},
+  {"event":"line","line":24,"stack":["<module>","loop_with_finally"],"locals":{"out":"<list>","i":"2"}},
+  {"event":"line","line":25,"stack":["<module>","loop_with_finally"],"locals":{"out":"<list>","i":"2"}},
+  {"event":"line","line":27,"stack":["<module>","loop_with_finally"],"locals":{"out":"<list>","i":"2"}},
+  {"event":"line","line":29,"stack":["<module>","loop_with_finally"],"locals":{"out":"<list>","i":"2"}},
+  {"event":"line","line":31,"stack":["<module>","loop_with_finally"],"locals":{"out":"<list>","i":"2"}},
+  {"event":"line","line":23,"stack":["<module>","loop_with_finally"],"locals":{"out":"<list>","i":"2"}},
+  {"event":"line","line":24,"stack":["<module>","loop_with_finally"],"locals":{"out":"<list>","i":"3"}},
+  {"event":"line","line":25,"stack":["<module>","loop_with_finally"],"locals":{"out":"<list>","i":"3"}},
+  {"event":"line","line":27,"stack":["<module>","loop_with_finally"],"locals":{"out":"<list>","i":"3"}},
+  {"event":"line","line":28,"stack":["<module>","loop_with_finally"],"locals":{"out":"<list>","i":"3"}},
+  {"event":"line","line":31,"stack":["<module>","loop_with_finally"],"locals":{"out":"<list>","i":"3"}},
+  {"event":"line","line":32,"stack":["<module>","loop_with_finally"],"locals":{"out":"<list>","i":"3"}},
+  {"event":"return","line":32,"stack":["<module>","loop_with_finally"],"locals":{"out":"<list>","i":"3"},"value":"<list>"},
+  {"event":"return","line":37,"stack":["<module>"],"locals":{"tidy":"<function>","override":"<function>","swallow":"<function>","loop_with_finally":"<function>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 53,
+ "finalGlobals": {
+  "tidy": "<function>",
+  "override": "<function>",
+  "swallow": "<function>",
+  "loop_with_finally": "<function>"
+ },
+ "continuation": [],
+ "sourceSha256": "2046f3d5329c6863d6818fbf87f58a3b32eedd781cb1efa9b346d90c5e59b070"
+}

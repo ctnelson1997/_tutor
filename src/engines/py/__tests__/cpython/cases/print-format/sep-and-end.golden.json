@@ -1,0 +1,100 @@
+{
+ "stdout": "1 two 3.0\n1two3.0\n1, two, 3.0\n1 -> two -> 3.0 <end>\n1\ntwo\n3.0\nno newline here ...continued!\n\n\nafter blank lines\nmulti line end\n\nsep none uses space\ndone|\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "1 two 3.0"
+  },
+  {
+   "stream": "stdout",
+   "text": "1two3.0"
+  },
+  {
+   "stream": "stdout",
+   "text": "1, two, 3.0"
+  },
+  {
+   "stream": "stdout",
+   "text": "1 -> two -> 3.0 <end>"
+  },
+  {
+   "stream": "stdout",
+   "text": "1"
+  },
+  {
+   "stream": "stdout",
+   "text": "two"
+  },
+  {
+   "stream": "stdout",
+   "text": "3.0"
+  },
+  {
+   "stream": "stdout",
+   "text": "no newline here ...continued!"
+  },
+  {
+   "stream": "stdout",
+   "text": ""
+  },
+  {
+   "stream": "stdout",
+   "text": ""
+  },
+  {
+   "stream": "stdout",
+   "text": "after blank lines"
+  },
+  {
+   "stream": "stdout",
+   "text": "multi line end"
+  },
+  {
+   "stream": "stdout",
+   "text": ""
+  },
+  {
+   "stream": "stdout",
+   "text": "sep none uses space"
+  },
+  {
+   "stream": "stdout",
+   "text": "done|"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"a":"1","b":"'two'","c":"3.0"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"a":"1","b":"'two'","c":"3.0"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"a":"1","b":"'two'","c":"3.0"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"a":"1","b":"'two'","c":"3.0"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"a":"1","b":"'two'","c":"3.0"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"a":"1","b":"'two'","c":"3.0"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"a":"1","b":"'two'","c":"3.0"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"a":"1","b":"'two'","c":"3.0"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"a":"1","b":"'two'","c":"3.0"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"a":"1","b":"'two'","c":"3.0"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"a":"1","b":"'two'","c":"3.0"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"a":"1","b":"'two'","c":"3.0"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"a":"1","b":"'two'","c":"3.0"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"a":"1","b":"'two'","c":"3.0"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"a":"1","b":"'two'","c":"3.0","label":"'done'"}},
+  {"event":"return","line":17,"stack":["<module>"],"locals":{"a":"1","b":"'two'","c":"3.0","label":"'done'"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 18,
+ "finalGlobals": {
+  "a": "1",
+  "b": "'two'",
+  "c": "3.0",
+  "label": "'done'"
+ },
+ "continuation": [],
+ "sourceSha256": "12a3d3728eecfeb2f2cb42dc48dfbf859e84f08b323c592ee86945a0f858b1c8"
+}

@@ -1,0 +1,101 @@
+{
+ "stdout": "Color.GREEN <Color.GREEN: 2> GREEN 2\n['RED', 'GREEN', 'BLUE']\nColor.BLUE Color.RED True False\nwrite DONE 3\ntest DOING 2\nship TODO 1\n['write'] 3\nValueError: 7 is not a valid Color\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Color.GREEN <Color.GREEN: 2> GREEN 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "['RED', 'GREEN', 'BLUE']"
+  },
+  {
+   "stream": "stdout",
+   "text": "Color.BLUE Color.RED True False"
+  },
+  {
+   "stream": "stdout",
+   "text": "write DONE 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "test DOING 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "ship TODO 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "['write'] 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "ValueError: 7 is not a valid Color"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"Enum":"<EnumType>","auto":"<type>"}},
+  {"event":"call","line":4,"stack":["<module>","Color"],"locals":{"_generate_next_value_":"<function>"}},
+  {"event":"line","line":4,"stack":["<module>","Color"],"locals":{"_generate_next_value_":"<function>"}},
+  {"event":"line","line":5,"stack":["<module>","Color"],"locals":{"_generate_next_value_":"<function>","__module__":"'__main__'","__qualname__":"'Color'"}},
+  {"event":"line","line":6,"stack":["<module>","Color"],"locals":{"_generate_next_value_":"<function>","__module__":"'__main__'","__qualname__":"'Color'","RED":"1"}},
+  {"event":"line","line":7,"stack":["<module>","Color"],"locals":{"_generate_next_value_":"<function>","__module__":"'__main__'","__qualname__":"'Color'","RED":"1","GREEN":"2"}},
+  {"event":"return","line":7,"stack":["<module>","Color"],"locals":{"_generate_next_value_":"<function>","__module__":"'__main__'","__qualname__":"'Color'","RED":"1","GREEN":"2","BLUE":"3"},"value":"None"},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"Enum":"<EnumType>","auto":"<type>","Color":"<EnumType>"}},
+  {"event":"call","line":9,"stack":["<module>","Status"],"locals":{"_generate_next_value_":"<function>"}},
+  {"event":"line","line":9,"stack":["<module>","Status"],"locals":{"_generate_next_value_":"<function>"}},
+  {"event":"line","line":10,"stack":["<module>","Status"],"locals":{"_generate_next_value_":"<function>","__module__":"'__main__'","__qualname__":"'Status'"}},
+  {"event":"line","line":11,"stack":["<module>","Status"],"locals":{"_generate_next_value_":"<function>","__module__":"'__main__'","__qualname__":"'Status'","TODO":"1"}},
+  {"event":"line","line":12,"stack":["<module>","Status"],"locals":{"_generate_next_value_":"<function>","__module__":"'__main__'","__qualname__":"'Status'","TODO":"1","DOING":"2"}},
+  {"event":"return","line":12,"stack":["<module>","Status"],"locals":{"_generate_next_value_":"<function>","__module__":"'__main__'","__qualname__":"'Status'","TODO":"1","DOING":"2","DONE":"3"},"value":"None"},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"Enum":"<EnumType>","auto":"<type>","Color":"<EnumType>","Status":"<EnumType>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"Enum":"<EnumType>","auto":"<type>","Color":"<EnumType>","Status":"<EnumType>","fav":"<Color>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"Enum":"<EnumType>","auto":"<type>","Color":"<EnumType>","Status":"<EnumType>","fav":"<Color>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"Enum":"<EnumType>","auto":"<type>","Color":"<EnumType>","Status":"<EnumType>","fav":"<Color>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"Enum":"<EnumType>","auto":"<type>","Color":"<EnumType>","Status":"<EnumType>","fav":"<Color>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"Enum":"<EnumType>","auto":"<type>","Color":"<EnumType>","Status":"<EnumType>","fav":"<Color>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"Enum":"<EnumType>","auto":"<type>","Color":"<EnumType>","Status":"<EnumType>","fav":"<Color>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"Enum":"<EnumType>","auto":"<type>","Color":"<EnumType>","Status":"<EnumType>","fav":"<Color>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"Enum":"<EnumType>","auto":"<type>","Color":"<EnumType>","Status":"<EnumType>","fav":"<Color>","tasks":"<dict>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Enum":"<EnumType>","auto":"<type>","Color":"<EnumType>","Status":"<EnumType>","fav":"<Color>","tasks":"<dict>","task":"'write'","st":"<Status>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"Enum":"<EnumType>","auto":"<type>","Color":"<EnumType>","Status":"<EnumType>","fav":"<Color>","tasks":"<dict>","task":"'write'","st":"<Status>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Enum":"<EnumType>","auto":"<type>","Color":"<EnumType>","Status":"<EnumType>","fav":"<Color>","tasks":"<dict>","task":"'test'","st":"<Status>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"Enum":"<EnumType>","auto":"<type>","Color":"<EnumType>","Status":"<EnumType>","fav":"<Color>","tasks":"<dict>","task":"'test'","st":"<Status>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Enum":"<EnumType>","auto":"<type>","Color":"<EnumType>","Status":"<EnumType>","fav":"<Color>","tasks":"<dict>","task":"'ship'","st":"<Status>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"Enum":"<EnumType>","auto":"<type>","Color":"<EnumType>","Status":"<EnumType>","fav":"<Color>","tasks":"<dict>","task":"'ship'","st":"<Status>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"Enum":"<EnumType>","auto":"<type>","Color":"<EnumType>","Status":"<EnumType>","fav":"<Color>","tasks":"<dict>","task":"'ship'","st":"<Status>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"Enum":"<EnumType>","auto":"<type>","Color":"<EnumType>","Status":"<EnumType>","fav":"<Color>","tasks":"<dict>","task":"'ship'","st":"<Status>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"Enum":"<EnumType>","auto":"<type>","Color":"<EnumType>","Status":"<EnumType>","fav":"<Color>","tasks":"<dict>","task":"'ship'","st":"<Status>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"Enum":"<EnumType>","auto":"<type>","Color":"<EnumType>","Status":"<EnumType>","fav":"<Color>","tasks":"<dict>","task":"'ship'","st":"<Status>"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"Enum":"<EnumType>","auto":"<type>","Color":"<EnumType>","Status":"<EnumType>","fav":"<Color>","tasks":"<dict>","task":"'ship'","st":"<Status>","done":"<list>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"Enum":"<EnumType>","auto":"<type>","Color":"<EnumType>","Status":"<EnumType>","fav":"<Color>","tasks":"<dict>","task":"'ship'","st":"<Status>","done":"<list>"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"Enum":"<EnumType>","auto":"<type>","Color":"<EnumType>","Status":"<EnumType>","fav":"<Color>","tasks":"<dict>","task":"'ship'","st":"<Status>","done":"<list>"}},
+  {"event":"exception","line":24,"stack":["<module>"],"locals":{"Enum":"<EnumType>","auto":"<type>","Color":"<EnumType>","Status":"<EnumType>","fav":"<Color>","tasks":"<dict>","task":"'ship'","st":"<Status>","done":"<list>"},"exc":"ValueError"},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"Enum":"<EnumType>","auto":"<type>","Color":"<EnumType>","Status":"<EnumType>","fav":"<Color>","tasks":"<dict>","task":"'ship'","st":"<Status>","done":"<list>"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"Enum":"<EnumType>","auto":"<type>","Color":"<EnumType>","Status":"<EnumType>","fav":"<Color>","tasks":"<dict>","task":"'ship'","st":"<Status>","done":"<list>","e":"<ValueError>"}},
+  {"event":"return","line":26,"stack":["<module>"],"locals":{"Enum":"<EnumType>","auto":"<type>","Color":"<EnumType>","Status":"<EnumType>","fav":"<Color>","tasks":"<dict>","task":"'ship'","st":"<Status>","done":"<list>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 41,
+ "finalGlobals": {
+  "Enum": "<EnumType>",
+  "auto": "<type>",
+  "Color": "<EnumType>",
+  "Status": "<EnumType>",
+  "fav": "<Color>",
+  "tasks": "<dict>",
+  "task": "'ship'",
+  "st": "<Status>",
+  "done": "<list>"
+ },
+ "continuation": [],
+ "sourceSha256": "106c85c487e5ef11d6d1f6827b3a47c1b6d0df024945de78629b75cb853a45fc"
+}

@@ -1,0 +1,132 @@
+{
+ "stdout": "5 True add\n+ 10\n- 4\n* 21\n'HELLO' 5\n3 True\n81\n4 6 6\ncalled print via list\n['a', 'b', 'c']\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "5 True add"
+  },
+  {
+   "stream": "stdout",
+   "text": "+ 10"
+  },
+  {
+   "stream": "stdout",
+   "text": "- 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "* 21"
+  },
+  {
+   "stream": "stdout",
+   "text": "'HELLO' 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "3 True"
+  },
+  {
+   "stream": "stdout",
+   "text": "81"
+  },
+  {
+   "stream": "stdout",
+   "text": "4 6 6"
+  },
+  {
+   "stream": "stdout",
+   "text": "called print via list"
+  },
+  {
+   "stream": "stdout",
+   "text": "['a', 'b', 'c']"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"add":"<function>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"add":"<function>","sub":"<function>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"add":"<function>","sub":"<function>","f":"<function>"}},
+  {"event":"call","line":2,"stack":["<module>","add"],"locals":{"a":"2","b":"3"}},
+  {"event":"line","line":3,"stack":["<module>","add"],"locals":{"a":"2","b":"3"}},
+  {"event":"return","line":3,"stack":["<module>","add"],"locals":{"a":"2","b":"3"},"value":"5"},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"add":"<function>","sub":"<function>","f":"<function>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"add":"<function>","sub":"<function>","f":"<function>","ops":"<dict>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"add":"<function>","sub":"<function>","f":"<function>","ops":"<dict>","sym":"'+'"}},
+  {"event":"call","line":2,"stack":["<module>","add"],"locals":{"a":"7","b":"3"}},
+  {"event":"line","line":3,"stack":["<module>","add"],"locals":{"a":"7","b":"3"}},
+  {"event":"return","line":3,"stack":["<module>","add"],"locals":{"a":"7","b":"3"},"value":"10"},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"add":"<function>","sub":"<function>","f":"<function>","ops":"<dict>","sym":"'+'"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"add":"<function>","sub":"<function>","f":"<function>","ops":"<dict>","sym":"'-'"}},
+  {"event":"call","line":5,"stack":["<module>","sub"],"locals":{"a":"7","b":"3"}},
+  {"event":"line","line":6,"stack":["<module>","sub"],"locals":{"a":"7","b":"3"}},
+  {"event":"return","line":6,"stack":["<module>","sub"],"locals":{"a":"7","b":"3"},"value":"4"},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"add":"<function>","sub":"<function>","f":"<function>","ops":"<dict>","sym":"'-'"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"add":"<function>","sub":"<function>","f":"<function>","ops":"<dict>","sym":"'*'"}},
+  {"event":"call","line":10,"stack":["<module>","<lambda>"],"locals":{"a":"7","b":"3"}},
+  {"event":"line","line":10,"stack":["<module>","<lambda>"],"locals":{"a":"7","b":"3"}},
+  {"event":"return","line":10,"stack":["<module>","<lambda>"],"locals":{"a":"7","b":"3"},"value":"21"},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"add":"<function>","sub":"<function>","f":"<function>","ops":"<dict>","sym":"'*'"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"add":"<function>","sub":"<function>","f":"<function>","ops":"<dict>","sym":"'*'"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"add":"<function>","sub":"<function>","f":"<function>","ops":"<dict>","sym":"'*'","pipeline":"<list>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"add":"<function>","sub":"<function>","f":"<function>","ops":"<dict>","sym":"'*'","pipeline":"<list>","value":"'  hello  '"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"add":"<function>","sub":"<function>","f":"<function>","ops":"<dict>","sym":"'*'","pipeline":"<list>","value":"'  hello  '","step":"<method_descriptor>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"add":"<function>","sub":"<function>","f":"<function>","ops":"<dict>","sym":"'*'","pipeline":"<list>","value":"'  HELLO  '","step":"<method_descriptor>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"add":"<function>","sub":"<function>","f":"<function>","ops":"<dict>","sym":"'*'","pipeline":"<list>","value":"'  HELLO  '","step":"<method_descriptor>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"add":"<function>","sub":"<function>","f":"<function>","ops":"<dict>","sym":"'*'","pipeline":"<list>","value":"'HELLO'","step":"<method_descriptor>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"add":"<function>","sub":"<function>","f":"<function>","ops":"<dict>","sym":"'*'","pipeline":"<list>","value":"'HELLO'","step":"<method_descriptor>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"add":"<function>","sub":"<function>","f":"<function>","ops":"<dict>","sym":"'*'","pipeline":"<list>","value":"'HELLO'","step":"<method_descriptor>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"add":"<function>","sub":"<function>","f":"<function>","ops":"<dict>","sym":"'*'","pipeline":"<list>","value":"'HELLO'","step":"<method_descriptor>","measure":"<builtin_function_or_method>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"add":"<function>","sub":"<function>","f":"<function>","ops":"<dict>","sym":"'*'","pipeline":"<list>","value":"'HELLO'","step":"<method_descriptor>","measure":"<builtin_function_or_method>"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"add":"<function>","sub":"<function>","f":"<function>","ops":"<dict>","sym":"'*'","pipeline":"<list>","value":"'HELLO'","step":"<method_descriptor>","measure":"<builtin_function_or_method>","apply_twice":"<function>"}},
+  {"event":"call","line":21,"stack":["<module>","apply_twice"],"locals":{"func":"<function>","x":"3"}},
+  {"event":"line","line":22,"stack":["<module>","apply_twice"],"locals":{"func":"<function>","x":"3"}},
+  {"event":"call","line":24,"stack":["<module>","apply_twice","<lambda>"],"locals":{"n":"3"}},
+  {"event":"line","line":24,"stack":["<module>","apply_twice","<lambda>"],"locals":{"n":"3"}},
+  {"event":"return","line":24,"stack":["<module>","apply_twice","<lambda>"],"locals":{"n":"3"},"value":"9"},
+  {"event":"call","line":24,"stack":["<module>","apply_twice","<lambda>"],"locals":{"n":"9"}},
+  {"event":"line","line":24,"stack":["<module>","apply_twice","<lambda>"],"locals":{"n":"9"}},
+  {"event":"return","line":24,"stack":["<module>","apply_twice","<lambda>"],"locals":{"n":"9"},"value":"81"},
+  {"event":"return","line":22,"stack":["<module>","apply_twice"],"locals":{"func":"<function>","x":"3"},"value":"81"},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"add":"<function>","sub":"<function>","f":"<function>","ops":"<dict>","sym":"'*'","pipeline":"<list>","value":"'HELLO'","step":"<method_descriptor>","measure":"<builtin_function_or_method>","apply_twice":"<function>"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"add":"<function>","sub":"<function>","f":"<function>","ops":"<dict>","sym":"'*'","pipeline":"<list>","value":"'HELLO'","step":"<method_descriptor>","measure":"<builtin_function_or_method>","apply_twice":"<function>"}},
+  {"event":"call","line":5,"stack":["<module>","sub"],"locals":{"a":"5","b":"1"}},
+  {"event":"line","line":6,"stack":["<module>","sub"],"locals":{"a":"5","b":"1"}},
+  {"event":"return","line":6,"stack":["<module>","sub"],"locals":{"a":"5","b":"1"},"value":"4"},
+  {"event":"call","line":2,"stack":["<module>","add"],"locals":{"a":"5","b":"1"}},
+  {"event":"line","line":3,"stack":["<module>","add"],"locals":{"a":"5","b":"1"}},
+  {"event":"return","line":3,"stack":["<module>","add"],"locals":{"a":"5","b":"1"},"value":"6"},
+  {"event":"call","line":2,"stack":["<module>","add"],"locals":{"a":"5","b":"1"}},
+  {"event":"line","line":3,"stack":["<module>","add"],"locals":{"a":"5","b":"1"}},
+  {"event":"return","line":3,"stack":["<module>","add"],"locals":{"a":"5","b":"1"},"value":"6"},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"add":"<function>","sub":"<function>","f":"<function>","ops":"<dict>","sym":"'*'","pipeline":"<list>","value":"'HELLO'","step":"<method_descriptor>","measure":"<builtin_function_or_method>","apply_twice":"<function>"}},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"add":"<function>","sub":"<function>","f":"<function>","ops":"<dict>","sym":"'*'","pipeline":"<list>","value":"'HELLO'","step":"<method_descriptor>","measure":"<builtin_function_or_method>","apply_twice":"<function>","callbacks":"<list>"}},
+  {"event":"line","line":29,"stack":["<module>"],"locals":{"add":"<function>","sub":"<function>","f":"<function>","ops":"<dict>","sym":"'*'","pipeline":"<list>","value":"'HELLO'","step":"<method_descriptor>","measure":"<builtin_function_or_method>","apply_twice":"<function>","callbacks":"<list>"}},
+  {"event":"line","line":30,"stack":["<module>"],"locals":{"add":"<function>","sub":"<function>","f":"<function>","ops":"<dict>","sym":"'*'","pipeline":"<list>","value":"'HELLO'","step":"<method_descriptor>","measure":"<builtin_function_or_method>","apply_twice":"<function>","callbacks":"<list>","method":"<builtin_function_or_method>"}},
+  {"event":"return","line":30,"stack":["<module>"],"locals":{"add":"<function>","sub":"<function>","f":"<function>","ops":"<dict>","sym":"'*'","pipeline":"<list>","value":"'HELLO'","step":"<method_descriptor>","measure":"<builtin_function_or_method>","apply_twice":"<function>","callbacks":"<list>","method":"<builtin_function_or_method>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 62,
+ "finalGlobals": {
+  "add": "<function>",
+  "sub": "<function>",
+  "f": "<function>",
+  "ops": "<dict>",
+  "sym": "'*'",
+  "pipeline": "<list>",
+  "value": "'HELLO'",
+  "step": "<method_descriptor>",
+  "measure": "<builtin_function_or_method>",
+  "apply_twice": "<function>",
+  "callbacks": "<list>",
+  "method": "<builtin_function_or_method>"
+ },
+ "continuation": [],
+ "sourceSha256": "1e2072bac77ffebf2e26667087a9ac1705a237dcd8ce86a29657cba248b16cbc"
+}

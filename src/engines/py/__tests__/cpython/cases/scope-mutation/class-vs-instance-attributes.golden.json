@@ -1,0 +1,81 @@
+{
+ "stdout": "['roll', 'sit'] ['roll', 'sit'] ['roll', 'sit'] True\nwolf? canine canine\nwolf? Canis familiaris\nCanis familiaris\n['name'] ['name']\n['own list'] ['roll', 'sit'] ['roll', 'sit']\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "['roll', 'sit'] ['roll', 'sit'] ['roll', 'sit'] True"
+  },
+  {
+   "stream": "stdout",
+   "text": "wolf? canine canine"
+  },
+  {
+   "stream": "stdout",
+   "text": "wolf? Canis familiaris"
+  },
+  {
+   "stream": "stdout",
+   "text": "Canis familiaris"
+  },
+  {
+   "stream": "stdout",
+   "text": "['name'] ['name']"
+  },
+  {
+   "stream": "stdout",
+   "text": "['own list'] ['roll', 'sit'] ['roll', 'sit']"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"call","line":2,"stack":["<module>","Dog"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>","Dog"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>","Dog"],"locals":{"__module__":"'__main__'","__qualname__":"'Dog'"}},
+  {"event":"line","line":4,"stack":["<module>","Dog"],"locals":{"__module__":"'__main__'","__qualname__":"'Dog'","tricks":"<list>"}},
+  {"event":"line","line":5,"stack":["<module>","Dog"],"locals":{"__module__":"'__main__'","__qualname__":"'Dog'","tricks":"<list>","species":"'canine'"}},
+  {"event":"line","line":7,"stack":["<module>","Dog"],"locals":{"__module__":"'__main__'","__qualname__":"'Dog'","tricks":"<list>","species":"'canine'","__init__":"<function>"}},
+  {"event":"return","line":7,"stack":["<module>","Dog"],"locals":{"__module__":"'__main__'","__qualname__":"'Dog'","tricks":"<list>","species":"'canine'","__init__":"<function>","add_trick":"<function>"},"value":"None"},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"Dog":"<type>"}},
+  {"event":"call","line":5,"stack":["<module>","__init__"],"locals":{"self":"<Dog>","name":"'Rex'"}},
+  {"event":"line","line":6,"stack":["<module>","__init__"],"locals":{"self":"<Dog>","name":"'Rex'"}},
+  {"event":"return","line":6,"stack":["<module>","__init__"],"locals":{"self":"<Dog>","name":"'Rex'"},"value":"None"},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"Dog":"<type>","rex":"<Dog>"}},
+  {"event":"call","line":5,"stack":["<module>","__init__"],"locals":{"self":"<Dog>","name":"'Fido'"}},
+  {"event":"line","line":6,"stack":["<module>","__init__"],"locals":{"self":"<Dog>","name":"'Fido'"}},
+  {"event":"return","line":6,"stack":["<module>","__init__"],"locals":{"self":"<Dog>","name":"'Fido'"},"value":"None"},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"Dog":"<type>","rex":"<Dog>","fido":"<Dog>"}},
+  {"event":"call","line":7,"stack":["<module>","add_trick"],"locals":{"self":"<Dog>","trick":"'roll'"}},
+  {"event":"line","line":8,"stack":["<module>","add_trick"],"locals":{"self":"<Dog>","trick":"'roll'"}},
+  {"event":"return","line":8,"stack":["<module>","add_trick"],"locals":{"self":"<Dog>","trick":"'roll'"},"value":"None"},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"Dog":"<type>","rex":"<Dog>","fido":"<Dog>"}},
+  {"event":"call","line":7,"stack":["<module>","add_trick"],"locals":{"self":"<Dog>","trick":"'sit'"}},
+  {"event":"line","line":8,"stack":["<module>","add_trick"],"locals":{"self":"<Dog>","trick":"'sit'"}},
+  {"event":"return","line":8,"stack":["<module>","add_trick"],"locals":{"self":"<Dog>","trick":"'sit'"},"value":"None"},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"Dog":"<type>","rex":"<Dog>","fido":"<Dog>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"Dog":"<type>","rex":"<Dog>","fido":"<Dog>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"Dog":"<type>","rex":"<Dog>","fido":"<Dog>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"Dog":"<type>","rex":"<Dog>","fido":"<Dog>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"Dog":"<type>","rex":"<Dog>","fido":"<Dog>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"Dog":"<type>","rex":"<Dog>","fido":"<Dog>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Dog":"<type>","rex":"<Dog>","fido":"<Dog>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"Dog":"<type>","rex":"<Dog>","fido":"<Dog>"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"Dog":"<type>","rex":"<Dog>","fido":"<Dog>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"Dog":"<type>","rex":"<Dog>","fido":"<Dog>"}},
+  {"event":"return","line":23,"stack":["<module>"],"locals":{"Dog":"<type>","rex":"<Dog>","fido":"<Dog>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 36,
+ "finalGlobals": {
+  "Dog": "<type>",
+  "rex": "<Dog>",
+  "fido": "<Dog>"
+ },
+ "continuation": [],
+ "sourceSha256": "fa8c463fff22bba6d47850fed9d6da00ed5ad26fcc72c4037efc412b4d1c39ef"
+}

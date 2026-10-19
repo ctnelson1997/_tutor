@@ -1,0 +1,35 @@
+{
+ "stdout": "Alice\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Alice"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":1,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"students":"<list>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"students":"<list>","top":"<dict>"}},
+  {"event":"return","line":6,"stack":["<module>"],"locals":{"students":"<list>","top":"<dict>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 7,
+ "finalGlobals": {
+  "students": "<list>",
+  "top": "<dict>"
+ },
+ "continuation": [
+  2,
+  3,
+  4
+ ],
+ "sourceSha256": "d3727c7617ed2c4cb3641d63ca4e0c948367b9a5cc0f2c15c83f95b1cc06f340"
+}

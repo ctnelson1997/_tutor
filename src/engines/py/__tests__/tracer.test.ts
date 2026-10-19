@@ -30,22 +30,23 @@ describe('getTracerCode', () => {
   // ── Entry point ──
 
   it('defines run_traced function', () => {
-    expect(code).toContain('def run_traced(source_code):');
+    expect(code).toContain("def run_traced(source_code, stdin_text=''):");
   });
 
   it('run_traced resets all global state', () => {
     expect(code).toContain('_snapshots = []');
-    expect(code).toContain('_stdout_lines = []');
+    expect(code).toContain("_out_lines = ['']");
+    expect(code).toContain('_console = []');
+    expect(code).toContain('_stderr_used = False');
     expect(code).toContain('_call_stack = []');
     expect(code).toContain('_heap_map = {}');
     expect(code).toContain('_heap_counter = 0');
     expect(code).toContain('_step_counter = 0');
-    expect(code).toContain('_active_comp = None');
   });
 
-  it('returns JSON from run_traced', () => {
-    expect(code).toContain('result = {"type": "result", "snapshots": _snapshots}');
-    expect(code).toContain('return json.dumps(result)');
+  it('returns JSON from run_traced: each part once, the steps referring to them by index (#39)', () => {
+    expect(code).toContain('result = {"type": "result", "parts": _parts, "snapshots": _snapshots}');
+    expect(code).toContain("return _json_dumps(result, separators=(',', ':'))");
   });
 
   // ── Trace function ──
@@ -54,12 +55,15 @@ describe('getTracerCode', () => {
     expect(code).toContain('def _tracer(frame, event, arg):');
   });
 
-  it('registers sys.settrace', () => {
-    expect(code).toContain('sys.settrace(_tracer)');
+  it('registers its trace function, and takes it off when the run ends', () => {
+    expect(code).toContain('_settrace(_tracer)');
+    expect(code).toContain('_settrace(None)');
   });
 
-  it('unregisters sys.settrace in finally block', () => {
-    expect(code).toContain('sys.settrace(None)');
+  it("calls its own builtins and library functions, which the program can't replace (#34)", () => {
+    expect(code).toContain("globals().update({_k: _v for _k, _v in vars(_builtins).items() if not _k.startswith('_')})");
+    expect(code).toContain('_json_dumps = json.dumps');
+    expect(code).toContain('_settrace = sys.settrace');
   });
 
   it('handles call events', () => {
@@ -75,88 +79,67 @@ describe('getTracerCode', () => {
   });
 
   it('only traces user code via filename check', () => {
-    expect(code).toContain("frame.f_code.co_filename != '<user_code>'");
+    expect(code).toContain('code.co_filename != _USER_FILE');
   });
 
-  it('compiles user code with a distinct filename from the tracer', () => {
+  it('compiles user code as main.py, a filename distinct from the tracer', () => {
     // User code must use a different filename than what pyodide.runPython()
-    // uses for the tracer module (which defaults to '<exec>'). Otherwise
-    // internal tracer frames (e.g. genexpr inside _capture_print) would be
-    // traced as if they were user code.
-    expect(code).toContain("compile(source_code, '<user_code>', 'exec')");
+    // uses for the tracer module (which defaults to '<exec>'), or the
+    // tracer's frames would be traced as if they were user code. main.py is
+    // what CPython's tracebacks and warnings name (#31).
+    expect(code).toContain("_USER_FILE = 'main.py'");
+    expect(code).toContain("compile(source_code, _USER_FILE, 'exec', dont_inherit=True)");
     expect(code).not.toContain("compile(source_code, '<exec>', 'exec')");
+    expect(code).toContain('_linecache.cache[_USER_FILE]');
   });
 
-  // ── Serialization ──
+  // ── Serialization (#34: never runs the program's code; safety.test.ts runs it) ──
 
-  it('defines value serializer', () => {
-    expect(code).toContain('def _serialize_value(val, heap_objects, visited):');
+  it('serializes from a queue, not by recursion', () => {
+    expect(code).toContain('def _serialize_value(val):');
+    expect(code).toContain('def _draw_heap_object(obj, visited, pending, cache):');
+    expect(code).toContain('while next_object < len(pending):');
   });
 
-  it('defines heap object serializer', () => {
-    expect(code).toContain('def _serialize_heap_object(obj, heap_id, heap_objects, visited):');
+  it('draws each step from the parts of the step before that are unchanged (#39)', () => {
+    expect(code).toContain('def _draw_frame(frame_info, local_vars, live, return_value, has_return, visited, pending):');
+    expect(code).toContain('if not live and frame_info.get("drawn_from") is local_vars:');
+    expect(code).toContain('if hit is not None and hit[0] is val:');
+    expect(code).toContain('ids = list(map(id, values))');
+    expect(code).toContain('_heap_cache = cache');
   });
 
-  it('handles None serialization', () => {
-    expect(code).toContain('if val is None:');
-    expect(code).toContain('return {"type": "null", "value": None}');
+  it('checks the time and work budgets while drawing a step (#39)', () => {
+    expect(code).toContain('def _check_budgets():');
+    expect(code).toContain('if next_object % 1024 == 0:');
   });
 
-  it('handles bool serialization before int (bool is subclass of int)', () => {
-    // Must check True/False BEFORE isinstance(val, int)
+  it('serializes None and bools before ints (bool is a subclass of int)', () => {
+    expect(code).toContain('return {"type": "null", "value": None, "display": "None"}');
     const trueCheck = code.indexOf('if val is True:');
-    const intCheck = code.indexOf('if isinstance(val, int):');
+    const intCheck = code.indexOf('if issubclass(t, int):');
     expect(trueCheck).toBeGreaterThan(-1);
-    expect(intCheck).toBeGreaterThan(-1);
     expect(trueCheck).toBeLessThan(intCheck);
   });
 
-  it('handles float edge cases (inf, nan)', () => {
-    expect(code).toContain('math.isinf(val)');
-    expect(code).toContain('math.isnan(val)');
+  it('serializes inf and nan, and ints past the digit limit by their size', () => {
     expect(code).toContain('"Infinity"');
     expect(code).toContain('"-Infinity"');
     expect(code).toContain('"NaN"');
+    expect(code).toContain("'<int with %d digits>'");
   });
 
-  it('handles string serialization', () => {
-    expect(code).toContain('if isinstance(val, str):');
-    expect(code).toContain('return {"type": "string", "value": val}');
+  it("reads containers through their own methods, not the program's overrides", () => {
+    expect(code).toContain('list.__getitem__(obj, slice(0, _MAX_SEQ_PROPS))');
+    expect(code).toContain('dict.items(obj)');
+    expect(code).toContain("object.__getattribute__(obj, '__dict__')");
+    expect(code).not.toMatch(/\bhasattr\(obj/);
+    expect(code).not.toMatch(/\bgetattr\(obj/);
   });
 
-  it('handles complex number serialization as string', () => {
-    expect(code).toContain('if isinstance(val, complex):');
-  });
-
-  // ── Heap object types ──
-
-  it('serializes lists with objectType "list"', () => {
-    expect(code).toContain('if isinstance(obj, list):');
-    expect(code).toContain('object_type = "list"');
-  });
-
-  it('serializes tuples with objectType "tuple"', () => {
-    expect(code).toContain('isinstance(obj, tuple)');
-    expect(code).toContain('object_type = "tuple"');
-  });
-
-  it('serializes dicts with objectType "dict"', () => {
-    expect(code).toContain('isinstance(obj, dict)');
-    expect(code).toContain('object_type = "dict"');
-  });
-
-  it('serializes sets with objectType "set"', () => {
-    expect(code).toContain('isinstance(obj, (set, frozenset))');
-    expect(code).toContain('object_type = "set"');
-  });
-
-  it('serializes callables with objectType "function"', () => {
-    expect(code).toContain('callable(obj)');
-    expect(code).toContain('object_type = "function"');
-  });
-
-  it('serializes class instances with class name as label', () => {
-    expect(code).toContain("label = type(obj).__name__");
+  it('draws each kind of heap object', () => {
+    for (const kind of ['list', 'tuple', 'dict', 'set', 'function', 'method', 'class', 'module', 'enum']) expect(code).toContain(`("${kind}", `);
+    expect(code).toContain('return "object", _type_name(t), keys, values, None');
   });
 
   // ── Limits ──
@@ -174,178 +157,73 @@ describe('getTracerCode', () => {
     expect(code).toContain('_MAX_DICT_PROPS = 50');
   });
 
-  // ── Stdout capture ──
+  // ── Output, captured at the streams (#31; output.test.ts runs it) ──
 
-  it('defines print capture function', () => {
-    expect(code).toContain('def _capture_print(*args, **kwargs):');
+  it('captures output at sys.stdout and sys.stderr, not by replacing print', () => {
+    expect(code).toContain('class _TutorStream(_io.TextIOBase):');
+    expect(code).toContain("sys.stdout = sys.__stdout__ = _TutorStream('stdout', 'strict')");
+    expect(code).toContain("sys.stderr = sys.__stderr__ = _TutorStream('stderr', 'backslashreplace')");
+    expect(code).not.toContain("namespace['print']");
+    expect(code).not.toContain('_capture_print');
   });
 
-  it('overrides print in execution namespace', () => {
-    expect(code).toContain("namespace['print'] = _capture_print");
+  it('gives the streams back after the run', () => {
+    expect(code).toContain('sys.stdin, sys.stdout, sys.stderr, sys.__stdin__, sys.__stdout__, sys.__stderr__ = saved_streams');
   });
 
-  it('captures print output into _stdout_lines', () => {
-    expect(code).toContain('_stdout_lines.append(text)');
+  // ── The namespace (#34; #35 decides what a program may use) ──
+
+  it("runs the program in a namespace of its own names, with all of CPython's builtins (#35)", () => {
+    expect(code).toContain("namespace = {'__name__': '__main__'}");
+    expect(code).not.toContain('_safe_import');
+    expect(code).not.toContain('_SAFE_MODULES');
   });
 
-  // ── Security: sandboxed builtins ──
+  // ── What a frame shows (#38; model.test.ts runs it) ──
 
-  it('removes dangerous builtins from namespace', () => {
-    const dangerousBuiltins = ['open', 'exec', 'eval', 'compile', 'exit', 'quit', 'breakpoint', 'input'];
-    for (const name of dangerousBuiltins) {
-      expect(code).toContain(`'${name}'`);
-    }
+  it("hides only the names Python keeps itself: the module's, a class body's, a method's __class__ cell", () => {
+    expect(code).toContain('_MODULE_BOOKKEEPING = frozenset(');
+    expect(code).toContain('_CLASS_BOOKKEEPING = frozenset(');
+    expect(code).toContain("_FUNCTION_BOOKKEEPING = frozenset({'__class__', '__classdict__'})");
+    expect(code).not.toContain('_baseline_keys');
+    expect(code).not.toContain("name.startswith('__') and name.endswith('__')");
   });
 
-  it('installs safe import function', () => {
-    expect(code).toContain('def _safe_import(name, *args, **kwargs):');
-    expect(code).toContain("namespace['__import__'] = _safe_import");
+  it("hides what a class body's namespace started with while it holds the same object", () => {
+    expect(code).toContain('frame_info["base"] = dict(params)');
+    expect(code).toContain('dict.__getitem__(local_vars, k) is base[k]');
   });
 
-  it('defines a safe modules whitelist', () => {
-    expect(code).toContain('_SAFE_MODULES = frozenset(');
-    // Verify core safe modules are listed
-    const safeModules = ['math', 'random', 'collections', 'itertools', 'functools', 'json', 're', 'datetime', 'copy'];
-    for (const mod of safeModules) {
-      expect(code, `safe module: ${mod}`).toContain(`'${mod}'`);
-    }
-  });
-
-  it('safe import rejects disallowed modules', () => {
-    expect(code).toContain("raise ImportError");
-    expect(code).toContain("is not allowed in PyTutor");
-  });
-
-  // ── Variable filtering ──
-
-  it('snapshots baseline namespace keys before user code runs', () => {
-    expect(code).toContain('_baseline_keys = set(namespace.keys())');
-  });
-
-  it('filters baseline keys from module-level variable display', () => {
-    expect(code).toContain('name in _baseline_keys');
-  });
-
-  it('filters dunder variables from snapshots', () => {
-    expect(code).toContain("name.startswith('__') and name.endswith('__')");
+  it("lists variables in their order, not sorted, the module's in the order they first appeared", () => {
+    expect(code).toContain('for name in _shown_names(frame_info, local_vars):');
+    expect(code).toContain('_module_order[k] = None');
+    expect(code).not.toContain('sorted(k for k in dict.keys(local_vars)');
   });
 
   it('filters internal positional variables (e.g. .0 iterator)', () => {
-    expect(code).toContain("name.startswith('.')");
+    expect(code).toContain("not k.startswith('.')");
   });
 
-  // ── Comprehension tracing (Python 3.12+ inlined comprehensions) ──
-
-  it('defines _scan_comprehensions to pre-scan source with ast', () => {
-    expect(code).toContain('def _scan_comprehensions(source_code):');
-    expect(code).toContain('_ast.parse(source_code)');
+  it('draws classes, modules and Enum members as themselves', () => {
+    expect(code).toContain('return "class", label, keys, values, None');
+    expect(code).toContain('return "module", _safe_name(obj), [], [], None');
+    expect(code).toContain('("enum", _Enum)');
   });
 
-  it('calls _scan_comprehensions before execution', () => {
-    // Must be called in run_traced before exec()
-    const scanCall = code.indexOf('_scan_comprehensions(source_code)');
-    const execCall = code.indexOf('exec(code, namespace)');
-    expect(scanCall).toBeGreaterThan(-1);
-    expect(execCall).toBeGreaterThan(-1);
-    expect(scanCall).toBeLessThan(execCall);
+  // ── Comprehension frames (#33; comprehensions.test.ts runs them) ──
+
+  it('compiles each comprehension into a frame of its own', () => {
+    expect(code).toContain('class _CompWrapper(_ast.NodeTransformer):');
+    expect(code).toContain('def _name_comprehensions(code):');
+    expect(code).toContain('code = _compile_program(source_code)');
+    expect(code).toContain("'<listcomp>': 'list comprehension'");
   });
 
-  it('detects all four comprehension types via ast', () => {
-    expect(code).toContain("'ListComp'");
-    expect(code).toContain("'SetComp'");
-    expect(code).toContain("'DictComp'");
-    expect(code).toContain("'GeneratorExp'");
-  });
-
-  it('maps comprehension types to friendly display names', () => {
-    expect(code).toContain("'list comprehension'");
-    expect(code).toContain("'set comprehension'");
-    expect(code).toContain("'dict comprehension'");
-    expect(code).toContain("'generator expression'");
-  });
-
-  it('extracts iteration variable names from comprehension generators', () => {
-    expect(code).toContain('node.generators');
-    expect(code).toContain('gen.target');
-    expect(code).toContain("target_vars.add(n.id)");
-  });
-
-  it('pushes synthetic comp frame on entering a comprehension line', () => {
-    expect(code).toContain("_comp_info.get(line)");
-    expect(code).toContain("_active_comp = dict(comp)");
-    expect(code).toContain('"_is_comp": True');
-  });
-
-  it('pops synthetic comp frame on leaving a comprehension line', () => {
-    expect(code).toContain("_active_comp.get('_line') != line");
-    expect(code).toContain('_active_comp = None');
-  });
-
-  it('splits variables between comp frame and enclosing frame', () => {
-    // Comp frame shows only target vars; enclosing frame hides them
-    expect(code).toContain("_active_comp['target_vars']");
-    expect(code).toContain("is_comp_frame and not is_target");
-    expect(code).toContain("not is_comp_frame and is_target");
-  });
-
-  it('compiles element expression for eval during tracing', () => {
-    expect(code).toContain('elt_code');
-    expect(code).toContain('elt_label');
-    expect(code).toContain("compile(elt_label, '<comp>', 'eval')");
-  });
-
-  it('compiles filter conditions (if clauses) for comprehensions', () => {
-    expect(code).toContain('filter_codes');
-    expect(code).toContain('gen.ifs');
-    expect(code).toContain("compile(_ast.unparse(if_clause), '<comp>', 'eval')");
-  });
-
-  it('evals element expression each iteration and tracks partial result', () => {
-    expect(code).toContain("eval(_active_comp['elt_code'], frame.f_globals, frame.f_locals)");
-    expect(code).toContain("pr.append(elt_val)");
-    expect(code).toContain("_active_comp['current_elt'] = elt_val");
-  });
-
-  it('checks filter conditions before including element in partial result', () => {
-    // Must eval filters BEFORE eval-ing the element expression
-    const filterCheck = code.indexOf('passes_filter');
-    const eltEval = code.indexOf("eval(_active_comp['elt_code']");
-    expect(filterCheck).toBeGreaterThan(-1);
-    expect(eltEval).toBeGreaterThan(-1);
-    expect(filterCheck).toBeLessThan(eltEval);
-  });
-
-  it('shows element value in comp frame snapshots', () => {
-    // The element label (e.g. "x * x") is shown as a variable in the comp frame
-    expect(code).toContain("_active_comp.get('current_elt')");
-    expect(code).toContain("_active_comp.get('elt_label'");
-  });
-
-  it('finds assignment targets for comprehensions via AST', () => {
-    expect(code).toContain("_comp_info[value.lineno]['result_var'] = target.id");
-  });
-
-  it('shows return value when popping comp frame', () => {
-    expect(code).toContain('def _pop_comp_frame(frame):');
-    expect(code).toContain('has_return=True');
-    expect(code).toContain("_active_comp.get('result_var')");
-  });
-
-  it('cleans up comp frame on return events', () => {
-    // If a comprehension is on the last line, the return event fires
-    // while the synthetic frame is still active — must clean up
-    const returnSection = code.slice(
-      code.indexOf("elif event == 'return':"),
-      code.indexOf("return _tracer", code.indexOf("elif event == 'return':")),
-    );
-    expect(returnSection).toContain('if _active_comp:');
-    expect(returnSection).toContain('_pop_comp_frame');
-  });
-
-  it('resets _active_comp in run_traced', () => {
-    // Must reset between executions so stale state doesn't leak
-    const runTracedSection = code.slice(code.indexOf('def run_traced'));
-    expect(runTracedSection).toContain('_active_comp = None');
+  it("never evaluates the program's code itself, and reads the module's variables from its globals", () => {
+    expect(code).not.toMatch(/\beval\(/);
+    expect(code).not.toContain('__comp_result__');
+    expect(code).not.toContain('_active_comp');
+    expect(code).toContain('return frame.f_globals');
   });
 
   // ── Multi-line statement collapsing ──
@@ -380,129 +258,8 @@ describe('getTracerCode', () => {
     expect(code).toContain('_ast.Return');
   });
 
-  it('skips continuation lines in the tracer line handler', () => {
-    expect(code).toContain('line in _continuation_lines');
-  });
-
-  it('handles dict comprehensions with key-value element expressions', () => {
-    expect(code).toContain("'DictComp'");
-    expect(code).toContain("_ast.unparse(node.key)");
-    expect(code).toContain("_ast.unparse(node.value)");
-  });
-
-  // ── Multi-type comprehension support ──
-
-  it('stores comp_type in _comp_info for container initialization', () => {
-    expect(code).toContain("'comp_type': type_name");
-  });
-
-  it('initializes partial_result with the correct container per comp type', () => {
-    // ListComp -> [], SetComp -> set(), DictComp -> {}
-    // The initialization must handle all three container types
-    expect(code).toContain("'comp_type'");
-    expect(code).toContain("comp.get('comp_type')");
-    // Check that the init line uses all three types
-    const initLine = code.slice(
-      code.indexOf("_active_comp['partial_result']"),
-      code.indexOf('\n', code.indexOf("_active_comp['partial_result']")),
-    );
-    expect(initLine).toContain('DictComp');
-    expect(initLine).toContain('SetComp');
-    expect(initLine).toContain('set()');
-  });
-
-  it('adds elements to set with .add() and dict with key assignment', () => {
-    expect(code).toContain('pr.add(elt_val)');
-    expect(code).toContain('pr[elt_val[0]] = elt_val[1]');
-    expect(code).toContain('pr.append(elt_val)');
-  });
-
-  it('handles empty partial_result correctly in _pop_comp_frame', () => {
-    // Empty containers are falsy in Python — must use "is not None" check
-    const popSection = code.slice(
-      code.indexOf('def _pop_comp_frame'),
-      code.indexOf('_call_stack.pop()'),
-    );
-    expect(popSection).toContain('if partial is not None:');
-    // Must NOT use "if partial:" which would skip empty sets/dicts
-    expect(popSection).not.toMatch(/if partial[^_ ]/);
-  });
-
-  // ── Back-to-back comprehension handling ──
-
-  it('pops comp frame when moving to a different line, not just non-comp lines', () => {
-    // The condition must check _active_comp's stored line vs current line,
-    // NOT whether the current line is a comp. This fixes back-to-back comps
-    // like: squares = [...]; evens = [...]
-    expect(code).toContain("_active_comp.get('_line') != line");
-    // Must NOT use the old broken condition that required current line to be non-comp
-    expect(code).not.toContain('_active_comp and not comp');
-  });
-
-  it('pops comp frame before entering a new one on a different line', () => {
-    // The pop must happen BEFORE the push for the new comp
-    const popCheck = code.indexOf("_active_comp.get('_line') != line");
-    const pushCheck = code.indexOf('comp and _active_comp is None');
-    expect(popCheck).toBeGreaterThan(-1);
-    expect(pushCheck).toBeGreaterThan(-1);
-    expect(popCheck).toBeLessThan(pushCheck);
-  });
-
-  // ── Phased comprehension snapshots ──
-
-  it('captures column ranges for comprehension sub-expressions in AST scan', () => {
-    expect(code).toContain("'iter_range'");
-    expect(code).toContain("'elt_range'");
-    expect(code).toContain("'filter_ranges'");
-    expect(code).toContain("'filter_texts'");
-  });
-
-  it('stores iteration clause column range from target to iter end', () => {
-    expect(code).toContain('gen.target.col_offset');
-    expect(code).toContain("getattr(gen.iter, 'end_col_offset'");
-  });
-
-  it('stores element expression column range', () => {
-    expect(code).toContain('node.elt.col_offset');
-    expect(code).toContain("getattr(node.elt, 'end_col_offset'");
-  });
-
-  it('stores filter expression column ranges and text', () => {
-    expect(code).toContain('if_clause.col_offset');
-    expect(code).toContain("getattr(if_clause, 'end_col_offset'");
-    expect(code).toContain('_ast.unparse(if_clause)');
-  });
-
-  it('emits phased snapshots: iteration, then filter, then element', () => {
-    // The comprehension block must emit multiple _capture_snapshot calls
-    // with column_range for each phase, then return early
-    const compBlock = code.slice(
-      code.indexOf("# Phase 1"),
-      code.indexOf("return _tracer", code.indexOf("# Phase 1")),
-    );
-    expect(compBlock).toContain('column_range=iter_range');
-    expect(compBlock).toContain('column_range=fr');
-    expect(compBlock).toContain('column_range=elt_range');
-  });
-
-  it('emits condition result for filter evaluation', () => {
-    const compBlock = code.slice(
-      code.indexOf("# Phase 2"),
-      code.indexOf("# Phase 3"),
-    );
-    expect(compBlock).toContain('"expression":');
-    expect(compBlock).toContain('"result":');
-    expect(compBlock).toContain('"line":');
-    expect(compBlock).toContain('condition=cond');
-  });
-
-  it('only emits element snapshot when all filters pass', () => {
-    const compBlock = code.slice(
-      code.indexOf("# Phase 3"),
-      code.indexOf("return _tracer", code.indexOf("# Phase 3")),
-    );
-    expect(compBlock).toContain('if passes_filter:');
-    expect(compBlock).toContain('column_range=elt_range');
+  it("skips continuation lines in the tracer line handler, in the statement's own frame", () => {
+    expect(code).toContain('line in _continuation_lines and fname not in _EXPRESSION_FRAMES');
   });
 
   // ── Snapshot columnRange and condition fields ──
@@ -524,88 +281,14 @@ describe('getTracerCode', () => {
     expect(code).toContain('snapshot["condition"] = condition');
   });
 
-  // ── Partial result display ──
-
-  it('shows partial result in the comp frame with a __comp_result__ marker name', () => {
-    // Uses a marker name so the UI can render it distinctly (not as a variable)
-    const compFrameSection = code.slice(
-      code.indexOf("frame_info.get(\"_is_comp\") and not has_return"),
-      code.indexOf("# Add return value display"),
-    );
-    expect(compFrameSection).toContain("_active_comp.get('partial_result')");
-    expect(compFrameSection).toContain('"__comp_result__"');
-  });
-
-  it('does not inject synthetic partial result into the enclosing frame', () => {
-    // The old pattern of showing partial in the enclosing frame caused heap ID issues.
-    // The "not frame_info.get('_is_comp')" + partial_result pattern must NOT exist.
-    const lines = code.split('\n');
-    for (let i = 0; i < lines.length; i++) {
-      if (lines[i].includes('not frame_info.get') && lines[i].includes('_is_comp')) {
-        // Check the next few lines don't reference partial_result
-        const nearby = lines.slice(i, i + 5).join('\n');
-        expect(nearby).not.toContain('partial_result');
-      }
-    }
-  });
-
-  // ── Heap ID cleanup for synthetic objects ──
-
-  it('bridges heap ID from synthetic partial to real Python variable', () => {
-    // So the UI shows the same heap object before and after assignment
-    const popSection = code.slice(
-      code.indexOf('def _pop_comp_frame'),
-      code.indexOf('def _tracer'),
-    );
-    expect(popSection).toContain('_heap_map[id(real_obj)] = _heap_map[id(partial)]');
-  });
-
-  it('cleans up synthetic partial heap ID after bridging', () => {
-    // Prevents id() reuse contamination after the partial list is GC'd
-    const popSection = code.slice(
-      code.indexOf('def _pop_comp_frame'),
-      code.indexOf('def _tracer'),
-    );
-    expect(popSection).toContain('del _heap_map[id(partial)]');
-  });
-
-  // ── Enclosing frame locals sync ──
-
-  it('syncs enclosing frame locals during comprehension iterations', () => {
-    // The module frame needs up-to-date locals so previously-assigned
-    // variables (like squares) are visible during the next comprehension
-    const compBlock = code.slice(
-      code.indexOf("# If in a comprehension, emit phased"),
-      code.indexOf("return _tracer", code.indexOf("# Phase 1")),
-    );
-    expect(compBlock).toContain('_call_stack[-2]["locals"]');
-  });
-
-  it('syncs enclosing frame locals in _pop_comp_frame before return snapshot', () => {
-    const popSection = code.slice(
-      code.indexOf('def _pop_comp_frame'),
-      code.indexOf('_call_stack.pop()'),
-    );
-    expect(popSection).toContain('_call_stack[-2]["locals"]');
-  });
-
-  it('still skips tracer-internal frames', () => {
-    const skipSection = code.slice(
-      code.indexOf('_SKIP_FRAME_NAMES'),
-      code.indexOf(')', code.indexOf('_SKIP_FRAME_NAMES')) + 1,
-    );
-    expect(skipSection).toContain('_capture_print');
-    expect(skipSection).toContain('_safe_import');
-  });
-
   // ── Error handling ──
 
-  it('catches exceptions during execution', () => {
-    expect(code).toContain('except Exception as e:');
+  it("catches every exception the program raises, BaseExceptions included, as the program's own", () => {
+    expect(code).toContain('except BaseException as e:');
   });
 
   it('extracts line numbers from traceback', () => {
-    expect(code).toContain("tb.tb_frame.f_code.co_filename == '<user_code>'");
+    expect(code).toContain('tb.tb_frame.f_code.co_filename == _USER_FILE');
     expect(code).toContain('line = tb.tb_lineno');
   });
 
@@ -620,7 +303,8 @@ describe('getTracerCode', () => {
     expect(code).toContain('"line": line');
     expect(code).toContain('"callStack": stack');
     expect(code).toContain('"heap": heap_objects');
-    expect(code).toContain('"stdout": list(_stdout_lines)');
+    expect(code).toContain('snapshot["stdout"] = _output_parts[1]');
+    expect(code).toContain('snapshot["console"] = _output_parts[2]');
   });
 
   it('includes return value in snapshots', () => {
@@ -634,7 +318,7 @@ describe('getTracerCode', () => {
   });
 
   it('pushes named frame on function call event', () => {
-    expect(code).toContain('_call_stack.append({"name": display_name');
+    expect(code).toContain('frame_info = {"name": display_name');
   });
 
   it('pops frame on return event', () => {
@@ -648,20 +332,14 @@ describe('getTracerCode', () => {
   });
 
   it('uses Python id() for object identity', () => {
-    expect(code).toContain('obj_id = id(val)');
+    expect(code).toContain('obj_id = id(obj)');
   });
 
   it('tracks visited objects to prevent circular and duplicate serialization', () => {
-    // Tracks both obj_id (Python identity) and heap_id (logical identity)
-    // so bridged objects (e.g. comp partial → real variable) aren't serialized twice
-    expect(code).toContain('if obj_id not in visited and heap_id not in visited:');
-    expect(code).toContain('visited.add(obj_id)');
-    expect(code).toContain('visited.add(heap_id)');
+    expect(code).toContain('if k not in visited:');
+    expect(code).toContain('visited.add(k)');
   });
 
   // ── Compilation ──
 
-  it('sets __name__ to __main__ in execution namespace', () => {
-    expect(code).toContain("namespace['__name__'] = '__main__'");
-  });
 });

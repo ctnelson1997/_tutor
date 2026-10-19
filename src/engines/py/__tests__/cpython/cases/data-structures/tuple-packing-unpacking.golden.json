@@ -1,0 +1,144 @@
+{
+ "stdout": "(3, 4) 3 4\n(5,) tuple 5 int () 0\n(7,) 1\n1 [2, 3, 4] 5\na ['b', 'c']\n[] 9\n1 2 3 4 5\n2 1\nAda 36 London UK\n(1, [2, 3, 4]) 1 1\n1 one\n2 two\n(5, 3, 4, 'z') (5, 3, 4, 'z', 5, 3, 4, 'z') ('z', 4, 3, 5)\nValueError: too many values to unpack (expected 2)\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "(3, 4) 3 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "(5,) tuple 5 int () 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "(7,) 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "1 [2, 3, 4] 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "a ['b', 'c']"
+  },
+  {
+   "stream": "stdout",
+   "text": "[] 9"
+  },
+  {
+   "stream": "stdout",
+   "text": "1 2 3 4 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "2 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "Ada 36 London UK"
+  },
+  {
+   "stream": "stdout",
+   "text": "(1, [2, 3, 4]) 1 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "1 one"
+  },
+  {
+   "stream": "stdout",
+   "text": "2 two"
+  },
+  {
+   "stream": "stdout",
+   "text": "(5, 3, 4, 'z') (5, 3, 4, 'z', 5, 3, 4, 'z') ('z', 4, 3, 5)"
+  },
+  {
+   "stream": "stdout",
+   "text": "ValueError: too many values to unpack (expected 2)"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"point":"<tuple>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5","head":"'a'","rest":"<list>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5","head":"'a'","rest":"<list>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5","head":"'a'","rest":"<list>","none_left":"<list>","only":"9"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5","head":"'a'","rest":"<list>","none_left":"<list>","only":"9"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5","head":"'a'","rest":"<list>","none_left":"<list>","only":"9","nested":"<tuple>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5","head":"'a'","rest":"<list>","none_left":"<list>","only":"9","nested":"<tuple>","a":"1","b":"2","c":"3","d":"4","e":"5"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5","head":"'a'","rest":"<list>","none_left":"<list>","only":"9","nested":"<tuple>","a":"1","b":"2","c":"3","d":"4","e":"5"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5","head":"'a'","rest":"<list>","none_left":"<list>","only":"9","nested":"<tuple>","a":"2","b":"1","c":"3","d":"4","e":"5"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5","head":"'a'","rest":"<list>","none_left":"<list>","only":"9","nested":"<tuple>","a":"2","b":"1","c":"3","d":"4","e":"5"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5","head":"'a'","rest":"<list>","none_left":"<list>","only":"9","nested":"<tuple>","a":"2","b":"1","c":"3","d":"4","e":"5","record":"<tuple>"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5","head":"'a'","rest":"<list>","none_left":"<list>","only":"9","nested":"<tuple>","a":"2","b":"1","c":"3","d":"4","e":"5","record":"<tuple>","name":"'Ada'","age":"36","city":"'London'","country":"'UK'"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5","head":"'a'","rest":"<list>","none_left":"<list>","only":"9","nested":"<tuple>","a":"2","b":"1","c":"3","d":"4","e":"5","record":"<tuple>","name":"'Ada'","age":"36","city":"'London'","country":"'UK'"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5","head":"'a'","rest":"<list>","none_left":"<list>","only":"9","nested":"<tuple>","a":"2","b":"1","c":"3","d":"4","e":"5","record":"<tuple>","name":"'Ada'","age":"36","city":"'London'","country":"'UK'","t":"<tuple>"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5","head":"'a'","rest":"<list>","none_left":"<list>","only":"9","nested":"<tuple>","a":"2","b":"1","c":"3","d":"4","e":"5","record":"<tuple>","name":"'Ada'","age":"36","city":"'London'","country":"'UK'","t":"<tuple>"}},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5","head":"'a'","rest":"<list>","none_left":"<list>","only":"9","nested":"<tuple>","a":"2","b":"1","c":"3","d":"4","e":"5","record":"<tuple>","name":"'Ada'","age":"36","city":"'London'","country":"'UK'","t":"<tuple>"}},
+  {"event":"line","line":29,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5","head":"'a'","rest":"<list>","none_left":"<list>","only":"9","nested":"<tuple>","a":"2","b":"1","c":"3","d":"4","e":"5","record":"<tuple>","name":"'Ada'","age":"36","city":"'London'","country":"'UK'","t":"<tuple>","pairs":"<list>"}},
+  {"event":"line","line":30,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5","head":"'a'","rest":"<list>","none_left":"<list>","only":"9","nested":"<tuple>","a":"2","b":"1","c":"3","d":"4","e":"5","record":"<tuple>","name":"'Ada'","age":"36","city":"'London'","country":"'UK'","t":"<tuple>","pairs":"<list>","num":"1","word":"'one'"}},
+  {"event":"line","line":29,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5","head":"'a'","rest":"<list>","none_left":"<list>","only":"9","nested":"<tuple>","a":"2","b":"1","c":"3","d":"4","e":"5","record":"<tuple>","name":"'Ada'","age":"36","city":"'London'","country":"'UK'","t":"<tuple>","pairs":"<list>","num":"1","word":"'one'"}},
+  {"event":"line","line":30,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5","head":"'a'","rest":"<list>","none_left":"<list>","only":"9","nested":"<tuple>","a":"2","b":"1","c":"3","d":"4","e":"5","record":"<tuple>","name":"'Ada'","age":"36","city":"'London'","country":"'UK'","t":"<tuple>","pairs":"<list>","num":"2","word":"'two'"}},
+  {"event":"line","line":29,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5","head":"'a'","rest":"<list>","none_left":"<list>","only":"9","nested":"<tuple>","a":"2","b":"1","c":"3","d":"4","e":"5","record":"<tuple>","name":"'Ada'","age":"36","city":"'London'","country":"'UK'","t":"<tuple>","pairs":"<list>","num":"2","word":"'two'"}},
+  {"event":"line","line":31,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5","head":"'a'","rest":"<list>","none_left":"<list>","only":"9","nested":"<tuple>","a":"2","b":"1","c":"3","d":"4","e":"5","record":"<tuple>","name":"'Ada'","age":"36","city":"'London'","country":"'UK'","t":"<tuple>","pairs":"<list>","num":"2","word":"'two'"}},
+  {"event":"line","line":32,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5","head":"'a'","rest":"<list>","none_left":"<list>","only":"9","nested":"<tuple>","a":"2","b":"1","c":"3","d":"4","e":"5","record":"<tuple>","name":"'Ada'","age":"36","city":"'London'","country":"'UK'","t":"<tuple>","pairs":"<list>","num":"2","word":"'two'","combined":"<tuple>"}},
+  {"event":"line","line":33,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5","head":"'a'","rest":"<list>","none_left":"<list>","only":"9","nested":"<tuple>","a":"2","b":"1","c":"3","d":"4","e":"5","record":"<tuple>","name":"'Ada'","age":"36","city":"'London'","country":"'UK'","t":"<tuple>","pairs":"<list>","num":"2","word":"'two'","combined":"<tuple>"}},
+  {"event":"line","line":34,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5","head":"'a'","rest":"<list>","none_left":"<list>","only":"9","nested":"<tuple>","a":"2","b":"1","c":"3","d":"4","e":"5","record":"<tuple>","name":"'Ada'","age":"36","city":"'London'","country":"'UK'","t":"<tuple>","pairs":"<list>","num":"2","word":"'two'","combined":"<tuple>"}},
+  {"event":"exception","line":34,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5","head":"'a'","rest":"<list>","none_left":"<list>","only":"9","nested":"<tuple>","a":"2","b":"1","c":"3","d":"4","e":"5","record":"<tuple>","name":"'Ada'","age":"36","city":"'London'","country":"'UK'","t":"<tuple>","pairs":"<list>","num":"2","word":"'two'","combined":"<tuple>"},"exc":"ValueError"},
+  {"event":"line","line":35,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5","head":"'a'","rest":"<list>","none_left":"<list>","only":"9","nested":"<tuple>","a":"2","b":"1","c":"3","d":"4","e":"5","record":"<tuple>","name":"'Ada'","age":"36","city":"'London'","country":"'UK'","t":"<tuple>","pairs":"<list>","num":"2","word":"'two'","combined":"<tuple>"}},
+  {"event":"line","line":36,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5","head":"'a'","rest":"<list>","none_left":"<list>","only":"9","nested":"<tuple>","a":"2","b":"1","c":"3","d":"4","e":"<ValueError>","record":"<tuple>","name":"'Ada'","age":"36","city":"'London'","country":"'UK'","t":"<tuple>","pairs":"<list>","num":"2","word":"'two'","combined":"<tuple>"}},
+  {"event":"return","line":36,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","single":"<tuple>","not_tuple":"5","empty":"<tuple>","also_single":"<tuple>","first":"1","middle":"<list>","last":"5","head":"'a'","rest":"<list>","none_left":"<list>","only":"9","nested":"<tuple>","a":"2","b":"1","c":"3","d":"4","record":"<tuple>","name":"'Ada'","age":"36","city":"'London'","country":"'UK'","t":"<tuple>","pairs":"<list>","num":"2","word":"'two'","combined":"<tuple>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 40,
+ "finalGlobals": {
+  "point": "<tuple>",
+  "x": "3",
+  "y": "4",
+  "single": "<tuple>",
+  "not_tuple": "5",
+  "empty": "<tuple>",
+  "also_single": "<tuple>",
+  "first": "1",
+  "middle": "<list>",
+  "last": "5",
+  "head": "'a'",
+  "rest": "<list>",
+  "none_left": "<list>",
+  "only": "9",
+  "nested": "<tuple>",
+  "a": "2",
+  "b": "1",
+  "c": "3",
+  "d": "4",
+  "record": "<tuple>",
+  "name": "'Ada'",
+  "age": "36",
+  "city": "'London'",
+  "country": "'UK'",
+  "t": "<tuple>",
+  "pairs": "<list>",
+  "num": "2",
+  "word": "'two'",
+  "combined": "<tuple>"
+ },
+ "continuation": [],
+ "sourceSha256": "4e64dd63ad54d59e328424aa9fe680d1aa6560f39e99b336e3bbd087647000c0"
+}
