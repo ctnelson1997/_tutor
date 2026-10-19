@@ -35,7 +35,9 @@ describe('getTracerCode', () => {
 
   it('run_traced resets all global state', () => {
     expect(code).toContain('_snapshots = []');
-    expect(code).toContain('_stdout_lines = []');
+    expect(code).toContain("_out_lines = ['']");
+    expect(code).toContain('_console = []');
+    expect(code).toContain('_stderr_used = False');
     expect(code).toContain('_call_stack = []');
     expect(code).toContain('_heap_map = {}');
     expect(code).toContain('_heap_counter = 0');
@@ -75,16 +77,18 @@ describe('getTracerCode', () => {
   });
 
   it('only traces user code via filename check', () => {
-    expect(code).toContain("frame.f_code.co_filename != '<user_code>'");
+    expect(code).toContain('frame.f_code.co_filename != _USER_FILE');
   });
 
-  it('compiles user code with a distinct filename from the tracer', () => {
+  it('compiles user code as main.py, a filename distinct from the tracer', () => {
     // User code must use a different filename than what pyodide.runPython()
-    // uses for the tracer module (which defaults to '<exec>'). Otherwise
-    // internal tracer frames (e.g. genexpr inside _capture_print) would be
-    // traced as if they were user code.
-    expect(code).toContain("compile(source_code, '<user_code>', 'exec')");
+    // uses for the tracer module (which defaults to '<exec>'), or the
+    // tracer's frames would be traced as if they were user code. main.py is
+    // what CPython's tracebacks and warnings name (#31).
+    expect(code).toContain("_USER_FILE = 'main.py'");
+    expect(code).toContain("compile(source_code, _USER_FILE, 'exec')");
     expect(code).not.toContain("compile(source_code, '<exec>', 'exec')");
+    expect(code).toContain('_linecache.cache[_USER_FILE]');
   });
 
   // ── Serialization ──
@@ -174,18 +178,18 @@ describe('getTracerCode', () => {
     expect(code).toContain('_MAX_DICT_PROPS = 50');
   });
 
-  // ── Stdout capture ──
+  // ── Output, captured at the streams (#31; output.test.ts runs it) ──
 
-  it('defines print capture function', () => {
-    expect(code).toContain('def _capture_print(*args, **kwargs):');
+  it('captures output at sys.stdout and sys.stderr, not by replacing print', () => {
+    expect(code).toContain('class _TutorStream(_io.TextIOBase):');
+    expect(code).toContain("sys.stdout = _TutorStream('stdout', 'strict')");
+    expect(code).toContain("sys.stderr = _TutorStream('stderr', 'backslashreplace')");
+    expect(code).not.toContain("namespace['print']");
+    expect(code).not.toContain('_capture_print');
   });
 
-  it('overrides print in execution namespace', () => {
-    expect(code).toContain("namespace['print'] = _capture_print");
-  });
-
-  it('captures print output into _stdout_lines', () => {
-    expect(code).toContain('_stdout_lines.append(text)');
+  it('gives the streams back after the run', () => {
+    expect(code).toContain('sys.stdout, sys.stderr = saved_streams');
   });
 
   // ── Security: sandboxed builtins ──
@@ -594,7 +598,6 @@ describe('getTracerCode', () => {
       code.indexOf('_SKIP_FRAME_NAMES'),
       code.indexOf(')', code.indexOf('_SKIP_FRAME_NAMES')) + 1,
     );
-    expect(skipSection).toContain('_capture_print');
     expect(skipSection).toContain('_safe_import');
   });
 
@@ -605,7 +608,7 @@ describe('getTracerCode', () => {
   });
 
   it('extracts line numbers from traceback', () => {
-    expect(code).toContain("tb.tb_frame.f_code.co_filename == '<user_code>'");
+    expect(code).toContain('tb.tb_frame.f_code.co_filename == _USER_FILE');
     expect(code).toContain('line = tb.tb_lineno');
   });
 
@@ -620,7 +623,8 @@ describe('getTracerCode', () => {
     expect(code).toContain('"line": line');
     expect(code).toContain('"callStack": stack');
     expect(code).toContain('"heap": heap_objects');
-    expect(code).toContain('"stdout": list(_stdout_lines)');
+    expect(code).toContain('"stdout": _stdout_shown()');
+    expect(code).toContain('snapshot["console"]');
   });
 
   it('includes return value in snapshots', () => {

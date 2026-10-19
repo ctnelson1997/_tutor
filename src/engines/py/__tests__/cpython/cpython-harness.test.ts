@@ -35,9 +35,12 @@ function snap(step: number, line: number, stack: StackFrame[], stdout: string[] 
   return { step, line, callStack: stack, heap, stdout };
 }
 
+/** A golden; its console is its stdout's lines unless given. */
 function golden(over: Partial<PyGolden> = {}): PyGolden {
+  const stdout = over.stdout ?? '';
+  const console = over.console ?? consoleLines([{ stream: 'stdout', text: stdout }]);
   return {
-    stdout: '', stderr: '', console: [], exception: null, traceback: null, compileError: null, endless: false,
+    stdout, stderr: '', console, exception: null, traceback: null, compileError: null, endless: false,
     events: [], truncated: false, stepEvents: 0, finalGlobals: {}, continuation: [], sourceSha256: '', ...over,
   };
 }
@@ -210,10 +213,18 @@ describe('checkCase', () => {
     expect(r.verdict).toBe('match');
   });
 
+  it('compares stderr lines too, in program order', () => {
+    const withErr = golden({ ...g, console: [{ stream: 'stdout', text: '2' }, { stream: 'stderr', text: 'warn' }] });
+    const asStdout = good.map((s, i) => (i === good.length - 1 ? { ...s, stdout: ['2', 'warn'] } : s));
+    expect(checkCase(c, withErr, outcome(result(asStdout))).checks.output[0]).toMatch(/console line 2: CPython "warn" \(stderr\) \| PyTutor "warn"$/);
+    const withConsole = good.map((s, i) => (i === good.length - 1 ? { ...s, console: [{ stream: 'stdout' as const, text: '2' }, { stream: 'stderr' as const, text: 'warn' }] } : s));
+    expect(checkCase(c, withErr, outcome(result(withConsole))).checks.output).toEqual([]);
+  });
+
   it('reports wrong output as wrong output', () => {
     const bad = good.map(s => ({ ...s, stdout: s.stdout.length ? ['3'] : [] }));
     const r = checkCase(c, g, outcome(result(bad)));
-    expect(r.checks.output[0]).toMatch(/stdout line 1/);
+    expect(r.checks.output[0]).toMatch(/console line 1/);
     expect(r.verdict).toBe('wrong-output');
   });
 
@@ -379,7 +390,8 @@ describe('RunnerPool', () => {
   afterAll(() => pool.close());
 
   it('runs a program through the worker code in a fresh Pyodide, as the browser does', async () => {
-    const first = await pool.run('import sys\nx = 1\nsys.stdout.write("direct\\n")\nprint(x)\n');
+    // os.write goes around sys.stdout, to Pyodide's own stdout: the browser's console.
+    const first = await pool.run('import os\nx = 1\nos.write(1, b"direct\\n")\nprint(x)\n');
     expect(first.reply.type).toBe('result');
     expect(first.killed).toBe(false);
     expect(first.lostStdout).toBe('direct\n');

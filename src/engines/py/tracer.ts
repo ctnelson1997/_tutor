@@ -10,9 +10,11 @@
 export function getTracerCode(): string {
   return `
 import sys
+import io as _io
 import json
 import math
 import time
+import linecache as _linecache
 import ast as _ast
 
 # ══════════════════════════════════════
@@ -20,7 +22,6 @@ import ast as _ast
 # ══════════════════════════════════════
 
 _snapshots = []
-_stdout_lines = []
 _call_stack = []  # list of frame dicts
 _heap_map = {}    # id(obj) -> heap_id string
 _heap_counter = 0
@@ -74,14 +75,92 @@ _SAFE_MODULES = frozenset({
     'statistics', 'fractions', 'decimal', 'abc', 'textwrap',
 })
 
-# ── Print capture ──
+# The program's file name, as CPython names it in tracebacks and warnings.
+_USER_FILE = 'main.py'
 
-_original_print = print
+# ── Output: captured at the streams (#31) ──
+#
+# While the program runs, sys.stdout and sys.stderr are _TutorStreams, so the
+# real print (end, sep, file), sys.stdout.write, input()'s prompt, warnings,
+# traceback.print_exc() and contextlib.redirect_stdout all work as in CPython
+# run unbuffered (python -u). Each step shows stdout's lines, and once stderr
+# has been used, every line with its stream (a line belongs to the stream that
+# wrote its first characters).
 
-def _capture_print(*args, **kwargs):
-    sep = kwargs.get('sep', ' ')
-    text = sep.join(str(a) for a in args)
-    _stdout_lines.append(text)
+_out_lines = ['']       # stdout split on newlines; the last entry is the open line
+_console = []           # every line as [stream, text], in program order
+_console_open = False   # the last line of _console has no newline yet
+_stderr_used = False
+
+def _write(stream, s):
+    global _console_open, _stderr_used
+    if stream == 'stderr' and s.startswith(_USER_FILE + ':') and ': RuntimeWarning: assigning None to unbound local ' in s:
+        # CPython 3.12 warns when the tracer reads a frame's f_locals while an
+        # inlined comprehension's hidden locals exist: the tracer's doing, not
+        # the program's, so not its output (#33 stops reading f_locals there).
+        return
+    if stream == 'stderr':
+        _stderr_used = True
+    parts = s.split('\\n')
+    if stream == 'stdout':
+        _out_lines[-1] += parts[0]
+        _out_lines.extend(parts[1:])
+    for i, part in enumerate(parts):
+        if i > 0:
+            if not _console_open:
+                _console.append([stream, ''])
+            _console_open = False
+        if part:
+            if not _console_open:
+                _console.append([stream, ''])
+                _console_open = True
+            _console[-1][1] += part
+
+class _TutorStream(_io.TextIOBase):
+    # sys.stdout or sys.stderr while the program runs: a text stream that records what is written.
+
+    def __init__(self, stream, errors):
+        self._stream = stream
+        self._errors = errors
+
+    @property
+    def encoding(self):
+        return 'utf-8'
+
+    @property
+    def errors(self):
+        return self._errors
+
+    @property
+    def name(self):
+        return '<' + self._stream + '>'
+
+    @property
+    def mode(self):
+        return 'w'
+
+    def writable(self):
+        return True
+
+    def isatty(self):
+        return False
+
+    def write(self, s):
+        if not isinstance(s, str):
+            raise TypeError('write() argument must be str, not ' + type(s).__name__)
+        if self.closed:
+            raise ValueError('I/O operation on closed file.')
+        if self._errors == 'strict':
+            s.encode('utf-8')  # what CPython's stdout can't encode raises here too
+        _write(self._stream, s)
+        return len(s)
+
+    def __repr__(self):
+        return "<_io.TextIOWrapper name='<" + self._stream + ">' mode='w' encoding='utf-8'>"
+
+def _stdout_shown():
+    # stdout's lines, without the empty line after a final newline
+    return _out_lines[:-1] if _out_lines[-1] == '' else list(_out_lines)
 
 # ── Comprehension detection (Python 3.12+ inlined comprehensions) ──
 
@@ -416,8 +495,10 @@ def _capture_snapshot(line, current_locals, return_value=None, has_return=False,
         "line": line,
         "callStack": stack,
         "heap": heap_objects,
-        "stdout": list(_stdout_lines),
+        "stdout": _stdout_shown(),
     }
+    if _stderr_used:
+        snapshot["console"] = [{"text": t, "stream": st} for st, t in _console]
     if column_range and column_range[0] is not None and column_range[1] is not None:
         snapshot["columnRange"] = {"startCol": column_range[0], "endCol": column_range[1]}
     if condition:
@@ -429,7 +510,7 @@ def _capture_snapshot(line, current_locals, return_value=None, has_return=False,
 # ── Trace function ──
 
 _SKIP_FRAME_NAMES = frozenset({
-    '_capture_print', '_safe_import',
+    '_safe_import',
 })
 
 # Display name mapping for real comprehension frames (Python < 3.12).
@@ -482,7 +563,7 @@ def _tracer(frame, event, arg):
         return None
 
     # Only trace user code
-    if frame.f_code.co_filename != '<user_code>':
+    if frame.f_code.co_filename != _USER_FILE:
         return None
 
     fname = frame.f_code.co_name
@@ -651,7 +732,7 @@ def _user_line(e):
     tb = e.__traceback__
     line = None
     while tb is not None:
-        if tb.tb_frame.f_code.co_filename == '<user_code>':
+        if tb.tb_frame.f_code.co_filename == _USER_FILE:
             line = tb.tb_lineno
         tb = tb.tb_next
     return line
@@ -663,7 +744,7 @@ def _traceback_text(e, source_code):
     tb = e.__traceback__
     while tb is not None:
         code = tb.tb_frame.f_code
-        if code.co_filename == '<user_code>':
+        if code.co_filename == _USER_FILE:
             out.append(f'  File "main.py", line {tb.tb_lineno}, in {code.co_name}')
             if 1 <= tb.tb_lineno <= len(lines):
                 out.append("    " + lines[tb.tb_lineno - 1].strip())
@@ -672,15 +753,19 @@ def _traceback_text(e, source_code):
     return chr(10).join(out)
 
 def run_traced(source_code):
-    global _snapshots, _stdout_lines, _call_stack, _heap_map, _heap_counter, _step_counter, _baseline_keys, _active_comp, _continuation_lines
+    global _snapshots, _call_stack, _heap_map, _heap_counter, _step_counter, _baseline_keys, _active_comp, _continuation_lines
     global _stop_reason, _start_time, _events, _unwinding, _work
+    global _out_lines, _console, _console_open, _stderr_used
     _stop_reason = None
     _start_time = time.time()
     _events = 0
     _work = 0
     _unwinding = set()
     _snapshots = []
-    _stdout_lines = []
+    _out_lines = ['']
+    _console = []
+    _console_open = False
+    _stderr_used = False
     _call_stack = []
     _heap_map = {}
     _heap_counter = 0
@@ -698,42 +783,52 @@ def run_traced(source_code):
                  'breakpoint', 'help', 'input', '__import__'):
         namespace.pop(name, None)
     namespace['__import__'] = _safe_import
-    namespace['print'] = _capture_print
     namespace['__name__'] = '__main__'
 
     # Snapshot the namespace keys BEFORE user code runs so we can
     # filter them out of the module-level variable display later.
     _baseline_keys = set(namespace.keys())
 
-    try:
-        code = compile(source_code, '<user_code>', 'exec')
-    except (SyntaxError, ValueError) as e:
-        # Nothing ran: report the syntax error and its line.
-        result = {"type": "error", "message": f"{type(e).__name__}: {getattr(e, 'msg', None) or e}"}
-        if getattr(e, 'lineno', None):
-            result["line"] = e.lineno
-        return json.dumps(result)
+    # The source, for tracebacks, warnings and traceback.print_exc(), as CPython has main.py's.
+    _linecache.cache[_USER_FILE] = (len(source_code), None, source_code.splitlines(True), _USER_FILE)
 
-    # A run that ends early (an uncaught exception, the step or time limit)
-    # still returns its steps, with the reason in "error".
-    error = None
-    sys.settrace(_tracer)
+    # The streams are the program's from compiling on (a SyntaxWarning is
+    # output), and the tracer's again once it ends.
+    saved_streams = (sys.stdout, sys.stderr)
+    sys.stdout = _TutorStream('stdout', 'strict')
+    sys.stderr = _TutorStream('stderr', 'backslashreplace')
     try:
-        exec(code, namespace)
-    except _TutorStop:
-        pass
-    except SystemExit:
-        pass  # raise SystemExit ends the program
-    except BaseException as e:
-        # Any other exception the program raised is its own, KeyboardInterrupt
-        # and BaseException subclasses included, as CPython reports them.
-        sys.settrace(None)
-        error = {"kind": "exception", "message": _exception_text(e), "stderr": _traceback_text(e, source_code)}
-        line = _user_line(e)
-        if line is not None:
-            error["line"] = line
+        try:
+            code = compile(source_code, _USER_FILE, 'exec')
+        except (SyntaxError, ValueError) as e:
+            # Nothing ran: report the syntax error and its line.
+            result = {"type": "error", "message": f"{type(e).__name__}: {getattr(e, 'msg', None) or e}"}
+            if getattr(e, 'lineno', None):
+                result["line"] = e.lineno
+            return json.dumps(result)
+
+        # A run that ends early (an uncaught exception, the step or time limit)
+        # still returns its steps, with the reason in "error".
+        error = None
+        sys.settrace(_tracer)
+        try:
+            exec(code, namespace)
+        except _TutorStop:
+            pass
+        except SystemExit:
+            pass  # raise SystemExit ends the program
+        except BaseException as e:
+            # Any other exception the program raised is its own, KeyboardInterrupt
+            # and BaseException subclasses included, as CPython reports them.
+            sys.settrace(None)
+            error = {"kind": "exception", "message": _exception_text(e), "stderr": _traceback_text(e, source_code)}
+            line = _user_line(e)
+            if line is not None:
+                error["line"] = line
+        finally:
+            sys.settrace(None)
     finally:
-        sys.settrace(None)
+        sys.stdout, sys.stderr = saved_streams
 
     if _stop_reason == "steps":
         error = {"kind": "limit", "message": f"Stopped after {_MAX_SNAPSHOTS} steps, the most that can be shown. Your code may contain an infinite loop."}

@@ -850,22 +850,6 @@
         "reason": "visualization model (classes, builtin names, modules)"
       }
     },
-    "print-format/end-builds-one-line": {
-      "output": {
-        "issues": [
-          31
-        ],
-        "reason": "output captured at print, not at the streams"
-      }
-    },
-    "print-format/format-error-after-output": {
-      "output": {
-        "issues": [
-          31
-        ],
-        "reason": "output captured at print, not at the streams"
-      }
-    },
     "print-format/fstring-align-width": {
       "values": {
         "issues": [
@@ -878,42 +862,6 @@
           37
         ],
         "reason": "numbers shown as JSON numbers"
-      }
-    },
-    "print-format/multiline-strings": {
-      "output": {
-        "issues": [
-          31
-        ],
-        "reason": "output captured at print, not at the streams"
-      }
-    },
-    "print-format/print-star-list": {
-      "output": {
-        "issues": [
-          31
-        ],
-        "reason": "output captured at print, not at the streams"
-      }
-    },
-    "print-format/redirect-stdout": {
-      "output": {
-        "issues": [
-          31
-        ],
-        "reason": "output captured at print, not at the streams"
-      },
-      "values": {
-        "issues": [
-          31
-        ],
-        "reason": "output captured at print, not at the streams"
-      },
-      "final-state": {
-        "issues": [
-          31
-        ],
-        "reason": "output captured at print, not at the streams"
       }
     },
     "print-format/repr-vs-str": {
@@ -933,45 +881,17 @@
       }
     },
     "print-format/sep-and-end": {
-      "output": {
-        "issues": [
-          31
-        ],
-        "reason": "output captured at print, not at the streams"
-      },
-      "ending": {
-        "issues": [
-          31
-        ],
-        "reason": "output captured at print, not at the streams"
-      },
-      "steps": {
-        "issues": [
-          31
-        ],
-        "reason": "output captured at print, not at the streams"
-      },
       "values": {
         "issues": [
           37
         ],
         "reason": "numbers shown as JSON numbers"
-      }
-    },
-    "print-format/stderr-mixed-with-stdout": {
-      "output": {
+      },
+      "final-state": {
         "issues": [
-          31
+          37
         ],
-        "reason": "output captured at print, not at the streams"
-      }
-    },
-    "print-format/stdout-write": {
-      "output": {
-        "issues": [
-          31
-        ],
-        "reason": "output captured at print, not at the streams"
+        "reason": "numbers shown as JSON numbers"
       }
     },
     "print-format/str-format-method": {
@@ -999,10 +919,9 @@
     "realistic/average-of-n": {
       "output": {
         "issues": [
-          32,
-          31
+          32
         ],
-        "reason": "input() raises OSError; output captured at print, not at the streams"
+        "reason": "input() raises OSError"
       },
       "ending": {
         "issues": [
@@ -1070,10 +989,9 @@
     "realistic/change-maker": {
       "output": {
         "issues": [
-          32,
-          31
+          32
         ],
-        "reason": "input() raises OSError; output captured at print, not at the streams"
+        "reason": "input() raises OSError"
       },
       "ending": {
         "issues": [
@@ -1108,10 +1026,9 @@
     "realistic/gradebook-input": {
       "output": {
         "issues": [
-          32,
-          31
+          32
         ],
-        "reason": "input() raises OSError; output captured at print, not at the streams"
+        "reason": "input() raises OSError"
       },
       "ending": {
         "issues": [
@@ -1137,10 +1054,9 @@
     "realistic/guessing-game": {
       "output": {
         "issues": [
-          32,
-          31
+          32
         ],
-        "reason": "input() raises OSError; output captured at print, not at the streams"
+        "reason": "input() raises OSError"
       },
       "ending": {
         "issues": [
@@ -1158,10 +1074,9 @@
     "realistic/leap-year-input": {
       "output": {
         "issues": [
-          32,
-          31
+          32
         ],
-        "reason": "input() raises OSError; output captured at print, not at the streams"
+        "reason": "input() raises OSError"
       },
       "ending": {
         "issues": [
@@ -1196,10 +1111,9 @@
     "realistic/matrix-input": {
       "output": {
         "issues": [
-          32,
-          31
+          32
         ],
-        "reason": "input() raises OSError; output captured at print, not at the streams"
+        "reason": "input() raises OSError"
       },
       "ending": {
         "issues": [
@@ -1217,10 +1131,9 @@
     "realistic/menu-bank": {
       "output": {
         "issues": [
-          32,
-          31
+          32
         ],
-        "reason": "input() raises OSError; output captured at print, not at the streams"
+        "reason": "input() raises OSError"
       },
       "ending": {
         "issues": [
@@ -1244,10 +1157,9 @@
     "realistic/password-checker": {
       "output": {
         "issues": [
-          32,
-          31
+          32
         ],
-        "reason": "input() raises OSError; output captured at print, not at the streams"
+        "reason": "input() raises OSError"
       },
       "ending": {
         "issues": [
@@ -1287,10 +1199,9 @@
     "realistic/quiz-input": {
       "output": {
         "issues": [
-          32,
-          31
+          32
         ],
-        "reason": "input() raises OSError; output captured at print, not at the streams"
+        "reason": "input() raises OSError"
       },
       "ending": {
         "issues": [
@@ -1322,10 +1233,9 @@
     "realistic/safe-age-input": {
       "output": {
         "issues": [
-          32,
-          31
+          32
         ],
-        "reason": "input() raises OSError; output captured at print, not at the streams"
+        "reason": "input() raises OSError"
       },
       "ending": {
         "issues": [
@@ -1351,10 +1261,9 @@
     "realistic/sentence-analyzer": {
       "output": {
         "issues": [
-          32,
-          31
+          32
         ],
-        "reason": "input() raises OSError; output captured at print, not at the streams"
+        "reason": "input() raises OSError"
       },
       "ending": {
         "issues": [
@@ -1401,10 +1310,9 @@
     "realistic/shopping-list-input": {
       "output": {
         "issues": [
-          32,
-          31
+          32
         ],
-        "reason": "input() raises OSError; output captured at print, not at the streams"
+        "reason": "input() raises OSError"
       },
       "ending": {
         "issues": [
@@ -1422,10 +1330,9 @@
     "realistic/split-scores": {
       "output": {
         "issues": [
-          32,
-          31
+          32
         ],
-        "reason": "input() raises OSError; output captured at print, not at the streams"
+        "reason": "input() raises OSError"
       },
       "ending": {
         "issues": [
@@ -1465,10 +1372,9 @@
     "realistic/sum-until-sentinel": {
       "output": {
         "issues": [
-          32,
-          31
+          32
         ],
-        "reason": "input() raises OSError; output captured at print, not at the streams"
+        "reason": "input() raises OSError"
       },
       "ending": {
         "issues": [
@@ -1486,10 +1392,9 @@
     "realistic/temperature-converter-input": {
       "output": {
         "issues": [
-          32,
-          31
+          32
         ],
-        "reason": "input() raises OSError; output captured at print, not at the streams"
+        "reason": "input() raises OSError"
       },
       "ending": {
         "issues": [
@@ -1649,12 +1554,6 @@
       }
     },
     "stdlib/sys-info": {
-      "output": {
-        "issues": [
-          31
-        ],
-        "reason": "output captured at print, not at the streams"
-      },
       "values": {
         "issues": [
           37

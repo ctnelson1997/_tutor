@@ -27,7 +27,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { TIMEOUT_REPLY, WORKER_TIMEOUT } from '../../run';
 import type { ExecutionSnapshot, RuntimeValue, WorkerMessage } from '../../../../types/snapshot';
-import { KNOWN_FAILURES_PATH, SYNTAX_ERRORS_CATEGORY, expandStack, type GoldenEvent, type PyCase, type PyGolden } from './corpus';
+import { KNOWN_FAILURES_PATH, SYNTAX_ERRORS_CATEGORY, expandStack, type GoldenEvent, type GoldenLine, type PyCase, type PyGolden } from './corpus';
 import type { RunnerMessage, RunRequest } from './runner';
 
 /** The step cap every engine stops at. */
@@ -232,36 +232,46 @@ export function compareValue(refRepr: string, shown: RuntimeValue): string | nul
 
 // ── Output ──
 
-/** stdout as the last step shows it: its lines joined. */
-export function shownStdout(reply: WorkerMessage): string {
-  if (reply.type !== 'result') return '';
+/**
+ * The console at the last step, line by line with its stream: the step's
+ * `console` once the program used stderr, else stdout's lines (#31).
+ */
+export function shownConsole(reply: WorkerMessage): GoldenLine[] {
+  if (reply.type !== 'result') return [];
   const last = reply.snapshots[reply.snapshots.length - 1];
-  return last ? last.stdout.join('\n') : '';
+  if (!last) return [];
+  return last.console ?? last.stdout.map(text => ({ text, stream: 'stdout' as const }));
 }
 
 function stoppedAtCap(reply: WorkerMessage): boolean {
   return reply.type === 'result' && reply.error?.kind === 'limit';
 }
 
+const lineText = (l: GoldenLine | undefined) => (l ? `${quote(l.text)}${l.stream === 'stderr' ? ' (stderr)' : ''}` : '(nothing)');
+
 function checkOutput(golden: PyGolden, outcome: RunOutcome): string[] {
   const { reply } = outcome;
   if (golden.compileError || reply.type !== 'result') {
-    return golden.compileError || !golden.stdout ? [] : [`CPython printed ${quote(golden.stdout)}; PyTutor stopped before any step`];
+    return golden.compileError || !golden.console.length ? [] : [`CPython printed ${quote(golden.stdout + golden.stderr)}; PyTutor stopped before any step`];
   }
-  const want = golden.stdout.replace(/\n$/, '');
-  const got = shownStdout(reply);
+  // stdout and stderr in program order, each line with its stream.
+  const want = golden.console;
+  const got = shownConsole(reply);
   const problems: string[] = [];
   const prefixOnly = stoppedAtCap(reply) || golden.endless;
-  const a = want.split('\n');
-  const b = got.split('\n');
-  const n = prefixOnly ? Math.min(a.length, b.length) : Math.max(a.length, b.length);
+  const n = prefixOnly ? Math.min(want.length, got.length) : Math.max(want.length, got.length);
   for (let i = 0; i < n; i++) {
-    // A stopped run's last line may be cut short.
-    if (a[i] === b[i] || (prefixOnly && i === n - 1 && a[i] !== undefined && b[i] !== undefined && (a[i].startsWith(b[i]) || b[i].startsWith(a[i])))) continue;
-    problems.push(`stdout line ${i + 1}: CPython ${a[i] === undefined ? '(nothing)' : quote(a[i])} | PyTutor ${b[i] === undefined ? '(nothing)' : quote(b[i])}`);
+    const a = want[i];
+    const b = got[i];
+    if (a && b && a.stream === b.stream) {
+      // A stopped run's last line may be cut short.
+      if (a.text === b.text || (prefixOnly && i === n - 1 && (a.text.startsWith(b.text) || b.text.startsWith(a.text)))) continue;
+    }
+    problems.push(`console line ${i + 1}: CPython ${lineText(a)} | PyTutor ${lineText(b)}`);
     break;
   }
   if (outcome.lostStdout) problems.push(`written to Pyodide's stdout, the browser's console, never shown: ${quote(outcome.lostStdout)}`);
+  if (outcome.lostStderr) problems.push(`written to Pyodide's stderr, the browser's console, never shown: ${quote(outcome.lostStderr)}`);
   return problems;
 }
 

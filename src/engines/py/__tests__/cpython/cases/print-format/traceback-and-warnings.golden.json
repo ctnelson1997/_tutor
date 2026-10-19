@@ -1,0 +1,113 @@
+{
+ "stdout": "before\nafter the traceback\nafter the warning\nend\n",
+ "stderr": "Traceback (most recent call last):\n  File \"main.py\", line 11, in <module>\n    ratio(1, 0)\n  File \"main.py\", line 7, in ratio\n    return a / b\n           ~~^~~\nZeroDivisionError: division by zero\nmain.py:15: UserWarning: ratio() is deprecated\n  warnings.warn(\"ratio() is deprecated\")\nmain.py:18: UserWarning: shown once per line\n  warnings.warn(\"shown once per line\", UserWarning)\ndone\n",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "before"
+  },
+  {
+   "stream": "stderr",
+   "text": "Traceback (most recent call last):"
+  },
+  {
+   "stream": "stderr",
+   "text": "  File \"main.py\", line 11, in <module>"
+  },
+  {
+   "stream": "stderr",
+   "text": "    ratio(1, 0)"
+  },
+  {
+   "stream": "stderr",
+   "text": "  File \"main.py\", line 7, in ratio"
+  },
+  {
+   "stream": "stderr",
+   "text": "    return a / b"
+  },
+  {
+   "stream": "stderr",
+   "text": "           ~~^~~"
+  },
+  {
+   "stream": "stderr",
+   "text": "ZeroDivisionError: division by zero"
+  },
+  {
+   "stream": "stdout",
+   "text": "after the traceback"
+  },
+  {
+   "stream": "stderr",
+   "text": "main.py:15: UserWarning: ratio() is deprecated"
+  },
+  {
+   "stream": "stderr",
+   "text": "  warnings.warn(\"ratio() is deprecated\")"
+  },
+  {
+   "stream": "stdout",
+   "text": "after the warning"
+  },
+  {
+   "stream": "stderr",
+   "text": "main.py:18: UserWarning: shown once per line"
+  },
+  {
+   "stream": "stderr",
+   "text": "  warnings.warn(\"shown once per line\", UserWarning)"
+  },
+  {
+   "stream": "stderr",
+   "text": "done"
+  },
+  {
+   "stream": "stdout",
+   "text": "end"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"sys":"<module>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"sys":"<module>","traceback":"<module>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"sys":"<module>","traceback":"<module>","warnings":"<module>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"sys":"<module>","traceback":"<module>","warnings":"<module>","ratio":"<function>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"sys":"<module>","traceback":"<module>","warnings":"<module>","ratio":"<function>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"sys":"<module>","traceback":"<module>","warnings":"<module>","ratio":"<function>"}},
+  {"event":"call","line":6,"stack":["<module>","ratio"],"locals":{"a":"1","b":"0"}},
+  {"event":"line","line":7,"stack":["<module>","ratio"],"locals":{"a":"1","b":"0"}},
+  {"event":"exception","line":7,"stack":["<module>","ratio"],"locals":{"a":"1","b":"0"},"exc":"ZeroDivisionError"},
+  {"event":"return","line":7,"stack":["<module>","ratio"],"locals":{"a":"1","b":"0"},"value":"None"},
+  {"event":"exception","line":11,"stack":["<module>"],"locals":{"sys":"<module>","traceback":"<module>","warnings":"<module>","ratio":"<function>"},"exc":"ZeroDivisionError"},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"sys":"<module>","traceback":"<module>","warnings":"<module>","ratio":"<function>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"sys":"<module>","traceback":"<module>","warnings":"<module>","ratio":"<function>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"sys":"<module>","traceback":"<module>","warnings":"<module>","ratio":"<function>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"sys":"<module>","traceback":"<module>","warnings":"<module>","ratio":"<function>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"sys":"<module>","traceback":"<module>","warnings":"<module>","ratio":"<function>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"sys":"<module>","traceback":"<module>","warnings":"<module>","ratio":"<function>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"sys":"<module>","traceback":"<module>","warnings":"<module>","ratio":"<function>","i":"0"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"sys":"<module>","traceback":"<module>","warnings":"<module>","ratio":"<function>","i":"0"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"sys":"<module>","traceback":"<module>","warnings":"<module>","ratio":"<function>","i":"1"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"sys":"<module>","traceback":"<module>","warnings":"<module>","ratio":"<function>","i":"1"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"sys":"<module>","traceback":"<module>","warnings":"<module>","ratio":"<function>","i":"1"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"sys":"<module>","traceback":"<module>","warnings":"<module>","ratio":"<function>","i":"1"}},
+  {"event":"return","line":20,"stack":["<module>"],"locals":{"sys":"<module>","traceback":"<module>","warnings":"<module>","ratio":"<function>","i":"1"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 24,
+ "finalGlobals": {
+  "sys": "<module>",
+  "traceback": "<module>",
+  "warnings": "<module>",
+  "ratio": "<function>",
+  "i": "1"
+ },
+ "continuation": [],
+ "sourceSha256": "c0210a255b0adeb8115d42a0854f512856ecc3df90a9beeb4fab9538a6afe1c5"
+}
