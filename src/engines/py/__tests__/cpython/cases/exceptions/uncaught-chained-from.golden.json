@@ -1,0 +1,58 @@
+{
+ "stdout": "Ann 31\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Ann 31"
+  }
+ ],
+ "exception": {
+  "class": "DataError",
+  "message": "bad record for Bo"
+ },
+ "traceback": "Traceback (most recent call last):\n  File \"main.py\", line 7, in read_age\n    return int(record[\"age\"])\n           ^^^^^^^^^^^^^^^^^^\nValueError: invalid literal for int() with base 10: 'thirty'\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"main.py\", line 14, in <module>\n    ages.append(read_age(p))\n                ^^^^^^^^^^^\n  File \"main.py\", line 9, in read_age\n    raise DataError(f\"bad record for {record.get('name', '?')}\") from e\nDataError: bad record for Bo\n",
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"call","line":2,"stack":["<module>","DataError"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>","DataError"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>","DataError"],"locals":{"__module__":"'__main__'","__qualname__":"'DataError'"}},
+  {"event":"return","line":3,"stack":["<module>","DataError"],"locals":{"__module__":"'__main__'","__qualname__":"'DataError'"},"value":"None"},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"DataError":"<type>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"DataError":"<type>","read_age":"<function>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"DataError":"<type>","read_age":"<function>","people":"<list>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"DataError":"<type>","read_age":"<function>","people":"<list>","ages":"<list>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"DataError":"<type>","read_age":"<function>","people":"<list>","ages":"<list>","p":"<dict>"}},
+  {"event":"call","line":5,"stack":["<module>","read_age"],"locals":{"record":"<dict>"}},
+  {"event":"line","line":6,"stack":["<module>","read_age"],"locals":{"record":"<dict>"}},
+  {"event":"line","line":7,"stack":["<module>","read_age"],"locals":{"record":"<dict>"}},
+  {"event":"return","line":7,"stack":["<module>","read_age"],"locals":{"record":"<dict>"},"value":"31"},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"DataError":"<type>","read_age":"<function>","people":"<list>","ages":"<list>","p":"<dict>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"DataError":"<type>","read_age":"<function>","people":"<list>","ages":"<list>","p":"<dict>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"DataError":"<type>","read_age":"<function>","people":"<list>","ages":"<list>","p":"<dict>"}},
+  {"event":"call","line":5,"stack":["<module>","read_age"],"locals":{"record":"<dict>"}},
+  {"event":"line","line":6,"stack":["<module>","read_age"],"locals":{"record":"<dict>"}},
+  {"event":"line","line":7,"stack":["<module>","read_age"],"locals":{"record":"<dict>"}},
+  {"event":"exception","line":7,"stack":["<module>","read_age"],"locals":{"record":"<dict>"},"exc":"ValueError"},
+  {"event":"line","line":8,"stack":["<module>","read_age"],"locals":{"record":"<dict>"}},
+  {"event":"line","line":9,"stack":["<module>","read_age"],"locals":{"record":"<dict>","e":"<ValueError>"}},
+  {"event":"exception","line":9,"stack":["<module>","read_age"],"locals":{"record":"<dict>","e":"<ValueError>"},"exc":"DataError"},
+  {"event":"return","line":9,"stack":["<module>","read_age"],"locals":{"record":"<dict>"},"value":"None"},
+  {"event":"exception","line":14,"stack":["<module>"],"locals":{"DataError":"<type>","read_age":"<function>","people":"<list>","ages":"<list>","p":"<dict>"},"exc":"DataError"},
+  {"event":"return","line":14,"stack":["<module>"],"locals":{"DataError":"<type>","read_age":"<function>","people":"<list>","ages":"<list>","p":"<dict>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 25,
+ "finalGlobals": {
+  "DataError": "<type>",
+  "read_age": "<function>",
+  "people": "<list>",
+  "ages": "<list>",
+  "p": "<dict>"
+ },
+ "continuation": [],
+ "sourceSha256": "a933f5fbfc1f22a146906eb8fadcfacba077e71e58f0dd4dc17602cc87201912"
+}

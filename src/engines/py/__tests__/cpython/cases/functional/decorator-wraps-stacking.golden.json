@@ -1,0 +1,93 @@
+{
+ "stdout": "<b><i>hi Ann</i></b>\nhello Say hello.\nwrapper None\n<i>hi Bo</i>\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "<b><i>hi Ann</i></b>"
+  },
+  {
+   "stream": "stdout",
+   "text": "hello Say hello."
+  },
+  {
+   "stream": "stdout",
+   "text": "wrapper None"
+  },
+  {
+   "stream": "stdout",
+   "text": "<i>hi Bo</i>"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"functools":"<module>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"functools":"<module>","bold":"<function>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"functools":"<module>","bold":"<function>","italic":"<function>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"functools":"<module>","bold":"<function>","italic":"<function>","plain":"<function>"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"functools":"<module>","bold":"<function>","italic":"<function>","plain":"<function>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"functools":"<module>","bold":"<function>","italic":"<function>","plain":"<function>"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"functools":"<module>","bold":"<function>","italic":"<function>","plain":"<function>"}},
+  {"event":"call","line":10,"stack":["<module>","italic"],"locals":{"func":"<function>"}},
+  {"event":"line","line":11,"stack":["<module>","italic"],"locals":{"func":"<function>"}},
+  {"event":"line","line":12,"stack":["<module>","italic"],"locals":{"func":"<function>"}},
+  {"event":"line","line":11,"stack":["<module>","italic"],"locals":{"func":"<function>"}},
+  {"event":"line","line":12,"stack":["<module>","italic"],"locals":{"func":"<function>"}},
+  {"event":"line","line":14,"stack":["<module>","italic"],"locals":{"func":"<function>","wrapper":"<function>"}},
+  {"event":"return","line":14,"stack":["<module>","italic"],"locals":{"func":"<function>","wrapper":"<function>"},"value":"<function>"},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"functools":"<module>","bold":"<function>","italic":"<function>","plain":"<function>"}},
+  {"event":"call","line":4,"stack":["<module>","bold"],"locals":{"func":"<function>"}},
+  {"event":"line","line":5,"stack":["<module>","bold"],"locals":{"func":"<function>"}},
+  {"event":"line","line":6,"stack":["<module>","bold"],"locals":{"func":"<function>"}},
+  {"event":"line","line":5,"stack":["<module>","bold"],"locals":{"func":"<function>"}},
+  {"event":"line","line":6,"stack":["<module>","bold"],"locals":{"func":"<function>"}},
+  {"event":"line","line":8,"stack":["<module>","bold"],"locals":{"func":"<function>","wrapper":"<function>"}},
+  {"event":"return","line":8,"stack":["<module>","bold"],"locals":{"func":"<function>","wrapper":"<function>"},"value":"<function>"},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"functools":"<module>","bold":"<function>","italic":"<function>","plain":"<function>"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"functools":"<module>","bold":"<function>","italic":"<function>","plain":"<function>","hello":"<function>"}},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"functools":"<module>","bold":"<function>","italic":"<function>","plain":"<function>","hello":"<function>"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"functools":"<module>","bold":"<function>","italic":"<function>","plain":"<function>","hello":"<function>"}},
+  {"event":"call","line":16,"stack":["<module>","plain"],"locals":{"func":"<function>"}},
+  {"event":"line","line":17,"stack":["<module>","plain"],"locals":{"func":"<function>"}},
+  {"event":"line","line":19,"stack":["<module>","plain"],"locals":{"func":"<function>","wrapper":"<function>"}},
+  {"event":"return","line":19,"stack":["<module>","plain"],"locals":{"func":"<function>","wrapper":"<function>"},"value":"<function>"},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"functools":"<module>","bold":"<function>","italic":"<function>","plain":"<function>","hello":"<function>"}},
+  {"event":"line","line":32,"stack":["<module>"],"locals":{"functools":"<module>","bold":"<function>","italic":"<function>","plain":"<function>","hello":"<function>","other":"<function>"}},
+  {"event":"call","line":5,"stack":["<module>","wrapper"],"locals":{"args":"<tuple>","kwargs":"<dict>","func":"<function>"}},
+  {"event":"line","line":7,"stack":["<module>","wrapper"],"locals":{"args":"<tuple>","kwargs":"<dict>","func":"<function>"}},
+  {"event":"call","line":11,"stack":["<module>","wrapper*2"],"locals":{"args":"<tuple>","kwargs":"<dict>","func":"<function>"}},
+  {"event":"line","line":13,"stack":["<module>","wrapper*2"],"locals":{"args":"<tuple>","kwargs":"<dict>","func":"<function>"}},
+  {"event":"call","line":21,"stack":["<module>","wrapper*2","hello"],"locals":{"name":"'Ann'"}},
+  {"event":"line","line":25,"stack":["<module>","wrapper*2","hello"],"locals":{"name":"'Ann'"}},
+  {"event":"return","line":25,"stack":["<module>","wrapper*2","hello"],"locals":{"name":"'Ann'"},"value":"'hi Ann'"},
+  {"event":"return","line":13,"stack":["<module>","wrapper*2"],"locals":{"args":"<tuple>","kwargs":"<dict>","func":"<function>"},"value":"'<i>hi Ann</i>'"},
+  {"event":"return","line":7,"stack":["<module>","wrapper"],"locals":{"args":"<tuple>","kwargs":"<dict>","func":"<function>"},"value":"'<b><i>hi Ann</i></b>'"},
+  {"event":"line","line":33,"stack":["<module>"],"locals":{"functools":"<module>","bold":"<function>","italic":"<function>","plain":"<function>","hello":"<function>","other":"<function>"}},
+  {"event":"line","line":34,"stack":["<module>"],"locals":{"functools":"<module>","bold":"<function>","italic":"<function>","plain":"<function>","hello":"<function>","other":"<function>"}},
+  {"event":"line","line":35,"stack":["<module>"],"locals":{"functools":"<module>","bold":"<function>","italic":"<function>","plain":"<function>","hello":"<function>","other":"<function>"}},
+  {"event":"call","line":11,"stack":["<module>","wrapper"],"locals":{"args":"<tuple>","kwargs":"<dict>","func":"<function>"}},
+  {"event":"line","line":13,"stack":["<module>","wrapper"],"locals":{"args":"<tuple>","kwargs":"<dict>","func":"<function>"}},
+  {"event":"call","line":21,"stack":["<module>","wrapper","hello"],"locals":{"name":"'Bo'"}},
+  {"event":"line","line":25,"stack":["<module>","wrapper","hello"],"locals":{"name":"'Bo'"}},
+  {"event":"return","line":25,"stack":["<module>","wrapper","hello"],"locals":{"name":"'Bo'"},"value":"'hi Bo'"},
+  {"event":"return","line":13,"stack":["<module>","wrapper"],"locals":{"args":"<tuple>","kwargs":"<dict>","func":"<function>"},"value":"'<i>hi Bo</i>'"},
+  {"event":"return","line":35,"stack":["<module>"],"locals":{"functools":"<module>","bold":"<function>","italic":"<function>","plain":"<function>","hello":"<function>","other":"<function>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 53,
+ "finalGlobals": {
+  "functools": "<module>",
+  "bold": "<function>",
+  "italic": "<function>",
+  "plain": "<function>",
+  "hello": "<function>",
+  "other": "<function>"
+ },
+ "continuation": [],
+ "sourceSha256": "c30be7872f177ba8ddea10135c4d4c13c1b7319417152fe4f570749c24d1ad17"
+}

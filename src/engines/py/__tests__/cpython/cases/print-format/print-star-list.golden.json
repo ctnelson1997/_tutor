@@ -1,0 +1,117 @@
+{
+ "stdout": "3 1 4 1 5\n3, 1, 4, 1, 5\na-b-c\n01234\n\nbefore after\nx y\n('x', 1) ('y', 2)\n[1, 2] | [3]\nstart a b 99 3 1.\n1 2 3\n4 5 6\n9 1 16 1 25\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "3 1 4 1 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "3, 1, 4, 1, 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "a-b-c"
+  },
+  {
+   "stream": "stdout",
+   "text": "01234"
+  },
+  {
+   "stream": "stdout",
+   "text": ""
+  },
+  {
+   "stream": "stdout",
+   "text": "before after"
+  },
+  {
+   "stream": "stdout",
+   "text": "x y"
+  },
+  {
+   "stream": "stdout",
+   "text": "('x', 1) ('y', 2)"
+  },
+  {
+   "stream": "stdout",
+   "text": "[1, 2] | [3]"
+  },
+  {
+   "stream": "stdout",
+   "text": "start a b 99 3 1."
+  },
+  {
+   "stream": "stdout",
+   "text": "1 2 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "4 5 6"
+  },
+  {
+   "stream": "stdout",
+   "text": "9 1 16 1 25"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"nums":"<list>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"nums":"<list>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"nums":"<list>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"nums":"<list>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"nums":"<list>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"nums":"<list>","empty":"<list>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"nums":"<list>","empty":"<list>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"nums":"<list>","empty":"<list>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"nums":"<list>","empty":"<list>","d":"<dict>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"nums":"<list>","empty":"<list>","d":"<dict>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"nums":"<list>","empty":"<list>","d":"<dict>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"nums":"<list>","empty":"<list>","d":"<dict>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"nums":"<list>","empty":"<list>","d":"<dict>","words":"<list>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"nums":"<list>","empty":"<list>","d":"<dict>","words":"<list>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"nums":"<list>","empty":"<list>","d":"<dict>","words":"<list>","matrix":"<list>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"nums":"<list>","empty":"<list>","d":"<dict>","words":"<list>","matrix":"<list>","row":"<list>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"nums":"<list>","empty":"<list>","d":"<dict>","words":"<list>","matrix":"<list>","row":"<list>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"nums":"<list>","empty":"<list>","d":"<dict>","words":"<list>","matrix":"<list>","row":"<list>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"nums":"<list>","empty":"<list>","d":"<dict>","words":"<list>","matrix":"<list>","row":"<list>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"nums":"<list>","empty":"<list>","d":"<dict>","words":"<list>","matrix":"<list>","row":"<list>"}},
+  {"event":"call","line":19,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>"}},
+  {"event":"line","line":19,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>"}},
+  {"event":"return","line":19,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","x":"3"},"value":"9"},
+  {"event":"call","line":19,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","x":"3"}},
+  {"event":"line","line":19,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","x":"3"}},
+  {"event":"return","line":19,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","x":"1"},"value":"1"},
+  {"event":"call","line":19,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","x":"1"}},
+  {"event":"line","line":19,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","x":"1"}},
+  {"event":"return","line":19,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","x":"4"},"value":"16"},
+  {"event":"call","line":19,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","x":"4"}},
+  {"event":"line","line":19,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","x":"4"}},
+  {"event":"return","line":19,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","x":"1"},"value":"1"},
+  {"event":"call","line":19,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","x":"1"}},
+  {"event":"line","line":19,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","x":"1"}},
+  {"event":"return","line":19,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","x":"5"},"value":"25"},
+  {"event":"call","line":19,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","x":"5"}},
+  {"event":"line","line":19,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","x":"5"}},
+  {"event":"return","line":19,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","x":"5"},"value":"None"},
+  {"event":"return","line":19,"stack":["<module>"],"locals":{"nums":"<list>","empty":"<list>","d":"<dict>","words":"<list>","matrix":"<list>","row":"<list>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 41,
+ "finalGlobals": {
+  "nums": "<list>",
+  "empty": "<list>",
+  "d": "<dict>",
+  "words": "<list>",
+  "matrix": "<list>",
+  "row": "<list>"
+ },
+ "continuation": [],
+ "sourceSha256": "3299ad87cb4a2dc68255d7e3e620bf5e856c8d675a00da5cc57d5982ac413ebe"
+}

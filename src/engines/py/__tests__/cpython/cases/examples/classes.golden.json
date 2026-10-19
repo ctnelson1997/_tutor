@@ -1,0 +1,43 @@
+{
+ "stdout": "Rex says woof!\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Rex says woof!"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":1,"stack":["<module>"],"locals":{}},
+  {"event":"call","line":1,"stack":["<module>","Dog"],"locals":{}},
+  {"event":"line","line":1,"stack":["<module>","Dog"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>","Dog"],"locals":{"__module__":"'__main__'","__qualname__":"'Dog'"}},
+  {"event":"line","line":6,"stack":["<module>","Dog"],"locals":{"__module__":"'__main__'","__qualname__":"'Dog'","__init__":"<function>"}},
+  {"event":"return","line":6,"stack":["<module>","Dog"],"locals":{"__module__":"'__main__'","__qualname__":"'Dog'","__init__":"<function>","bark":"<function>"},"value":"None"},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"Dog":"<type>"}},
+  {"event":"call","line":2,"stack":["<module>","__init__"],"locals":{"self":"<Dog>","name":"'Rex'","age":"5"}},
+  {"event":"line","line":3,"stack":["<module>","__init__"],"locals":{"self":"<Dog>","name":"'Rex'","age":"5"}},
+  {"event":"line","line":4,"stack":["<module>","__init__"],"locals":{"self":"<Dog>","name":"'Rex'","age":"5"}},
+  {"event":"return","line":4,"stack":["<module>","__init__"],"locals":{"self":"<Dog>","name":"'Rex'","age":"5"},"value":"None"},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"Dog":"<type>","rex":"<Dog>"}},
+  {"event":"call","line":6,"stack":["<module>","bark"],"locals":{"self":"<Dog>"}},
+  {"event":"line","line":7,"stack":["<module>","bark"],"locals":{"self":"<Dog>"}},
+  {"event":"return","line":7,"stack":["<module>","bark"],"locals":{"self":"<Dog>"},"value":"'Rex says woof!'"},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"Dog":"<type>","rex":"<Dog>","msg":"'Rex says woof!'"}},
+  {"event":"return","line":11,"stack":["<module>"],"locals":{"Dog":"<type>","rex":"<Dog>","msg":"'Rex says woof!'"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 18,
+ "finalGlobals": {
+  "Dog": "<type>",
+  "rex": "<Dog>",
+  "msg": "'Rex says woof!'"
+ },
+ "continuation": [],
+ "sourceSha256": "441de5ba9c460f9e4dd1d30a901444aae668abed2c04effa6f48f8eb2d0782a5"
+}

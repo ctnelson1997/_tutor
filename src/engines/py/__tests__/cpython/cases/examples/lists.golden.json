@@ -1,0 +1,32 @@
+{
+ "stdout": "[1, 2, 3, 4]\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[1, 2, 3, 4]"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":1,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{"nums":"<list>"}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"nums":"<list>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"nums":"<list>","first":"1"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"nums":"<list>","first":"1","length":"4"}},
+  {"event":"return","line":5,"stack":["<module>"],"locals":{"nums":"<list>","first":"1","length":"4"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 7,
+ "finalGlobals": {
+  "nums": "<list>",
+  "first": "1",
+  "length": "4"
+ },
+ "continuation": [],
+ "sourceSha256": "6e381e26f585bcba828052f3a1574916d9aaa681ba63ed5e3afe5eae7700f0c3"
+}

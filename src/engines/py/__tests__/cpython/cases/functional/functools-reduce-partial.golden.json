@@ -1,0 +1,124 @@
+{
+ "stdout": "23\n540\n9\nhow\n0\nTypeError: reduce() of empty iterable with no initial value\n81 1024\n11 power {'exponent': 2}\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "23"
+  },
+  {
+   "stream": "stdout",
+   "text": "540"
+  },
+  {
+   "stream": "stdout",
+   "text": "9"
+  },
+  {
+   "stream": "stdout",
+   "text": "how"
+  },
+  {
+   "stream": "stdout",
+   "text": "0"
+  },
+  {
+   "stream": "stdout",
+   "text": "TypeError: reduce() of empty iterable with no initial value"
+  },
+  {
+   "stream": "stdout",
+   "text": "81 1024"
+  },
+  {
+   "stream": "stdout",
+   "text": "11 power {'exponent': 2}"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"reduce":"<builtin_function_or_method>","partial":"<type>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"reduce":"<builtin_function_or_method>","partial":"<type>","operator":"<module>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"reduce":"<builtin_function_or_method>","partial":"<type>","operator":"<module>","nums":"<list>"}},
+  {"event":"call","line":6,"stack":["<module>","<lambda>"],"locals":{"a":"3","b":"1"}},
+  {"event":"line","line":6,"stack":["<module>","<lambda>"],"locals":{"a":"3","b":"1"}},
+  {"event":"return","line":6,"stack":["<module>","<lambda>"],"locals":{"a":"3","b":"1"},"value":"4"},
+  {"event":"call","line":6,"stack":["<module>","<lambda>"],"locals":{"a":"4","b":"4"}},
+  {"event":"line","line":6,"stack":["<module>","<lambda>"],"locals":{"a":"4","b":"4"}},
+  {"event":"return","line":6,"stack":["<module>","<lambda>"],"locals":{"a":"4","b":"4"},"value":"8"},
+  {"event":"call","line":6,"stack":["<module>","<lambda>"],"locals":{"a":"8","b":"1"}},
+  {"event":"line","line":6,"stack":["<module>","<lambda>"],"locals":{"a":"8","b":"1"}},
+  {"event":"return","line":6,"stack":["<module>","<lambda>"],"locals":{"a":"8","b":"1"},"value":"9"},
+  {"event":"call","line":6,"stack":["<module>","<lambda>"],"locals":{"a":"9","b":"5"}},
+  {"event":"line","line":6,"stack":["<module>","<lambda>"],"locals":{"a":"9","b":"5"}},
+  {"event":"return","line":6,"stack":["<module>","<lambda>"],"locals":{"a":"9","b":"5"},"value":"14"},
+  {"event":"call","line":6,"stack":["<module>","<lambda>"],"locals":{"a":"14","b":"9"}},
+  {"event":"line","line":6,"stack":["<module>","<lambda>"],"locals":{"a":"14","b":"9"}},
+  {"event":"return","line":6,"stack":["<module>","<lambda>"],"locals":{"a":"14","b":"9"},"value":"23"},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"reduce":"<builtin_function_or_method>","partial":"<type>","operator":"<module>","nums":"<list>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"reduce":"<builtin_function_or_method>","partial":"<type>","operator":"<module>","nums":"<list>"}},
+  {"event":"call","line":8,"stack":["<module>","<lambda>"],"locals":{"acc":"3","x":"1"}},
+  {"event":"line","line":8,"stack":["<module>","<lambda>"],"locals":{"acc":"3","x":"1"}},
+  {"event":"return","line":8,"stack":["<module>","<lambda>"],"locals":{"acc":"3","x":"1"},"value":"3"},
+  {"event":"call","line":8,"stack":["<module>","<lambda>"],"locals":{"acc":"3","x":"4"}},
+  {"event":"line","line":8,"stack":["<module>","<lambda>"],"locals":{"acc":"3","x":"4"}},
+  {"event":"return","line":8,"stack":["<module>","<lambda>"],"locals":{"acc":"3","x":"4"},"value":"4"},
+  {"event":"call","line":8,"stack":["<module>","<lambda>"],"locals":{"acc":"4","x":"1"}},
+  {"event":"line","line":8,"stack":["<module>","<lambda>"],"locals":{"acc":"4","x":"1"}},
+  {"event":"return","line":8,"stack":["<module>","<lambda>"],"locals":{"acc":"4","x":"1"},"value":"4"},
+  {"event":"call","line":8,"stack":["<module>","<lambda>"],"locals":{"acc":"4","x":"5"}},
+  {"event":"line","line":8,"stack":["<module>","<lambda>"],"locals":{"acc":"4","x":"5"}},
+  {"event":"return","line":8,"stack":["<module>","<lambda>"],"locals":{"acc":"4","x":"5"},"value":"5"},
+  {"event":"call","line":8,"stack":["<module>","<lambda>"],"locals":{"acc":"5","x":"9"}},
+  {"event":"line","line":8,"stack":["<module>","<lambda>"],"locals":{"acc":"5","x":"9"}},
+  {"event":"return","line":8,"stack":["<module>","<lambda>"],"locals":{"acc":"5","x":"9"},"value":"9"},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"reduce":"<builtin_function_or_method>","partial":"<type>","operator":"<module>","nums":"<list>"}},
+  {"event":"call","line":9,"stack":["<module>","<lambda>"],"locals":{"acc":"''","w":"'hello'"}},
+  {"event":"line","line":9,"stack":["<module>","<lambda>"],"locals":{"acc":"''","w":"'hello'"}},
+  {"event":"return","line":9,"stack":["<module>","<lambda>"],"locals":{"acc":"''","w":"'hello'"},"value":"'h'"},
+  {"event":"call","line":9,"stack":["<module>","<lambda>"],"locals":{"acc":"'h'","w":"'old'"}},
+  {"event":"line","line":9,"stack":["<module>","<lambda>"],"locals":{"acc":"'h'","w":"'old'"}},
+  {"event":"return","line":9,"stack":["<module>","<lambda>"],"locals":{"acc":"'h'","w":"'old'"},"value":"'ho'"},
+  {"event":"call","line":9,"stack":["<module>","<lambda>"],"locals":{"acc":"'ho'","w":"'world'"}},
+  {"event":"line","line":9,"stack":["<module>","<lambda>"],"locals":{"acc":"'ho'","w":"'world'"}},
+  {"event":"return","line":9,"stack":["<module>","<lambda>"],"locals":{"acc":"'ho'","w":"'world'"},"value":"'how'"},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"reduce":"<builtin_function_or_method>","partial":"<type>","operator":"<module>","nums":"<list>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"reduce":"<builtin_function_or_method>","partial":"<type>","operator":"<module>","nums":"<list>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"reduce":"<builtin_function_or_method>","partial":"<type>","operator":"<module>","nums":"<list>"}},
+  {"event":"exception","line":12,"stack":["<module>"],"locals":{"reduce":"<builtin_function_or_method>","partial":"<type>","operator":"<module>","nums":"<list>"},"exc":"TypeError"},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"reduce":"<builtin_function_or_method>","partial":"<type>","operator":"<module>","nums":"<list>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"reduce":"<builtin_function_or_method>","partial":"<type>","operator":"<module>","nums":"<list>","e":"<TypeError>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"reduce":"<builtin_function_or_method>","partial":"<type>","operator":"<module>","nums":"<list>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"reduce":"<builtin_function_or_method>","partial":"<type>","operator":"<module>","nums":"<list>","power":"<function>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"reduce":"<builtin_function_or_method>","partial":"<type>","operator":"<module>","nums":"<list>","power":"<function>","square":"<partial>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"reduce":"<builtin_function_or_method>","partial":"<type>","operator":"<module>","nums":"<list>","power":"<function>","square":"<partial>","two_to":"<partial>"}},
+  {"event":"call","line":16,"stack":["<module>","power"],"locals":{"base":"9","exponent":"2"}},
+  {"event":"line","line":17,"stack":["<module>","power"],"locals":{"base":"9","exponent":"2"}},
+  {"event":"return","line":17,"stack":["<module>","power"],"locals":{"base":"9","exponent":"2"},"value":"81"},
+  {"event":"call","line":16,"stack":["<module>","power"],"locals":{"base":"2","exponent":"10"}},
+  {"event":"line","line":17,"stack":["<module>","power"],"locals":{"base":"2","exponent":"10"}},
+  {"event":"return","line":17,"stack":["<module>","power"],"locals":{"base":"2","exponent":"10"},"value":"1024"},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"reduce":"<builtin_function_or_method>","partial":"<type>","operator":"<module>","nums":"<list>","power":"<function>","square":"<partial>","two_to":"<partial>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"reduce":"<builtin_function_or_method>","partial":"<type>","operator":"<module>","nums":"<list>","power":"<function>","square":"<partial>","two_to":"<partial>","int_from_binary":"<partial>"}},
+  {"event":"return","line":23,"stack":["<module>"],"locals":{"reduce":"<builtin_function_or_method>","partial":"<type>","operator":"<module>","nums":"<list>","power":"<function>","square":"<partial>","two_to":"<partial>","int_from_binary":"<partial>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 65,
+ "finalGlobals": {
+  "reduce": "<builtin_function_or_method>",
+  "partial": "<type>",
+  "operator": "<module>",
+  "nums": "<list>",
+  "power": "<function>",
+  "square": "<partial>",
+  "two_to": "<partial>",
+  "int_from_binary": "<partial>"
+ },
+ "continuation": [],
+ "sourceSha256": "8e250269bb5f41018d89d69f4dbdb4fb5166fc463ca4d87c38087f03cb048ddb"
+}

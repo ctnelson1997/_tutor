@@ -1,0 +1,95 @@
+{
+ "stdout": "42 2.5 text [1, 'a', None] (1,) {'k': [1, 2], 3: 'v'}\nNone\nTrue False\nNone True 0  [] {} ()\nTrue False True\nprinting returns:\nNone\nNoneType int float\n44.5 texttext [1, 'a', None, (1,)] 2\nFalse TEXT None!\n\n|\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "42 2.5 text [1, 'a', None] (1,) {'k': [1, 2], 3: 'v'}"
+  },
+  {
+   "stream": "stdout",
+   "text": "None"
+  },
+  {
+   "stream": "stdout",
+   "text": "True False"
+  },
+  {
+   "stream": "stdout",
+   "text": "None True 0  [] {} ()"
+  },
+  {
+   "stream": "stdout",
+   "text": "True False True"
+  },
+  {
+   "stream": "stdout",
+   "text": "printing returns:"
+  },
+  {
+   "stream": "stdout",
+   "text": "None"
+  },
+  {
+   "stream": "stdout",
+   "text": "NoneType int float"
+  },
+  {
+   "stream": "stdout",
+   "text": "44.5 texttext [1, 'a', None, (1,)] 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "False TEXT None!"
+  },
+  {
+   "stream": "stdout",
+   "text": ""
+  },
+  {
+   "stream": "stdout",
+   "text": "|"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"n":"42"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"n":"42","f":"2.5"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"n":"42","f":"2.5","s":"'text'"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"n":"42","f":"2.5","s":"'text'","lst":"<list>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"n":"42","f":"2.5","s":"'text'","lst":"<list>","tup":"<tuple>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"n":"42","f":"2.5","s":"'text'","lst":"<list>","tup":"<tuple>","d":"<dict>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"n":"42","f":"2.5","s":"'text'","lst":"<list>","tup":"<tuple>","d":"<dict>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"n":"42","f":"2.5","s":"'text'","lst":"<list>","tup":"<tuple>","d":"<dict>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"n":"42","f":"2.5","s":"'text'","lst":"<list>","tup":"<tuple>","d":"<dict>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"n":"42","f":"2.5","s":"'text'","lst":"<list>","tup":"<tuple>","d":"<dict>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"n":"42","f":"2.5","s":"'text'","lst":"<list>","tup":"<tuple>","d":"<dict>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"n":"42","f":"2.5","s":"'text'","lst":"<list>","tup":"<tuple>","d":"<dict>","result":"None"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"n":"42","f":"2.5","s":"'text'","lst":"<list>","tup":"<tuple>","d":"<dict>","result":"None"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"n":"42","f":"2.5","s":"'text'","lst":"<list>","tup":"<tuple>","d":"<dict>","result":"None"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"n":"42","f":"2.5","s":"'text'","lst":"<list>","tup":"<tuple>","d":"<dict>","result":"None"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"n":"42","f":"2.5","s":"'text'","lst":"<list>","tup":"<tuple>","d":"<dict>","result":"None"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"n":"42","f":"2.5","s":"'text'","lst":"<list>","tup":"<tuple>","d":"<dict>","result":"None","empty":"''"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"n":"42","f":"2.5","s":"'text'","lst":"<list>","tup":"<tuple>","d":"<dict>","result":"None","empty":"''"}},
+  {"event":"return","line":20,"stack":["<module>"],"locals":{"n":"42","f":"2.5","s":"'text'","lst":"<list>","tup":"<tuple>","d":"<dict>","result":"None","empty":"''"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 21,
+ "finalGlobals": {
+  "n": "42",
+  "f": "2.5",
+  "s": "'text'",
+  "lst": "<list>",
+  "tup": "<tuple>",
+  "d": "<dict>",
+  "result": "None",
+  "empty": "''"
+ },
+ "continuation": [],
+ "sourceSha256": "85d2ece0c6810939f771548d2caac6eb40f5fcf8758340b9364c1c5094bda5cd"
+}

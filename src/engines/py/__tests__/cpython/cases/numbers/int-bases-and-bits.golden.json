@@ -1,0 +1,85 @@
+{
+ "stdout": "0b1010 0xff 0o10 -0b1010 -0xff\n8 0 1 2\n-6 0 251 -1 -4 7 5\n1180591620717411303424 18446744073709551615 2 0\n41 0b101001 True\nb'\\x04\\x00' 4 [4, 0]\n11111111 12 -2a 011\n10 15 255 1000000\n-5 127 1 1\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "0b1010 0xff 0o10 -0b1010 -0xff"
+  },
+  {
+   "stream": "stdout",
+   "text": "8 0 1 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "-6 0 251 -1 -4 7 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "1180591620717411303424 18446744073709551615 2 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "41 0b101001 True"
+  },
+  {
+   "stream": "stdout",
+   "text": "b'\\x04\\x00' 4 [4, 0]"
+  },
+  {
+   "stream": "stdout",
+   "text": "11111111 12 -2a 011"
+  },
+  {
+   "stream": "stdout",
+   "text": "10 15 255 1000000"
+  },
+  {
+   "stream": "stdout",
+   "text": "-5 127 1 1"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"n":"10"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"n":"10"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"n":"10"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"n":"10"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"n":"10","big":"1180591620717411303424"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"n":"10","big":"1180591620717411303424","mask":"18446744073709551615"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"n":"10","big":"1180591620717411303424","mask":"18446744073709551615"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"n":"10","big":"1180591620717411303424","mask":"18446744073709551615","flags":"0"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"n":"10","big":"1180591620717411303424","mask":"18446744073709551615","flags":"0","bit":"0"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"n":"10","big":"1180591620717411303424","mask":"18446744073709551615","flags":"1","bit":"0"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"n":"10","big":"1180591620717411303424","mask":"18446744073709551615","flags":"1","bit":"3"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"n":"10","big":"1180591620717411303424","mask":"18446744073709551615","flags":"9","bit":"3"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"n":"10","big":"1180591620717411303424","mask":"18446744073709551615","flags":"9","bit":"5"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"n":"10","big":"1180591620717411303424","mask":"18446744073709551615","flags":"41","bit":"5"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"n":"10","big":"1180591620717411303424","mask":"18446744073709551615","flags":"41","bit":"5"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"n":"10","big":"1180591620717411303424","mask":"18446744073709551615","flags":"41","bit":"5"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"n":"10","big":"1180591620717411303424","mask":"18446744073709551615","flags":"41","bit":"5","data":"<bytes>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"n":"10","big":"1180591620717411303424","mask":"18446744073709551615","flags":"41","bit":"5","data":"<bytes>","back":"4"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"n":"10","big":"1180591620717411303424","mask":"18446744073709551615","flags":"41","bit":"5","data":"<bytes>","back":"4"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"n":"10","big":"1180591620717411303424","mask":"18446744073709551615","flags":"41","bit":"5","data":"<bytes>","back":"4"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"n":"10","big":"1180591620717411303424","mask":"18446744073709551615","flags":"41","bit":"5","data":"<bytes>","back":"4"}},
+  {"event":"return","line":18,"stack":["<module>"],"locals":{"n":"10","big":"1180591620717411303424","mask":"18446744073709551615","flags":"41","bit":"5","data":"<bytes>","back":"4"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 24,
+ "finalGlobals": {
+  "n": "10",
+  "big": "1180591620717411303424",
+  "mask": "18446744073709551615",
+  "flags": "41",
+  "bit": "5",
+  "data": "<bytes>",
+  "back": "4"
+ },
+ "continuation": [],
+ "sourceSha256": "f39401abef7adf6cdd3c24dd6db6170985a332bac66417e2279696bd6eb8cad9"
+}

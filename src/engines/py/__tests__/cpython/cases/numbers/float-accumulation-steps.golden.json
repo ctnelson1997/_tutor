@@ -1,0 +1,155 @@
+{
+ "stdout": "0 0.1\n1 0.2\n2 0.30000000000000004\n3 0.4\n4 0.5\n5 0.6\n6 0.7\n7 0.7999999999999999\n8 0.8999999999999999\n9 0.9999999999999999\nFalse True 0.9999999999999999\n1.0 True\n3.3000000000000003 0.30000000000000004 434.99999999999994 434 435\n115.7625 115.76\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "0 0.1"
+  },
+  {
+   "stream": "stdout",
+   "text": "1 0.2"
+  },
+  {
+   "stream": "stdout",
+   "text": "2 0.30000000000000004"
+  },
+  {
+   "stream": "stdout",
+   "text": "3 0.4"
+  },
+  {
+   "stream": "stdout",
+   "text": "4 0.5"
+  },
+  {
+   "stream": "stdout",
+   "text": "5 0.6"
+  },
+  {
+   "stream": "stdout",
+   "text": "6 0.7"
+  },
+  {
+   "stream": "stdout",
+   "text": "7 0.7999999999999999"
+  },
+  {
+   "stream": "stdout",
+   "text": "8 0.8999999999999999"
+  },
+  {
+   "stream": "stdout",
+   "text": "9 0.9999999999999999"
+  },
+  {
+   "stream": "stdout",
+   "text": "False True 0.9999999999999999"
+  },
+  {
+   "stream": "stdout",
+   "text": "1.0 True"
+  },
+  {
+   "stream": "stdout",
+   "text": "3.3000000000000003 0.30000000000000004 434.99999999999994 434 435"
+  },
+  {
+   "stream": "stdout",
+   "text": "115.7625 115.76"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"math":"<module>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"math":"<module>","total":"0.0"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"math":"<module>","total":"0.0","i":"0"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"math":"<module>","total":"0.1","i":"0"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"math":"<module>","total":"0.1","i":"0"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"math":"<module>","total":"0.1","i":"1"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"math":"<module>","total":"0.2","i":"1"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"math":"<module>","total":"0.2","i":"1"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"math":"<module>","total":"0.2","i":"2"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"math":"<module>","total":"0.30000000000000004","i":"2"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"math":"<module>","total":"0.30000000000000004","i":"2"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"math":"<module>","total":"0.30000000000000004","i":"3"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"math":"<module>","total":"0.4","i":"3"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"math":"<module>","total":"0.4","i":"3"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"math":"<module>","total":"0.4","i":"4"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"math":"<module>","total":"0.5","i":"4"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"math":"<module>","total":"0.5","i":"4"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"math":"<module>","total":"0.5","i":"5"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"math":"<module>","total":"0.6","i":"5"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"math":"<module>","total":"0.6","i":"5"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"math":"<module>","total":"0.6","i":"6"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"math":"<module>","total":"0.7","i":"6"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"math":"<module>","total":"0.7","i":"6"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"math":"<module>","total":"0.7","i":"7"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"math":"<module>","total":"0.7999999999999999","i":"7"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"math":"<module>","total":"0.7999999999999999","i":"7"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"math":"<module>","total":"0.7999999999999999","i":"8"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"math":"<module>","total":"0.8999999999999999","i":"8"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"math":"<module>","total":"0.8999999999999999","i":"8"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"math":"<module>","total":"0.8999999999999999","i":"9"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"9"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"9"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"9"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"9"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"9","cents":"0"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"0","cents":"0"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"0","cents":"10"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"1","cents":"10"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"1","cents":"20"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"2","cents":"20"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"2","cents":"30"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"3","cents":"30"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"3","cents":"40"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"4","cents":"40"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"4","cents":"50"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"5","cents":"50"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"5","cents":"60"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"6","cents":"60"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"6","cents":"70"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"7","cents":"70"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"7","cents":"80"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"8","cents":"80"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"8","cents":"90"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"9","cents":"90"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"9","cents":"100"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"9","cents":"100"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"9","cents":"100"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"9","cents":"100","x":"3.3000000000000003"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"9","cents":"100","x":"3.3000000000000003","y":"0.30000000000000004"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"9","cents":"100","x":"3.3000000000000003","y":"0.30000000000000004","z":"434.99999999999994"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"9","cents":"100","x":"3.3000000000000003","y":"0.30000000000000004","z":"434.99999999999994"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"9","cents":"100","x":"3.3000000000000003","y":"0.30000000000000004","z":"434.99999999999994","balance":"100.0"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"9","cents":"100","x":"3.3000000000000003","y":"0.30000000000000004","z":"434.99999999999994","balance":"100.0","rate":"0.05"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"9","cents":"100","x":"3.3000000000000003","y":"0.30000000000000004","z":"434.99999999999994","balance":"105.0","rate":"0.05"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"9","cents":"100","x":"3.3000000000000003","y":"0.30000000000000004","z":"434.99999999999994","balance":"105.0","rate":"0.05"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"9","cents":"100","x":"3.3000000000000003","y":"0.30000000000000004","z":"434.99999999999994","balance":"110.25","rate":"0.05"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"9","cents":"100","x":"3.3000000000000003","y":"0.30000000000000004","z":"434.99999999999994","balance":"110.25","rate":"0.05"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"9","cents":"100","x":"3.3000000000000003","y":"0.30000000000000004","z":"434.99999999999994","balance":"115.7625","rate":"0.05"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"9","cents":"100","x":"3.3000000000000003","y":"0.30000000000000004","z":"434.99999999999994","balance":"115.7625","rate":"0.05"}},
+  {"event":"return","line":19,"stack":["<module>"],"locals":{"math":"<module>","total":"0.9999999999999999","i":"9","cents":"100","x":"3.3000000000000003","y":"0.30000000000000004","z":"434.99999999999994","balance":"115.7625","rate":"0.05"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 72,
+ "finalGlobals": {
+  "math": "<module>",
+  "total": "0.9999999999999999",
+  "i": "9",
+  "cents": "100",
+  "x": "3.3000000000000003",
+  "y": "0.30000000000000004",
+  "z": "434.99999999999994",
+  "balance": "115.7625",
+  "rate": "0.05"
+ },
+ "continuation": [],
+ "sourceSha256": "5719d919929f5385caba8cfbbb200e57416b36336d2cb5c45ffd96be7b076f9f"
+}

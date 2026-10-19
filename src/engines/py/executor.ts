@@ -9,10 +9,9 @@
  */
 
 import { getTracerCode } from './tracer';
+import { TIMEOUT_REPLY, WORKER_TIMEOUT } from './run';
 import type { WorkerMessage } from '../../types/snapshot';
 import PyWorker from './worker.ts?worker&inline';
-
-const WORKER_TIMEOUT = 10_000;
 const INIT_TIMEOUT = 30_000; // Pyodide download can take a while
 
 let worker: Worker | null = null;
@@ -88,10 +87,7 @@ export async function execute(source: string): Promise<WorkerMessage> {
       worker?.terminate();
       worker = null;
       readyPromise = null;
-      resolve({
-        type: 'error',
-        message: `Execution timed out after ${WORKER_TIMEOUT / 1000} seconds. Your code may contain an infinite loop.`,
-      });
+      resolve(TIMEOUT_REPLY);
     }, WORKER_TIMEOUT);
 
     const onMessage = (e: MessageEvent<WorkerMessage>) => {

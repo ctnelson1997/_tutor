@@ -1,0 +1,96 @@
+{
+ "stdout": "Order(customer='Ann', items=[Item(name='pen', price=1.5, qty=4), Item(name='book', price=12.0, qty=1)], paid=False)\nOrder(customer='Bob', items=[], paid=False)\n18.0 0\nTrue False\nTrue False False\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Order(customer='Ann', items=[Item(name='pen', price=1.5, qty=4), Item(name='book', price=12.0, qty=1)], paid=False)"
+  },
+  {
+   "stream": "stdout",
+   "text": "Order(customer='Bob', items=[], paid=False)"
+  },
+  {
+   "stream": "stdout",
+   "text": "18.0 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "True False"
+  },
+  {
+   "stream": "stdout",
+   "text": "True False False"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"dataclass":"<function>","field":"<function>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"dataclass":"<function>","field":"<function>"}},
+  {"event":"call","line":4,"stack":["<module>","Item"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>","Item"],"locals":{}},
+  {"event":"line","line":6,"stack":["<module>","Item"],"locals":{"__module__":"'__main__'","__qualname__":"'Item'","__annotations__":"<dict>"}},
+  {"event":"line","line":7,"stack":["<module>","Item"],"locals":{"__module__":"'__main__'","__qualname__":"'Item'","__annotations__":"<dict>"}},
+  {"event":"line","line":8,"stack":["<module>","Item"],"locals":{"__module__":"'__main__'","__qualname__":"'Item'","__annotations__":"<dict>"}},
+  {"event":"return","line":8,"stack":["<module>","Item"],"locals":{"__module__":"'__main__'","__qualname__":"'Item'","__annotations__":"<dict>","qty":"1"},"value":"None"},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"dataclass":"<function>","field":"<function>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"dataclass":"<function>","field":"<function>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"dataclass":"<function>","field":"<function>","Item":"<type>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"dataclass":"<function>","field":"<function>","Item":"<type>"}},
+  {"event":"call","line":10,"stack":["<module>","Order"],"locals":{}},
+  {"event":"line","line":10,"stack":["<module>","Order"],"locals":{}},
+  {"event":"line","line":12,"stack":["<module>","Order"],"locals":{"__module__":"'__main__'","__qualname__":"'Order'","__annotations__":"<dict>"}},
+  {"event":"line","line":13,"stack":["<module>","Order"],"locals":{"__module__":"'__main__'","__qualname__":"'Order'","__annotations__":"<dict>"}},
+  {"event":"line","line":14,"stack":["<module>","Order"],"locals":{"__module__":"'__main__'","__qualname__":"'Order'","__annotations__":"<dict>","items":"<Field>"}},
+  {"event":"line","line":16,"stack":["<module>","Order"],"locals":{"__module__":"'__main__'","__qualname__":"'Order'","__annotations__":"<dict>","items":"<Field>","paid":"False"}},
+  {"event":"return","line":16,"stack":["<module>","Order"],"locals":{"__module__":"'__main__'","__qualname__":"'Order'","__annotations__":"<dict>","items":"<Field>","paid":"False","total":"<function>"},"value":"None"},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"dataclass":"<function>","field":"<function>","Item":"<type>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"dataclass":"<function>","field":"<function>","Item":"<type>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"dataclass":"<function>","field":"<function>","Item":"<type>","Order":"<type>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"dataclass":"<function>","field":"<function>","Item":"<type>","Order":"<type>","o1":"<Order>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"dataclass":"<function>","field":"<function>","Item":"<type>","Order":"<type>","o1":"<Order>","o2":"<Order>"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"dataclass":"<function>","field":"<function>","Item":"<type>","Order":"<type>","o1":"<Order>","o2":"<Order>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"dataclass":"<function>","field":"<function>","Item":"<type>","Order":"<type>","o1":"<Order>","o2":"<Order>"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"dataclass":"<function>","field":"<function>","Item":"<type>","Order":"<type>","o1":"<Order>","o2":"<Order>"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"dataclass":"<function>","field":"<function>","Item":"<type>","Order":"<type>","o1":"<Order>","o2":"<Order>"}},
+  {"event":"call","line":16,"stack":["<module>","total"],"locals":{"self":"<Order>"}},
+  {"event":"line","line":17,"stack":["<module>","total"],"locals":{"self":"<Order>"}},
+  {"event":"call","line":17,"stack":["<module>","total","<genexpr>"],"locals":{".0":"<list_iterator>"}},
+  {"event":"line","line":17,"stack":["<module>","total","<genexpr>"],"locals":{".0":"<list_iterator>"}},
+  {"event":"return","line":17,"stack":["<module>","total","<genexpr>"],"locals":{".0":"<list_iterator>","i":"<Item>"},"value":"6.0"},
+  {"event":"call","line":17,"stack":["<module>","total","<genexpr>"],"locals":{".0":"<list_iterator>","i":"<Item>"}},
+  {"event":"line","line":17,"stack":["<module>","total","<genexpr>"],"locals":{".0":"<list_iterator>","i":"<Item>"}},
+  {"event":"return","line":17,"stack":["<module>","total","<genexpr>"],"locals":{".0":"<list_iterator>","i":"<Item>"},"value":"12.0"},
+  {"event":"call","line":17,"stack":["<module>","total","<genexpr>"],"locals":{".0":"<list_iterator>","i":"<Item>"}},
+  {"event":"line","line":17,"stack":["<module>","total","<genexpr>"],"locals":{".0":"<list_iterator>","i":"<Item>"}},
+  {"event":"return","line":17,"stack":["<module>","total","<genexpr>"],"locals":{".0":"<list_iterator>","i":"<Item>"},"value":"None"},
+  {"event":"return","line":17,"stack":["<module>","total"],"locals":{"self":"<Order>"},"value":"18.0"},
+  {"event":"call","line":16,"stack":["<module>","total"],"locals":{"self":"<Order>"}},
+  {"event":"line","line":17,"stack":["<module>","total"],"locals":{"self":"<Order>"}},
+  {"event":"call","line":17,"stack":["<module>","total","<genexpr>"],"locals":{".0":"<list_iterator>"}},
+  {"event":"line","line":17,"stack":["<module>","total","<genexpr>"],"locals":{".0":"<list_iterator>"}},
+  {"event":"return","line":17,"stack":["<module>","total","<genexpr>"],"locals":{".0":"<list_iterator>"},"value":"None"},
+  {"event":"return","line":17,"stack":["<module>","total"],"locals":{"self":"<Order>"},"value":"0"},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"dataclass":"<function>","field":"<function>","Item":"<type>","Order":"<type>","o1":"<Order>","o2":"<Order>"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"dataclass":"<function>","field":"<function>","Item":"<type>","Order":"<type>","o1":"<Order>","o2":"<Order>"}},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"dataclass":"<function>","field":"<function>","Item":"<type>","Order":"<type>","o1":"<Order>","o2":"<Order>"}},
+  {"event":"return","line":28,"stack":["<module>"],"locals":{"dataclass":"<function>","field":"<function>","Item":"<type>","Order":"<type>","o1":"<Order>","o2":"<Order>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 52,
+ "finalGlobals": {
+  "dataclass": "<function>",
+  "field": "<function>",
+  "Item": "<type>",
+  "Order": "<type>",
+  "o1": "<Order>",
+  "o2": "<Order>"
+ },
+ "continuation": [],
+ "sourceSha256": "4a84d091310a08b76e5f4076113e8df7b8e131af5d4c706799d290cf62fd5d61"
+}

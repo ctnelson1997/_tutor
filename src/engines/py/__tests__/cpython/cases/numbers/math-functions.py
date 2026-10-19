@@ -1,0 +1,21 @@
+# math module results held in variables: sqrt, gcd/lcm, comb/perm, isqrt, logs, hypot, trig, fsum vs sum
+import math
+s = math.sqrt(16)
+s2 = math.sqrt(2)
+g = math.gcd(48, 18)
+l = math.lcm(4, 6)
+c = math.comb(10, 3)
+p = math.perm(5, 2)
+iq = math.isqrt(17)
+print(s, s2, g, l, c, p, iq)
+print(math.pi, math.e, math.tau)
+print(math.log(math.e), math.log(8, 2), math.log2(1024), math.log10(1000), math.log(1000, 10))
+print(math.hypot(3, 4), math.factorial(20), math.floor(2.7), math.ceil(2.1))
+print(math.isclose(0.1 + 0.2, 0.3), math.prod([1, 2, 3, 4]))
+tenths = [0.1] * 10
+print(sum(tenths), math.fsum(tenths))
+print(math.degrees(math.pi), math.radians(180))
+print(math.sin(math.pi), math.cos(0), math.atan2(1, 1), math.exp(1))
+print(math.sqrt(1e-10), math.pow(2, 10), 2 ** 10)
+dist = math.dist((0, 0), (3, 4))
+print(dist, math.copysign(3, -0.0), math.fabs(-2))

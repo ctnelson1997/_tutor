@@ -1,0 +1,120 @@
+{
+ "stdout": "Age:   'twenty' is not a whole number, try again\nAge:   -3 is out of range (0-120)\nAge:   '19.5' is not a whole number, try again\nAge: Got age 19 after 4 attempts\nTicket category: adult\nHow many tickets?   0 is out of range (1-10)\nHow many tickets? 3 adult tickets cost $36\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Age:   'twenty' is not a whole number, try again"
+  },
+  {
+   "stream": "stdout",
+   "text": "Age:   -3 is out of range (0-120)"
+  },
+  {
+   "stream": "stdout",
+   "text": "Age:   '19.5' is not a whole number, try again"
+  },
+  {
+   "stream": "stdout",
+   "text": "Age: Got age 19 after 4 attempts"
+  },
+  {
+   "stream": "stdout",
+   "text": "Ticket category: adult"
+  },
+  {
+   "stream": "stdout",
+   "text": "How many tickets?   0 is out of range (1-10)"
+  },
+  {
+   "stream": "stdout",
+   "text": "How many tickets? 3 adult tickets cost $36"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"read_int":"<function>"}},
+  {"event":"call","line":2,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120"}},
+  {"event":"line","line":3,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120"}},
+  {"event":"line","line":4,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"0"}},
+  {"event":"line","line":5,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"0"}},
+  {"event":"line","line":6,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"1"}},
+  {"event":"line","line":7,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"1","text":"'twenty'"}},
+  {"event":"line","line":8,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"1","text":"'twenty'"}},
+  {"event":"exception","line":8,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"1","text":"'twenty'"},"exc":"ValueError"},
+  {"event":"line","line":9,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"1","text":"'twenty'"}},
+  {"event":"line","line":10,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"1","text":"'twenty'"}},
+  {"event":"line","line":11,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"1","text":"'twenty'"}},
+  {"event":"line","line":4,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"1","text":"'twenty'"}},
+  {"event":"line","line":5,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"1","text":"'twenty'"}},
+  {"event":"line","line":6,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"2","text":"'twenty'"}},
+  {"event":"line","line":7,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"2","text":"'-3'"}},
+  {"event":"line","line":8,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"2","text":"'-3'"}},
+  {"event":"line","line":12,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"2","text":"'-3'","value":"-3"}},
+  {"event":"line","line":13,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"2","text":"'-3'","value":"-3"}},
+  {"event":"line","line":14,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"2","text":"'-3'","value":"-3"}},
+  {"event":"line","line":4,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"2","text":"'-3'","value":"-3"}},
+  {"event":"line","line":5,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"2","text":"'-3'","value":"-3"}},
+  {"event":"line","line":6,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"3","text":"'-3'","value":"-3"}},
+  {"event":"line","line":7,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"3","text":"'19.5'","value":"-3"}},
+  {"event":"line","line":8,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"3","text":"'19.5'","value":"-3"}},
+  {"event":"exception","line":8,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"3","text":"'19.5'","value":"-3"},"exc":"ValueError"},
+  {"event":"line","line":9,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"3","text":"'19.5'","value":"-3"}},
+  {"event":"line","line":10,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"3","text":"'19.5'","value":"-3"}},
+  {"event":"line","line":11,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"3","text":"'19.5'","value":"-3"}},
+  {"event":"line","line":4,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"3","text":"'19.5'","value":"-3"}},
+  {"event":"line","line":5,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"3","text":"'19.5'","value":"-3"}},
+  {"event":"line","line":6,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"4","text":"'19.5'","value":"-3"}},
+  {"event":"line","line":7,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"4","text":"'19'","value":"-3"}},
+  {"event":"line","line":8,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"4","text":"'19'","value":"-3"}},
+  {"event":"line","line":12,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"4","text":"'19'","value":"19"}},
+  {"event":"line","line":15,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"4","text":"'19'","value":"19"}},
+  {"event":"return","line":15,"stack":["<module>","read_int"],"locals":{"prompt":"'Age: '","low":"0","high":"120","attempts":"4","text":"'19'","value":"19"},"value":"<tuple>"},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"read_int":"<function>","age":"19","tries":"4"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"read_int":"<function>","age":"19","tries":"4"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"read_int":"<function>","age":"19","tries":"4"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"read_int":"<function>","age":"19","tries":"4"}},
+  {"event":"line","line":29,"stack":["<module>"],"locals":{"read_int":"<function>","age":"19","tries":"4","category":"'adult'"}},
+  {"event":"line","line":31,"stack":["<module>"],"locals":{"read_int":"<function>","age":"19","tries":"4","category":"'adult'"}},
+  {"event":"line","line":32,"stack":["<module>"],"locals":{"read_int":"<function>","age":"19","tries":"4","category":"'adult'","prices":"<dict>"}},
+  {"event":"call","line":2,"stack":["<module>","read_int"],"locals":{"prompt":"'How many tickets? '","low":"1","high":"10"}},
+  {"event":"line","line":3,"stack":["<module>","read_int"],"locals":{"prompt":"'How many tickets? '","low":"1","high":"10"}},
+  {"event":"line","line":4,"stack":["<module>","read_int"],"locals":{"prompt":"'How many tickets? '","low":"1","high":"10","attempts":"0"}},
+  {"event":"line","line":5,"stack":["<module>","read_int"],"locals":{"prompt":"'How many tickets? '","low":"1","high":"10","attempts":"0"}},
+  {"event":"line","line":6,"stack":["<module>","read_int"],"locals":{"prompt":"'How many tickets? '","low":"1","high":"10","attempts":"1"}},
+  {"event":"line","line":7,"stack":["<module>","read_int"],"locals":{"prompt":"'How many tickets? '","low":"1","high":"10","attempts":"1","text":"'0'"}},
+  {"event":"line","line":8,"stack":["<module>","read_int"],"locals":{"prompt":"'How many tickets? '","low":"1","high":"10","attempts":"1","text":"'0'"}},
+  {"event":"line","line":12,"stack":["<module>","read_int"],"locals":{"prompt":"'How many tickets? '","low":"1","high":"10","attempts":"1","text":"'0'","value":"0"}},
+  {"event":"line","line":13,"stack":["<module>","read_int"],"locals":{"prompt":"'How many tickets? '","low":"1","high":"10","attempts":"1","text":"'0'","value":"0"}},
+  {"event":"line","line":14,"stack":["<module>","read_int"],"locals":{"prompt":"'How many tickets? '","low":"1","high":"10","attempts":"1","text":"'0'","value":"0"}},
+  {"event":"line","line":4,"stack":["<module>","read_int"],"locals":{"prompt":"'How many tickets? '","low":"1","high":"10","attempts":"1","text":"'0'","value":"0"}},
+  {"event":"line","line":5,"stack":["<module>","read_int"],"locals":{"prompt":"'How many tickets? '","low":"1","high":"10","attempts":"1","text":"'0'","value":"0"}},
+  {"event":"line","line":6,"stack":["<module>","read_int"],"locals":{"prompt":"'How many tickets? '","low":"1","high":"10","attempts":"2","text":"'0'","value":"0"}},
+  {"event":"line","line":7,"stack":["<module>","read_int"],"locals":{"prompt":"'How many tickets? '","low":"1","high":"10","attempts":"2","text":"'3'","value":"0"}},
+  {"event":"line","line":8,"stack":["<module>","read_int"],"locals":{"prompt":"'How many tickets? '","low":"1","high":"10","attempts":"2","text":"'3'","value":"0"}},
+  {"event":"line","line":12,"stack":["<module>","read_int"],"locals":{"prompt":"'How many tickets? '","low":"1","high":"10","attempts":"2","text":"'3'","value":"3"}},
+  {"event":"line","line":15,"stack":["<module>","read_int"],"locals":{"prompt":"'How many tickets? '","low":"1","high":"10","attempts":"2","text":"'3'","value":"3"}},
+  {"event":"return","line":15,"stack":["<module>","read_int"],"locals":{"prompt":"'How many tickets? '","low":"1","high":"10","attempts":"2","text":"'3'","value":"3"},"value":"<tuple>"},
+  {"event":"line","line":33,"stack":["<module>"],"locals":{"read_int":"<function>","age":"19","tries":"2","category":"'adult'","prices":"<dict>","count":"3"}},
+  {"event":"line","line":34,"stack":["<module>"],"locals":{"read_int":"<function>","age":"19","tries":"2","category":"'adult'","prices":"<dict>","count":"3","cost":"36"}},
+  {"event":"return","line":34,"stack":["<module>"],"locals":{"read_int":"<function>","age":"19","tries":"2","category":"'adult'","prices":"<dict>","count":"3","cost":"36"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 65,
+ "finalGlobals": {
+  "read_int": "<function>",
+  "age": "19",
+  "tries": "2",
+  "category": "'adult'",
+  "prices": "<dict>",
+  "count": "3",
+  "cost": "36"
+ },
+ "continuation": [],
+ "sourceSha256": "dc04f649087554f009cb610225cb26fbeaad73e38d7312381ccbd231d0b2c267"
+}

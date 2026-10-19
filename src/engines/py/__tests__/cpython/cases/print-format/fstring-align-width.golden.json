@@ -1,0 +1,107 @@
+{
+ "stdout": "[     Ada]\n[Ada     ]\n[  Ada   ]\n[***Ada****]\n[    42] [42    ] [  42  ] [000042]\n[-00042] [-   42] [+42]\n[     93.46] [93.5      ] [    93    ]\n[         Ada] [       93.46]\nitem          qty   price\napple           3    0.50\nkiwi           12    0.25\nwatermelon      1    3.00\n[toolongvalue]\n[     1] [  None]\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[     Ada]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[Ada     ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[  Ada   ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[***Ada****]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[    42] [42    ] [  42  ] [000042]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[-00042] [-   42] [+42]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[     93.46] [93.5      ] [    93    ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[         Ada] [       93.46]"
+  },
+  {
+   "stream": "stdout",
+   "text": "item          qty   price"
+  },
+  {
+   "stream": "stdout",
+   "text": "apple           3    0.50"
+  },
+  {
+   "stream": "stdout",
+   "text": "kiwi           12    0.25"
+  },
+  {
+   "stream": "stdout",
+   "text": "watermelon      1    3.00"
+  },
+  {
+   "stream": "stdout",
+   "text": "[toolongvalue]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[     1] [  None]"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"name":"'Ada'"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"name":"'Ada'","score":"93.456"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"name":"'Ada'","score":"93.456","n":"42"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"name":"'Ada'","score":"93.456","n":"42"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"name":"'Ada'","score":"93.456","n":"42"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"name":"'Ada'","score":"93.456","n":"42"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"name":"'Ada'","score":"93.456","n":"42"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"name":"'Ada'","score":"93.456","n":"42"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"name":"'Ada'","score":"93.456","n":"42"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"name":"'Ada'","score":"93.456","n":"42"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"name":"'Ada'","score":"93.456","n":"42","width":"12"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"name":"'Ada'","score":"93.456","n":"42","width":"12"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"name":"'Ada'","score":"93.456","n":"42","width":"12","rows":"<list>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"name":"'Ada'","score":"93.456","n":"42","width":"12","rows":"<list>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"name":"'Ada'","score":"93.456","n":"42","width":"12","rows":"<list>","item":"'apple'","qty":"3","price":"0.5"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"name":"'Ada'","score":"93.456","n":"42","width":"12","rows":"<list>","item":"'apple'","qty":"3","price":"0.5"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"name":"'Ada'","score":"93.456","n":"42","width":"12","rows":"<list>","item":"'kiwi'","qty":"12","price":"0.25"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"name":"'Ada'","score":"93.456","n":"42","width":"12","rows":"<list>","item":"'kiwi'","qty":"12","price":"0.25"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"name":"'Ada'","score":"93.456","n":"42","width":"12","rows":"<list>","item":"'watermelon'","qty":"1","price":"3.0"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"name":"'Ada'","score":"93.456","n":"42","width":"12","rows":"<list>","item":"'watermelon'","qty":"1","price":"3.0"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"name":"'Ada'","score":"93.456","n":"42","width":"12","rows":"<list>","item":"'watermelon'","qty":"1","price":"3.0"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"name":"'Ada'","score":"93.456","n":"42","width":"12","rows":"<list>","item":"'watermelon'","qty":"1","price":"3.0"}},
+  {"event":"return","line":19,"stack":["<module>"],"locals":{"name":"'Ada'","score":"93.456","n":"42","width":"12","rows":"<list>","item":"'watermelon'","qty":"1","price":"3.0"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 25,
+ "finalGlobals": {
+  "name": "'Ada'",
+  "score": "93.456",
+  "n": "42",
+  "width": "12",
+  "rows": "<list>",
+  "item": "'watermelon'",
+  "qty": "1",
+  "price": "3.0"
+ },
+ "continuation": [],
+ "sourceSha256": "07cd4f1508c12a1577ed5eb8b01e484e0cb798cabf7c419032d238afde4d49c7"
+}

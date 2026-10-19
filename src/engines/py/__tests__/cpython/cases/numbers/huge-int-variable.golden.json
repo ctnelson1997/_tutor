@@ -1,0 +1,69 @@
+{
+ "stdout": "16610\n119\n10000000000\nValueError: Exceeds the limit (4300 digits) for integer string conversion\n1 1\n3011 1995063116\n2 7\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "16610"
+  },
+  {
+   "stream": "stdout",
+   "text": "119"
+  },
+  {
+   "stream": "stdout",
+   "text": "10000000000"
+  },
+  {
+   "stream": "stdout",
+   "text": "ValueError: Exceeds the limit (4300 digits) for integer string conversion"
+  },
+  {
+   "stream": "stdout",
+   "text": "1 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "3011 1995063116"
+  },
+  {
+   "stream": "stdout",
+   "text": "2 7"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"x":"<int with 5001 digits>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"x":"<int with 5001 digits>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"x":"<int with 5001 digits>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"x":"<int with 5001 digits>","small":"10000000000"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"x":"<int with 5001 digits>","small":"10000000000"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"x":"<int with 5001 digits>","small":"10000000000"}},
+  {"event":"exception","line":8,"stack":["<module>"],"locals":{"x":"<int with 5001 digits>","small":"10000000000"},"exc":"ValueError"},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"x":"<int with 5001 digits>","small":"10000000000"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"x":"<int with 5001 digits>","small":"10000000000","err":"<ValueError>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"x":"<int with 5001 digits>","small":"10000000000"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"x":"<int with 5001 digits>","small":"10000000000","y":"<int with 5001 digits>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"x":"<int with 5001 digits>","small":"10000000000","y":"<int with 5001 digits>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"x":"<int with 5001 digits>","small":"10000000000","y":"<int with 5001 digits>","medium":"199506311688075838488374216268358508382349683188619245485200894985294388302219466319199616840361945978993311294232091242715564913494137811175937859320963239578557300467937945267652465512660598955205500869181933115425086084606181046855090748660896248880904898948380092539416332578506215683094739025569…"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"x":"<int with 5001 digits>","small":"10000000000","y":"<int with 5001 digits>","medium":"199506311688075838488374216268358508382349683188619245485200894985294388302219466319199616840361945978993311294232091242715564913494137811175937859320963239578557300467937945267652465512660598955205500869181933115425086084606181046855090748660896248880904898948380092539416332578506215683094739025569…"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"x":"<int with 5001 digits>","small":"10000000000","y":"<int with 5001 digits>","medium":"199506311688075838488374216268358508382349683188619245485200894985294388302219466319199616840361945978993311294232091242715564913494137811175937859320963239578557300467937945267652465512660598955205500869181933115425086084606181046855090748660896248880904898948380092539416332578506215683094739025569…","values":"<list>"}},
+  {"event":"return","line":16,"stack":["<module>"],"locals":{"x":"<int with 5001 digits>","small":"10000000000","y":"<int with 5001 digits>","medium":"199506311688075838488374216268358508382349683188619245485200894985294388302219466319199616840361945978993311294232091242715564913494137811175937859320963239578557300467937945267652465512660598955205500869181933115425086084606181046855090748660896248880904898948380092539416332578506215683094739025569…","values":"<list>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 17,
+ "finalGlobals": {
+  "x": "<int with 5001 digits>",
+  "small": "10000000000",
+  "y": "<int with 5001 digits>",
+  "medium": "199506311688075838488374216268358508382349683188619245485200894985294388302219466319199616840361945978993311294232091242715564913494137811175937859320963239578557300467937945267652465512660598955205500869181933115425086084606181046855090748660896248880904898948380092539416332578506215683094739025569…",
+  "values": "<list>"
+ },
+ "continuation": [],
+ "sourceSha256": "da1236e95f2d85843fd7a3ec08c7489115ec1e4277cc4aec0f50ebdf0a95b416"
+}

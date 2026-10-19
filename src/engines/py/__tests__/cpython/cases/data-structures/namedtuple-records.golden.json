@@ -1,0 +1,122 @@
+{
+ "stdout": "Point(x=1, y=2) Color(r=255, g=128, b=0) 0\n3 3 (255, 128, 0)\nPoint(x=10, y=2) Point(x=1, y=2)\nPoint(x=7, y=8) {'r': 255, 'g': 128, 'b': 0}\nStudent(name='Ann', grade=9) Bo (grade 11) True\n['Ann', 'Cy', 'Bo']\nLine(start=Point(x=0, y=0), end=Point(x=3, y=4)) 3 True\nBo 11 ('name', 'grade') {'b': 0}\nAttributeError: can't set attribute\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Point(x=1, y=2) Color(r=255, g=128, b=0) 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "3 3 (255, 128, 0)"
+  },
+  {
+   "stream": "stdout",
+   "text": "Point(x=10, y=2) Point(x=1, y=2)"
+  },
+  {
+   "stream": "stdout",
+   "text": "Point(x=7, y=8) {'r': 255, 'g': 128, 'b': 0}"
+  },
+  {
+   "stream": "stdout",
+   "text": "Student(name='Ann', grade=9) Bo (grade 11) True"
+  },
+  {
+   "stream": "stdout",
+   "text": "['Ann', 'Cy', 'Bo']"
+  },
+  {
+   "stream": "stdout",
+   "text": "Line(start=Point(x=0, y=0), end=Point(x=3, y=4)) 3 True"
+  },
+  {
+   "stream": "stdout",
+   "text": "Bo 11 ('name', 'grade') {'b': 0}"
+  },
+  {
+   "stream": "stdout",
+   "text": "AttributeError: can't set attribute"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"namedtuple":"<function>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>","Color":"<type>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>","Color":"<type>","p":"<Point>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>","Color":"<type>","p":"<Point>","c":"<Color>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>","Color":"<type>","p":"<Point>","c":"<Color>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>","Color":"<type>","p":"<Point>","c":"<Color>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>","Color":"<type>","p":"<Point>","c":"<Color>","moved":"<Point>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>","Color":"<type>","p":"<Point>","c":"<Color>","moved":"<Point>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>","Color":"<type>","p":"<Point>","c":"<Color>","moved":"<Point>"}},
+  {"event":"call","line":16,"stack":["<module>","Student"],"locals":{}},
+  {"event":"line","line":16,"stack":["<module>","Student"],"locals":{}},
+  {"event":"line","line":17,"stack":["<module>","Student"],"locals":{"__module__":"'__main__'","__qualname__":"'Student'","__annotations__":"<dict>"}},
+  {"event":"line","line":18,"stack":["<module>","Student"],"locals":{"__module__":"'__main__'","__qualname__":"'Student'","__annotations__":"<dict>"}},
+  {"event":"line","line":20,"stack":["<module>","Student"],"locals":{"__module__":"'__main__'","__qualname__":"'Student'","__annotations__":"<dict>","grade":"9"}},
+  {"event":"return","line":20,"stack":["<module>","Student"],"locals":{"__module__":"'__main__'","__qualname__":"'Student'","__annotations__":"<dict>","grade":"9","label":"<function>"},"value":"None"},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>","Color":"<type>","p":"<Point>","c":"<Color>","moved":"<Point>","Student":"<type>"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>","Color":"<type>","p":"<Point>","c":"<Color>","moved":"<Point>","Student":"<type>","s1":"<Student>"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>","Color":"<type>","p":"<Point>","c":"<Color>","moved":"<Point>","Student":"<type>","s1":"<Student>","s2":"<Student>"}},
+  {"event":"call","line":20,"stack":["<module>","label"],"locals":{"self":"<Student>"}},
+  {"event":"line","line":21,"stack":["<module>","label"],"locals":{"self":"<Student>"}},
+  {"event":"return","line":21,"stack":["<module>","label"],"locals":{"self":"<Student>"},"value":"'Bo (grade 11)'"},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>","Color":"<type>","p":"<Point>","c":"<Color>","moved":"<Point>","Student":"<type>","s1":"<Student>","s2":"<Student>"}},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>","Color":"<type>","p":"<Point>","c":"<Color>","moved":"<Point>","Student":"<type>","s1":"<Student>","s2":"<Student>","roster":"<list>"}},
+  {"event":"call","line":28,"stack":["<module>","<lambda>"],"locals":{"s":"<Student>"}},
+  {"event":"line","line":28,"stack":["<module>","<lambda>"],"locals":{"s":"<Student>"}},
+  {"event":"return","line":28,"stack":["<module>","<lambda>"],"locals":{"s":"<Student>"},"value":"11"},
+  {"event":"call","line":28,"stack":["<module>","<lambda>"],"locals":{"s":"<Student>"}},
+  {"event":"line","line":28,"stack":["<module>","<lambda>"],"locals":{"s":"<Student>"}},
+  {"event":"return","line":28,"stack":["<module>","<lambda>"],"locals":{"s":"<Student>"},"value":"9"},
+  {"event":"call","line":28,"stack":["<module>","<lambda>"],"locals":{"s":"<Student>"}},
+  {"event":"line","line":28,"stack":["<module>","<lambda>"],"locals":{"s":"<Student>"}},
+  {"event":"return","line":28,"stack":["<module>","<lambda>"],"locals":{"s":"<Student>"},"value":"10"},
+  {"event":"line","line":29,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>","Color":"<type>","p":"<Point>","c":"<Color>","moved":"<Point>","Student":"<type>","s1":"<Student>","s2":"<Student>","roster":"<list>"}},
+  {"event":"line","line":29,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>","Color":"<type>","p":"<Point>","c":"<Color>","moved":"<Point>","Student":"<type>","s1":"<Student>","s2":"<Student>","roster":"<list>"}},
+  {"event":"line","line":29,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>","Color":"<type>","p":"<Point>","c":"<Color>","moved":"<Point>","Student":"<type>","s1":"<Student>","s2":"<Student>","roster":"<list>"}},
+  {"event":"line","line":29,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>","Color":"<type>","p":"<Point>","c":"<Color>","moved":"<Point>","Student":"<type>","s1":"<Student>","s2":"<Student>","roster":"<list>"}},
+  {"event":"line","line":30,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>","Color":"<type>","p":"<Point>","c":"<Color>","moved":"<Point>","Student":"<type>","s1":"<Student>","s2":"<Student>","roster":"<list>"}},
+  {"event":"line","line":31,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>","Color":"<type>","p":"<Point>","c":"<Color>","moved":"<Point>","Student":"<type>","s1":"<Student>","s2":"<Student>","roster":"<list>","Line":"<type>"}},
+  {"event":"line","line":32,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>","Color":"<type>","p":"<Point>","c":"<Color>","moved":"<Point>","Student":"<type>","s1":"<Student>","s2":"<Student>","roster":"<list>","Line":"<type>","seg":"<Line>"}},
+  {"event":"line","line":33,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>","Color":"<type>","p":"<Point>","c":"<Color>","moved":"<Point>","Student":"<type>","s1":"<Student>","s2":"<Student>","roster":"<list>","Line":"<type>","seg":"<Line>","dx":"3"}},
+  {"event":"line","line":34,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>","Color":"<type>","p":"<Point>","c":"<Color>","moved":"<Point>","Student":"<type>","s1":"<Student>","s2":"<Student>","roster":"<list>","Line":"<type>","seg":"<Line>","dx":"3"}},
+  {"event":"line","line":35,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>","Color":"<type>","p":"<Point>","c":"<Color>","moved":"<Point>","Student":"<type>","s1":"<Student>","s2":"<Student>","roster":"<list>","Line":"<type>","seg":"<Line>","dx":"3","name":"'Bo'","grade":"11"}},
+  {"event":"line","line":36,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>","Color":"<type>","p":"<Point>","c":"<Color>","moved":"<Point>","Student":"<type>","s1":"<Student>","s2":"<Student>","roster":"<list>","Line":"<type>","seg":"<Line>","dx":"3","name":"'Bo'","grade":"11"}},
+  {"event":"line","line":37,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>","Color":"<type>","p":"<Point>","c":"<Color>","moved":"<Point>","Student":"<type>","s1":"<Student>","s2":"<Student>","roster":"<list>","Line":"<type>","seg":"<Line>","dx":"3","name":"'Bo'","grade":"11"}},
+  {"event":"exception","line":37,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>","Color":"<type>","p":"<Point>","c":"<Color>","moved":"<Point>","Student":"<type>","s1":"<Student>","s2":"<Student>","roster":"<list>","Line":"<type>","seg":"<Line>","dx":"3","name":"'Bo'","grade":"11"},"exc":"AttributeError"},
+  {"event":"line","line":38,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>","Color":"<type>","p":"<Point>","c":"<Color>","moved":"<Point>","Student":"<type>","s1":"<Student>","s2":"<Student>","roster":"<list>","Line":"<type>","seg":"<Line>","dx":"3","name":"'Bo'","grade":"11"}},
+  {"event":"line","line":39,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>","Color":"<type>","p":"<Point>","c":"<Color>","moved":"<Point>","Student":"<type>","s1":"<Student>","s2":"<Student>","roster":"<list>","Line":"<type>","seg":"<Line>","dx":"3","name":"'Bo'","grade":"11","e":"<AttributeError>"}},
+  {"event":"return","line":39,"stack":["<module>"],"locals":{"namedtuple":"<function>","NamedTuple":"<function>","Point":"<type>","Color":"<type>","p":"<Point>","c":"<Color>","moved":"<Point>","Student":"<type>","s1":"<Student>","s2":"<Student>","roster":"<list>","Line":"<type>","seg":"<Line>","dx":"3","name":"'Bo'","grade":"11"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 51,
+ "finalGlobals": {
+  "namedtuple": "<function>",
+  "NamedTuple": "<function>",
+  "Point": "<type>",
+  "Color": "<type>",
+  "p": "<Point>",
+  "c": "<Color>",
+  "moved": "<Point>",
+  "Student": "<type>",
+  "s1": "<Student>",
+  "s2": "<Student>",
+  "roster": "<list>",
+  "Line": "<type>",
+  "seg": "<Line>",
+  "dx": "3",
+  "name": "'Bo'",
+  "grade": "11"
+ },
+ "continuation": [],
+ "sourceSha256": "8bcb81686dc7157bc1fa63cca1d2f10e558be92d4a346f35b472900b2b3b1c24"
+}

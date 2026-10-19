@@ -1,0 +1,46 @@
+{
+ "stdout": "[1, 4, 9, 16, 25]\n[2, 4]\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[1, 4, 9, 16, 25]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[2, 4]"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":1,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{"nums":"<list>"}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{"nums":"<list>"}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{"nums":"<list>"}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{"nums":"<list>"}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{"nums":"<list>"}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{"nums":"<list>"}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"nums":"<list>","squares":"<list>"}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"nums":"<list>","squares":"<list>"}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"nums":"<list>","squares":"<list>"}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"nums":"<list>","squares":"<list>"}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"nums":"<list>","squares":"<list>"}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"nums":"<list>","squares":"<list>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"nums":"<list>","squares":"<list>","evens":"<list>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"nums":"<list>","squares":"<list>","evens":"<list>"}},
+  {"event":"return","line":5,"stack":["<module>"],"locals":{"nums":"<list>","squares":"<list>","evens":"<list>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 17,
+ "finalGlobals": {
+  "nums": "<list>",
+  "squares": "<list>",
+  "evens": "<list>"
+ },
+ "continuation": [],
+ "sourceSha256": "e0f0b5cc8b8e0eb5e67851317ef0dec5bc2b637f8f8467d0fa403e9b34979bee"
+}

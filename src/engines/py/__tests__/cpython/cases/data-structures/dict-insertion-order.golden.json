@@ -1,0 +1,84 @@
+{
+ "stdout": "{'apple': 5, 'banana': 2, 'cherry': 7}\n['apple', 'banana', 'cherry']\n{'apple': 9, 'cherry': 7, 'banana': 4}\n('banana', 4) {'apple': 9, 'cherry': 7}\n{'apple': 0, 'cherry': 7, 'date': 1, 'elder': 3}\napple ['elder', 'date', 'cherry', 'apple']\nTrue True\n{'apple': 0, 'date': 1, 'elder': 3, 'cherry': 7} True False\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "{'apple': 5, 'banana': 2, 'cherry': 7}"
+  },
+  {
+   "stream": "stdout",
+   "text": "['apple', 'banana', 'cherry']"
+  },
+  {
+   "stream": "stdout",
+   "text": "{'apple': 9, 'cherry': 7, 'banana': 4}"
+  },
+  {
+   "stream": "stdout",
+   "text": "('banana', 4) {'apple': 9, 'cherry': 7}"
+  },
+  {
+   "stream": "stdout",
+   "text": "{'apple': 0, 'cherry': 7, 'date': 1, 'elder': 3}"
+  },
+  {
+   "stream": "stdout",
+   "text": "apple ['elder', 'date', 'cherry', 'apple']"
+  },
+  {
+   "stream": "stdout",
+   "text": "True True"
+  },
+  {
+   "stream": "stdout",
+   "text": "{'apple': 0, 'date': 1, 'elder': 3, 'cherry': 7} True False"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"stock":"<dict>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"stock":"<dict>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"stock":"<dict>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"stock":"<dict>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"stock":"<dict>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"stock":"<dict>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"stock":"<dict>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"stock":"<dict>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"stock":"<dict>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"stock":"<dict>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"stock":"<dict>","last":"<tuple>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"stock":"<dict>","last":"<tuple>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"stock":"<dict>","last":"<tuple>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"stock":"<dict>","last":"<tuple>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"stock":"<dict>","last":"<tuple>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"stock":"<dict>","last":"<tuple>","first_key":"'apple'"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"stock":"<dict>","last":"<tuple>","first_key":"'apple'"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"stock":"<dict>","last":"<tuple>","first_key":"'apple'","copy":"<dict>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"stock":"<dict>","last":"<tuple>","first_key":"'apple'","copy":"<dict>","same_items":"True"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"stock":"<dict>","last":"<tuple>","first_key":"'apple'","copy":"<dict>","same_items":"True"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"stock":"<dict>","last":"<tuple>","first_key":"'apple'","copy":"<dict>","same_items":"True"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"stock":"<dict>","last":"<tuple>","first_key":"'apple'","copy":"<dict>","same_items":"True"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"stock":"<dict>","last":"<tuple>","first_key":"'apple'","copy":"<dict>","same_items":"True"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"stock":"<dict>","last":"<tuple>","first_key":"'apple'","copy":"<dict>","same_items":"True"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"stock":"<dict>","last":"<tuple>","first_key":"'apple'","copy":"<dict>","same_items":"True","rebuilt":"<dict>"}},
+  {"event":"return","line":23,"stack":["<module>"],"locals":{"stock":"<dict>","last":"<tuple>","first_key":"'apple'","copy":"<dict>","same_items":"True","rebuilt":"<dict>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 28,
+ "finalGlobals": {
+  "stock": "<dict>",
+  "last": "<tuple>",
+  "first_key": "'apple'",
+  "copy": "<dict>",
+  "same_items": "True",
+  "rebuilt": "<dict>"
+ },
+ "continuation": [],
+ "sourceSha256": "8e2645df38848a1d6aa4aba72d21bdab23a80e3ec8ffb802aa238af0742ae6fe"
+}

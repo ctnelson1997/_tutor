@@ -1,0 +1,135 @@
+{
+ "stdout": "Your name: Q1. What is the capital of France?   Correct!\nQ2. How many sides does a hexagon have?   Sorry, the answer is 6.\nQ3. What keyword defines a function in Python?   Correct!\nQ4. What is 7 * 8?   Correct!\nQ5. Which planet is known as the Red Planet?   Sorry, the answer is mars.\n\nJordan, you scored 3/5 (60%)\n  Q2: you said '8', expected '6'\n  Q5: you said 'jupiter', expected 'mars'\nPassed!\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Your name: Q1. What is the capital of France?   Correct!"
+  },
+  {
+   "stream": "stdout",
+   "text": "Q2. How many sides does a hexagon have?   Sorry, the answer is 6."
+  },
+  {
+   "stream": "stdout",
+   "text": "Q3. What keyword defines a function in Python?   Correct!"
+  },
+  {
+   "stream": "stdout",
+   "text": "Q4. What is 7 * 8?   Correct!"
+  },
+  {
+   "stream": "stdout",
+   "text": "Q5. Which planet is known as the Red Planet?   Sorry, the answer is mars."
+  },
+  {
+   "stream": "stdout",
+   "text": ""
+  },
+  {
+   "stream": "stdout",
+   "text": "Jordan, you scored 3/5 (60%)"
+  },
+  {
+   "stream": "stdout",
+   "text": "  Q2: you said '8', expected '6'"
+  },
+  {
+   "stream": "stdout",
+   "text": "  Q5: you said 'jupiter', expected 'mars'"
+  },
+  {
+   "stream": "stdout",
+   "text": "Passed!"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"QUESTIONS":"<list>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"0"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"0","missed":"<list>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"0","missed":"<list>","number":"1","question":"'What is the capital of France?'","correct":"'paris'"}},
+  {"event":"call","line":11,"stack":["<module>","normalize"],"locals":{"answer":"'Paris'"}},
+  {"event":"line","line":12,"stack":["<module>","normalize"],"locals":{"answer":"'Paris'"}},
+  {"event":"return","line":12,"stack":["<module>","normalize"],"locals":{"answer":"'Paris'"},"value":"'paris'"},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"0","missed":"<list>","number":"1","question":"'What is the capital of France?'","correct":"'paris'","answer":"'paris'"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"0","missed":"<list>","number":"1","question":"'What is the capital of France?'","correct":"'paris'","answer":"'paris'"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"1","missed":"<list>","number":"1","question":"'What is the capital of France?'","correct":"'paris'","answer":"'paris'"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"1","missed":"<list>","number":"1","question":"'What is the capital of France?'","correct":"'paris'","answer":"'paris'"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"1","missed":"<list>","number":"2","question":"'How many sides does a hexagon have?'","correct":"'6'","answer":"'paris'"}},
+  {"event":"call","line":11,"stack":["<module>","normalize"],"locals":{"answer":"'8'"}},
+  {"event":"line","line":12,"stack":["<module>","normalize"],"locals":{"answer":"'8'"}},
+  {"event":"return","line":12,"stack":["<module>","normalize"],"locals":{"answer":"'8'"},"value":"'8'"},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"1","missed":"<list>","number":"2","question":"'How many sides does a hexagon have?'","correct":"'6'","answer":"'8'"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"1","missed":"<list>","number":"2","question":"'How many sides does a hexagon have?'","correct":"'6'","answer":"'8'"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"1","missed":"<list>","number":"2","question":"'How many sides does a hexagon have?'","correct":"'6'","answer":"'8'"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"1","missed":"<list>","number":"2","question":"'How many sides does a hexagon have?'","correct":"'6'","answer":"'8'"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"1","missed":"<list>","number":"3","question":"'What keyword defines a function in Python?'","correct":"'def'","answer":"'8'"}},
+  {"event":"call","line":11,"stack":["<module>","normalize"],"locals":{"answer":"'def'"}},
+  {"event":"line","line":12,"stack":["<module>","normalize"],"locals":{"answer":"'def'"}},
+  {"event":"return","line":12,"stack":["<module>","normalize"],"locals":{"answer":"'def'"},"value":"'def'"},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"1","missed":"<list>","number":"3","question":"'What keyword defines a function in Python?'","correct":"'def'","answer":"'def'"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"1","missed":"<list>","number":"3","question":"'What keyword defines a function in Python?'","correct":"'def'","answer":"'def'"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"2","missed":"<list>","number":"3","question":"'What keyword defines a function in Python?'","correct":"'def'","answer":"'def'"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"2","missed":"<list>","number":"3","question":"'What keyword defines a function in Python?'","correct":"'def'","answer":"'def'"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"2","missed":"<list>","number":"4","question":"'What is 7 * 8?'","correct":"'56'","answer":"'def'"}},
+  {"event":"call","line":11,"stack":["<module>","normalize"],"locals":{"answer":"' 56'"}},
+  {"event":"line","line":12,"stack":["<module>","normalize"],"locals":{"answer":"' 56'"}},
+  {"event":"return","line":12,"stack":["<module>","normalize"],"locals":{"answer":"' 56'"},"value":"'56'"},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"2","missed":"<list>","number":"4","question":"'What is 7 * 8?'","correct":"'56'","answer":"'56'"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"2","missed":"<list>","number":"4","question":"'What is 7 * 8?'","correct":"'56'","answer":"'56'"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"3","missed":"<list>","number":"4","question":"'What is 7 * 8?'","correct":"'56'","answer":"'56'"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"3","missed":"<list>","number":"4","question":"'What is 7 * 8?'","correct":"'56'","answer":"'56'"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"3","missed":"<list>","number":"5","question":"'Which planet is known as the Red Planet?'","correct":"'mars'","answer":"'56'"}},
+  {"event":"call","line":11,"stack":["<module>","normalize"],"locals":{"answer":"'Jupiter'"}},
+  {"event":"line","line":12,"stack":["<module>","normalize"],"locals":{"answer":"'Jupiter'"}},
+  {"event":"return","line":12,"stack":["<module>","normalize"],"locals":{"answer":"'Jupiter'"},"value":"'jupiter'"},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"3","missed":"<list>","number":"5","question":"'Which planet is known as the Red Planet?'","correct":"'mars'","answer":"'jupiter'"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"3","missed":"<list>","number":"5","question":"'Which planet is known as the Red Planet?'","correct":"'mars'","answer":"'jupiter'"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"3","missed":"<list>","number":"5","question":"'Which planet is known as the Red Planet?'","correct":"'mars'","answer":"'jupiter'"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"3","missed":"<list>","number":"5","question":"'Which planet is known as the Red Planet?'","correct":"'mars'","answer":"'jupiter'"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"3","missed":"<list>","number":"5","question":"'Which planet is known as the Red Planet?'","correct":"'mars'","answer":"'jupiter'"}},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"3","missed":"<list>","number":"5","question":"'Which planet is known as the Red Planet?'","correct":"'mars'","answer":"'jupiter'","percent":"60.0"}},
+  {"event":"line","line":29,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"3","missed":"<list>","number":"5","question":"'Which planet is known as the Red Planet?'","correct":"'mars'","answer":"'jupiter'","percent":"60.0"}},
+  {"event":"line","line":30,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"3","missed":"<list>","number":"5","question":"'Which planet is known as the Red Planet?'","correct":"'mars'","answer":"'jupiter'","percent":"60.0"}},
+  {"event":"line","line":31,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"3","missed":"<list>","number":"2","question":"'Which planet is known as the Red Planet?'","correct":"'6'","answer":"'jupiter'","percent":"60.0","given":"'8'"}},
+  {"event":"line","line":30,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"3","missed":"<list>","number":"2","question":"'Which planet is known as the Red Planet?'","correct":"'6'","answer":"'jupiter'","percent":"60.0","given":"'8'"}},
+  {"event":"line","line":31,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"3","missed":"<list>","number":"5","question":"'Which planet is known as the Red Planet?'","correct":"'mars'","answer":"'jupiter'","percent":"60.0","given":"'jupiter'"}},
+  {"event":"line","line":30,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"3","missed":"<list>","number":"5","question":"'Which planet is known as the Red Planet?'","correct":"'mars'","answer":"'jupiter'","percent":"60.0","given":"'jupiter'"}},
+  {"event":"line","line":32,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"3","missed":"<list>","number":"5","question":"'Which planet is known as the Red Planet?'","correct":"'mars'","answer":"'jupiter'","percent":"60.0","given":"'jupiter'"}},
+  {"event":"line","line":33,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"3","missed":"<list>","number":"5","question":"'Which planet is known as the Red Planet?'","correct":"'mars'","answer":"'jupiter'","percent":"60.0","given":"'jupiter'","passed":"True"}},
+  {"event":"return","line":33,"stack":["<module>"],"locals":{"QUESTIONS":"<list>","normalize":"<function>","name":"'Jordan'","score":"3","missed":"<list>","number":"5","question":"'Which planet is known as the Red Planet?'","correct":"'mars'","answer":"'jupiter'","percent":"60.0","given":"'jupiter'","passed":"True"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 58,
+ "finalGlobals": {
+  "QUESTIONS": "<list>",
+  "normalize": "<function>",
+  "name": "'Jordan'",
+  "score": "3",
+  "missed": "<list>",
+  "number": "5",
+  "question": "'Which planet is known as the Red Planet?'",
+  "correct": "'mars'",
+  "answer": "'jupiter'",
+  "percent": "60.0",
+  "given": "'jupiter'",
+  "passed": "True"
+ },
+ "continuation": [
+  3,
+  4,
+  5,
+  6,
+  7,
+  8
+ ],
+ "sourceSha256": "6fb6d626a646b77b0ed052f10cfe519decf876f8b00401b954b307470245d515"
+}

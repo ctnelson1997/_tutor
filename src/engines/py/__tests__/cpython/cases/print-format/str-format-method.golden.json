@@ -1,0 +1,104 @@
+{
+ "stdout": "2 + 3 = 5\nb a b\nBo is 7 years\nx=3, y=-4\nfirst=10 last=30\nreal=2.0 imag=3.0\n    r|l    |\n====mid====\n{} braces and value\n'quoted' quoted\n25.60% 9,876,543 5.000000e-01\nkim has 3 items\np then q\n'pi       3.1' 12\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "2 + 3 = 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "b a b"
+  },
+  {
+   "stream": "stdout",
+   "text": "Bo is 7 years"
+  },
+  {
+   "stream": "stdout",
+   "text": "x=3, y=-4"
+  },
+  {
+   "stream": "stdout",
+   "text": "first=10 last=30"
+  },
+  {
+   "stream": "stdout",
+   "text": "real=2.0 imag=3.0"
+  },
+  {
+   "stream": "stdout",
+   "text": "    r|l    |"
+  },
+  {
+   "stream": "stdout",
+   "text": "====mid===="
+  },
+  {
+   "stream": "stdout",
+   "text": "{} braces and value"
+  },
+  {
+   "stream": "stdout",
+   "text": "'quoted' quoted"
+  },
+  {
+   "stream": "stdout",
+   "text": "25.60% 9,876,543 5.000000e-01"
+  },
+  {
+   "stream": "stdout",
+   "text": "kim has 3 items"
+  },
+  {
+   "stream": "stdout",
+   "text": "p then q"
+  },
+  {
+   "stream": "stdout",
+   "text": "'pi       3.1' 12"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"template":"'{} + {} = {}'"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"template":"'{} + {} = {}'"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"template":"'{} + {} = {}'"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"template":"'{} + {} = {}'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"template":"'{} + {} = {}'","point":"<dict>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"template":"'{} + {} = {}'","point":"<dict>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"template":"'{} + {} = {}'","point":"<dict>","coords":"<list>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"template":"'{} + {} = {}'","point":"<dict>","coords":"<list>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"template":"'{} + {} = {}'","point":"<dict>","coords":"<list>","c":"(2+3j)"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"template":"'{} + {} = {}'","point":"<dict>","coords":"<list>","c":"(2+3j)"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"template":"'{} + {} = {}'","point":"<dict>","coords":"<list>","c":"(2+3j)"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"template":"'{} + {} = {}'","point":"<dict>","coords":"<list>","c":"(2+3j)"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"template":"'{} + {} = {}'","point":"<dict>","coords":"<list>","c":"(2+3j)"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"template":"'{} + {} = {}'","point":"<dict>","coords":"<list>","c":"(2+3j)"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"template":"'{} + {} = {}'","point":"<dict>","coords":"<list>","c":"(2+3j)"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"template":"'{} + {} = {}'","point":"<dict>","coords":"<list>","c":"(2+3j)","data":"<dict>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"template":"'{} + {} = {}'","point":"<dict>","coords":"<list>","c":"(2+3j)","data":"<dict>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"template":"'{} + {} = {}'","point":"<dict>","coords":"<list>","c":"(2+3j)","data":"<dict>","args":"<list>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"template":"'{} + {} = {}'","point":"<dict>","coords":"<list>","c":"(2+3j)","data":"<dict>","args":"<list>"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"template":"'{} + {} = {}'","point":"<dict>","coords":"<list>","c":"(2+3j)","data":"<dict>","args":"<list>","line":"'pi       3.1'"}},
+  {"event":"return","line":22,"stack":["<module>"],"locals":{"template":"'{} + {} = {}'","point":"<dict>","coords":"<list>","c":"(2+3j)","data":"<dict>","args":"<list>","line":"'pi       3.1'"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 23,
+ "finalGlobals": {
+  "template": "'{} + {} = {}'",
+  "point": "<dict>",
+  "coords": "<list>",
+  "c": "(2+3j)",
+  "data": "<dict>",
+  "args": "<list>",
+  "line": "'pi       3.1'"
+ },
+ "continuation": [],
+ "sourceSha256": "4b48a59d4214ab1fa480f0b2bbf79469afd50b9e87fcbe29db9e994e34c0e52e"
+}

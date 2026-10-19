@@ -1,0 +1,21 @@
+{
+ "stdout": "",
+ "stderr": "",
+ "console": [],
+ "exception": null,
+ "traceback": null,
+ "compileError": {
+  "class": "SyntaxError",
+  "msg": "'[' was never closed",
+  "line": 6,
+  "offset": 10,
+  "text": "  File \"main.py\", line 6\n    grades = [\n             ^\nSyntaxError: '[' was never closed\n"
+ },
+ "endless": false,
+ "events": [],
+ "truncated": false,
+ "stepEvents": 0,
+ "finalGlobals": {},
+ "continuation": [],
+ "sourceSha256": "bcb316985e21b1ddb55ea77a716a7037ca50c0960c5783e1fa8cb6769d62436a"
+}

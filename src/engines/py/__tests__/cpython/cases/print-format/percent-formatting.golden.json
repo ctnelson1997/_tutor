@@ -1,0 +1,108 @@
+{
+ "stdout": "Lee has 7 apples\n 2.72|2.718   |-00002.7\n[   Lee][Lee   ]\n'Lee' vs Lee\nhex ff FF 0xff, octal 10 0o10\n1.234568e+04 3.2e-04 1e-05\nHi!\n100% done, 50%\nAna scored 88\n   42|42   |\n2.718\n[1, 2]\n(1, 2)\n3 -3 3.0\n+5 -5  5\na-b\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Lee has 7 apples"
+  },
+  {
+   "stream": "stdout",
+   "text": " 2.72|2.718   |-00002.7"
+  },
+  {
+   "stream": "stdout",
+   "text": "[   Lee][Lee   ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "'Lee' vs Lee"
+  },
+  {
+   "stream": "stdout",
+   "text": "hex ff FF 0xff, octal 10 0o10"
+  },
+  {
+   "stream": "stdout",
+   "text": "1.234568e+04 3.2e-04 1e-05"
+  },
+  {
+   "stream": "stdout",
+   "text": "Hi!"
+  },
+  {
+   "stream": "stdout",
+   "text": "100% done, 50%"
+  },
+  {
+   "stream": "stdout",
+   "text": "Ana scored 88"
+  },
+  {
+   "stream": "stdout",
+   "text": "   42|42   |"
+  },
+  {
+   "stream": "stdout",
+   "text": "2.718"
+  },
+  {
+   "stream": "stdout",
+   "text": "[1, 2]"
+  },
+  {
+   "stream": "stdout",
+   "text": "(1, 2)"
+  },
+  {
+   "stream": "stdout",
+   "text": "3 -3 3.0"
+  },
+  {
+   "stream": "stdout",
+   "text": "+5 -5  5"
+  },
+  {
+   "stream": "stdout",
+   "text": "a-b"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"name":"'Lee'"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"name":"'Lee'","n":"7"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"name":"'Lee'","n":"7","f":"2.71828"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"name":"'Lee'","n":"7","f":"2.71828"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"name":"'Lee'","n":"7","f":"2.71828"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"name":"'Lee'","n":"7","f":"2.71828"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"name":"'Lee'","n":"7","f":"2.71828"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"name":"'Lee'","n":"7","f":"2.71828"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"name":"'Lee'","n":"7","f":"2.71828"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"name":"'Lee'","n":"7","f":"2.71828"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"name":"'Lee'","n":"7","f":"2.71828"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"name":"'Lee'","n":"7","f":"2.71828"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"name":"'Lee'","n":"7","f":"2.71828"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"name":"'Lee'","n":"7","f":"2.71828"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"name":"'Lee'","n":"7","f":"2.71828"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"name":"'Lee'","n":"7","f":"2.71828"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"name":"'Lee'","n":"7","f":"2.71828"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"name":"'Lee'","n":"7","f":"2.71828"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"name":"'Lee'","n":"7","f":"2.71828","msg":"'a-b'"}},
+  {"event":"return","line":21,"stack":["<module>"],"locals":{"name":"'Lee'","n":"7","f":"2.71828","msg":"'a-b'"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 22,
+ "finalGlobals": {
+  "name": "'Lee'",
+  "n": "7",
+  "f": "2.71828",
+  "msg": "'a-b'"
+ },
+ "continuation": [],
+ "sourceSha256": "53eee7a5e436c31b337566e783a842f928d0e2583f4fd13cc04d891f9b8a69ff"
+}

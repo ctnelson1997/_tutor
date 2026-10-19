@@ -1,0 +1,69 @@
+{
+ "stdout": "['  O', ' X ', '   ']\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "['  O', ' X ', '   ']"
+  }
+ ],
+ "exception": {
+  "class": "InvalidMoveError",
+  "message": "cannot play (1, 1): square taken"
+ },
+ "traceback": "Traceback (most recent call last):\n  File \"main.py\", line 20, in <module>\n    play(1, 1, \"O\")\n  File \"main.py\", line 14, in play\n    raise InvalidMoveError(row, col, \"square taken\")\nInvalidMoveError: cannot play (1, 1): square taken\n",
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"call","line":2,"stack":["<module>","InvalidMoveError"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>","InvalidMoveError"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>","InvalidMoveError"],"locals":{"__module__":"'__main__'","__qualname__":"'InvalidMoveError'"}},
+  {"event":"return","line":3,"stack":["<module>","InvalidMoveError"],"locals":{"__module__":"'__main__'","__qualname__":"'InvalidMoveError'","__init__":"<function>","__classcell__":"<cell>"},"value":"<cell>"},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"InvalidMoveError":"<type>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"InvalidMoveError":"<type>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"InvalidMoveError":"<type>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"InvalidMoveError":"<type>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"InvalidMoveError":"<type>","board":"<list>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"InvalidMoveError":"<type>","board":"<list>","play":"<function>"}},
+  {"event":"call","line":10,"stack":["<module>","play"],"locals":{"row":"1","col":"1","mark":"'X'"}},
+  {"event":"line","line":11,"stack":["<module>","play"],"locals":{"row":"1","col":"1","mark":"'X'"}},
+  {"event":"line","line":13,"stack":["<module>","play"],"locals":{"row":"1","col":"1","mark":"'X'"}},
+  {"event":"line","line":15,"stack":["<module>","play"],"locals":{"row":"1","col":"1","mark":"'X'"}},
+  {"event":"return","line":15,"stack":["<module>","play"],"locals":{"row":"1","col":"1","mark":"'X'"},"value":"None"},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"InvalidMoveError":"<type>","board":"<list>","play":"<function>"}},
+  {"event":"call","line":10,"stack":["<module>","play"],"locals":{"row":"0","col":"2","mark":"'O'"}},
+  {"event":"line","line":11,"stack":["<module>","play"],"locals":{"row":"0","col":"2","mark":"'O'"}},
+  {"event":"line","line":13,"stack":["<module>","play"],"locals":{"row":"0","col":"2","mark":"'O'"}},
+  {"event":"line","line":15,"stack":["<module>","play"],"locals":{"row":"0","col":"2","mark":"'O'"}},
+  {"event":"return","line":15,"stack":["<module>","play"],"locals":{"row":"0","col":"2","mark":"'O'"},"value":"None"},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"InvalidMoveError":"<type>","board":"<list>","play":"<function>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"InvalidMoveError":"<type>","board":"<list>","play":"<function>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"InvalidMoveError":"<type>","board":"<list>","play":"<function>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"InvalidMoveError":"<type>","board":"<list>","play":"<function>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"InvalidMoveError":"<type>","board":"<list>","play":"<function>"}},
+  {"event":"call","line":10,"stack":["<module>","play"],"locals":{"row":"1","col":"1","mark":"'O'"}},
+  {"event":"line","line":11,"stack":["<module>","play"],"locals":{"row":"1","col":"1","mark":"'O'"}},
+  {"event":"line","line":13,"stack":["<module>","play"],"locals":{"row":"1","col":"1","mark":"'O'"}},
+  {"event":"line","line":14,"stack":["<module>","play"],"locals":{"row":"1","col":"1","mark":"'O'"}},
+  {"event":"call","line":3,"stack":["<module>","play","__init__"],"locals":{"self":"<InvalidMoveError>","row":"1","col":"1","reason":"'square taken'","__class__":"<type>"}},
+  {"event":"line","line":4,"stack":["<module>","play","__init__"],"locals":{"self":"<InvalidMoveError>","row":"1","col":"1","reason":"'square taken'","__class__":"<type>"}},
+  {"event":"line","line":5,"stack":["<module>","play","__init__"],"locals":{"self":"<InvalidMoveError>","row":"1","col":"1","reason":"'square taken'","__class__":"<type>"}},
+  {"event":"line","line":6,"stack":["<module>","play","__init__"],"locals":{"self":"<InvalidMoveError>","row":"1","col":"1","reason":"'square taken'","__class__":"<type>"}},
+  {"event":"return","line":6,"stack":["<module>","play","__init__"],"locals":{"self":"<InvalidMoveError>","row":"1","col":"1","reason":"'square taken'","__class__":"<type>"},"value":"None"},
+  {"event":"exception","line":14,"stack":["<module>","play"],"locals":{"row":"1","col":"1","mark":"'O'"},"exc":"InvalidMoveError"},
+  {"event":"return","line":14,"stack":["<module>","play"],"locals":{"row":"1","col":"1","mark":"'O'"},"value":"None"},
+  {"event":"exception","line":20,"stack":["<module>"],"locals":{"InvalidMoveError":"<type>","board":"<list>","play":"<function>"},"exc":"InvalidMoveError"},
+  {"event":"return","line":20,"stack":["<module>"],"locals":{"InvalidMoveError":"<type>","board":"<list>","play":"<function>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 39,
+ "finalGlobals": {
+  "InvalidMoveError": "<type>",
+  "board": "<list>",
+  "play": "<function>"
+ },
+ "continuation": [],
+ "sourceSha256": "bb4986453c33a30d1e15c001cff7494de39abce4f8b802c90c6a7e1e511acb0a"
+}

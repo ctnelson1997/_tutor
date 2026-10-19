@@ -1,0 +1,76 @@
+{
+ "stdout": "Canis familiaris 4 4\n3 4 4\n3 5 5\nwolf Canis familiaris Canis familiaris\nCanis familiaris\nTrue False\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Canis familiaris 4 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "3 4 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "3 5 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "wolf Canis familiaris Canis familiaris"
+  },
+  {
+   "stream": "stdout",
+   "text": "Canis familiaris"
+  },
+  {
+   "stream": "stdout",
+   "text": "True False"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"call","line":2,"stack":["<module>","Dog"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>","Dog"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>","Dog"],"locals":{"__module__":"'__main__'","__qualname__":"'Dog'"}},
+  {"event":"line","line":4,"stack":["<module>","Dog"],"locals":{"__module__":"'__main__'","__qualname__":"'Dog'","species":"'Canis familiaris'"}},
+  {"event":"line","line":6,"stack":["<module>","Dog"],"locals":{"__module__":"'__main__'","__qualname__":"'Dog'","species":"'Canis familiaris'","legs":"4"}},
+  {"event":"line","line":9,"stack":["<module>","Dog"],"locals":{"__module__":"'__main__'","__qualname__":"'Dog'","species":"'Canis familiaris'","legs":"4","__init__":"<function>"}},
+  {"event":"return","line":9,"stack":["<module>","Dog"],"locals":{"__module__":"'__main__'","__qualname__":"'Dog'","species":"'Canis familiaris'","legs":"4","__init__":"<function>","lose_leg":"<function>"},"value":"None"},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"Dog":"<type>"}},
+  {"event":"call","line":6,"stack":["<module>","__init__"],"locals":{"self":"<Dog>","name":"'Rex'"}},
+  {"event":"line","line":7,"stack":["<module>","__init__"],"locals":{"self":"<Dog>","name":"'Rex'"}},
+  {"event":"return","line":7,"stack":["<module>","__init__"],"locals":{"self":"<Dog>","name":"'Rex'"},"value":"None"},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"Dog":"<type>","rex":"<Dog>"}},
+  {"event":"call","line":6,"stack":["<module>","__init__"],"locals":{"self":"<Dog>","name":"'Fido'"}},
+  {"event":"line","line":7,"stack":["<module>","__init__"],"locals":{"self":"<Dog>","name":"'Fido'"}},
+  {"event":"return","line":7,"stack":["<module>","__init__"],"locals":{"self":"<Dog>","name":"'Fido'"},"value":"None"},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"Dog":"<type>","rex":"<Dog>","fido":"<Dog>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"Dog":"<type>","rex":"<Dog>","fido":"<Dog>"}},
+  {"event":"call","line":9,"stack":["<module>","lose_leg"],"locals":{"self":"<Dog>"}},
+  {"event":"line","line":10,"stack":["<module>","lose_leg"],"locals":{"self":"<Dog>"}},
+  {"event":"return","line":10,"stack":["<module>","lose_leg"],"locals":{"self":"<Dog>"},"value":"None"},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"Dog":"<type>","rex":"<Dog>","fido":"<Dog>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"Dog":"<type>","rex":"<Dog>","fido":"<Dog>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"Dog":"<type>","rex":"<Dog>","fido":"<Dog>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"Dog":"<type>","rex":"<Dog>","fido":"<Dog>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Dog":"<type>","rex":"<Dog>","fido":"<Dog>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"Dog":"<type>","rex":"<Dog>","fido":"<Dog>"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"Dog":"<type>","rex":"<Dog>","fido":"<Dog>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"Dog":"<type>","rex":"<Dog>","fido":"<Dog>"}},
+  {"event":"return","line":23,"stack":["<module>"],"locals":{"Dog":"<type>","rex":"<Dog>","fido":"<Dog>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 31,
+ "finalGlobals": {
+  "Dog": "<type>",
+  "rex": "<Dog>",
+  "fido": "<Dog>"
+ },
+ "continuation": [],
+ "sourceSha256": "b82309ddd8abcd527f2db1cbbdfce7c623e22f6eee3bb0d0024cc8a680e6b388"
+}

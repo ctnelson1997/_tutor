@@ -1,0 +1,110 @@
+{
+ "stdout": "25 77.0\n100 212.0\nrejected: -300 is below absolute zero\n100\nAttributeError: property 'fahrenheit' of 'Temperature' object has no setter\n['_celsius']\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "25 77.0"
+  },
+  {
+   "stream": "stdout",
+   "text": "100 212.0"
+  },
+  {
+   "stream": "stdout",
+   "text": "rejected: -300 is below absolute zero"
+  },
+  {
+   "stream": "stdout",
+   "text": "100"
+  },
+  {
+   "stream": "stdout",
+   "text": "AttributeError: property 'fahrenheit' of 'Temperature' object has no setter"
+  },
+  {
+   "stream": "stdout",
+   "text": "['_celsius']"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"call","line":2,"stack":["<module>","Temperature"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>","Temperature"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>","Temperature"],"locals":{"__module__":"'__main__'","__qualname__":"'Temperature'"}},
+  {"event":"line","line":6,"stack":["<module>","Temperature"],"locals":{"__module__":"'__main__'","__qualname__":"'Temperature'","__init__":"<function>"}},
+  {"event":"line","line":7,"stack":["<module>","Temperature"],"locals":{"__module__":"'__main__'","__qualname__":"'Temperature'","__init__":"<function>"}},
+  {"event":"line","line":6,"stack":["<module>","Temperature"],"locals":{"__module__":"'__main__'","__qualname__":"'Temperature'","__init__":"<function>"}},
+  {"event":"line","line":7,"stack":["<module>","Temperature"],"locals":{"__module__":"'__main__'","__qualname__":"'Temperature'","__init__":"<function>"}},
+  {"event":"line","line":10,"stack":["<module>","Temperature"],"locals":{"__module__":"'__main__'","__qualname__":"'Temperature'","__init__":"<function>","celsius":"<property>"}},
+  {"event":"line","line":11,"stack":["<module>","Temperature"],"locals":{"__module__":"'__main__'","__qualname__":"'Temperature'","__init__":"<function>","celsius":"<property>"}},
+  {"event":"line","line":10,"stack":["<module>","Temperature"],"locals":{"__module__":"'__main__'","__qualname__":"'Temperature'","__init__":"<function>","celsius":"<property>"}},
+  {"event":"line","line":11,"stack":["<module>","Temperature"],"locals":{"__module__":"'__main__'","__qualname__":"'Temperature'","__init__":"<function>","celsius":"<property>"}},
+  {"event":"line","line":16,"stack":["<module>","Temperature"],"locals":{"__module__":"'__main__'","__qualname__":"'Temperature'","__init__":"<function>","celsius":"<property>"}},
+  {"event":"line","line":17,"stack":["<module>","Temperature"],"locals":{"__module__":"'__main__'","__qualname__":"'Temperature'","__init__":"<function>","celsius":"<property>"}},
+  {"event":"line","line":16,"stack":["<module>","Temperature"],"locals":{"__module__":"'__main__'","__qualname__":"'Temperature'","__init__":"<function>","celsius":"<property>"}},
+  {"event":"line","line":17,"stack":["<module>","Temperature"],"locals":{"__module__":"'__main__'","__qualname__":"'Temperature'","__init__":"<function>","celsius":"<property>"}},
+  {"event":"return","line":17,"stack":["<module>","Temperature"],"locals":{"__module__":"'__main__'","__qualname__":"'Temperature'","__init__":"<function>","celsius":"<property>","fahrenheit":"<property>"},"value":"None"},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Temperature":"<type>"}},
+  {"event":"call","line":3,"stack":["<module>","__init__"],"locals":{"self":"<Temperature>","celsius":"25"}},
+  {"event":"line","line":4,"stack":["<module>","__init__"],"locals":{"self":"<Temperature>","celsius":"25"}},
+  {"event":"call","line":10,"stack":["<module>","__init__","celsius"],"locals":{"self":"<Temperature>","value":"25"}},
+  {"event":"line","line":12,"stack":["<module>","__init__","celsius"],"locals":{"self":"<Temperature>","value":"25"}},
+  {"event":"line","line":14,"stack":["<module>","__init__","celsius"],"locals":{"self":"<Temperature>","value":"25"}},
+  {"event":"return","line":14,"stack":["<module>","__init__","celsius"],"locals":{"self":"<Temperature>","value":"25"},"value":"None"},
+  {"event":"return","line":4,"stack":["<module>","__init__"],"locals":{"self":"<Temperature>","celsius":"25"},"value":"None"},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"Temperature":"<type>","t":"<Temperature>"}},
+  {"event":"call","line":6,"stack":["<module>","celsius"],"locals":{"self":"<Temperature>"}},
+  {"event":"line","line":8,"stack":["<module>","celsius"],"locals":{"self":"<Temperature>"}},
+  {"event":"return","line":8,"stack":["<module>","celsius"],"locals":{"self":"<Temperature>"},"value":"25"},
+  {"event":"call","line":16,"stack":["<module>","fahrenheit"],"locals":{"self":"<Temperature>"}},
+  {"event":"line","line":18,"stack":["<module>","fahrenheit"],"locals":{"self":"<Temperature>"}},
+  {"event":"return","line":18,"stack":["<module>","fahrenheit"],"locals":{"self":"<Temperature>"},"value":"77.0"},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"Temperature":"<type>","t":"<Temperature>"}},
+  {"event":"call","line":10,"stack":["<module>","celsius"],"locals":{"self":"<Temperature>","value":"100"}},
+  {"event":"line","line":12,"stack":["<module>","celsius"],"locals":{"self":"<Temperature>","value":"100"}},
+  {"event":"line","line":14,"stack":["<module>","celsius"],"locals":{"self":"<Temperature>","value":"100"}},
+  {"event":"return","line":14,"stack":["<module>","celsius"],"locals":{"self":"<Temperature>","value":"100"},"value":"None"},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"Temperature":"<type>","t":"<Temperature>"}},
+  {"event":"call","line":6,"stack":["<module>","celsius"],"locals":{"self":"<Temperature>"}},
+  {"event":"line","line":8,"stack":["<module>","celsius"],"locals":{"self":"<Temperature>"}},
+  {"event":"return","line":8,"stack":["<module>","celsius"],"locals":{"self":"<Temperature>"},"value":"100"},
+  {"event":"call","line":16,"stack":["<module>","fahrenheit"],"locals":{"self":"<Temperature>"}},
+  {"event":"line","line":18,"stack":["<module>","fahrenheit"],"locals":{"self":"<Temperature>"}},
+  {"event":"return","line":18,"stack":["<module>","fahrenheit"],"locals":{"self":"<Temperature>"},"value":"212.0"},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"Temperature":"<type>","t":"<Temperature>"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"Temperature":"<type>","t":"<Temperature>"}},
+  {"event":"call","line":10,"stack":["<module>","celsius"],"locals":{"self":"<Temperature>","value":"-300"}},
+  {"event":"line","line":12,"stack":["<module>","celsius"],"locals":{"self":"<Temperature>","value":"-300"}},
+  {"event":"line","line":13,"stack":["<module>","celsius"],"locals":{"self":"<Temperature>","value":"-300"}},
+  {"event":"exception","line":13,"stack":["<module>","celsius"],"locals":{"self":"<Temperature>","value":"-300"},"exc":"ValueError"},
+  {"event":"return","line":13,"stack":["<module>","celsius"],"locals":{"self":"<Temperature>","value":"-300"},"value":"None"},
+  {"event":"exception","line":25,"stack":["<module>"],"locals":{"Temperature":"<type>","t":"<Temperature>"},"exc":"ValueError"},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"Temperature":"<type>","t":"<Temperature>"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"Temperature":"<type>","t":"<Temperature>","e":"<ValueError>"}},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"Temperature":"<type>","t":"<Temperature>"}},
+  {"event":"call","line":6,"stack":["<module>","celsius"],"locals":{"self":"<Temperature>"}},
+  {"event":"line","line":8,"stack":["<module>","celsius"],"locals":{"self":"<Temperature>"}},
+  {"event":"return","line":8,"stack":["<module>","celsius"],"locals":{"self":"<Temperature>"},"value":"100"},
+  {"event":"line","line":29,"stack":["<module>"],"locals":{"Temperature":"<type>","t":"<Temperature>"}},
+  {"event":"line","line":30,"stack":["<module>"],"locals":{"Temperature":"<type>","t":"<Temperature>"}},
+  {"event":"exception","line":30,"stack":["<module>"],"locals":{"Temperature":"<type>","t":"<Temperature>"},"exc":"AttributeError"},
+  {"event":"line","line":31,"stack":["<module>"],"locals":{"Temperature":"<type>","t":"<Temperature>"}},
+  {"event":"line","line":32,"stack":["<module>"],"locals":{"Temperature":"<type>","t":"<Temperature>","e":"<AttributeError>"}},
+  {"event":"line","line":33,"stack":["<module>"],"locals":{"Temperature":"<type>","t":"<Temperature>"}},
+  {"event":"return","line":33,"stack":["<module>"],"locals":{"Temperature":"<type>","t":"<Temperature>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 63,
+ "finalGlobals": {
+  "Temperature": "<type>",
+  "t": "<Temperature>"
+ },
+ "continuation": [],
+ "sourceSha256": "f0904463c7a0edf8ddc10efeb268baea528532a691dfdc1a6a68b3f40c8f139b"
+}

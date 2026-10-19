@@ -1,0 +1,112 @@
+{
+ "stdout": "Enter quiz scores separated by spaces: Scores: [72, 88, 54, 91, 67, 80, 75]\nDropped lowest score: 54\nAverage of the rest: 78.83\nCurve: 6 points\nCurved: [78, 94, 97, 73, 86, 81]\nName and section: Priya (section 3) final average: 84.8\nPassed every quiz: True\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Enter quiz scores separated by spaces: Scores: [72, 88, 54, 91, 67, 80, 75]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Dropped lowest score: 54"
+  },
+  {
+   "stream": "stdout",
+   "text": "Average of the rest: 78.83"
+  },
+  {
+   "stream": "stdout",
+   "text": "Curve: 6 points"
+  },
+  {
+   "stream": "stdout",
+   "text": "Curved: [78, 94, 97, 73, 86, 81]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Name and section: Priya (section 3) final average: 84.8"
+  },
+  {
+   "stream": "stdout",
+   "text": "Passed every quiz: True"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'"}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'"}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'"}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'"}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'"}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'"}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'"}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'","scores":"<list>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'","scores":"<list>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'","scores":"<list>","lowest":"54"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'","scores":"<list>","lowest":"54","kept":"<list>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'","scores":"<list>","lowest":"54","kept":"<list>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'","scores":"<list>","lowest":"54","kept":"<list>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'","scores":"<list>","lowest":"54","kept":"<list>","average":"78.83333333333333"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'","scores":"<list>","lowest":"54","kept":"<list>","average":"78.83333333333333"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'","scores":"<list>","lowest":"54","kept":"<list>","average":"78.83333333333333","target":"85"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'","scores":"<list>","lowest":"54","kept":"<list>","average":"78.83333333333333","target":"85","curve":"6"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'","scores":"<list>","lowest":"54","kept":"<list>","average":"78.83333333333333","target":"85","curve":"6"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'","scores":"<list>","lowest":"54","kept":"<list>","average":"78.83333333333333","target":"85","curve":"6"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'","scores":"<list>","lowest":"54","kept":"<list>","average":"78.83333333333333","target":"85","curve":"6"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'","scores":"<list>","lowest":"54","kept":"<list>","average":"78.83333333333333","target":"85","curve":"6"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'","scores":"<list>","lowest":"54","kept":"<list>","average":"78.83333333333333","target":"85","curve":"6"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'","scores":"<list>","lowest":"54","kept":"<list>","average":"78.83333333333333","target":"85","curve":"6"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'","scores":"<list>","lowest":"54","kept":"<list>","average":"78.83333333333333","target":"85","curve":"6","curved":"<list>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'","scores":"<list>","lowest":"54","kept":"<list>","average":"78.83333333333333","target":"85","curve":"6","curved":"<list>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'","scores":"<list>","lowest":"54","kept":"<list>","average":"78.83333333333333","target":"85","curve":"6","curved":"<list>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'","scores":"<list>","lowest":"54","kept":"<list>","average":"78.83333333333333","target":"85","curve":"6","curved":"<list>","name":"'Priya'","section":"'3'"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'","scores":"<list>","lowest":"54","kept":"<list>","average":"78.83333333333333","target":"85","curve":"6","curved":"<list>","name":"'Priya'","section":"3"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'","scores":"<list>","lowest":"54","kept":"<list>","average":"78.83333333333333","target":"85","curve":"6","curved":"<list>","name":"'Priya'","section":"3"}},
+  {"event":"call","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>"}},
+  {"event":"line","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>"}},
+  {"event":"return","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","s":"78"},"value":"True"},
+  {"event":"call","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","s":"78"}},
+  {"event":"line","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","s":"78"}},
+  {"event":"return","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","s":"94"},"value":"True"},
+  {"event":"call","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","s":"94"}},
+  {"event":"line","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","s":"94"}},
+  {"event":"return","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","s":"97"},"value":"True"},
+  {"event":"call","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","s":"97"}},
+  {"event":"line","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","s":"97"}},
+  {"event":"return","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","s":"73"},"value":"True"},
+  {"event":"call","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","s":"73"}},
+  {"event":"line","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","s":"73"}},
+  {"event":"return","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","s":"86"},"value":"True"},
+  {"event":"call","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","s":"86"}},
+  {"event":"line","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","s":"86"}},
+  {"event":"return","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","s":"81"},"value":"True"},
+  {"event":"call","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","s":"81"}},
+  {"event":"line","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","s":"81"}},
+  {"event":"return","line":23,"stack":["<module>","<genexpr>"],"locals":{".0":"<list_iterator>","s":"81"},"value":"None"},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'","scores":"<list>","lowest":"54","kept":"<list>","average":"78.83333333333333","target":"85","curve":"6","curved":"<list>","name":"'Priya'","section":"3","passed":"True"}},
+  {"event":"return","line":24,"stack":["<module>"],"locals":{"line":"'72 88 54 91 67 80 75'","scores":"<list>","lowest":"54","kept":"<list>","average":"78.83333333333333","target":"85","curve":"6","curved":"<list>","name":"'Priya'","section":"3","passed":"True"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 55,
+ "finalGlobals": {
+  "line": "'72 88 54 91 67 80 75'",
+  "scores": "<list>",
+  "lowest": "54",
+  "kept": "<list>",
+  "average": "78.83333333333333",
+  "target": "85",
+  "curve": "6",
+  "curved": "<list>",
+  "name": "'Priya'",
+  "section": "3",
+  "passed": "True"
+ },
+ "continuation": [],
+ "sourceSha256": "bd7ce7d1cca2a3125300b0ef779519317ed30388b1bfade50f76d4d73360ebf6"
+}

@@ -1,0 +1,82 @@
+{
+ "stdout": "[Version(major=0, minor=9, patch=9), Version(major=1, minor=2, patch=0), Version(major=1, minor=2, patch=5), Version(major=1, minor=10, patch=0)]\nVersion(major=1, minor=10, patch=0) True\nFrozenInstanceError: cannot assign to field 'lat'\nCoord(lat=43.07, lon=-89.4) Coord(lat=43.07, lon=-89.0)\n2\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[Version(major=0, minor=9, patch=9), Version(major=1, minor=2, patch=0), Version(major=1, minor=2, patch=5), Version(major=1, minor=10, patch=0)]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Version(major=1, minor=10, patch=0) True"
+  },
+  {
+   "stream": "stdout",
+   "text": "FrozenInstanceError: cannot assign to field 'lat'"
+  },
+  {
+   "stream": "stdout",
+   "text": "Coord(lat=43.07, lon=-89.4) Coord(lat=43.07, lon=-89.0)"
+  },
+  {
+   "stream": "stdout",
+   "text": "2"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"dataclass":"<function>","FrozenInstanceError":"<type>","replace":"<function>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"dataclass":"<function>","FrozenInstanceError":"<type>","replace":"<function>"}},
+  {"event":"call","line":4,"stack":["<module>","Version"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>","Version"],"locals":{}},
+  {"event":"line","line":6,"stack":["<module>","Version"],"locals":{"__module__":"'__main__'","__qualname__":"'Version'","__annotations__":"<dict>"}},
+  {"event":"line","line":7,"stack":["<module>","Version"],"locals":{"__module__":"'__main__'","__qualname__":"'Version'","__annotations__":"<dict>"}},
+  {"event":"line","line":8,"stack":["<module>","Version"],"locals":{"__module__":"'__main__'","__qualname__":"'Version'","__annotations__":"<dict>"}},
+  {"event":"return","line":8,"stack":["<module>","Version"],"locals":{"__module__":"'__main__'","__qualname__":"'Version'","__annotations__":"<dict>","patch":"0"},"value":"None"},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"dataclass":"<function>","FrozenInstanceError":"<type>","replace":"<function>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"dataclass":"<function>","FrozenInstanceError":"<type>","replace":"<function>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"dataclass":"<function>","FrozenInstanceError":"<type>","replace":"<function>","Version":"<type>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"dataclass":"<function>","FrozenInstanceError":"<type>","replace":"<function>","Version":"<type>"}},
+  {"event":"call","line":10,"stack":["<module>","Coord"],"locals":{}},
+  {"event":"line","line":10,"stack":["<module>","Coord"],"locals":{}},
+  {"event":"line","line":12,"stack":["<module>","Coord"],"locals":{"__module__":"'__main__'","__qualname__":"'Coord'","__annotations__":"<dict>"}},
+  {"event":"line","line":13,"stack":["<module>","Coord"],"locals":{"__module__":"'__main__'","__qualname__":"'Coord'","__annotations__":"<dict>"}},
+  {"event":"return","line":13,"stack":["<module>","Coord"],"locals":{"__module__":"'__main__'","__qualname__":"'Coord'","__annotations__":"<dict>"},"value":"None"},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"dataclass":"<function>","FrozenInstanceError":"<type>","replace":"<function>","Version":"<type>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"dataclass":"<function>","FrozenInstanceError":"<type>","replace":"<function>","Version":"<type>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"dataclass":"<function>","FrozenInstanceError":"<type>","replace":"<function>","Version":"<type>","Coord":"<type>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"dataclass":"<function>","FrozenInstanceError":"<type>","replace":"<function>","Version":"<type>","Coord":"<type>","versions":"<list>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"dataclass":"<function>","FrozenInstanceError":"<type>","replace":"<function>","Version":"<type>","Coord":"<type>","versions":"<list>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"dataclass":"<function>","FrozenInstanceError":"<type>","replace":"<function>","Version":"<type>","Coord":"<type>","versions":"<list>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"dataclass":"<function>","FrozenInstanceError":"<type>","replace":"<function>","Version":"<type>","Coord":"<type>","versions":"<list>","home":"<Coord>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"dataclass":"<function>","FrozenInstanceError":"<type>","replace":"<function>","Version":"<type>","Coord":"<type>","versions":"<list>","home":"<Coord>"}},
+  {"event":"exception","line":21,"stack":["<module>"],"locals":{"dataclass":"<function>","FrozenInstanceError":"<type>","replace":"<function>","Version":"<type>","Coord":"<type>","versions":"<list>","home":"<Coord>"},"exc":"FrozenInstanceError"},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"dataclass":"<function>","FrozenInstanceError":"<type>","replace":"<function>","Version":"<type>","Coord":"<type>","versions":"<list>","home":"<Coord>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"dataclass":"<function>","FrozenInstanceError":"<type>","replace":"<function>","Version":"<type>","Coord":"<type>","versions":"<list>","home":"<Coord>","e":"<FrozenInstanceError>"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"dataclass":"<function>","FrozenInstanceError":"<type>","replace":"<function>","Version":"<type>","Coord":"<type>","versions":"<list>","home":"<Coord>"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"dataclass":"<function>","FrozenInstanceError":"<type>","replace":"<function>","Version":"<type>","Coord":"<type>","versions":"<list>","home":"<Coord>","moved":"<Coord>"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"dataclass":"<function>","FrozenInstanceError":"<type>","replace":"<function>","Version":"<type>","Coord":"<type>","versions":"<list>","home":"<Coord>","moved":"<Coord>"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"dataclass":"<function>","FrozenInstanceError":"<type>","replace":"<function>","Version":"<type>","Coord":"<type>","versions":"<list>","home":"<Coord>","moved":"<Coord>","visited":"<set>"}},
+  {"event":"return","line":27,"stack":["<module>"],"locals":{"dataclass":"<function>","FrozenInstanceError":"<type>","replace":"<function>","Version":"<type>","Coord":"<type>","versions":"<list>","home":"<Coord>","moved":"<Coord>","visited":"<set>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 34,
+ "finalGlobals": {
+  "dataclass": "<function>",
+  "FrozenInstanceError": "<type>",
+  "replace": "<function>",
+  "Version": "<type>",
+  "Coord": "<type>",
+  "versions": "<list>",
+  "home": "<Coord>",
+  "moved": "<Coord>",
+  "visited": "<set>"
+ },
+ "continuation": [],
+ "sourceSha256": "e349ffc79bd1e6028336e6261d1d3b28dbc5369dc53ad6728d62b5fc71378ede"
+}

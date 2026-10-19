@@ -1,0 +1,92 @@
+{
+ "stdout": "inf -inf nan\ninf nan -inf\nFalse True True True\nnan inf True True\n[nan, inf, -inf, 1.0]\nTrue True False\n1 nan 5\nTrue True nan\n{'best': 7, 'worst': 1}\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "inf -inf nan"
+  },
+  {
+   "stream": "stdout",
+   "text": "inf nan -inf"
+  },
+  {
+   "stream": "stdout",
+   "text": "False True True True"
+  },
+  {
+   "stream": "stdout",
+   "text": "nan inf True True"
+  },
+  {
+   "stream": "stdout",
+   "text": "[nan, inf, -inf, 1.0]"
+  },
+  {
+   "stream": "stdout",
+   "text": "True True False"
+  },
+  {
+   "stream": "stdout",
+   "text": "1 nan 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "True True nan"
+  },
+  {
+   "stream": "stdout",
+   "text": "{'best': 7, 'worst': 1}"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"math":"<module>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"math":"<module>","pinf":"inf"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"math":"<module>","pinf":"inf","ninf":"-inf"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"math":"<module>","pinf":"inf","ninf":"-inf","nan":"nan"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"math":"<module>","pinf":"inf","ninf":"-inf","nan":"nan"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"math":"<module>","pinf":"inf","ninf":"-inf","nan":"nan"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"math":"<module>","pinf":"inf","ninf":"-inf","nan":"nan"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"math":"<module>","pinf":"inf","ninf":"-inf","nan":"nan","diff":"nan"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"math":"<module>","pinf":"inf","ninf":"-inf","nan":"nan","diff":"nan","overflow":"inf"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"math":"<module>","pinf":"inf","ninf":"-inf","nan":"nan","diff":"nan","overflow":"inf"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"math":"<module>","pinf":"inf","ninf":"-inf","nan":"nan","diff":"nan","overflow":"inf","box":"<list>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"math":"<module>","pinf":"inf","ninf":"-inf","nan":"nan","diff":"nan","overflow":"inf","box":"<list>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"math":"<module>","pinf":"inf","ninf":"-inf","nan":"nan","diff":"nan","overflow":"inf","box":"<list>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"math":"<module>","pinf":"inf","ninf":"-inf","nan":"nan","diff":"nan","overflow":"inf","box":"<list>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"math":"<module>","pinf":"inf","ninf":"-inf","nan":"nan","diff":"nan","overflow":"inf","box":"<list>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"math":"<module>","pinf":"inf","ninf":"-inf","nan":"nan","diff":"nan","overflow":"inf","box":"<list>","data":"<dict>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"math":"<module>","pinf":"inf","ninf":"-inf","nan":"nan","diff":"nan","overflow":"inf","box":"<list>","data":"<dict>","score":"3"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"math":"<module>","pinf":"inf","ninf":"-inf","nan":"nan","diff":"nan","overflow":"inf","box":"<list>","data":"<dict>","score":"3"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"math":"<module>","pinf":"inf","ninf":"-inf","nan":"nan","diff":"nan","overflow":"inf","box":"<list>","data":"<dict>","score":"3"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"math":"<module>","pinf":"inf","ninf":"-inf","nan":"nan","diff":"nan","overflow":"inf","box":"<list>","data":"<dict>","score":"7"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"math":"<module>","pinf":"inf","ninf":"-inf","nan":"nan","diff":"nan","overflow":"inf","box":"<list>","data":"<dict>","score":"7"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"math":"<module>","pinf":"inf","ninf":"-inf","nan":"nan","diff":"nan","overflow":"inf","box":"<list>","data":"<dict>","score":"7"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"math":"<module>","pinf":"inf","ninf":"-inf","nan":"nan","diff":"nan","overflow":"inf","box":"<list>","data":"<dict>","score":"1"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"math":"<module>","pinf":"inf","ninf":"-inf","nan":"nan","diff":"nan","overflow":"inf","box":"<list>","data":"<dict>","score":"1"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"math":"<module>","pinf":"inf","ninf":"-inf","nan":"nan","diff":"nan","overflow":"inf","box":"<list>","data":"<dict>","score":"1"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"math":"<module>","pinf":"inf","ninf":"-inf","nan":"nan","diff":"nan","overflow":"inf","box":"<list>","data":"<dict>","score":"1"}},
+  {"event":"return","line":21,"stack":["<module>"],"locals":{"math":"<module>","pinf":"inf","ninf":"-inf","nan":"nan","diff":"nan","overflow":"inf","box":"<list>","data":"<dict>","score":"1"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 29,
+ "finalGlobals": {
+  "math": "<module>",
+  "pinf": "inf",
+  "ninf": "-inf",
+  "nan": "nan",
+  "diff": "nan",
+  "overflow": "inf",
+  "box": "<list>",
+  "data": "<dict>",
+  "score": "1"
+ },
+ "continuation": [],
+ "sourceSha256": "3a822172b987f699c2538a4265bdb35aacec6f978357a9bebd8626510c39b66c"
+}

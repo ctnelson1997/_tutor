@@ -1,0 +1,101 @@
+{
+ "stdout": "True False True\nTrue True\nTrue False\nTrue True\nTrue True False False\nTrue False\nFalse True True False\nFalse True False\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "True False True"
+  },
+  {
+   "stream": "stdout",
+   "text": "True True"
+  },
+  {
+   "stream": "stdout",
+   "text": "True False"
+  },
+  {
+   "stream": "stdout",
+   "text": "True True"
+  },
+  {
+   "stream": "stdout",
+   "text": "True True False False"
+  },
+  {
+   "stream": "stdout",
+   "text": "True False"
+  },
+  {
+   "stream": "stdout",
+   "text": "False True True False"
+  },
+  {
+   "stream": "stdout",
+   "text": "False True False"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"a":"<list>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","x":"None"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","x":"None"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","x":"None","empty1":"<list>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","x":"None","empty1":"<list>","empty2":"<list>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","x":"None","empty1":"<list>","empty2":"<list>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","x":"None","empty1":"<list>","empty2":"<list>","t":"<tuple>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","x":"None","empty1":"<list>","empty2":"<list>","t":"<tuple>","u":"<tuple>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","x":"None","empty1":"<list>","empty2":"<list>","t":"<tuple>","u":"<tuple>"}},
+  {"event":"call","line":15,"stack":["<module>","Always"],"locals":{}},
+  {"event":"line","line":15,"stack":["<module>","Always"],"locals":{}},
+  {"event":"line","line":16,"stack":["<module>","Always"],"locals":{"__module__":"'__main__'","__qualname__":"'Always'"}},
+  {"event":"return","line":16,"stack":["<module>","Always"],"locals":{"__module__":"'__main__'","__qualname__":"'Always'","__eq__":"<function>"},"value":"None"},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","x":"None","empty1":"<list>","empty2":"<list>","t":"<tuple>","u":"<tuple>","Always":"<type>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","x":"None","empty1":"<list>","empty2":"<list>","t":"<tuple>","u":"<tuple>","Always":"<type>","w":"<Always>"}},
+  {"event":"call","line":16,"stack":["<module>","__eq__"],"locals":{"self":"<Always>","other":"5"}},
+  {"event":"line","line":17,"stack":["<module>","__eq__"],"locals":{"self":"<Always>","other":"5"}},
+  {"event":"return","line":17,"stack":["<module>","__eq__"],"locals":{"self":"<Always>","other":"5"},"value":"True"},
+  {"event":"call","line":16,"stack":["<module>","__eq__"],"locals":{"self":"<Always>","other":"None"}},
+  {"event":"line","line":17,"stack":["<module>","__eq__"],"locals":{"self":"<Always>","other":"None"}},
+  {"event":"return","line":17,"stack":["<module>","__eq__"],"locals":{"self":"<Always>","other":"None"},"value":"True"},
+  {"event":"call","line":16,"stack":["<module>","__eq__"],"locals":{"self":"<Always>","other":"3"}},
+  {"event":"line","line":17,"stack":["<module>","__eq__"],"locals":{"self":"<Always>","other":"3"}},
+  {"event":"return","line":17,"stack":["<module>","__eq__"],"locals":{"self":"<Always>","other":"3"},"value":"True"},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","x":"None","empty1":"<list>","empty2":"<list>","t":"<tuple>","u":"<tuple>","Always":"<type>","w":"<Always>"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","x":"None","empty1":"<list>","empty2":"<list>","t":"<tuple>","u":"<tuple>","Always":"<type>","w":"<Always>","d1":"<dict>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","x":"None","empty1":"<list>","empty2":"<list>","t":"<tuple>","u":"<tuple>","Always":"<type>","w":"<Always>","d1":"<dict>","d2":"<dict>"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","x":"None","empty1":"<list>","empty2":"<list>","t":"<tuple>","u":"<tuple>","Always":"<type>","w":"<Always>","d1":"<dict>","d2":"<dict>"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","x":"None","empty1":"<list>","empty2":"<list>","t":"<tuple>","u":"<tuple>","Always":"<type>","w":"<Always>","d1":"<dict>","d2":"<dict>","nan":"nan"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","x":"None","empty1":"<list>","empty2":"<list>","t":"<tuple>","u":"<tuple>","Always":"<type>","w":"<Always>","d1":"<dict>","d2":"<dict>","nan":"nan","lst":"<list>"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","x":"None","empty1":"<list>","empty2":"<list>","t":"<tuple>","u":"<tuple>","Always":"<type>","w":"<Always>","d1":"<dict>","d2":"<dict>","nan":"nan","lst":"<list>"}},
+  {"event":"return","line":27,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","x":"None","empty1":"<list>","empty2":"<list>","t":"<tuple>","u":"<tuple>","Always":"<type>","w":"<Always>","d1":"<dict>","d2":"<dict>","nan":"nan","lst":"<list>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 37,
+ "finalGlobals": {
+  "a": "<list>",
+  "b": "<list>",
+  "c": "<list>",
+  "x": "None",
+  "empty1": "<list>",
+  "empty2": "<list>",
+  "t": "<tuple>",
+  "u": "<tuple>",
+  "Always": "<type>",
+  "w": "<Always>",
+  "d1": "<dict>",
+  "d2": "<dict>",
+  "nan": "nan",
+  "lst": "<list>"
+ },
+ "continuation": [],
+ "sourceSha256": "8a8a0ec6e4b2fa2a05f4429db951ca524949ab8985d41b8b216d61853769f6bb"
+}

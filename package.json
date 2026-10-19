@@ -27,7 +27,8 @@
     "test:watch": "vitest",
     "test:integration": "npm run build:viewer:js && vitest run integration",
     "test:java:golden": "tsx scripts/java-golden.ts",
-    "test:js:golden": "tsx scripts/js-golden.ts"
+    "test:js:golden": "tsx scripts/js-golden.ts",
+    "test:py:golden": "tsx scripts/py-golden.ts"
   },
   "dependencies": {
     "@codemirror/lang-java": "^6.0.2",
@@ -58,6 +59,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "pyodide": "0.27.5",
     "tsx": "^4.23.15",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.48.0",

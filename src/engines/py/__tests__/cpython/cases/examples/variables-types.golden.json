@@ -1,0 +1,33 @@
+{
+ "stdout": "42\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "42"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":1,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{"x":"42"}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"x":"42","name":"'hello'"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"x":"42","name":"'hello'","is_valid":"True"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"x":"42","name":"'hello'","is_valid":"True","pi":"3.14"}},
+  {"event":"return","line":5,"stack":["<module>"],"locals":{"x":"42","name":"'hello'","is_valid":"True","pi":"3.14"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 7,
+ "finalGlobals": {
+  "x": "42",
+  "name": "'hello'",
+  "is_valid": "True",
+  "pi": "3.14"
+ },
+ "continuation": [],
+ "sourceSha256": "fbd827de26fa9da13b66ece77f1c566b6d2b22a091ed641f5c2150377ae6f001"
+}

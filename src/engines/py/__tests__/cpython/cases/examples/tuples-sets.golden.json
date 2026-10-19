@@ -1,0 +1,33 @@
+{
+ "stdout": "3 4\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "3 4"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":1,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{"point":"<tuple>"}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","colors":"<set>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","colors":"<set>"}},
+  {"event":"return","line":5,"stack":["<module>"],"locals":{"point":"<tuple>","x":"3","y":"4","colors":"<set>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 7,
+ "finalGlobals": {
+  "point": "<tuple>",
+  "x": "3",
+  "y": "4",
+  "colors": "<set>"
+ },
+ "continuation": [],
+ "sourceSha256": "b4010fbe0f67a3d5ed27ac7aa1750611587758159e0ae0122571156d0b9e78a0"
+}

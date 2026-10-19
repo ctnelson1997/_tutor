@@ -1,0 +1,29 @@
+{
+ "stdout": "hello\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "hello"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"greeting":"'hello'"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"greeting":"'hello'"}},
+  {"event":"return","line":4,"stack":["<module>"],"locals":{"greeting":"'hello'","name":"'Ada'"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 5,
+ "finalGlobals": {
+  "greeting": "'hello'",
+  "name": "'Ada'"
+ },
+ "continuation": [],
+ "sourceSha256": "590529b0f712fb1ad6791c33b402d3116c41e6d743b6497574a6640e290e20f5"
+}

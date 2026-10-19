@@ -1,0 +1,131 @@
+{
+ "stdout": "{(0, 0): 0, (0, 1): 1, (0, 2): 2, (1, 0): 3, (1, 1): 4, (1, 2): 5}\n5 True False\n3 x\n{1: 'float'} 1\nerror huge [-1, 0, 404, 100000000000000000000]\n{404: 'not found', -1: 'error', 0: 'ok', 100000000000000000000: 'huge', -2: 'other'}\ntuple of tuples\nTypeError: unhashable type: 'list'\nright (0, 1)\ndown (1, 1)\nright (1, 2)\n{(1, 2): True, (0, 0): False}\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "{(0, 0): 0, (0, 1): 1, (0, 2): 2, (1, 0): 3, (1, 1): 4, (1, 2): 5}"
+  },
+  {
+   "stream": "stdout",
+   "text": "5 True False"
+  },
+  {
+   "stream": "stdout",
+   "text": "3 x"
+  },
+  {
+   "stream": "stdout",
+   "text": "{1: 'float'} 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "error huge [-1, 0, 404, 100000000000000000000]"
+  },
+  {
+   "stream": "stdout",
+   "text": "{404: 'not found', -1: 'error', 0: 'ok', 100000000000000000000: 'huge', -2: 'other'}"
+  },
+  {
+   "stream": "stdout",
+   "text": "tuple of tuples"
+  },
+  {
+   "stream": "stdout",
+   "text": "TypeError: unhashable type: 'list'"
+  },
+  {
+   "stream": "stdout",
+   "text": "right (0, 1)"
+  },
+  {
+   "stream": "stdout",
+   "text": "down (1, 1)"
+  },
+  {
+   "stream": "stdout",
+   "text": "right (1, 2)"
+  },
+  {
+   "stream": "stdout",
+   "text": "{(1, 2): True, (0, 0): False}"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"grid":"<dict>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"grid":"<dict>","r":"0"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"grid":"<dict>","r":"0","c":"0"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"grid":"<dict>","r":"0","c":"0"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"grid":"<dict>","r":"0","c":"1"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"grid":"<dict>","r":"0","c":"1"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"grid":"<dict>","r":"0","c":"2"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"grid":"<dict>","r":"0","c":"2"}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"grid":"<dict>","r":"0","c":"2"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"0"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"0"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"1"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"1"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2"}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>","nested_key":"<dict>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>","nested_key":"<dict>"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>","nested_key":"<dict>"}},
+  {"event":"exception","line":22,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>","nested_key":"<dict>"},"exc":"TypeError"},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>","nested_key":"<dict>"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>","nested_key":"<dict>","e":"<TypeError>"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>","nested_key":"<dict>"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>","nested_key":"<dict>","moves":"<dict>"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>","nested_key":"<dict>","moves":"<dict>","pos":"<tuple>"}},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>","nested_key":"<dict>","moves":"<dict>","pos":"<tuple>","step":"<tuple>"}},
+  {"event":"line","line":29,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>","nested_key":"<dict>","moves":"<dict>","pos":"<tuple>","step":"<tuple>"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>","nested_key":"<dict>","moves":"<dict>","pos":"<tuple>","step":"<tuple>"}},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>","nested_key":"<dict>","moves":"<dict>","pos":"<tuple>","step":"<tuple>"}},
+  {"event":"line","line":29,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>","nested_key":"<dict>","moves":"<dict>","pos":"<tuple>","step":"<tuple>"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>","nested_key":"<dict>","moves":"<dict>","pos":"<tuple>","step":"<tuple>"}},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>","nested_key":"<dict>","moves":"<dict>","pos":"<tuple>","step":"<tuple>"}},
+  {"event":"line","line":29,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>","nested_key":"<dict>","moves":"<dict>","pos":"<tuple>","step":"<tuple>"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>","nested_key":"<dict>","moves":"<dict>","pos":"<tuple>","step":"<tuple>"}},
+  {"event":"line","line":30,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>","nested_key":"<dict>","moves":"<dict>","pos":"<tuple>","step":"<tuple>"}},
+  {"event":"line","line":31,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>","nested_key":"<dict>","moves":"<dict>","pos":"<tuple>","step":"<tuple>","visited":"<dict>"}},
+  {"event":"return","line":31,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>","nested_key":"<dict>","moves":"<dict>","pos":"<tuple>","step":"<tuple>","visited":"<dict>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 53,
+ "finalGlobals": {
+  "grid": "<dict>",
+  "r": "1",
+  "c": "2",
+  "corner": "3",
+  "mixed": "<dict>",
+  "codes": "<dict>",
+  "nested_key": "<dict>",
+  "moves": "<dict>",
+  "pos": "<tuple>",
+  "step": "<tuple>",
+  "visited": "<dict>"
+ },
+ "continuation": [],
+ "sourceSha256": "790d49f02758eb971489f4083b2101382de0e073361532c2f161e86c76017144"
+}

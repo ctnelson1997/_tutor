@@ -1,0 +1,100 @@
+{
+ "stdout": "['555-1234', '555-9876', '555-0000']\n608-555-0000 608 ('608', '555', '0000') 35 (35, 47)\nNone Call\nTrue None\n[('ann', 'wisc.edu'), ('bo', 'example.com')]\nann wisc {'user': 'ann', 'host': 'wisc'}\nbo example {'user': 'bo', 'host': 'example'}\npin ####\nANN@wisc.edu, BO@example.com\n['a', 'b', 'c', 'd']\n['The', 'cat', 'sat', 'THE', 'mat']\ntoo many spaces\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "['555-1234', '555-9876', '555-0000']"
+  },
+  {
+   "stream": "stdout",
+   "text": "608-555-0000 608 ('608', '555', '0000') 35 (35, 47)"
+  },
+  {
+   "stream": "stdout",
+   "text": "None Call"
+  },
+  {
+   "stream": "stdout",
+   "text": "True None"
+  },
+  {
+   "stream": "stdout",
+   "text": "[('ann', 'wisc.edu'), ('bo', 'example.com')]"
+  },
+  {
+   "stream": "stdout",
+   "text": "ann wisc {'user': 'ann', 'host': 'wisc'}"
+  },
+  {
+   "stream": "stdout",
+   "text": "bo example {'user': 'bo', 'host': 'example'}"
+  },
+  {
+   "stream": "stdout",
+   "text": "pin ####"
+  },
+  {
+   "stream": "stdout",
+   "text": "ANN@wisc.edu, BO@example.com"
+  },
+  {
+   "stream": "stdout",
+   "text": "['a', 'b', 'c', 'd']"
+  },
+  {
+   "stream": "stdout",
+   "text": "['The', 'cat', 'sat', 'THE', 'mat']"
+  },
+  {
+   "stream": "stdout",
+   "text": "too many spaces"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"re":"<module>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"re":"<module>","text":"'Call 555-1234 or 555-9876; office: 608-555-0000. Email ann@wisc.edu, bo@example.com'"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"re":"<module>","text":"'Call 555-1234 or 555-9876; office: 608-555-0000. Email ann@wisc.edu, bo@example.com'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"re":"<module>","text":"'Call 555-1234 or 555-9876; office: 608-555-0000. Email ann@wisc.edu, bo@example.com'","m":"<Match>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"re":"<module>","text":"'Call 555-1234 or 555-9876; office: 608-555-0000. Email ann@wisc.edu, bo@example.com'","m":"<Match>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"re":"<module>","text":"'Call 555-1234 or 555-9876; office: 608-555-0000. Email ann@wisc.edu, bo@example.com'","m":"<Match>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"re":"<module>","text":"'Call 555-1234 or 555-9876; office: 608-555-0000. Email ann@wisc.edu, bo@example.com'","m":"<Match>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"re":"<module>","text":"'Call 555-1234 or 555-9876; office: 608-555-0000. Email ann@wisc.edu, bo@example.com'","m":"<Match>","emails":"<list>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"re":"<module>","text":"'Call 555-1234 or 555-9876; office: 608-555-0000. Email ann@wisc.edu, bo@example.com'","m":"<Match>","emails":"<list>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"re":"<module>","text":"'Call 555-1234 or 555-9876; office: 608-555-0000. Email ann@wisc.edu, bo@example.com'","m":"<Match>","emails":"<list>","match":"<Match>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"re":"<module>","text":"'Call 555-1234 or 555-9876; office: 608-555-0000. Email ann@wisc.edu, bo@example.com'","m":"<Match>","emails":"<list>","match":"<Match>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"re":"<module>","text":"'Call 555-1234 or 555-9876; office: 608-555-0000. Email ann@wisc.edu, bo@example.com'","m":"<Match>","emails":"<list>","match":"<Match>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"re":"<module>","text":"'Call 555-1234 or 555-9876; office: 608-555-0000. Email ann@wisc.edu, bo@example.com'","m":"<Match>","emails":"<list>","match":"<Match>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"re":"<module>","text":"'Call 555-1234 or 555-9876; office: 608-555-0000. Email ann@wisc.edu, bo@example.com'","m":"<Match>","emails":"<list>","match":"<Match>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"re":"<module>","text":"'Call 555-1234 or 555-9876; office: 608-555-0000. Email ann@wisc.edu, bo@example.com'","m":"<Match>","emails":"<list>","match":"<Match>"}},
+  {"event":"call","line":15,"stack":["<module>","<lambda>"],"locals":{"mm":"<Match>"}},
+  {"event":"line","line":15,"stack":["<module>","<lambda>"],"locals":{"mm":"<Match>"}},
+  {"event":"return","line":15,"stack":["<module>","<lambda>"],"locals":{"mm":"<Match>"},"value":"'ANN@'"},
+  {"event":"call","line":15,"stack":["<module>","<lambda>"],"locals":{"mm":"<Match>"}},
+  {"event":"line","line":15,"stack":["<module>","<lambda>"],"locals":{"mm":"<Match>"}},
+  {"event":"return","line":15,"stack":["<module>","<lambda>"],"locals":{"mm":"<Match>"},"value":"'BO@'"},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"re":"<module>","text":"'Call 555-1234 or 555-9876; office: 608-555-0000. Email ann@wisc.edu, bo@example.com'","m":"<Match>","emails":"<list>","match":"<Match>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"re":"<module>","text":"'Call 555-1234 or 555-9876; office: 608-555-0000. Email ann@wisc.edu, bo@example.com'","m":"<Match>","emails":"<list>","match":"<Match>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"re":"<module>","text":"'Call 555-1234 or 555-9876; office: 608-555-0000. Email ann@wisc.edu, bo@example.com'","m":"<Match>","emails":"<list>","match":"<Match>","word":"<Pattern>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"re":"<module>","text":"'Call 555-1234 or 555-9876; office: 608-555-0000. Email ann@wisc.edu, bo@example.com'","m":"<Match>","emails":"<list>","match":"<Match>","word":"<Pattern>"}},
+  {"event":"return","line":19,"stack":["<module>"],"locals":{"re":"<module>","text":"'Call 555-1234 or 555-9876; office: 608-555-0000. Email ann@wisc.edu, bo@example.com'","m":"<Match>","emails":"<list>","match":"<Match>","word":"<Pattern>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 28,
+ "finalGlobals": {
+  "re": "<module>",
+  "text": "'Call 555-1234 or 555-9876; office: 608-555-0000. Email ann@wisc.edu, bo@example.com'",
+  "m": "<Match>",
+  "emails": "<list>",
+  "match": "<Match>",
+  "word": "<Pattern>"
+ },
+ "continuation": [],
+ "sourceSha256": "f2193ecb2f1935f4ca480e6ed32d9a051b225a915c39ba9cfb82c7e141831616"
+}

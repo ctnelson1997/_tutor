@@ -1,0 +1,109 @@
+{
+ "stdout": "3 None 0\n0\n{'a': ['ant', 'ape'], 'b': ['bee', 'bat'], 'c': ['cow']}\nTrue ['ant', 'ape']\n0 none {'pens': 3}\n{'pens': 6, 'ink': 2, 'tape': 1}\n{'pens': 6, 'ink': 10, 'tape': 1, 'glue': 4}\n{'pens': 6, 'ink': 2, 'tape': 1, 'clips': 7}\nKeyError: 'stapler'\nNone None 4\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "3 None 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "0"
+  },
+  {
+   "stream": "stdout",
+   "text": "{'a': ['ant', 'ape'], 'b': ['bee', 'bat'], 'c': ['cow']}"
+  },
+  {
+   "stream": "stdout",
+   "text": "True ['ant', 'ape']"
+  },
+  {
+   "stream": "stdout",
+   "text": "0 none {'pens': 3}"
+  },
+  {
+   "stream": "stdout",
+   "text": "{'pens': 6, 'ink': 2, 'tape': 1}"
+  },
+  {
+   "stream": "stdout",
+   "text": "{'pens': 6, 'ink': 10, 'tape': 1, 'glue': 4}"
+  },
+  {
+   "stream": "stdout",
+   "text": "{'pens': 6, 'ink': 2, 'tape': 1, 'clips': 7}"
+  },
+  {
+   "stream": "stdout",
+   "text": "KeyError: 'stapler'"
+  },
+  {
+   "stream": "stdout",
+   "text": "None None 4"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"inventory":"<dict>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"inventory":"<dict>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"inventory":"<dict>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'ant'"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'ant'","bucket":"<list>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'ant'","bucket":"<list>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'bee'","bucket":"<list>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'bee'","bucket":"<list>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'bee'","bucket":"<list>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'ape'","bucket":"<list>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'ape'","bucket":"<list>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'ape'","bucket":"<list>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'bat'","bucket":"<list>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'bat'","bucket":"<list>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'bat'","bucket":"<list>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>","existing":"<list>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>","existing":"<list>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>","existing":"<list>","removed":"0"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>","existing":"<list>","removed":"0","missing":"'none'"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>","existing":"<list>","removed":"0","missing":"'none'"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>","existing":"<list>","removed":"0","missing":"'none'"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>","existing":"<list>","removed":"0","missing":"'none'"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>","existing":"<list>","removed":"0","missing":"'none'"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>","existing":"<list>","removed":"0","missing":"'none'","merged":"<dict>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>","existing":"<list>","removed":"0","missing":"'none'","merged":"<dict>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>","existing":"<list>","removed":"0","missing":"'none'","merged":"<dict>"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>","existing":"<list>","removed":"0","missing":"'none'","merged":"<dict>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>","existing":"<list>","removed":"0","missing":"'none'","merged":"<dict>"}},
+  {"event":"exception","line":23,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>","existing":"<list>","removed":"0","missing":"'none'","merged":"<dict>"},"exc":"KeyError"},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>","existing":"<list>","removed":"0","missing":"'none'","merged":"<dict>"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>","existing":"<list>","removed":"0","missing":"'none'","merged":"<dict>","e":"<KeyError>"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>","existing":"<list>","removed":"0","missing":"'none'","merged":"<dict>"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>","existing":"<list>","removed":"0","missing":"'none'","merged":"<dict>","none_default":"None"}},
+  {"event":"return","line":27,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>","existing":"<list>","removed":"0","missing":"'none'","merged":"<dict>","none_default":"None"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 41,
+ "finalGlobals": {
+  "inventory": "<dict>",
+  "groups": "<dict>",
+  "word": "'cow'",
+  "bucket": "<list>",
+  "existing": "<list>",
+  "removed": "0",
+  "missing": "'none'",
+  "merged": "<dict>",
+  "none_default": "None"
+ },
+ "continuation": [],
+ "sourceSha256": "0cf0de20f168cc7849a2f25ed2d4b6aefde2c3363bdcf0adb5345559e8bbfee8"
+}

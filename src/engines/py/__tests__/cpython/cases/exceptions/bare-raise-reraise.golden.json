@@ -1,0 +1,103 @@
+{
+ "stdout": "outer caught: not a text file: b.csv | same args: ('not a text file: b.csv',)\n['A.TXT', 'skipped b.csv', 'C.TXT']\n['not a text file: b.csv']\nhandling, then re-raise\nre-raised KeyError: 'k'\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "outer caught: not a text file: b.csv | same args: ('not a text file: b.csv',)"
+  },
+  {
+   "stream": "stdout",
+   "text": "['A.TXT', 'skipped b.csv', 'C.TXT']"
+  },
+  {
+   "stream": "stdout",
+   "text": "['not a text file: b.csv']"
+  },
+  {
+   "stream": "stdout",
+   "text": "handling, then re-raise"
+  },
+  {
+   "stream": "stdout",
+   "text": "re-raised KeyError: 'k'"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"log":"<list>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>","results":"<list>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>","results":"<list>","name":"'a.txt'"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>","results":"<list>","name":"'a.txt'"}},
+  {"event":"call","line":9,"stack":["<module>","load_logged"],"locals":{"name":"'a.txt'"}},
+  {"event":"line","line":10,"stack":["<module>","load_logged"],"locals":{"name":"'a.txt'"}},
+  {"event":"line","line":11,"stack":["<module>","load_logged"],"locals":{"name":"'a.txt'"}},
+  {"event":"call","line":4,"stack":["<module>","load_logged","load"],"locals":{"name":"'a.txt'"}},
+  {"event":"line","line":5,"stack":["<module>","load_logged","load"],"locals":{"name":"'a.txt'"}},
+  {"event":"line","line":7,"stack":["<module>","load_logged","load"],"locals":{"name":"'a.txt'"}},
+  {"event":"return","line":7,"stack":["<module>","load_logged","load"],"locals":{"name":"'a.txt'"},"value":"'A.TXT'"},
+  {"event":"return","line":11,"stack":["<module>","load_logged"],"locals":{"name":"'a.txt'"},"value":"'A.TXT'"},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>","results":"<list>","name":"'a.txt'"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>","results":"<list>","name":"'b.csv'"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>","results":"<list>","name":"'b.csv'"}},
+  {"event":"call","line":9,"stack":["<module>","load_logged"],"locals":{"name":"'b.csv'"}},
+  {"event":"line","line":10,"stack":["<module>","load_logged"],"locals":{"name":"'b.csv'"}},
+  {"event":"line","line":11,"stack":["<module>","load_logged"],"locals":{"name":"'b.csv'"}},
+  {"event":"call","line":4,"stack":["<module>","load_logged","load"],"locals":{"name":"'b.csv'"}},
+  {"event":"line","line":5,"stack":["<module>","load_logged","load"],"locals":{"name":"'b.csv'"}},
+  {"event":"line","line":6,"stack":["<module>","load_logged","load"],"locals":{"name":"'b.csv'"}},
+  {"event":"exception","line":6,"stack":["<module>","load_logged","load"],"locals":{"name":"'b.csv'"},"exc":"ValueError"},
+  {"event":"return","line":6,"stack":["<module>","load_logged","load"],"locals":{"name":"'b.csv'"},"value":"None"},
+  {"event":"exception","line":11,"stack":["<module>","load_logged"],"locals":{"name":"'b.csv'"},"exc":"ValueError"},
+  {"event":"line","line":12,"stack":["<module>","load_logged"],"locals":{"name":"'b.csv'"}},
+  {"event":"line","line":13,"stack":["<module>","load_logged"],"locals":{"name":"'b.csv'","e":"<ValueError>"}},
+  {"event":"line","line":14,"stack":["<module>","load_logged"],"locals":{"name":"'b.csv'","e":"<ValueError>"}},
+  {"event":"return","line":14,"stack":["<module>","load_logged"],"locals":{"name":"'b.csv'"},"value":"None"},
+  {"event":"exception","line":19,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>","results":"<list>","name":"'b.csv'"},"exc":"ValueError"},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>","results":"<list>","name":"'b.csv'"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>","results":"<list>","name":"'b.csv'","e":"<ValueError>"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>","results":"<list>","name":"'b.csv'","e":"<ValueError>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>","results":"<list>","name":"'b.csv'"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>","results":"<list>","name":"'c.txt'"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>","results":"<list>","name":"'c.txt'"}},
+  {"event":"call","line":9,"stack":["<module>","load_logged"],"locals":{"name":"'c.txt'"}},
+  {"event":"line","line":10,"stack":["<module>","load_logged"],"locals":{"name":"'c.txt'"}},
+  {"event":"line","line":11,"stack":["<module>","load_logged"],"locals":{"name":"'c.txt'"}},
+  {"event":"call","line":4,"stack":["<module>","load_logged","load"],"locals":{"name":"'c.txt'"}},
+  {"event":"line","line":5,"stack":["<module>","load_logged","load"],"locals":{"name":"'c.txt'"}},
+  {"event":"line","line":7,"stack":["<module>","load_logged","load"],"locals":{"name":"'c.txt'"}},
+  {"event":"return","line":7,"stack":["<module>","load_logged","load"],"locals":{"name":"'c.txt'"},"value":"'C.TXT'"},
+  {"event":"return","line":11,"stack":["<module>","load_logged"],"locals":{"name":"'c.txt'"},"value":"'C.TXT'"},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>","results":"<list>","name":"'c.txt'"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>","results":"<list>","name":"'c.txt'"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>","results":"<list>","name":"'c.txt'"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>","results":"<list>","name":"'c.txt'"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>","results":"<list>","name":"'c.txt'"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>","results":"<list>","name":"'c.txt'"}},
+  {"event":"exception","line":27,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>","results":"<list>","name":"'c.txt'"},"exc":"KeyError"},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>","results":"<list>","name":"'c.txt'"}},
+  {"event":"line","line":29,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>","results":"<list>","name":"'c.txt'"}},
+  {"event":"line","line":30,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>","results":"<list>","name":"'c.txt'"}},
+  {"event":"line","line":31,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>","results":"<list>","name":"'c.txt'"}},
+  {"event":"line","line":32,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>","results":"<list>","name":"'c.txt'","e":"<KeyError>"}},
+  {"event":"return","line":32,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>","results":"<list>","name":"'c.txt'"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 56,
+ "finalGlobals": {
+  "log": "<list>",
+  "load": "<function>",
+  "load_logged": "<function>",
+  "results": "<list>",
+  "name": "'c.txt'"
+ },
+ "continuation": [],
+ "sourceSha256": "783ca77ec9ad18f1d94e25820bbdc9c46f3316cb3015c5aea29675e1091f3598"
+}

@@ -1,0 +1,81 @@
+{
+ "stdout": "(3+4j) (1-1j) (-1+0j) (-0-1j) 0j 2j\n5.0 3.0 4.0 (3-4j)\n(-7+24j) (1.5+2j) (4+3j) 0j\n1j 2j\n(1+2j) True True\n3.00+4.00j (1-1j) (-0-1j)\n[(3+4j), (1-1j), (-0-1j)]\n1.5708 0.0\n[(6.123233995736766e-17+1j), 2j]\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "(3+4j) (1-1j) (-1+0j) (-0-1j) 0j 2j"
+  },
+  {
+   "stream": "stdout",
+   "text": "5.0 3.0 4.0 (3-4j)"
+  },
+  {
+   "stream": "stdout",
+   "text": "(-7+24j) (1.5+2j) (4+3j) 0j"
+  },
+  {
+   "stream": "stdout",
+   "text": "1j 2j"
+  },
+  {
+   "stream": "stdout",
+   "text": "(1+2j) True True"
+  },
+  {
+   "stream": "stdout",
+   "text": "3.00+4.00j (1-1j) (-0-1j)"
+  },
+  {
+   "stream": "stdout",
+   "text": "[(3+4j), (1-1j), (-0-1j)]"
+  },
+  {
+   "stream": "stdout",
+   "text": "1.5708 0.0"
+  },
+  {
+   "stream": "stdout",
+   "text": "[(6.123233995736766e-17+1j), 2j]"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"cmath":"<module>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"cmath":"<module>","z":"(3+4j)"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"cmath":"<module>","z":"(3+4j)","w":"(1-1j)"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"cmath":"<module>","z":"(3+4j)","w":"(1-1j)","i2":"(-1+0j)"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"cmath":"<module>","z":"(3+4j)","w":"(1-1j)","i2":"(-1+0j)","neg":"(-0-1j)"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"cmath":"<module>","z":"(3+4j)","w":"(1-1j)","i2":"(-1+0j)","neg":"(-0-1j)","zero":"0j"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"cmath":"<module>","z":"(3+4j)","w":"(1-1j)","i2":"(-1+0j)","neg":"(-0-1j)","zero":"0j","pure":"2j"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"cmath":"<module>","z":"(3+4j)","w":"(1-1j)","i2":"(-1+0j)","neg":"(-0-1j)","zero":"0j","pure":"2j"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"cmath":"<module>","z":"(3+4j)","w":"(1-1j)","i2":"(-1+0j)","neg":"(-0-1j)","zero":"0j","pure":"2j"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"cmath":"<module>","z":"(3+4j)","w":"(1-1j)","i2":"(-1+0j)","neg":"(-0-1j)","zero":"0j","pure":"2j"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"cmath":"<module>","z":"(3+4j)","w":"(1-1j)","i2":"(-1+0j)","neg":"(-0-1j)","zero":"0j","pure":"2j"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"cmath":"<module>","z":"(3+4j)","w":"(1-1j)","i2":"(-1+0j)","neg":"(-0-1j)","zero":"0j","pure":"2j"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"cmath":"<module>","z":"(3+4j)","w":"(1-1j)","i2":"(-1+0j)","neg":"(-0-1j)","zero":"0j","pure":"2j"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"cmath":"<module>","z":"(3+4j)","w":"(1-1j)","i2":"(-1+0j)","neg":"(-0-1j)","zero":"0j","pure":"2j"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"cmath":"<module>","z":"(3+4j)","w":"(1-1j)","i2":"(-1+0j)","neg":"(-0-1j)","zero":"0j","pure":"2j"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"cmath":"<module>","z":"(3+4j)","w":"(1-1j)","i2":"(-1+0j)","neg":"(-0-1j)","zero":"0j","pure":"2j","roots":"<list>"}},
+  {"event":"return","line":18,"stack":["<module>"],"locals":{"cmath":"<module>","z":"(3+4j)","w":"(1-1j)","i2":"(-1+0j)","neg":"(-0-1j)","zero":"0j","pure":"2j","roots":"<list>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 19,
+ "finalGlobals": {
+  "cmath": "<module>",
+  "z": "(3+4j)",
+  "w": "(1-1j)",
+  "i2": "(-1+0j)",
+  "neg": "(-0-1j)",
+  "zero": "0j",
+  "pure": "2j",
+  "roots": "<list>"
+ },
+ "continuation": [],
+ "sourceSha256": "14a9e8dcad84953a5c1b377ae556a9e48020bf62bc4f7a9ce0ec0ac01adbd7b6"
+}

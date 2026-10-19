@@ -1,0 +1,101 @@
+{
+ "stdout": "created\n  (balance read)\n123.45\n  (balance read)\nAnn: $123.45\nreads so far: 2\n  (balance read)\n128.45 3\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "created"
+  },
+  {
+   "stream": "stdout",
+   "text": "  (balance read)"
+  },
+  {
+   "stream": "stdout",
+   "text": "123.45"
+  },
+  {
+   "stream": "stdout",
+   "text": "  (balance read)"
+  },
+  {
+   "stream": "stdout",
+   "text": "Ann: $123.45"
+  },
+  {
+   "stream": "stdout",
+   "text": "reads so far: 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "  (balance read)"
+  },
+  {
+   "stream": "stdout",
+   "text": "128.45 3"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"call","line":2,"stack":["<module>","Account"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>","Account"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>","Account"],"locals":{"__module__":"'__main__'","__qualname__":"'Account'"}},
+  {"event":"line","line":5,"stack":["<module>","Account"],"locals":{"__module__":"'__main__'","__qualname__":"'Account'","reads":"0"}},
+  {"event":"line","line":9,"stack":["<module>","Account"],"locals":{"__module__":"'__main__'","__qualname__":"'Account'","reads":"0","__init__":"<function>"}},
+  {"event":"line","line":10,"stack":["<module>","Account"],"locals":{"__module__":"'__main__'","__qualname__":"'Account'","reads":"0","__init__":"<function>"}},
+  {"event":"line","line":9,"stack":["<module>","Account"],"locals":{"__module__":"'__main__'","__qualname__":"'Account'","reads":"0","__init__":"<function>"}},
+  {"event":"line","line":10,"stack":["<module>","Account"],"locals":{"__module__":"'__main__'","__qualname__":"'Account'","reads":"0","__init__":"<function>"}},
+  {"event":"line","line":15,"stack":["<module>","Account"],"locals":{"__module__":"'__main__'","__qualname__":"'Account'","reads":"0","__init__":"<function>","balance":"<property>"}},
+  {"event":"line","line":16,"stack":["<module>","Account"],"locals":{"__module__":"'__main__'","__qualname__":"'Account'","reads":"0","__init__":"<function>","balance":"<property>"}},
+  {"event":"line","line":15,"stack":["<module>","Account"],"locals":{"__module__":"'__main__'","__qualname__":"'Account'","reads":"0","__init__":"<function>","balance":"<property>"}},
+  {"event":"line","line":16,"stack":["<module>","Account"],"locals":{"__module__":"'__main__'","__qualname__":"'Account'","reads":"0","__init__":"<function>","balance":"<property>"}},
+  {"event":"return","line":16,"stack":["<module>","Account"],"locals":{"__module__":"'__main__'","__qualname__":"'Account'","reads":"0","__init__":"<function>","balance":"<property>","summary":"<property>"},"value":"None"},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"Account":"<type>"}},
+  {"event":"call","line":5,"stack":["<module>","__init__"],"locals":{"self":"<Account>","owner":"'Ann'","cents":"12345"}},
+  {"event":"line","line":6,"stack":["<module>","__init__"],"locals":{"self":"<Account>","owner":"'Ann'","cents":"12345"}},
+  {"event":"line","line":7,"stack":["<module>","__init__"],"locals":{"self":"<Account>","owner":"'Ann'","cents":"12345"}},
+  {"event":"return","line":7,"stack":["<module>","__init__"],"locals":{"self":"<Account>","owner":"'Ann'","cents":"12345"},"value":"None"},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"Account":"<type>","acct":"<Account>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"Account":"<type>","acct":"<Account>"}},
+  {"event":"call","line":9,"stack":["<module>","balance"],"locals":{"self":"<Account>"}},
+  {"event":"line","line":11,"stack":["<module>","balance"],"locals":{"self":"<Account>"}},
+  {"event":"line","line":12,"stack":["<module>","balance"],"locals":{"self":"<Account>"}},
+  {"event":"line","line":13,"stack":["<module>","balance"],"locals":{"self":"<Account>"}},
+  {"event":"return","line":13,"stack":["<module>","balance"],"locals":{"self":"<Account>"},"value":"123.45"},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"Account":"<type>","acct":"<Account>","x":"123.45"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"Account":"<type>","acct":"<Account>","x":"123.45"}},
+  {"event":"call","line":15,"stack":["<module>","summary"],"locals":{"self":"<Account>"}},
+  {"event":"line","line":17,"stack":["<module>","summary"],"locals":{"self":"<Account>"}},
+  {"event":"call","line":9,"stack":["<module>","summary","balance"],"locals":{"self":"<Account>"}},
+  {"event":"line","line":11,"stack":["<module>","summary","balance"],"locals":{"self":"<Account>"}},
+  {"event":"line","line":12,"stack":["<module>","summary","balance"],"locals":{"self":"<Account>"}},
+  {"event":"line","line":13,"stack":["<module>","summary","balance"],"locals":{"self":"<Account>"}},
+  {"event":"return","line":13,"stack":["<module>","summary","balance"],"locals":{"self":"<Account>"},"value":"123.45"},
+  {"event":"return","line":17,"stack":["<module>","summary"],"locals":{"self":"<Account>"},"value":"'Ann: $123.45'"},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"Account":"<type>","acct":"<Account>","x":"123.45"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"Account":"<type>","acct":"<Account>","x":"123.45"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"Account":"<type>","acct":"<Account>","x":"123.45"}},
+  {"event":"call","line":9,"stack":["<module>","balance"],"locals":{"self":"<Account>"}},
+  {"event":"line","line":11,"stack":["<module>","balance"],"locals":{"self":"<Account>"}},
+  {"event":"line","line":12,"stack":["<module>","balance"],"locals":{"self":"<Account>"}},
+  {"event":"line","line":13,"stack":["<module>","balance"],"locals":{"self":"<Account>"}},
+  {"event":"return","line":13,"stack":["<module>","balance"],"locals":{"self":"<Account>"},"value":"128.45"},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"Account":"<type>","acct":"<Account>","x":"123.45","y":"128.45"}},
+  {"event":"return","line":27,"stack":["<module>"],"locals":{"Account":"<type>","acct":"<Account>","x":"123.45","y":"128.45"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 47,
+ "finalGlobals": {
+  "Account": "<type>",
+  "acct": "<Account>",
+  "x": "123.45",
+  "y": "128.45"
+ },
+ "continuation": [],
+ "sourceSha256": "6f5939833ea5cb8ca0701f63ee3f2489194e8fd456dbcfce4af7437ef85564e0"
+}

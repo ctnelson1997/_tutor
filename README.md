@@ -108,6 +108,7 @@ npm run dev:py       # Python dev server
 | `npm run test:integration` | Build viewer-js then run integration tests against the real built `docs/viewer-js.html` |
 | `npm run test:java:golden` | Regenerate the Java engine's JDK goldens (needs JDK 21, see below) |
 | `npm run test:js:golden` | Regenerate the JS engine's Node goldens (needs Node 24, see below) |
+| `npm run test:py:golden` | Regenerate the Python engine's CPython goldens (Pyodide 0.27.5, a dev dependency, see below) |
 | `npm run lint` | Run ESLint |
 | `npm run preview` | Preview the production build locally |
 
@@ -146,6 +147,24 @@ As for Java, checks that fail today are listed in `known-failures.json` with the
 | Print each step's frames and heap, and what Node printed | `npx tsx scripts/js-viz.ts <case id \| file.js \| example:slug> [--final] [--steps=a-b]` |
 | Measure the reply's size and time | `npx tsx scripts/js-payload.ts [--quick]` |
 
+### Testing the Python engine against CPython
+
+The Python engine runs real CPython (Pyodide), but it traces the program, and the tracer decides what each step shows and can change what the program does. [`src/engines/py/__tests__/cpython/`](src/engines/py/__tests__/cpython/) holds a corpus of Python programs: typical CS1/CS2 programs (some reading `input()`), targeted checks (printing, numbers, scope and aliasing, data structures, OOP, comprehensions and generators, exceptions, the standard library, limits), programs CPython rejects, and every shipped example. Each program has a committed golden file recording what CPython 3.12 (the Pyodide release PyTutor loads, from the `pyodide` dev dependency) did: its output, any uncaught exception and its traceback, and a reference trace of every step of the program's own frames with each variable's value. `npm test` runs each program through PyTutor exactly as the browser's worker does, in a fresh interpreter, and checks:
+- the output at the last step, and that the run ends as CPython's did (normally, with the same exception and traceback, at the step cap for an endless loop, or with CPython's syntax error and line);
+- each step against CPython's trace: the same line and frames in order, with each variable's value and each function's return value, and no line CPython ran without a step;
+- the final values of the module's variables;
+- the snapshots: references resolve, lines are in the file, no names that aren't the program's, no engine internals in messages, and only reachable objects are drawn.
+
+As for Java and JavaScript, checks that fail today are listed in `known-failures.json` with the roadmap issue ([#28](https://github.com/ctnelson1997/_tutor/issues/28)) that should fix them, run as expected failures, and a fix that makes one pass turns the suite red until you delete the entry. The run ends with a summary in #28's terms: matches, wrong output, wrong steps or state, failures, and syntax errors that differ.
+
+| Task | How |
+|---|---|
+| Add a program | Put `<name>.py` (and `<name>.stdin` if it reads input) in `cases/<category>/`, then run `npm run test:py:golden -- <category>/<name>` and commit them |
+| Regenerate every golden | `npm run test:py:golden` (other Pyodide versions are refused) |
+| Check goldens are current, writing nothing | `npm run test:py:golden -- --check` |
+| See every difference from CPython, case by case | `npx tsx scripts/py-diff.ts [filter] [--issue=<n>]` |
+| Show CPython's events and PyTutor's steps side by side | `npx tsx scripts/py-viz.ts <case id \| file.py \| example:slug> [--steps=a-b] [--final]` |
+
 ---
 
 ## Project Structure
@@ -167,6 +186,7 @@ src/
 │   ├── py/                     # Python engine (Pyodide + sys.settrace)
 │   │   ├── index.ts            # LanguageEngine implementation
 │   │   ├── tracer.ts           # Python tracing script (sys.settrace) as a string
+│   │   ├── run.ts              # Runs a program through the tracer in a loaded Pyodide (the worker's 'run', shared with the tests)
 │   │   ├── worker.ts           # Persistent Pyodide Web Worker (module worker)
 │   │   ├── executor.ts         # Pyodide worker lifecycle management
 │   │   ├── examples.ts         # Python example snippets
@@ -234,7 +254,7 @@ src/
 .env.java                       # Java build branding (VITE_APP_NAME=JavaTutor, etc.)
 viewer.html                     # HTML entry for the viewer-<lang> build (contains the __EXAMPLES__ placeholder)
 vite.config.ts                  # Build config — mode-based outDir + language targeting + singlefile viewer mode
-scripts/                        # Dev tools, run with tsx: java-golden.ts (JDK goldens), java-diff.ts, java-viz.ts, java-payload.ts, js-golden.ts (Node goldens), js-diff.ts, js-viz.ts, js-payload.ts
+scripts/                        # Dev tools, run with tsx: java-golden.ts (JDK goldens), java-diff.ts, java-viz.ts, java-payload.ts, js-golden.ts (Node goldens), js-diff.ts, js-viz.ts, js-payload.ts, py-golden.ts (CPython goldens), py-diff.ts, py-viz.ts
 ```
 
 ---

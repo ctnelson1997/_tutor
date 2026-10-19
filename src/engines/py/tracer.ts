@@ -32,9 +32,14 @@ _MAX_DICT_PROPS = 50
 # A run that is too long to show is stopped, keeping its steps: at the step
 # cap, or shortly before the worker is killed at 10 seconds.
 _TIME_BUDGET = 8.5
-_stop_reason = None   # "steps" or "time" once the tracer has stopped the run
+_stop_reason = None   # "steps", "time" or "work" once the tracer has stopped the run
 _start_time = 0.0
 _events = 0
+# Values serialized so far, and how many a run may serialize before it is
+# stopped as out of time: None in the app. The CPython suite sets it (and turns
+# the time budget off), so a slow run stops at the same step on any machine.
+_work = 0
+_WORK_BUDGET = None
 _unwinding = set()    # frames an exception is propagating out of
 
 class _TutorStop(BaseException):
@@ -210,6 +215,8 @@ def _get_heap_id(obj):
 
 def _serialize_value(val, heap_objects, visited):
     """Serialize a Python value to the snapshot PrimitiveValue or HeapRef format."""
+    global _work
+    _work += 1
     if val is None:
         return {"type": "null", "value": None}
     if val is True:
@@ -344,6 +351,8 @@ def _capture_snapshot(line, current_locals, return_value=None, has_return=False,
 
     if _step_counter >= _MAX_SNAPSHOTS:
         return
+    if _WORK_BUDGET is not None and _work > _WORK_BUDGET:
+        _stop("work")
 
     heap_objects = []
     visited = set()
@@ -664,10 +673,11 @@ def _traceback_text(e, source_code):
 
 def run_traced(source_code):
     global _snapshots, _stdout_lines, _call_stack, _heap_map, _heap_counter, _step_counter, _baseline_keys, _active_comp, _continuation_lines
-    global _stop_reason, _start_time, _events, _unwinding
+    global _stop_reason, _start_time, _events, _unwinding, _work
     _stop_reason = None
     _start_time = time.time()
     _events = 0
+    _work = 0
     _unwinding = set()
     _snapshots = []
     _stdout_lines = []
@@ -727,6 +737,8 @@ def run_traced(source_code):
         error = {"kind": "limit", "message": f"Stopped after {_MAX_SNAPSHOTS} steps, the most that can be shown. Your code may contain an infinite loop."}
     elif _stop_reason == "time":
         error = {"kind": "limit", "message": f"Stopped after {_TIME_BUDGET:g} seconds, the longest a program can run here."}
+    elif _stop_reason == "work":
+        error = {"kind": "limit", "message": f"Stopped after drawing {_WORK_BUDGET} values, the most a program can draw here."}
     result = {"type": "result", "snapshots": _snapshots}
     if error is not None:
         result["error"] = error

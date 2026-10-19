@@ -1,0 +1,96 @@
+{
+ "stdout": "array('i', [9, 3, 1, 4, 1]) i 5 3 1\n1 array('i', [9, 3, 4]) 1 2\narray('i', [9, 5, 4, 3, 9]) [9, 5, 4, 3, 9] 30\narray('i', [5, 4]) array\narray('d', [20.5, 21.0, 19.0]) 8 19.0\nOverflowError: signed char is greater than maximum\nTypeError: 'float' object cannot be interpreted as an integer\narray('u', 'hey') hey\narray('i', [0, 0, 7, 0]) [0, 0, 7, 0] True\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "array('i', [9, 3, 1, 4, 1]) i 5 3 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "1 array('i', [9, 3, 4]) 1 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "array('i', [9, 5, 4, 3, 9]) [9, 5, 4, 3, 9] 30"
+  },
+  {
+   "stream": "stdout",
+   "text": "array('i', [5, 4]) array"
+  },
+  {
+   "stream": "stdout",
+   "text": "array('d', [20.5, 21.0, 19.0]) 8 19.0"
+  },
+  {
+   "stream": "stdout",
+   "text": "OverflowError: signed char is greater than maximum"
+  },
+  {
+   "stream": "stdout",
+   "text": "TypeError: 'float' object cannot be interpreted as an integer"
+  },
+  {
+   "stream": "stdout",
+   "text": "array('u', 'hey') hey"
+  },
+  {
+   "stream": "stdout",
+   "text": "array('i', [0, 0, 7, 0]) [0, 0, 7, 0] True"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"array":"<type>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>","removed":"1"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>","removed":"1"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>","removed":"1"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>","removed":"1"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>","removed":"1"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>","removed":"1"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>","removed":"1","part":"<array>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>","removed":"1","part":"<array>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>","removed":"1","part":"<array>","temps":"<array>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>","removed":"1","part":"<array>","temps":"<array>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>","removed":"1","part":"<array>","temps":"<array>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>","removed":"1","part":"<array>","temps":"<array>","small":"<array>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>","removed":"1","part":"<array>","temps":"<array>","small":"<array>"}},
+  {"event":"exception","line":21,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>","removed":"1","part":"<array>","temps":"<array>","small":"<array>"},"exc":"OverflowError"},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>","removed":"1","part":"<array>","temps":"<array>","small":"<array>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>","removed":"1","part":"<array>","temps":"<array>","small":"<array>","e":"<OverflowError>"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>","removed":"1","part":"<array>","temps":"<array>","small":"<array>"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>","removed":"1","part":"<array>","temps":"<array>","small":"<array>"}},
+  {"event":"exception","line":25,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>","removed":"1","part":"<array>","temps":"<array>","small":"<array>"},"exc":"TypeError"},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>","removed":"1","part":"<array>","temps":"<array>","small":"<array>"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>","removed":"1","part":"<array>","temps":"<array>","small":"<array>","e":"<TypeError>"}},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>","removed":"1","part":"<array>","temps":"<array>","small":"<array>"}},
+  {"event":"line","line":29,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>","removed":"1","part":"<array>","temps":"<array>","small":"<array>","chars":"<array>"}},
+  {"event":"line","line":30,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>","removed":"1","part":"<array>","temps":"<array>","small":"<array>","chars":"<array>"}},
+  {"event":"line","line":31,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>","removed":"1","part":"<array>","temps":"<array>","small":"<array>","chars":"<array>","grid":"<array>"}},
+  {"event":"line","line":32,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>","removed":"1","part":"<array>","temps":"<array>","small":"<array>","chars":"<array>","grid":"<array>"}},
+  {"event":"return","line":32,"stack":["<module>"],"locals":{"array":"<type>","nums":"<array>","removed":"1","part":"<array>","temps":"<array>","small":"<array>","chars":"<array>","grid":"<array>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 32,
+ "finalGlobals": {
+  "array": "<type>",
+  "nums": "<array>",
+  "removed": "1",
+  "part": "<array>",
+  "temps": "<array>",
+  "small": "<array>",
+  "chars": "<array>",
+  "grid": "<array>"
+ },
+ "continuation": [],
+ "sourceSha256": "6927b2d5bbdc662432afe65fd8188d2a79e8a0d4c210bff89556bf56e3730d25"
+}

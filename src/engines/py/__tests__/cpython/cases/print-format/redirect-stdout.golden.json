@@ -1,0 +1,69 @@
+{
+ "stdout": "visible 1\nvisible 2\n'captured A\\ncaptured B!'\nvisible 3\n'into other-1-2\\n' 15\n['captured A', 'captured B!']\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "visible 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "visible 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "'captured A\\ncaptured B!'"
+  },
+  {
+   "stream": "stdout",
+   "text": "visible 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "'into other-1-2\\n' 15"
+  },
+  {
+   "stream": "stdout",
+   "text": "['captured A', 'captured B!']"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"io":"<module>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"io":"<module>","contextlib":"<module>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"io":"<module>","contextlib":"<module>","buffer":"<StringIO>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"io":"<module>","contextlib":"<module>","buffer":"<StringIO>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"io":"<module>","contextlib":"<module>","buffer":"<StringIO>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"io":"<module>","contextlib":"<module>","buffer":"<StringIO>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"io":"<module>","contextlib":"<module>","buffer":"<StringIO>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"io":"<module>","contextlib":"<module>","buffer":"<StringIO>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"io":"<module>","contextlib":"<module>","buffer":"<StringIO>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"io":"<module>","contextlib":"<module>","buffer":"<StringIO>","captured":"'captured A\\ncaptured B!'"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"io":"<module>","contextlib":"<module>","buffer":"<StringIO>","captured":"'captured A\\ncaptured B!'"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"io":"<module>","contextlib":"<module>","buffer":"<StringIO>","captured":"'captured A\\ncaptured B!'","other":"<StringIO>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"io":"<module>","contextlib":"<module>","buffer":"<StringIO>","captured":"'captured A\\ncaptured B!'","other":"<StringIO>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"io":"<module>","contextlib":"<module>","buffer":"<StringIO>","captured":"'captured A\\ncaptured B!'","other":"<StringIO>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"io":"<module>","contextlib":"<module>","buffer":"<StringIO>","captured":"'captured A\\ncaptured B!'","other":"<StringIO>","text":"'into other-1-2\\n'"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"io":"<module>","contextlib":"<module>","buffer":"<StringIO>","captured":"'captured A\\ncaptured B!'","other":"<StringIO>","text":"'into other-1-2\\n'"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"io":"<module>","contextlib":"<module>","buffer":"<StringIO>","captured":"'captured A\\ncaptured B!'","other":"<StringIO>","text":"'into other-1-2\\n'","lines":"<list>"}},
+  {"event":"return","line":18,"stack":["<module>"],"locals":{"io":"<module>","contextlib":"<module>","buffer":"<StringIO>","captured":"'captured A\\ncaptured B!'","other":"<StringIO>","text":"'into other-1-2\\n'","lines":"<list>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 20,
+ "finalGlobals": {
+  "io": "<module>",
+  "contextlib": "<module>",
+  "buffer": "<StringIO>",
+  "captured": "'captured A\\ncaptured B!'",
+  "other": "<StringIO>",
+  "text": "'into other-1-2\\n'",
+  "lines": "<list>"
+ },
+ "continuation": [],
+ "sourceSha256": "b4739460938fc7cf536e6d3e89bd332b7864199fdea200d7bac0c6e97910e806"
+}

@@ -1,0 +1,1698 @@
+{
+  "failures": {
+    "data-structures/dict-comprehension": {
+      "output": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      },
+      "ending": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      },
+      "steps": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "data-structures/heapq-priority-queue": {
+      "output": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      },
+      "ending": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      },
+      "steps": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "data-structures/int-set-operations": {
+      "values": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "data-structures/nested-json-data": {
+      "values": {
+        "issues": [
+          37,
+          33
+        ],
+        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+      },
+      "final-state": {
+        "issues": [
+          37,
+          33
+        ],
+        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "examples/classes": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "exceptions/assert-statements": {
+      "values": {
+        "issues": [
+          37,
+          33
+        ],
+        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "exceptions/builtin-error-messages": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      },
+      "values": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      },
+      "final-state": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      }
+    },
+    "exceptions/context-manager-class": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "exceptions/custom-exception-attributes": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "exceptions/recursion-error-message": {
+      "output": {
+        "issues": [
+          34
+        ],
+        "reason": "the tracer runs on the program's terms"
+      },
+      "steps": {
+        "issues": [
+          34
+        ],
+        "reason": "the tracer runs on the program's terms"
+      }
+    },
+    "exceptions/uncaught-chained-from": {
+      "traceback": {
+        "issues": [
+          40
+        ],
+        "reason": "traceback differs from CPython's"
+      }
+    },
+    "exceptions/uncaught-custom-exception": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "exceptions/uncaught-in-list-comprehension": {
+      "values": {
+        "issues": [
+          37,
+          33
+        ],
+        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "exceptions/uncaught-in-method": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "exceptions/uncaught-through-functions": {
+      "values": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      }
+    },
+    "extra/calls-inside-comprehensions": {
+      "steps": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "extra/class-attributes": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "extra/comprehension-side-effects": {
+      "output": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      },
+      "ending": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      },
+      "steps": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      },
+      "variables": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "extra/ends-with-quote": {
+      "output": {
+        "issues": [
+          30
+        ],
+        "reason": "the source is pasted into Python code"
+      },
+      "ending": {
+        "issues": [
+          30
+        ],
+        "reason": "the source is pasted into Python code"
+      },
+      "names": {
+        "issues": [
+          30
+        ],
+        "reason": "the source is pasted into Python code"
+      }
+    },
+    "extra/low-recursion-limit": {
+      "output": {
+        "issues": [
+          34
+        ],
+        "reason": "the tracer runs on the program's terms"
+      },
+      "steps": {
+        "issues": [
+          34
+        ],
+        "reason": "the tracer runs on the program's terms"
+      }
+    },
+    "extra/stale-with-later-comprehension": {
+      "values": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "functional/any-all": {
+      "steps": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      },
+      "variables": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "functional/closure-counter": {
+      "output": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      },
+      "ending": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      },
+      "steps": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      },
+      "variables": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "functional/generator-expressions": {
+      "steps": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      },
+      "variables": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "functional/generator-send": {
+      "values": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      }
+    },
+    "functional/higher-order-functions": {
+      "steps": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      },
+      "variables": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      },
+      "values": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "functional/list-comprehensions": {
+      "output": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      },
+      "ending": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      },
+      "steps": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "functional/recursion-returning-functions": {
+      "steps": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      },
+      "values": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "limits/deep-recursion-500": {
+      "ending": {
+        "issues": [
+          39
+        ],
+        "reason": "every step re-serialized: too slow"
+      }
+    },
+    "limits/recursion-error-caught": {
+      "ending": {
+        "issues": [
+          39
+        ],
+        "reason": "every step re-serialized: too slow"
+      }
+    },
+    "limits/recursion-error-uncaught": {
+      "ending": {
+        "issues": [
+          39
+        ],
+        "reason": "every step re-serialized: too slow"
+      }
+    },
+    "numbers/big-int-powers": {
+      "values": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      },
+      "final-state": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      }
+    },
+    "numbers/complex-numbers": {
+      "values": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      },
+      "final-state": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      }
+    },
+    "numbers/divmod-and-pow": {
+      "values": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      },
+      "final-state": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      }
+    },
+    "numbers/factorial-30": {
+      "values": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      },
+      "final-state": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      }
+    },
+    "numbers/float-accumulation-steps": {
+      "values": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      }
+    },
+    "numbers/float-overflow-error": {
+      "values": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      }
+    },
+    "numbers/float-repr": {
+      "values": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      },
+      "final-state": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      }
+    },
+    "numbers/floor-div-mod-negatives": {
+      "values": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      },
+      "final-state": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      }
+    },
+    "numbers/huge-int-variable": {
+      "output": {
+        "issues": [
+          34
+        ],
+        "reason": "the tracer runs on the program's terms"
+      },
+      "ending": {
+        "issues": [
+          34
+        ],
+        "reason": "the tracer runs on the program's terms"
+      },
+      "names": {
+        "issues": [
+          34
+        ],
+        "reason": "the tracer runs on the program's terms"
+      }
+    },
+    "numbers/int-bases-and-bits": {
+      "values": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      },
+      "final-state": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      }
+    },
+    "numbers/int-conversion-truncation": {
+      "values": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      },
+      "final-state": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      }
+    },
+    "numbers/math-functions": {
+      "values": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      },
+      "final-state": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      }
+    },
+    "numbers/negative-zero": {
+      "values": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      },
+      "final-state": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      }
+    },
+    "numbers/round-bankers": {
+      "values": {
+        "issues": [
+          37,
+          33
+        ],
+        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+      },
+      "final-state": {
+        "issues": [
+          37,
+          33
+        ],
+        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "numbers/whole-floats-in-variables": {
+      "values": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      },
+      "final-state": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      }
+    },
+    "oop/abc-abstract": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "oop/attrs-added-after-init": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "oop/bank-account": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "oop/binary-search-tree": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "oop/class-attr-shared-list": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "oop/class-counter-ids": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "oop/container-protocol": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "oop/enum-basics": {
+      "names": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "oop/eq-hash-in-set": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "oop/getattr-fallback": {
+      "output": {
+        "issues": [
+          34
+        ],
+        "reason": "the tracer runs on the program's terms"
+      },
+      "ending": {
+        "issues": [
+          34
+        ],
+        "reason": "the tracer runs on the program's terms"
+      },
+      "steps": {
+        "issues": [
+          34
+        ],
+        "reason": "the tracer runs on the program's terms"
+      },
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "oop/inheritance-super-init": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "oop/instance-vs-class-attr": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "oop/isinstance-and-type": {
+      "steps": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "oop/linked-list": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "oop/lt-sorting-objects": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "oop/multiple-inheritance-mro": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "oop/objects-holding-objects": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "oop/operator-overloading": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      },
+      "values": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      }
+    },
+    "oop/override-polymorphism": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "oop/property-getter-side-effect": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "oop/property-raises": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "oop/property-setter-validation": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      },
+      "values": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      }
+    },
+    "oop/slots-class": {
+      "steps": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      },
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "oop/stack-class": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "oop/staticmethod-classmethod": {
+      "steps": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      },
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "oop/str-vs-repr": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "oop/subclass-builtin-list": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "oop/vars-and-dict": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "print-format/custom-str-repr": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "print-format/end-builds-one-line": {
+      "output": {
+        "issues": [
+          31
+        ],
+        "reason": "output captured at print, not at the streams"
+      }
+    },
+    "print-format/format-error-after-output": {
+      "output": {
+        "issues": [
+          31
+        ],
+        "reason": "output captured at print, not at the streams"
+      }
+    },
+    "print-format/fstring-align-width": {
+      "values": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      },
+      "final-state": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      }
+    },
+    "print-format/multiline-strings": {
+      "output": {
+        "issues": [
+          31
+        ],
+        "reason": "output captured at print, not at the streams"
+      }
+    },
+    "print-format/print-star-list": {
+      "output": {
+        "issues": [
+          31
+        ],
+        "reason": "output captured at print, not at the streams"
+      }
+    },
+    "print-format/redirect-stdout": {
+      "output": {
+        "issues": [
+          31
+        ],
+        "reason": "output captured at print, not at the streams"
+      },
+      "values": {
+        "issues": [
+          31
+        ],
+        "reason": "output captured at print, not at the streams"
+      },
+      "final-state": {
+        "issues": [
+          31
+        ],
+        "reason": "output captured at print, not at the streams"
+      }
+    },
+    "print-format/repr-vs-str": {
+      "values": {
+        "issues": [
+          37,
+          33
+        ],
+        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+      },
+      "final-state": {
+        "issues": [
+          37,
+          33
+        ],
+        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "print-format/sep-and-end": {
+      "output": {
+        "issues": [
+          31
+        ],
+        "reason": "output captured at print, not at the streams"
+      },
+      "ending": {
+        "issues": [
+          31
+        ],
+        "reason": "output captured at print, not at the streams"
+      },
+      "steps": {
+        "issues": [
+          31
+        ],
+        "reason": "output captured at print, not at the streams"
+      },
+      "values": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      }
+    },
+    "print-format/stderr-mixed-with-stdout": {
+      "output": {
+        "issues": [
+          31
+        ],
+        "reason": "output captured at print, not at the streams"
+      }
+    },
+    "print-format/stdout-write": {
+      "output": {
+        "issues": [
+          31
+        ],
+        "reason": "output captured at print, not at the streams"
+      }
+    },
+    "print-format/str-format-method": {
+      "values": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      },
+      "final-state": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      }
+    },
+    "print-format/very-long-lines": {
+      "steps": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "realistic/average-of-n": {
+      "output": {
+        "issues": [
+          32,
+          31
+        ],
+        "reason": "input() raises OSError; output captured at print, not at the streams"
+      },
+      "ending": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      },
+      "steps": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      }
+    },
+    "realistic/balanced-parens": {
+      "steps": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      },
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "realistic/bank-account": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "realistic/bst": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "realistic/caesar-cipher": {
+      "steps": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      },
+      "variables": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      },
+      "values": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "realistic/change-maker": {
+      "output": {
+        "issues": [
+          32,
+          31
+        ],
+        "reason": "input() raises OSError; output captured at print, not at the streams"
+      },
+      "ending": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      },
+      "steps": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      }
+    },
+    "realistic/dice-simulation": {
+      "values": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "realistic/grade-calculator": {
+      "values": {
+        "issues": [
+          37,
+          33
+        ],
+        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "realistic/gradebook-input": {
+      "output": {
+        "issues": [
+          32,
+          31
+        ],
+        "reason": "input() raises OSError; output captured at print, not at the streams"
+      },
+      "ending": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      },
+      "steps": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      }
+    },
+    "realistic/group-students": {
+      "values": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "realistic/guessing-game": {
+      "output": {
+        "issues": [
+          32,
+          31
+        ],
+        "reason": "input() raises OSError; output captured at print, not at the streams"
+      },
+      "ending": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      },
+      "steps": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      }
+    },
+    "realistic/leap-year-input": {
+      "output": {
+        "issues": [
+          32,
+          31
+        ],
+        "reason": "input() raises OSError; output captured at print, not at the streams"
+      },
+      "ending": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      },
+      "steps": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      }
+    },
+    "realistic/linked-list": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "realistic/list-stats": {
+      "values": {
+        "issues": [
+          37,
+          33
+        ],
+        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "realistic/matrix-input": {
+      "output": {
+        "issues": [
+          32,
+          31
+        ],
+        "reason": "input() raises OSError; output captured at print, not at the streams"
+      },
+      "ending": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      },
+      "steps": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      }
+    },
+    "realistic/menu-bank": {
+      "output": {
+        "issues": [
+          32,
+          31
+        ],
+        "reason": "input() raises OSError; output captured at print, not at the streams"
+      },
+      "ending": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      },
+      "steps": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      },
+      "values": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      }
+    },
+    "realistic/password-checker": {
+      "output": {
+        "issues": [
+          32,
+          31
+        ],
+        "reason": "input() raises OSError; output captured at print, not at the streams"
+      },
+      "ending": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      },
+      "steps": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      }
+    },
+    "realistic/permutations": {
+      "steps": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      },
+      "values": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "realistic/printer-queue": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "realistic/quiz-input": {
+      "output": {
+        "issues": [
+          32,
+          31
+        ],
+        "reason": "input() raises OSError; output captured at print, not at the streams"
+      },
+      "ending": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      },
+      "steps": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      }
+    },
+    "realistic/recursion-basics": {
+      "steps": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      },
+      "values": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "realistic/safe-age-input": {
+      "output": {
+        "issues": [
+          32,
+          31
+        ],
+        "reason": "input() raises OSError; output captured at print, not at the streams"
+      },
+      "ending": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      },
+      "steps": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      }
+    },
+    "realistic/selection-sort": {
+      "steps": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "realistic/sentence-analyzer": {
+      "output": {
+        "issues": [
+          32,
+          31
+        ],
+        "reason": "input() raises OSError; output captured at print, not at the streams"
+      },
+      "ending": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      },
+      "steps": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      }
+    },
+    "realistic/shapes-inheritance": {
+      "steps": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      },
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "realistic/shopping-cart": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      },
+      "values": {
+        "issues": [
+          37,
+          33
+        ],
+        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "realistic/shopping-list-input": {
+      "output": {
+        "issues": [
+          32,
+          31
+        ],
+        "reason": "input() raises OSError; output captured at print, not at the streams"
+      },
+      "ending": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      },
+      "steps": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      }
+    },
+    "realistic/split-scores": {
+      "output": {
+        "issues": [
+          32,
+          31
+        ],
+        "reason": "input() raises OSError; output captured at print, not at the streams"
+      },
+      "ending": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      },
+      "steps": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      }
+    },
+    "realistic/student-course": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      },
+      "values": {
+        "issues": [
+          37,
+          33
+        ],
+        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+      },
+      "final-state": {
+        "issues": [
+          37,
+          33
+        ],
+        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "realistic/sum-until-sentinel": {
+      "output": {
+        "issues": [
+          32,
+          31
+        ],
+        "reason": "input() raises OSError; output captured at print, not at the streams"
+      },
+      "ending": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      },
+      "steps": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      }
+    },
+    "realistic/temperature-converter-input": {
+      "output": {
+        "issues": [
+          32,
+          31
+        ],
+        "reason": "input() raises OSError; output captured at print, not at the streams"
+      },
+      "ending": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      },
+      "steps": {
+        "issues": [
+          32
+        ],
+        "reason": "input() raises OSError"
+      }
+    },
+    "realistic/temperature-table": {
+      "values": {
+        "issues": [
+          37,
+          33
+        ],
+        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+      },
+      "final-state": {
+        "issues": [
+          37,
+          33
+        ],
+        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "realistic/vowel-counter": {
+      "values": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "realistic/word-frequency": {
+      "values": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "scope-mutation/class-vs-instance-attributes": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "scope-mutation/copy-vs-deepcopy": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "scope-mutation/is-vs-equals": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "scope-mutation/late-binding-closures": {
+      "steps": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      },
+      "variables": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      },
+      "values": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "scope-mutation/object-cycles": {
+      "steps": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      },
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "scope-mutation/same-object-many-paths": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "scope-mutation/shadowing-builtins": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      },
+      "final-state": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "stdlib/copy-shallow-deep": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "stdlib/heapq-bisect": {
+      "steps": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "stdlib/itertools-misc": {
+      "output": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "stdlib/random-seeded": {
+      "output": {
+        "issues": [
+          33
+        ],
+        "reason": "comprehension display re-runs code / stale f_locals"
+      }
+    },
+    "stdlib/sys-info": {
+      "output": {
+        "issues": [
+          31
+        ],
+        "reason": "output captured at print, not at the streams"
+      },
+      "values": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      },
+      "final-state": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      }
+    }
+  }
+}

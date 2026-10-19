@@ -1,0 +1,21 @@
+{
+ "stdout": "",
+ "stderr": "",
+ "console": [],
+ "exception": null,
+ "traceback": null,
+ "compileError": {
+  "class": "SyntaxError",
+  "msg": "invalid syntax",
+  "line": 10,
+  "offset": 1,
+  "text": "  File \"main.py\", line 10\n    elif score >= 70:\n    ^^^^\nSyntaxError: invalid syntax\n"
+ },
+ "endless": false,
+ "events": [],
+ "truncated": false,
+ "stepEvents": 0,
+ "finalGlobals": {},
+ "continuation": [],
+ "sourceSha256": "6738f194b73445032a9b009f66cf4e9e29464c35d57c8f87a3ff68c3b0798cf9"
+}

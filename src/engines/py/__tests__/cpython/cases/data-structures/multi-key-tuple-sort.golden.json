@@ -1,0 +1,140 @@
+{
+ "stdout": "[('Ann', 'A', 92), ('Bo', 'B', 75), ('Cy', 'B', 88), ('Di', 'A', 92), ('Ed', 'C', 75)]\n[('Ann', 'A', 92), ('Di', 'A', 92), ('Cy', 'B', 88), ('Bo', 'B', 75), ('Ed', 'C', 75)]\n[('Ann', 'A', 92), ('Di', 'A', 92), ('Bo', 'B', 75), ('Cy', 'B', 88), ('Ed', 'C', 75)]\n[('Di', 'A', 92), ('Ann', 'A', 92), ('Cy', 'B', 88), ('Ed', 'C', 75), ('Bo', 'B', 75)]\n['Ann', 'Di', 'Cy', 'Bo', 'Ed']\n[('Ann', 'A', 92), ('Di', 'A', 92), ('Cy', 'B', 88), ('Bo', 'B', 75), ('Ed', 'C', 75)]\nAnn A 92\n(92, 'Ann') ('Ann', 'A', 92)\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[('Ann', 'A', 92), ('Bo', 'B', 75), ('Cy', 'B', 88), ('Di', 'A', 92), ('Ed', 'C', 75)]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[('Ann', 'A', 92), ('Di', 'A', 92), ('Cy', 'B', 88), ('Bo', 'B', 75), ('Ed', 'C', 75)]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[('Ann', 'A', 92), ('Di', 'A', 92), ('Bo', 'B', 75), ('Cy', 'B', 88), ('Ed', 'C', 75)]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[('Di', 'A', 92), ('Ann', 'A', 92), ('Cy', 'B', 88), ('Ed', 'C', 75), ('Bo', 'B', 75)]"
+  },
+  {
+   "stream": "stdout",
+   "text": "['Ann', 'Di', 'Cy', 'Bo', 'Ed']"
+  },
+  {
+   "stream": "stdout",
+   "text": "[('Ann', 'A', 92), ('Di', 'A', 92), ('Cy', 'B', 88), ('Bo', 'B', 75), ('Ed', 'C', 75)]"
+  },
+  {
+   "stream": "stdout",
+   "text": "Ann A 92"
+  },
+  {
+   "stream": "stdout",
+   "text": "(92, 'Ann') ('Ann', 'A', 92)"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"itemgetter":"<type>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"itemgetter":"<type>","students":"<list>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"itemgetter":"<type>","students":"<list>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"itemgetter":"<type>","students":"<list>","by_grade":"<list>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"itemgetter":"<type>","students":"<list>","by_grade":"<list>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"itemgetter":"<type>","students":"<list>","by_grade":"<list>","by_grade_score":"<list>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"itemgetter":"<type>","students":"<list>","by_grade":"<list>","by_grade_score":"<list>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"itemgetter":"<type>","students":"<list>","by_grade":"<list>","by_grade_score":"<list>","staged":"<list>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"itemgetter":"<type>","students":"<list>","by_grade":"<list>","by_grade_score":"<list>","staged":"<list>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"itemgetter":"<type>","students":"<list>","by_grade":"<list>","by_grade_score":"<list>","staged":"<list>"}},
+  {"event":"call","line":19,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"line","line":19,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"return","line":19,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"},"value":"<tuple>"},
+  {"event":"call","line":19,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"line","line":19,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"return","line":19,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"},"value":"<tuple>"},
+  {"event":"call","line":19,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"line","line":19,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"return","line":19,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"},"value":"<tuple>"},
+  {"event":"call","line":19,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"line","line":19,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"return","line":19,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"},"value":"<tuple>"},
+  {"event":"call","line":19,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"line","line":19,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"return","line":19,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"},"value":"<tuple>"},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"itemgetter":"<type>","students":"<list>","by_grade":"<list>","by_grade_score":"<list>","staged":"<list>","mixed":"<list>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"itemgetter":"<type>","students":"<list>","by_grade":"<list>","by_grade_score":"<list>","staged":"<list>","mixed":"<list>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"itemgetter":"<type>","students":"<list>","by_grade":"<list>","by_grade_score":"<list>","staged":"<list>","mixed":"<list>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"itemgetter":"<type>","students":"<list>","by_grade":"<list>","by_grade_score":"<list>","staged":"<list>","mixed":"<list>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"itemgetter":"<type>","students":"<list>","by_grade":"<list>","by_grade_score":"<list>","staged":"<list>","mixed":"<list>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"itemgetter":"<type>","students":"<list>","by_grade":"<list>","by_grade_score":"<list>","staged":"<list>","mixed":"<list>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"itemgetter":"<type>","students":"<list>","by_grade":"<list>","by_grade_score":"<list>","staged":"<list>","mixed":"<list>"}},
+  {"event":"call","line":21,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"line","line":21,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"return","line":21,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"},"value":"'B'"},
+  {"event":"call","line":21,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"line","line":21,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"return","line":21,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"},"value":"'A'"},
+  {"event":"call","line":21,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"line","line":21,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"return","line":21,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"},"value":"'B'"},
+  {"event":"call","line":21,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"line","line":21,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"return","line":21,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"},"value":"'A'"},
+  {"event":"call","line":21,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"line","line":21,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"return","line":21,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"},"value":"'C'"},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"itemgetter":"<type>","students":"<list>","by_grade":"<list>","by_grade_score":"<list>","staged":"<list>","mixed":"<list>"}},
+  {"event":"call","line":22,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"line","line":22,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"return","line":22,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"},"value":"92"},
+  {"event":"call","line":22,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"line","line":22,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"return","line":22,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"},"value":"92"},
+  {"event":"call","line":22,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"line","line":22,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"return","line":22,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"},"value":"88"},
+  {"event":"call","line":22,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"line","line":22,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"return","line":22,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"},"value":"75"},
+  {"event":"call","line":22,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"line","line":22,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"}},
+  {"event":"return","line":22,"stack":["<module>","<lambda>"],"locals":{"t":"<tuple>"},"value":"75"},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"itemgetter":"<type>","students":"<list>","by_grade":"<list>","by_grade_score":"<list>","staged":"<list>","mixed":"<list>"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"itemgetter":"<type>","students":"<list>","by_grade":"<list>","by_grade_score":"<list>","staged":"<list>","mixed":"<list>"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"itemgetter":"<type>","students":"<list>","by_grade":"<list>","by_grade_score":"<list>","staged":"<list>","mixed":"<list>","top":"<tuple>"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"itemgetter":"<type>","students":"<list>","by_grade":"<list>","by_grade_score":"<list>","staged":"<list>","mixed":"<list>","top":"<tuple>","name":"'Ann'","grade":"'A'","score":"92"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"itemgetter":"<type>","students":"<list>","by_grade":"<list>","by_grade_score":"<list>","staged":"<list>","mixed":"<list>","top":"<tuple>","name":"'Ann'","grade":"'A'","score":"92"}},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"itemgetter":"<type>","students":"<list>","by_grade":"<list>","by_grade_score":"<list>","staged":"<list>","mixed":"<list>","top":"<tuple>","name":"'Ann'","grade":"'A'","score":"92","getter":"<itemgetter>"}},
+  {"event":"return","line":28,"stack":["<module>"],"locals":{"itemgetter":"<type>","students":"<list>","by_grade":"<list>","by_grade_score":"<list>","staged":"<list>","mixed":"<list>","top":"<tuple>","name":"'Ann'","grade":"'A'","score":"92","getter":"<itemgetter>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 72,
+ "finalGlobals": {
+  "itemgetter": "<type>",
+  "students": "<list>",
+  "by_grade": "<list>",
+  "by_grade_score": "<list>",
+  "staged": "<list>",
+  "mixed": "<list>",
+  "top": "<tuple>",
+  "name": "'Ann'",
+  "grade": "'A'",
+  "score": "92",
+  "getter": "<itemgetter>"
+ },
+ "continuation": [
+  5,
+  6,
+  7,
+  8,
+  9,
+  10
+ ],
+ "sourceSha256": "b4652f60dfdc0d511947f5336bd1467d303c9f46523866706d55d487ca965c80"
+}

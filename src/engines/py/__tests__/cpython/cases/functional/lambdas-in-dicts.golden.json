@@ -1,0 +1,132 @@
+{
+ "stdout": "49 11 3\n6 + 3 = 9\n6 - 3 = 3\n6 * 3 = 18\n6 / 3 = 2.0\nNone\nHELLO_WORLD\ncalled right away\n<lambda> 4\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "49 11 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "6 + 3 = 9"
+  },
+  {
+   "stream": "stdout",
+   "text": "6 - 3 = 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "6 * 3 = 18"
+  },
+  {
+   "stream": "stdout",
+   "text": "6 / 3 = 2.0"
+  },
+  {
+   "stream": "stdout",
+   "text": "None"
+  },
+  {
+   "stream": "stdout",
+   "text": "HELLO_WORLD"
+  },
+  {
+   "stream": "stdout",
+   "text": "called right away"
+  },
+  {
+   "stream": "stdout",
+   "text": "<lambda> 4"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"square":"<function>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"square":"<function>","add":"<function>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"square":"<function>","add":"<function>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"square":"<function>","add":"<function>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"square":"<function>","add":"<function>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"square":"<function>","add":"<function>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"square":"<function>","add":"<function>","ops":"<dict>"}},
+  {"event":"call","line":2,"stack":["<module>","<lambda>"],"locals":{"x":"7"}},
+  {"event":"line","line":2,"stack":["<module>","<lambda>"],"locals":{"x":"7"}},
+  {"event":"return","line":2,"stack":["<module>","<lambda>"],"locals":{"x":"7"},"value":"49"},
+  {"event":"call","line":3,"stack":["<module>","<lambda>"],"locals":{"a":"1","b":"10"}},
+  {"event":"line","line":3,"stack":["<module>","<lambda>"],"locals":{"a":"1","b":"10"}},
+  {"event":"return","line":3,"stack":["<module>","<lambda>"],"locals":{"a":"1","b":"10"},"value":"11"},
+  {"event":"call","line":3,"stack":["<module>","<lambda>"],"locals":{"a":"1","b":"2"}},
+  {"event":"line","line":3,"stack":["<module>","<lambda>"],"locals":{"a":"1","b":"2"}},
+  {"event":"return","line":3,"stack":["<module>","<lambda>"],"locals":{"a":"1","b":"2"},"value":"3"},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"square":"<function>","add":"<function>","ops":"<dict>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"square":"<function>","add":"<function>","ops":"<dict>","symbol":"'+'"}},
+  {"event":"call","line":5,"stack":["<module>","<lambda>"],"locals":{"a":"6","b":"3"}},
+  {"event":"line","line":5,"stack":["<module>","<lambda>"],"locals":{"a":"6","b":"3"}},
+  {"event":"return","line":5,"stack":["<module>","<lambda>"],"locals":{"a":"6","b":"3"},"value":"9"},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"square":"<function>","add":"<function>","ops":"<dict>","symbol":"'+'"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"square":"<function>","add":"<function>","ops":"<dict>","symbol":"'-'"}},
+  {"event":"call","line":6,"stack":["<module>","<lambda>"],"locals":{"a":"6","b":"3"}},
+  {"event":"line","line":6,"stack":["<module>","<lambda>"],"locals":{"a":"6","b":"3"}},
+  {"event":"return","line":6,"stack":["<module>","<lambda>"],"locals":{"a":"6","b":"3"},"value":"3"},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"square":"<function>","add":"<function>","ops":"<dict>","symbol":"'-'"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"square":"<function>","add":"<function>","ops":"<dict>","symbol":"'*'"}},
+  {"event":"call","line":7,"stack":["<module>","<lambda>"],"locals":{"a":"6","b":"3"}},
+  {"event":"line","line":7,"stack":["<module>","<lambda>"],"locals":{"a":"6","b":"3"}},
+  {"event":"return","line":7,"stack":["<module>","<lambda>"],"locals":{"a":"6","b":"3"},"value":"18"},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"square":"<function>","add":"<function>","ops":"<dict>","symbol":"'*'"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"square":"<function>","add":"<function>","ops":"<dict>","symbol":"'/'"}},
+  {"event":"call","line":8,"stack":["<module>","<lambda>"],"locals":{"a":"6","b":"3"}},
+  {"event":"line","line":8,"stack":["<module>","<lambda>"],"locals":{"a":"6","b":"3"}},
+  {"event":"return","line":8,"stack":["<module>","<lambda>"],"locals":{"a":"6","b":"3"},"value":"2.0"},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"square":"<function>","add":"<function>","ops":"<dict>","symbol":"'/'"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"square":"<function>","add":"<function>","ops":"<dict>","symbol":"'/'"}},
+  {"event":"call","line":8,"stack":["<module>","<lambda>"],"locals":{"a":"1","b":"0"}},
+  {"event":"line","line":8,"stack":["<module>","<lambda>"],"locals":{"a":"1","b":"0"}},
+  {"event":"return","line":8,"stack":["<module>","<lambda>"],"locals":{"a":"1","b":"0"},"value":"None"},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"square":"<function>","add":"<function>","ops":"<dict>","symbol":"'/'"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"square":"<function>","add":"<function>","ops":"<dict>","symbol":"'/'","pipeline":"<list>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"square":"<function>","add":"<function>","ops":"<dict>","symbol":"'/'","pipeline":"<list>","text":"'  hello world  '"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"square":"<function>","add":"<function>","ops":"<dict>","symbol":"'/'","pipeline":"<list>","text":"'  hello world  '","step":"<function>"}},
+  {"event":"call","line":15,"stack":["<module>","<lambda>"],"locals":{"s":"'  hello world  '"}},
+  {"event":"line","line":15,"stack":["<module>","<lambda>"],"locals":{"s":"'  hello world  '"}},
+  {"event":"return","line":15,"stack":["<module>","<lambda>"],"locals":{"s":"'  hello world  '"},"value":"'hello world'"},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"square":"<function>","add":"<function>","ops":"<dict>","symbol":"'/'","pipeline":"<list>","text":"'hello world'","step":"<function>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"square":"<function>","add":"<function>","ops":"<dict>","symbol":"'/'","pipeline":"<list>","text":"'hello world'","step":"<method_descriptor>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"square":"<function>","add":"<function>","ops":"<dict>","symbol":"'/'","pipeline":"<list>","text":"'HELLO WORLD'","step":"<method_descriptor>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"square":"<function>","add":"<function>","ops":"<dict>","symbol":"'/'","pipeline":"<list>","text":"'HELLO WORLD'","step":"<function>"}},
+  {"event":"call","line":15,"stack":["<module>","<lambda>"],"locals":{"s":"'HELLO WORLD'"}},
+  {"event":"line","line":15,"stack":["<module>","<lambda>"],"locals":{"s":"'HELLO WORLD'"}},
+  {"event":"return","line":15,"stack":["<module>","<lambda>"],"locals":{"s":"'HELLO WORLD'"},"value":"'HELLO_WORLD'"},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"square":"<function>","add":"<function>","ops":"<dict>","symbol":"'/'","pipeline":"<list>","text":"'HELLO_WORLD'","step":"<function>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"square":"<function>","add":"<function>","ops":"<dict>","symbol":"'/'","pipeline":"<list>","text":"'HELLO_WORLD'","step":"<function>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"square":"<function>","add":"<function>","ops":"<dict>","symbol":"'/'","pipeline":"<list>","text":"'HELLO_WORLD'","step":"<function>"}},
+  {"event":"call","line":20,"stack":["<module>","<lambda>"],"locals":{}},
+  {"event":"line","line":20,"stack":["<module>","<lambda>"],"locals":{}},
+  {"event":"return","line":20,"stack":["<module>","<lambda>"],"locals":{},"value":"'called right away'"},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"square":"<function>","add":"<function>","ops":"<dict>","symbol":"'/'","pipeline":"<list>","text":"'HELLO_WORLD'","step":"<function>"}},
+  {"event":"return","line":21,"stack":["<module>"],"locals":{"square":"<function>","add":"<function>","ops":"<dict>","symbol":"'/'","pipeline":"<list>","text":"'HELLO_WORLD'","step":"<function>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 65,
+ "finalGlobals": {
+  "square": "<function>",
+  "add": "<function>",
+  "ops": "<dict>",
+  "symbol": "'/'",
+  "pipeline": "<list>",
+  "text": "'HELLO_WORLD'",
+  "step": "<function>"
+ },
+ "continuation": [
+  5,
+  6,
+  7,
+  8,
+  9
+ ],
+ "sourceSha256": "6a20975b4c5500dc203c76d5c867f6838b8309c64d2f1d7bff36600aa9d6cb4e"
+}

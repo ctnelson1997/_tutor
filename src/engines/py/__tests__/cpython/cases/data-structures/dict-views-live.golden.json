@@ -1,0 +1,95 @@
+{
+ "stdout": "dict_keys(['ann', 'ben']) dict_values([20, 31]) dict_items([('ann', 20), ('ben', 31)])\n3 [20, 31, 25] True\n['ben', 'cal'] [('ben', 31), ('cal', 25)]\n['ben'] ['ben', 'cal', 'eve']\n['ben', 'cal'] ['ben', 'cal', 'fay']\n96 ('fay', 40)\n{1, 3} {1, 2, 4} True\ndict_keys([]) 0\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "dict_keys(['ann', 'ben']) dict_values([20, 31]) dict_items([('ann', 20), ('ben', 31)])"
+  },
+  {
+   "stream": "stdout",
+   "text": "3 [20, 31, 25] True"
+  },
+  {
+   "stream": "stdout",
+   "text": "['ben', 'cal'] [('ben', 31), ('cal', 25)]"
+  },
+  {
+   "stream": "stdout",
+   "text": "['ben'] ['ben', 'cal', 'eve']"
+  },
+  {
+   "stream": "stdout",
+   "text": "['ben', 'cal'] ['ben', 'cal', 'fay']"
+  },
+  {
+   "stream": "stdout",
+   "text": "96 ('fay', 40)"
+  },
+  {
+   "stream": "stdout",
+   "text": "{1, 3} {1, 2, 4} True"
+  },
+  {
+   "stream": "stdout",
+   "text": "dict_keys([]) 0"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"ages":"<dict>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"ages":"<dict>","names":"<dict_keys>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"ages":"<dict>","names":"<dict_keys>","years":"<dict_values>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"ages":"<dict>","names":"<dict_keys>","years":"<dict_values>","pairs":"<dict_items>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"ages":"<dict>","names":"<dict_keys>","years":"<dict_values>","pairs":"<dict_items>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"ages":"<dict>","names":"<dict_keys>","years":"<dict_values>","pairs":"<dict_items>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"ages":"<dict>","names":"<dict_keys>","years":"<dict_values>","pairs":"<dict_items>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"ages":"<dict>","names":"<dict_keys>","years":"<dict_values>","pairs":"<dict_items>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"ages":"<dict>","names":"<dict_keys>","years":"<dict_values>","pairs":"<dict_items>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"ages":"<dict>","names":"<dict_keys>","years":"<dict_values>","pairs":"<dict_items>","other":"<dict>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"ages":"<dict>","names":"<dict_keys>","years":"<dict_values>","pairs":"<dict_items>","other":"<dict>","common":"<set>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"ages":"<dict>","names":"<dict_keys>","years":"<dict_values>","pairs":"<dict_items>","other":"<dict>","common":"<set>","either":"<set>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"ages":"<dict>","names":"<dict_keys>","years":"<dict_values>","pairs":"<dict_items>","other":"<dict>","common":"<set>","either":"<set>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"ages":"<dict>","names":"<dict_keys>","years":"<dict_values>","pairs":"<dict_items>","other":"<dict>","common":"<set>","either":"<set>","snapshot":"<list>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"ages":"<dict>","names":"<dict_keys>","years":"<dict_values>","pairs":"<dict_items>","other":"<dict>","common":"<set>","either":"<set>","snapshot":"<list>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"ages":"<dict>","names":"<dict_keys>","years":"<dict_values>","pairs":"<dict_items>","other":"<dict>","common":"<set>","either":"<set>","snapshot":"<list>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"ages":"<dict>","names":"<dict_keys>","years":"<dict_values>","pairs":"<dict_items>","other":"<dict>","common":"<set>","either":"<set>","snapshot":"<list>","total":"96"}},
+  {"event":"call","line":19,"stack":["<module>","<lambda>"],"locals":{"kv":"<tuple>"}},
+  {"event":"line","line":19,"stack":["<module>","<lambda>"],"locals":{"kv":"<tuple>"}},
+  {"event":"return","line":19,"stack":["<module>","<lambda>"],"locals":{"kv":"<tuple>"},"value":"31"},
+  {"event":"call","line":19,"stack":["<module>","<lambda>"],"locals":{"kv":"<tuple>"}},
+  {"event":"line","line":19,"stack":["<module>","<lambda>"],"locals":{"kv":"<tuple>"}},
+  {"event":"return","line":19,"stack":["<module>","<lambda>"],"locals":{"kv":"<tuple>"},"value":"25"},
+  {"event":"call","line":19,"stack":["<module>","<lambda>"],"locals":{"kv":"<tuple>"}},
+  {"event":"line","line":19,"stack":["<module>","<lambda>"],"locals":{"kv":"<tuple>"}},
+  {"event":"return","line":19,"stack":["<module>","<lambda>"],"locals":{"kv":"<tuple>"},"value":"40"},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"ages":"<dict>","names":"<dict_keys>","years":"<dict_values>","pairs":"<dict_items>","other":"<dict>","common":"<set>","either":"<set>","snapshot":"<list>","total":"96"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"ages":"<dict>","names":"<dict_keys>","years":"<dict_values>","pairs":"<dict_items>","other":"<dict>","common":"<set>","either":"<set>","snapshot":"<list>","total":"96","scores":"<dict>"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"ages":"<dict>","names":"<dict_keys>","years":"<dict_values>","pairs":"<dict_items>","other":"<dict>","common":"<set>","either":"<set>","snapshot":"<list>","total":"96","scores":"<dict>","ks":"<dict_keys>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"ages":"<dict>","names":"<dict_keys>","years":"<dict_values>","pairs":"<dict_items>","other":"<dict>","common":"<set>","either":"<set>","snapshot":"<list>","total":"96","scores":"<dict>","ks":"<dict_keys>"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"ages":"<dict>","names":"<dict_keys>","years":"<dict_values>","pairs":"<dict_items>","other":"<dict>","common":"<set>","either":"<set>","snapshot":"<list>","total":"96","scores":"<dict>","ks":"<dict_keys>"}},
+  {"event":"return","line":24,"stack":["<module>"],"locals":{"ages":"<dict>","names":"<dict_keys>","years":"<dict_values>","pairs":"<dict_items>","other":"<dict>","common":"<set>","either":"<set>","snapshot":"<list>","total":"96","scores":"<dict>","ks":"<dict_keys>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 34,
+ "finalGlobals": {
+  "ages": "<dict>",
+  "names": "<dict_keys>",
+  "years": "<dict_values>",
+  "pairs": "<dict_items>",
+  "other": "<dict>",
+  "common": "<set>",
+  "either": "<set>",
+  "snapshot": "<list>",
+  "total": "96",
+  "scores": "<dict>",
+  "ks": "<dict_keys>"
+ },
+ "continuation": [],
+ "sourceSha256": "021a01c84ec9618cd5b73b9b7e8f1c1442806a1022f8be133d7993e31905758a"
+}

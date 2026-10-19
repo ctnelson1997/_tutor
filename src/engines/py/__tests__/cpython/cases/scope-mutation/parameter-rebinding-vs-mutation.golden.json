@@ -1,0 +1,87 @@
+{
+ "stdout": "[1] [9, 9]\n[1, 9]\n6 5\n[1, 9, 'kept']\n{'a': 1, 'new': True}\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[1] [9, 9]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[1, 9]"
+  },
+  {
+   "stream": "stdout",
+   "text": "6 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "[1, 9, 'kept']"
+  },
+  {
+   "stream": "stdout",
+   "text": "{'a': 1, 'new': True}"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"rebind":"<function>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"rebind":"<function>","mutate":"<function>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"rebind":"<function>","mutate":"<function>","bump":"<function>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"rebind":"<function>","mutate":"<function>","bump":"<function>","mutate_then_rebind":"<function>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"rebind":"<function>","mutate":"<function>","bump":"<function>","mutate_then_rebind":"<function>","data":"<list>"}},
+  {"event":"call","line":2,"stack":["<module>","rebind"],"locals":{"lst":"<list>"}},
+  {"event":"line","line":3,"stack":["<module>","rebind"],"locals":{"lst":"<list>"}},
+  {"event":"line","line":4,"stack":["<module>","rebind"],"locals":{"lst":"<list>"}},
+  {"event":"return","line":4,"stack":["<module>","rebind"],"locals":{"lst":"<list>"},"value":"<list>"},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"rebind":"<function>","mutate":"<function>","bump":"<function>","mutate_then_rebind":"<function>","data":"<list>","r":"<list>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"rebind":"<function>","mutate":"<function>","bump":"<function>","mutate_then_rebind":"<function>","data":"<list>","r":"<list>"}},
+  {"event":"call","line":6,"stack":["<module>","mutate"],"locals":{"lst":"<list>"}},
+  {"event":"line","line":7,"stack":["<module>","mutate"],"locals":{"lst":"<list>"}},
+  {"event":"return","line":7,"stack":["<module>","mutate"],"locals":{"lst":"<list>"},"value":"None"},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"rebind":"<function>","mutate":"<function>","bump":"<function>","mutate_then_rebind":"<function>","data":"<list>","r":"<list>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"rebind":"<function>","mutate":"<function>","bump":"<function>","mutate_then_rebind":"<function>","data":"<list>","r":"<list>"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"rebind":"<function>","mutate":"<function>","bump":"<function>","mutate_then_rebind":"<function>","data":"<list>","r":"<list>","num":"5"}},
+  {"event":"call","line":9,"stack":["<module>","bump"],"locals":{"n":"5"}},
+  {"event":"line","line":10,"stack":["<module>","bump"],"locals":{"n":"5"}},
+  {"event":"line","line":11,"stack":["<module>","bump"],"locals":{"n":"6"}},
+  {"event":"return","line":11,"stack":["<module>","bump"],"locals":{"n":"6"},"value":"6"},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"rebind":"<function>","mutate":"<function>","bump":"<function>","mutate_then_rebind":"<function>","data":"<list>","r":"<list>","num":"5"}},
+  {"event":"call","line":13,"stack":["<module>","mutate_then_rebind"],"locals":{"lst":"<list>"}},
+  {"event":"line","line":14,"stack":["<module>","mutate_then_rebind"],"locals":{"lst":"<list>"}},
+  {"event":"line","line":15,"stack":["<module>","mutate_then_rebind"],"locals":{"lst":"<list>"}},
+  {"event":"line","line":16,"stack":["<module>","mutate_then_rebind"],"locals":{"lst":"<list>"}},
+  {"event":"return","line":16,"stack":["<module>","mutate_then_rebind"],"locals":{"lst":"<list>"},"value":"None"},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"rebind":"<function>","mutate":"<function>","bump":"<function>","mutate_then_rebind":"<function>","data":"<list>","r":"<list>","num":"5"}},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"rebind":"<function>","mutate":"<function>","bump":"<function>","mutate_then_rebind":"<function>","data":"<list>","r":"<list>","num":"5"}},
+  {"event":"line","line":33,"stack":["<module>"],"locals":{"rebind":"<function>","mutate":"<function>","bump":"<function>","mutate_then_rebind":"<function>","data":"<list>","r":"<list>","num":"5","update_dict":"<function>"}},
+  {"event":"line","line":34,"stack":["<module>"],"locals":{"rebind":"<function>","mutate":"<function>","bump":"<function>","mutate_then_rebind":"<function>","data":"<list>","r":"<list>","num":"5","update_dict":"<function>","config":"<dict>"}},
+  {"event":"call","line":28,"stack":["<module>","update_dict"],"locals":{"d":"<dict>"}},
+  {"event":"line","line":29,"stack":["<module>","update_dict"],"locals":{"d":"<dict>"}},
+  {"event":"line","line":30,"stack":["<module>","update_dict"],"locals":{"d":"<dict>"}},
+  {"event":"line","line":31,"stack":["<module>","update_dict"],"locals":{"d":"<dict>"}},
+  {"event":"return","line":31,"stack":["<module>","update_dict"],"locals":{"d":"<dict>"},"value":"None"},
+  {"event":"line","line":35,"stack":["<module>"],"locals":{"rebind":"<function>","mutate":"<function>","bump":"<function>","mutate_then_rebind":"<function>","data":"<list>","r":"<list>","num":"5","update_dict":"<function>","config":"<dict>"}},
+  {"event":"return","line":35,"stack":["<module>"],"locals":{"rebind":"<function>","mutate":"<function>","bump":"<function>","mutate_then_rebind":"<function>","data":"<list>","r":"<list>","num":"5","update_dict":"<function>","config":"<dict>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 40,
+ "finalGlobals": {
+  "rebind": "<function>",
+  "mutate": "<function>",
+  "bump": "<function>",
+  "mutate_then_rebind": "<function>",
+  "data": "<list>",
+  "r": "<list>",
+  "num": "5",
+  "update_dict": "<function>",
+  "config": "<dict>"
+ },
+ "continuation": [],
+ "sourceSha256": "a59b426e52c3aaee66d8a2b49eca96bcdba8e235e9107a29d006069ec95202bc"
+}

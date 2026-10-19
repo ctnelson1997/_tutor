@@ -1,0 +1,100 @@
+{
+ "stdout": "deque([1, 2, 3]) 0 4 deque([1, 2, 3])\ndeque([3, 1, 2])\ndeque(['shop', 'cart', 'pay'], maxlen=3) ['shop', 'cart', 'pay'] 3\nPoint(x=3, y=4) 3 4 7 ('x', 'y')\nPoint(x=3, y=10) {'x': 3, 'y': 4} True\n[Card(rank='A', suit='S'), Card(rank='10', suit='H')] [Card(rank='10', suit='H'), Card(rank='A', suit='S')]\nOrderedDict({'c': 3, 'a': 1}) ['b', 'c', 'a'] ('b', 2)\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "deque([1, 2, 3]) 0 4 deque([1, 2, 3])"
+  },
+  {
+   "stream": "stdout",
+   "text": "deque([3, 1, 2])"
+  },
+  {
+   "stream": "stdout",
+   "text": "deque(['shop', 'cart', 'pay'], maxlen=3) ['shop', 'cart', 'pay'] 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "Point(x=3, y=4) 3 4 7 ('x', 'y')"
+  },
+  {
+   "stream": "stdout",
+   "text": "Point(x=3, y=10) {'x': 3, 'y': 4} True"
+  },
+  {
+   "stream": "stdout",
+   "text": "[Card(rank='A', suit='S'), Card(rank='10', suit='H')] [Card(rank='10', suit='H'), Card(rank='A', suit='S')]"
+  },
+  {
+   "stream": "stdout",
+   "text": "OrderedDict({'c': 3, 'a': 1}) ['b', 'c', 'a'] ('b', 2)"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>","recent":"<deque>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>","recent":"<deque>","page":"'home'"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>","recent":"<deque>","page":"'home'"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>","recent":"<deque>","page":"'about'"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>","recent":"<deque>","page":"'about'"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>","recent":"<deque>","page":"'shop'"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>","recent":"<deque>","page":"'shop'"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>","recent":"<deque>","page":"'cart'"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>","recent":"<deque>","page":"'cart'"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>","recent":"<deque>","page":"'pay'"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>","recent":"<deque>","page":"'pay'"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>","recent":"<deque>","page":"'pay'"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>","recent":"<deque>","page":"'pay'"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>","recent":"<deque>","page":"'pay'","Point":"<type>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>","recent":"<deque>","page":"'pay'","Point":"<type>","p":"<Point>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>","recent":"<deque>","page":"'pay'","Point":"<type>","p":"<Point>","x":"3","y":"4"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>","recent":"<deque>","page":"'pay'","Point":"<type>","p":"<Point>","x":"3","y":"4"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>","recent":"<deque>","page":"'pay'","Point":"<type>","p":"<Point>","x":"3","y":"4","q2":"<Point>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>","recent":"<deque>","page":"'pay'","Point":"<type>","p":"<Point>","x":"3","y":"4","q2":"<Point>"}},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>","recent":"<deque>","page":"'pay'","Point":"<type>","p":"<Point>","x":"3","y":"4","q2":"<Point>","Card":"<type>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>","recent":"<deque>","page":"'pay'","Point":"<type>","p":"<Point>","x":"3","y":"4","q2":"<Point>","Card":"<type>","hand":"<list>"}},
+  {"event":"call","line":23,"stack":["<module>","<lambda>"],"locals":{"c":"<Card>"}},
+  {"event":"line","line":23,"stack":["<module>","<lambda>"],"locals":{"c":"<Card>"}},
+  {"event":"return","line":23,"stack":["<module>","<lambda>"],"locals":{"c":"<Card>"},"value":"'S'"},
+  {"event":"call","line":23,"stack":["<module>","<lambda>"],"locals":{"c":"<Card>"}},
+  {"event":"line","line":23,"stack":["<module>","<lambda>"],"locals":{"c":"<Card>"}},
+  {"event":"return","line":23,"stack":["<module>","<lambda>"],"locals":{"c":"<Card>"},"value":"'H'"},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>","recent":"<deque>","page":"'pay'","Point":"<type>","p":"<Point>","x":"3","y":"4","q2":"<Point>","Card":"<type>","hand":"<list>"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>","recent":"<deque>","page":"'pay'","Point":"<type>","p":"<Point>","x":"3","y":"4","q2":"<Point>","Card":"<type>","hand":"<list>","od":"<OrderedDict>"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>","recent":"<deque>","page":"'pay'","Point":"<type>","p":"<Point>","x":"3","y":"4","q2":"<Point>","Card":"<type>","hand":"<list>","od":"<OrderedDict>"}},
+  {"event":"return","line":27,"stack":["<module>"],"locals":{"deque":"<type>","namedtuple":"<function>","OrderedDict":"<type>","q":"<deque>","recent":"<deque>","page":"'pay'","Point":"<type>","p":"<Point>","x":"3","y":"4","q2":"<Point>","Card":"<type>","hand":"<list>","od":"<OrderedDict>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 40,
+ "finalGlobals": {
+  "deque": "<type>",
+  "namedtuple": "<function>",
+  "OrderedDict": "<type>",
+  "q": "<deque>",
+  "recent": "<deque>",
+  "page": "'pay'",
+  "Point": "<type>",
+  "p": "<Point>",
+  "x": "3",
+  "y": "4",
+  "q2": "<Point>",
+  "Card": "<type>",
+  "hand": "<list>",
+  "od": "<OrderedDict>"
+ },
+ "continuation": [],
+ "sourceSha256": "afd65862e7b82de108bb4199ec693068f16b968e358b7a19227bfe1abc803336"
+}

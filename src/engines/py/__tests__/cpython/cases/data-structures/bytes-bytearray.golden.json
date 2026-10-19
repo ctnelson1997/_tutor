@@ -1,0 +1,104 @@
+{
+ "stdout": "b'Hi!' 72 33 b'Hi' [72, 105, 33]\nb'caf\\xc3\\xa9' 4 5\ncafé 636166c3a9 b'Hi'\nbytearray(b'Jello!?!') 8\nbytearray(b'JEElo!?') JEElo!? b'JEElo!?'\nb'\\x00\\x00\\x00\\x00' bytearray(b'ABCDE') bytearray(b'abcde')\nb'abcd' b'xxx' True True\nTypeError: 'bytes' object does not support item assignment\nValueError: byte must be in range(0, 256)\nb'\\x00\\n\\x7f\\x80\\xff' [b'\\x00\\n', b'\\x80\\xff'] True\nb'it\\'s \"q\"\\\\' 9\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "b'Hi!' 72 33 b'Hi' [72, 105, 33]"
+  },
+  {
+   "stream": "stdout",
+   "text": "b'caf\\xc3\\xa9' 4 5"
+  },
+  {
+   "stream": "stdout",
+   "text": "café 636166c3a9 b'Hi'"
+  },
+  {
+   "stream": "stdout",
+   "text": "bytearray(b'Jello!?!') 8"
+  },
+  {
+   "stream": "stdout",
+   "text": "bytearray(b'JEElo!?') JEElo!? b'JEElo!?'"
+  },
+  {
+   "stream": "stdout",
+   "text": "b'\\x00\\x00\\x00\\x00' bytearray(b'ABCDE') bytearray(b'abcde')"
+  },
+  {
+   "stream": "stdout",
+   "text": "b'abcd' b'xxx' True True"
+  },
+  {
+   "stream": "stdout",
+   "text": "TypeError: 'bytes' object does not support item assignment"
+  },
+  {
+   "stream": "stdout",
+   "text": "ValueError: byte must be in range(0, 256)"
+  },
+  {
+   "stream": "stdout",
+   "text": "b'\\x00\\n\\x7f\\x80\\xff' [b'\\x00\\n', b'\\x80\\xff'] True"
+  },
+  {
+   "stream": "stdout",
+   "text": "b'it\\'s \"q\"\\\\' 9"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"data":"<bytes>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"data":"<bytes>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'","encoded":"<bytes>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'","encoded":"<bytes>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'","encoded":"<bytes>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'","encoded":"<bytes>","buf":"<bytearray>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'","encoded":"<bytes>","buf":"<bytearray>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'","encoded":"<bytes>","buf":"<bytearray>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'","encoded":"<bytes>","buf":"<bytearray>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'","encoded":"<bytes>","buf":"<bytearray>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'","encoded":"<bytes>","buf":"<bytearray>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'","encoded":"<bytes>","buf":"<bytearray>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'","encoded":"<bytes>","buf":"<bytearray>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'","encoded":"<bytes>","buf":"<bytearray>","zeros":"<bytes>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'","encoded":"<bytes>","buf":"<bytearray>","zeros":"<bytes>","counted":"<bytearray>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'","encoded":"<bytes>","buf":"<bytearray>","zeros":"<bytes>","counted":"<bytearray>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'","encoded":"<bytes>","buf":"<bytearray>","zeros":"<bytes>","counted":"<bytearray>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'","encoded":"<bytes>","buf":"<bytearray>","zeros":"<bytes>","counted":"<bytearray>"}},
+  {"event":"exception","line":21,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'","encoded":"<bytes>","buf":"<bytearray>","zeros":"<bytes>","counted":"<bytearray>"},"exc":"TypeError"},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'","encoded":"<bytes>","buf":"<bytearray>","zeros":"<bytes>","counted":"<bytearray>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'","encoded":"<bytes>","buf":"<bytearray>","zeros":"<bytes>","counted":"<bytearray>","e":"<TypeError>"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'","encoded":"<bytes>","buf":"<bytearray>","zeros":"<bytes>","counted":"<bytearray>"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'","encoded":"<bytes>","buf":"<bytearray>","zeros":"<bytes>","counted":"<bytearray>"}},
+  {"event":"exception","line":25,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'","encoded":"<bytes>","buf":"<bytearray>","zeros":"<bytes>","counted":"<bytearray>"},"exc":"ValueError"},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'","encoded":"<bytes>","buf":"<bytearray>","zeros":"<bytes>","counted":"<bytearray>"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'","encoded":"<bytes>","buf":"<bytearray>","zeros":"<bytes>","counted":"<bytearray>","e":"<ValueError>"}},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'","encoded":"<bytes>","buf":"<bytearray>","zeros":"<bytes>","counted":"<bytearray>"}},
+  {"event":"line","line":29,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'","encoded":"<bytes>","buf":"<bytearray>","zeros":"<bytes>","counted":"<bytearray>","raw":"<bytes>"}},
+  {"event":"line","line":30,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'","encoded":"<bytes>","buf":"<bytearray>","zeros":"<bytes>","counted":"<bytearray>","raw":"<bytes>"}},
+  {"event":"line","line":31,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'","encoded":"<bytes>","buf":"<bytearray>","zeros":"<bytes>","counted":"<bytearray>","raw":"<bytes>","quote":"<bytes>"}},
+  {"event":"return","line":31,"stack":["<module>"],"locals":{"data":"<bytes>","text":"'café'","encoded":"<bytes>","buf":"<bytearray>","zeros":"<bytes>","counted":"<bytearray>","raw":"<bytes>","quote":"<bytes>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 32,
+ "finalGlobals": {
+  "data": "<bytes>",
+  "text": "'café'",
+  "encoded": "<bytes>",
+  "buf": "<bytearray>",
+  "zeros": "<bytes>",
+  "counted": "<bytearray>",
+  "raw": "<bytes>",
+  "quote": "<bytes>"
+ },
+ "continuation": [],
+ "sourceSha256": "16c8a3d375d5277b9e50040cc8a8a5bbd85699728fdcd38a26adde095efe9507"
+}

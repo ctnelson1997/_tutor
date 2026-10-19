@@ -1,0 +1,113 @@
+{
+ "stdout": "[['X', 'O', ' '], [' ', 'X', 'O'], ['O', ' ', 'X']]\nX|O| \n |X|O\nO| |X\n{'title': \"Don't Panic\", 'tags': ['sci-fi', 'comedy'], 'meta': {'pages': 224, 'isbn': None}}\n{'pages': 224, 'isbn': None}\n[('a', 1), ('b\\nc', 2), ('q\"q', 3)]\n[1, [2, [3, [4, ['deep']]]]]\ndeep\n{'tuple': (1,), 'empty': (), 'list': [], 'set': {1, 2, 3}, 'frozen': frozenset({5})}\nset() [set()] {'s': set()}\nAl ['py', 'js'] 2\nBea [] 0\n[{'name': 'Al', 'langs': ['py', 'js']}, {'name': 'Bea', 'langs': []}]\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[['X', 'O', ' '], [' ', 'X', 'O'], ['O', ' ', 'X']]"
+  },
+  {
+   "stream": "stdout",
+   "text": "X|O| "
+  },
+  {
+   "stream": "stdout",
+   "text": " |X|O"
+  },
+  {
+   "stream": "stdout",
+   "text": "O| |X"
+  },
+  {
+   "stream": "stdout",
+   "text": "{'title': \"Don't Panic\", 'tags': ['sci-fi', 'comedy'], 'meta': {'pages': 224, 'isbn': None}}"
+  },
+  {
+   "stream": "stdout",
+   "text": "{'pages': 224, 'isbn': None}"
+  },
+  {
+   "stream": "stdout",
+   "text": "[('a', 1), ('b\\nc', 2), ('q\"q', 3)]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[1, [2, [3, [4, ['deep']]]]]"
+  },
+  {
+   "stream": "stdout",
+   "text": "deep"
+  },
+  {
+   "stream": "stdout",
+   "text": "{'tuple': (1,), 'empty': (), 'list': [], 'set': {1, 2, 3}, 'frozen': frozenset({5})}"
+  },
+  {
+   "stream": "stdout",
+   "text": "set() [set()] {'s': set()}"
+  },
+  {
+   "stream": "stdout",
+   "text": "Al ['py', 'js'] 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "Bea [] 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "[{'name': 'Al', 'langs': ['py', 'js']}, {'name': 'Bea', 'langs': []}]"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"grid":"<list>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"grid":"<list>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"grid":"<list>","row":"<list>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"grid":"<list>","row":"<list>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"grid":"<list>","row":"<list>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"grid":"<list>","row":"<list>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"grid":"<list>","row":"<list>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"grid":"<list>","row":"<list>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"grid":"<list>","row":"<list>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"grid":"<list>","row":"<list>","book":"<dict>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"grid":"<list>","row":"<list>","book":"<dict>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"grid":"<list>","row":"<list>","book":"<dict>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"grid":"<list>","row":"<list>","book":"<dict>","pairs":"<list>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"grid":"<list>","row":"<list>","book":"<dict>","pairs":"<list>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"grid":"<list>","row":"<list>","book":"<dict>","pairs":"<list>","nested":"<list>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"grid":"<list>","row":"<list>","book":"<dict>","pairs":"<list>","nested":"<list>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"grid":"<list>","row":"<list>","book":"<dict>","pairs":"<list>","nested":"<list>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"grid":"<list>","row":"<list>","book":"<dict>","pairs":"<list>","nested":"<list>","mixed":"<dict>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"grid":"<list>","row":"<list>","book":"<dict>","pairs":"<list>","nested":"<list>","mixed":"<dict>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"grid":"<list>","row":"<list>","book":"<dict>","pairs":"<list>","nested":"<list>","mixed":"<dict>","emptyset":"<set>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"grid":"<list>","row":"<list>","book":"<dict>","pairs":"<list>","nested":"<list>","mixed":"<dict>","emptyset":"<set>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"grid":"<list>","row":"<list>","book":"<dict>","pairs":"<list>","nested":"<list>","mixed":"<dict>","emptyset":"<set>","records":"<list>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"grid":"<list>","row":"<list>","book":"<dict>","pairs":"<list>","nested":"<list>","mixed":"<dict>","emptyset":"<set>","records":"<list>","r":"<dict>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"grid":"<list>","row":"<list>","book":"<dict>","pairs":"<list>","nested":"<list>","mixed":"<dict>","emptyset":"<set>","records":"<list>","r":"<dict>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"grid":"<list>","row":"<list>","book":"<dict>","pairs":"<list>","nested":"<list>","mixed":"<dict>","emptyset":"<set>","records":"<list>","r":"<dict>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"grid":"<list>","row":"<list>","book":"<dict>","pairs":"<list>","nested":"<list>","mixed":"<dict>","emptyset":"<set>","records":"<list>","r":"<dict>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"grid":"<list>","row":"<list>","book":"<dict>","pairs":"<list>","nested":"<list>","mixed":"<dict>","emptyset":"<set>","records":"<list>","r":"<dict>"}},
+  {"event":"return","line":21,"stack":["<module>"],"locals":{"grid":"<list>","row":"<list>","book":"<dict>","pairs":"<list>","nested":"<list>","mixed":"<dict>","emptyset":"<set>","records":"<list>","r":"<dict>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 30,
+ "finalGlobals": {
+  "grid": "<list>",
+  "row": "<list>",
+  "book": "<dict>",
+  "pairs": "<list>",
+  "nested": "<list>",
+  "mixed": "<dict>",
+  "emptyset": "<set>",
+  "records": "<list>",
+  "r": "<dict>"
+ },
+ "continuation": [],
+ "sourceSha256": "5650a3a28c51523e68e572920e9b68158d48bc437d893a634886684768fd5193"
+}

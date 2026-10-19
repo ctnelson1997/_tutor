@@ -1,0 +1,145 @@
+{
+ "stdout": "a ['apple', 'avocado']\nb ['banana', 'blueberry']\nc ['cherry']\na ['apricot']\n--- sorted first\na ['apple', 'apricot', 'avocado']\nb ['banana', 'blueberry']\nc ['cherry']\n[('a', 3), ('b', 1), ('c', 2), ('d', 4)]\n[1, 3, 6, 10, 15]\n[1, 2, 6, 24, 120]\n[3, 3, 4, 4, 5, 9, 9]\n[100, 110, 107, 103]\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "a ['apple', 'avocado']"
+  },
+  {
+   "stream": "stdout",
+   "text": "b ['banana', 'blueberry']"
+  },
+  {
+   "stream": "stdout",
+   "text": "c ['cherry']"
+  },
+  {
+   "stream": "stdout",
+   "text": "a ['apricot']"
+  },
+  {
+   "stream": "stdout",
+   "text": "--- sorted first"
+  },
+  {
+   "stream": "stdout",
+   "text": "a ['apple', 'apricot', 'avocado']"
+  },
+  {
+   "stream": "stdout",
+   "text": "b ['banana', 'blueberry']"
+  },
+  {
+   "stream": "stdout",
+   "text": "c ['cherry']"
+  },
+  {
+   "stream": "stdout",
+   "text": "[('a', 3), ('b', 1), ('c', 2), ('d', 4)]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[1, 3, 6, 10, 15]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[1, 2, 6, 24, 120]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[3, 3, 4, 4, 5, 9, 9]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[100, 110, 107, 103]"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>","operator":"<module>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>","operator":"<module>","words":"<list>"}},
+  {"event":"call","line":6,"stack":["<module>","<lambda>"],"locals":{"w":"'apple'"}},
+  {"event":"line","line":6,"stack":["<module>","<lambda>"],"locals":{"w":"'apple'"}},
+  {"event":"return","line":6,"stack":["<module>","<lambda>"],"locals":{"w":"'apple'"},"value":"'a'"},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>","operator":"<module>","words":"<list>","letter":"'a'","group":"<_grouper>"}},
+  {"event":"call","line":6,"stack":["<module>","<lambda>"],"locals":{"w":"'avocado'"}},
+  {"event":"line","line":6,"stack":["<module>","<lambda>"],"locals":{"w":"'avocado'"}},
+  {"event":"return","line":6,"stack":["<module>","<lambda>"],"locals":{"w":"'avocado'"},"value":"'a'"},
+  {"event":"call","line":6,"stack":["<module>","<lambda>"],"locals":{"w":"'banana'"}},
+  {"event":"line","line":6,"stack":["<module>","<lambda>"],"locals":{"w":"'banana'"}},
+  {"event":"return","line":6,"stack":["<module>","<lambda>"],"locals":{"w":"'banana'"},"value":"'b'"},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>","operator":"<module>","words":"<list>","letter":"'a'","group":"<_grouper>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>","operator":"<module>","words":"<list>","letter":"'b'","group":"<_grouper>"}},
+  {"event":"call","line":6,"stack":["<module>","<lambda>"],"locals":{"w":"'blueberry'"}},
+  {"event":"line","line":6,"stack":["<module>","<lambda>"],"locals":{"w":"'blueberry'"}},
+  {"event":"return","line":6,"stack":["<module>","<lambda>"],"locals":{"w":"'blueberry'"},"value":"'b'"},
+  {"event":"call","line":6,"stack":["<module>","<lambda>"],"locals":{"w":"'cherry'"}},
+  {"event":"line","line":6,"stack":["<module>","<lambda>"],"locals":{"w":"'cherry'"}},
+  {"event":"return","line":6,"stack":["<module>","<lambda>"],"locals":{"w":"'cherry'"},"value":"'c'"},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>","operator":"<module>","words":"<list>","letter":"'b'","group":"<_grouper>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>","operator":"<module>","words":"<list>","letter":"'c'","group":"<_grouper>"}},
+  {"event":"call","line":6,"stack":["<module>","<lambda>"],"locals":{"w":"'apricot'"}},
+  {"event":"line","line":6,"stack":["<module>","<lambda>"],"locals":{"w":"'apricot'"}},
+  {"event":"return","line":6,"stack":["<module>","<lambda>"],"locals":{"w":"'apricot'"},"value":"'a'"},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>","operator":"<module>","words":"<list>","letter":"'c'","group":"<_grouper>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>","operator":"<module>","words":"<list>","letter":"'a'","group":"<_grouper>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>","operator":"<module>","words":"<list>","letter":"'a'","group":"<_grouper>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>","operator":"<module>","words":"<list>","letter":"'a'","group":"<_grouper>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>","operator":"<module>","words":"<list>","letter":"'a'","group":"<_grouper>"}},
+  {"event":"call","line":9,"stack":["<module>","<lambda>"],"locals":{"w":"'apple'"}},
+  {"event":"line","line":9,"stack":["<module>","<lambda>"],"locals":{"w":"'apple'"}},
+  {"event":"return","line":9,"stack":["<module>","<lambda>"],"locals":{"w":"'apple'"},"value":"'a'"},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>","operator":"<module>","words":"<list>","letter":"'a'","group":"<_grouper>"}},
+  {"event":"call","line":9,"stack":["<module>","<lambda>"],"locals":{"w":"'apricot'"}},
+  {"event":"line","line":9,"stack":["<module>","<lambda>"],"locals":{"w":"'apricot'"}},
+  {"event":"return","line":9,"stack":["<module>","<lambda>"],"locals":{"w":"'apricot'"},"value":"'a'"},
+  {"event":"call","line":9,"stack":["<module>","<lambda>"],"locals":{"w":"'avocado'"}},
+  {"event":"line","line":9,"stack":["<module>","<lambda>"],"locals":{"w":"'avocado'"}},
+  {"event":"return","line":9,"stack":["<module>","<lambda>"],"locals":{"w":"'avocado'"},"value":"'a'"},
+  {"event":"call","line":9,"stack":["<module>","<lambda>"],"locals":{"w":"'banana'"}},
+  {"event":"line","line":9,"stack":["<module>","<lambda>"],"locals":{"w":"'banana'"}},
+  {"event":"return","line":9,"stack":["<module>","<lambda>"],"locals":{"w":"'banana'"},"value":"'b'"},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>","operator":"<module>","words":"<list>","letter":"'a'","group":"<_grouper>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>","operator":"<module>","words":"<list>","letter":"'b'","group":"<_grouper>"}},
+  {"event":"call","line":9,"stack":["<module>","<lambda>"],"locals":{"w":"'blueberry'"}},
+  {"event":"line","line":9,"stack":["<module>","<lambda>"],"locals":{"w":"'blueberry'"}},
+  {"event":"return","line":9,"stack":["<module>","<lambda>"],"locals":{"w":"'blueberry'"},"value":"'b'"},
+  {"event":"call","line":9,"stack":["<module>","<lambda>"],"locals":{"w":"'cherry'"}},
+  {"event":"line","line":9,"stack":["<module>","<lambda>"],"locals":{"w":"'cherry'"}},
+  {"event":"return","line":9,"stack":["<module>","<lambda>"],"locals":{"w":"'cherry'"},"value":"'c'"},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>","operator":"<module>","words":"<list>","letter":"'b'","group":"<_grouper>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>","operator":"<module>","words":"<list>","letter":"'c'","group":"<_grouper>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>","operator":"<module>","words":"<list>","letter":"'c'","group":"<_grouper>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>","operator":"<module>","words":"<list>","letter":"'c'","group":"<_grouper>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>","operator":"<module>","words":"<list>","letter":"'c'","group":"<_grouper>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>","operator":"<module>","words":"<list>","letter":"'c'","group":"<_grouper>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>","operator":"<module>","words":"<list>","letter":"'c'","group":"<_grouper>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>","operator":"<module>","words":"<list>","letter":"'c'","group":"<_grouper>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>","operator":"<module>","words":"<list>","letter":"'c'","group":"<_grouper>","runs":"<list>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>","operator":"<module>","words":"<list>","letter":"'c'","group":"<_grouper>","runs":"<list>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>","operator":"<module>","words":"<list>","letter":"'c'","group":"<_grouper>","runs":"<list>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>","operator":"<module>","words":"<list>","letter":"'c'","group":"<_grouper>","runs":"<list>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>","operator":"<module>","words":"<list>","letter":"'c'","group":"<_grouper>","runs":"<list>"}},
+  {"event":"return","line":16,"stack":["<module>"],"locals":{"groupby":"<type>","accumulate":"<type>","operator":"<module>","words":"<list>","letter":"'c'","group":"<_grouper>","runs":"<list>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 68,
+ "finalGlobals": {
+  "groupby": "<type>",
+  "accumulate": "<type>",
+  "operator": "<module>",
+  "words": "<list>",
+  "letter": "'c'",
+  "group": "<_grouper>",
+  "runs": "<list>"
+ },
+ "continuation": [],
+ "sourceSha256": "cbc6e1e21cd7ad812d762d5ad5c33d5a0694877e054c85f79278c76be5270eba"
+}

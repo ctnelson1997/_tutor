@@ -1,0 +1,70 @@
+{
+ "stdout": "[1, 2, 3, 4] [1, 2, 3, 4] True\n[100, 2, 3, 4]\n[100, 2, 3, 4] [100, 2, 3, 4, 5] False\n[100, 2, 3, 4, 6] [100, 2, 3, 4, 5]\n[] [] 0\n['via dict'] ['via dict'] {'x': ['via dict']}\n['via dict'] None\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[1, 2, 3, 4] [1, 2, 3, 4] True"
+  },
+  {
+   "stream": "stdout",
+   "text": "[100, 2, 3, 4]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[100, 2, 3, 4] [100, 2, 3, 4, 5] False"
+  },
+  {
+   "stream": "stdout",
+   "text": "[100, 2, 3, 4, 6] [100, 2, 3, 4, 5]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[] [] 0"
+  },
+  {
+   "stream": "stdout",
+   "text": "['via dict'] ['via dict'] {'x': ['via dict']}"
+  },
+  {
+   "stream": "stdout",
+   "text": "['via dict'] None"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"a":"<list>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","names":"<dict>"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","names":"<dict>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","names":"<dict>"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"None","names":"<dict>"}},
+  {"event":"return","line":19,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"None","names":"<dict>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 20,
+ "finalGlobals": {
+  "a": "<list>",
+  "b": "<list>",
+  "c": "None",
+  "names": "<dict>"
+ },
+ "continuation": [],
+ "sourceSha256": "5651c34267f1a3c6093a7534b4823de223fa969d2c9dbc4bafaf2e267d2ef8a8"
+}

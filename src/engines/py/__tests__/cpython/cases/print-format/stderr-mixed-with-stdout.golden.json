@@ -1,0 +1,85 @@
+{
+ "stdout": "step 1 to stdout\nstep 2 to stdout\npartial stdout finished line\neven 0\neven 2\ncount = 2\n",
+ "stderr": "warning: to stderr\nraw stderr write\nERR\nodd 1\n",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "step 1 to stdout"
+  },
+  {
+   "stream": "stderr",
+   "text": "warning: to stderr"
+  },
+  {
+   "stream": "stdout",
+   "text": "step 2 to stdout"
+  },
+  {
+   "stream": "stderr",
+   "text": "raw stderr write"
+  },
+  {
+   "stream": "stdout",
+   "text": "partial stdout ERR"
+  },
+  {
+   "stream": "stdout",
+   "text": "finished line"
+  },
+  {
+   "stream": "stdout",
+   "text": "even 0"
+  },
+  {
+   "stream": "stderr",
+   "text": "odd 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "even 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "count = 2"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"sys":"<module>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"sys":"<module>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"sys":"<module>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"sys":"<module>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"sys":"<module>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"sys":"<module>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"sys":"<module>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"sys":"<module>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"sys":"<module>","count":"0"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"sys":"<module>","count":"0","i":"0"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"sys":"<module>","count":"0","i":"0"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"sys":"<module>","count":"0","i":"0"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"sys":"<module>","count":"1","i":"0"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"sys":"<module>","count":"1","i":"1"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"sys":"<module>","count":"1","i":"1"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"sys":"<module>","count":"1","i":"1"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"sys":"<module>","count":"1","i":"2"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"sys":"<module>","count":"1","i":"2"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"sys":"<module>","count":"1","i":"2"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"sys":"<module>","count":"2","i":"2"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"sys":"<module>","count":"2","i":"2"}},
+  {"event":"return","line":17,"stack":["<module>"],"locals":{"sys":"<module>","count":"2","i":"2"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 24,
+ "finalGlobals": {
+  "sys": "<module>",
+  "count": "2",
+  "i": "2"
+ },
+ "continuation": [],
+ "sourceSha256": "91a0560398c3fb8261fc904be5fc87bfddabe31a0ed4a468feb3ce8122450f40"
+}

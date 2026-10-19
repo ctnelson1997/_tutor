@@ -1,0 +1,114 @@
+{
+ "stdout": "negative, stopping at -3\n[12, 42]\n'7.5' -> invalid literal for int() with base 10: '7.5'\n'abc' -> invalid literal for int() with base 10: 'abc'\n'' -> invalid literal for int() with base 10: ''\nNone -> int() argument must be a string, a bytes-like object or a real number, not 'NoneType'\n4\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "negative, stopping at -3"
+  },
+  {
+   "stream": "stdout",
+   "text": "[12, 42]"
+  },
+  {
+   "stream": "stdout",
+   "text": "'7.5' -> invalid literal for int() with base 10: '7.5'"
+  },
+  {
+   "stream": "stdout",
+   "text": "'abc' -> invalid literal for int() with base 10: 'abc'"
+  },
+  {
+   "stream": "stdout",
+   "text": "'' -> invalid literal for int() with base 10: ''"
+  },
+  {
+   "stream": "stdout",
+   "text": "None -> int() argument must be a string, a bytes-like object or a real number, not 'NoneType'"
+  },
+  {
+   "stream": "stdout",
+   "text": "4"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"raw":"<list>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'12'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'12'"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'12'","n":"12"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'12'","n":"12"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'12'","n":"12"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'7.5'","n":"12"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'7.5'","n":"12"}},
+  {"event":"exception","line":7,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'7.5'","n":"12"},"exc":"ValueError"},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'7.5'","n":"12"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'7.5'","n":"12","e":"<ValueError>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'7.5'","n":"12","e":"<ValueError>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'7.5'","n":"12"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'abc'","n":"12"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'abc'","n":"12"}},
+  {"event":"exception","line":7,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'abc'","n":"12"},"exc":"ValueError"},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'abc'","n":"12"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'abc'","n":"12","e":"<ValueError>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'abc'","n":"12","e":"<ValueError>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'abc'","n":"12"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"''","n":"12"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"''","n":"12"}},
+  {"event":"exception","line":7,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"''","n":"12"},"exc":"ValueError"},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"''","n":"12"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"''","n":"12","e":"<ValueError>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"''","n":"12","e":"<ValueError>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"''","n":"12"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'42'","n":"12"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'42'","n":"12"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'42'","n":"42"}},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'42'","n":"42"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'42'","n":"42"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"None","n":"42"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"None","n":"42"}},
+  {"event":"exception","line":7,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"None","n":"42"},"exc":"TypeError"},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"None","n":"42"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"None","n":"42"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"None","n":"42","e":"<TypeError>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"None","n":"42","e":"<TypeError>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"None","n":"42"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'-3'","n":"42"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'-3'","n":"42"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'-3'","n":"-3"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'-3'","n":"-3"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'-3'","n":"-3"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'-3'","n":"-3"}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'-3'","n":"-3"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'-3'","n":"-3","k":"\"'7.5'\"","v":"\"invalid literal for int() with base 10: '7.5'\""}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'-3'","n":"-3","k":"\"'7.5'\"","v":"\"invalid literal for int() with base 10: '7.5'\""}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'-3'","n":"-3","k":"\"'abc'\"","v":"\"invalid literal for int() with base 10: 'abc'\""}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'-3'","n":"-3","k":"\"'abc'\"","v":"\"invalid literal for int() with base 10: 'abc'\""}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'-3'","n":"-3","k":"\"''\"","v":"\"invalid literal for int() with base 10: ''\""}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'-3'","n":"-3","k":"\"''\"","v":"\"invalid literal for int() with base 10: ''\""}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'-3'","n":"-3","k":"'None'","v":"\"int() argument must be a string, a bytes-like object or a real number, not 'NoneType'\""}},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'-3'","n":"-3","k":"'None'","v":"\"int() argument must be a string, a bytes-like object or a real number, not 'NoneType'\""}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'-3'","n":"-3","k":"'None'","v":"\"int() argument must be a string, a bytes-like object or a real number, not 'NoneType'\""}},
+  {"event":"return","line":21,"stack":["<module>"],"locals":{"raw":"<list>","good":"<list>","errors":"<dict>","item":"'-3'","n":"-3","k":"'None'","v":"\"int() argument must be a string, a bytes-like object or a real number, not 'NoneType'\""},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 57,
+ "finalGlobals": {
+  "raw": "<list>",
+  "good": "<list>",
+  "errors": "<dict>",
+  "item": "'-3'",
+  "n": "-3",
+  "k": "'None'",
+  "v": "\"int() argument must be a string, a bytes-like object or a real number, not 'NoneType'\""
+ },
+ "continuation": [],
+ "sourceSha256": "b34faaf0443dfd25d567c2a5a6015ff6c3c8be3a3b7fca9a08d6cc9e84120c14"
+}

@@ -1,0 +1,133 @@
+{
+ "stdout": "None\n10.0\n15.0\n30.0\nfinal: 30.0\n  got hi\n  got 42\n  echo closed\nafter close\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "None"
+  },
+  {
+   "stream": "stdout",
+   "text": "10.0"
+  },
+  {
+   "stream": "stdout",
+   "text": "15.0"
+  },
+  {
+   "stream": "stdout",
+   "text": "30.0"
+  },
+  {
+   "stream": "stdout",
+   "text": "final: 30.0"
+  },
+  {
+   "stream": "stdout",
+   "text": "  got hi"
+  },
+  {
+   "stream": "stdout",
+   "text": "  got 42"
+  },
+  {
+   "stream": "stdout",
+   "text": "  echo closed"
+  },
+  {
+   "stream": "stdout",
+   "text": "after close"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"averager":"<function>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"averager":"<function>","avg":"<generator>"}},
+  {"event":"call","line":2,"stack":["<module>","averager"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>","averager"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>","averager"],"locals":{"total":"0"}},
+  {"event":"line","line":5,"stack":["<module>","averager"],"locals":{"total":"0","count":"0"}},
+  {"event":"line","line":6,"stack":["<module>","averager"],"locals":{"total":"0","count":"0","average":"None"}},
+  {"event":"line","line":7,"stack":["<module>","averager"],"locals":{"total":"0","count":"0","average":"None"}},
+  {"event":"return","line":7,"stack":["<module>","averager"],"locals":{"total":"0","count":"0","average":"None"},"value":"None"},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"averager":"<function>","avg":"<generator>"}},
+  {"event":"call","line":7,"stack":["<module>","averager"],"locals":{"total":"0","count":"0","average":"None"}},
+  {"event":"line","line":8,"stack":["<module>","averager"],"locals":{"total":"0","count":"0","average":"None","value":"10"}},
+  {"event":"line","line":10,"stack":["<module>","averager"],"locals":{"total":"0","count":"0","average":"None","value":"10"}},
+  {"event":"line","line":11,"stack":["<module>","averager"],"locals":{"total":"10","count":"0","average":"None","value":"10"}},
+  {"event":"line","line":12,"stack":["<module>","averager"],"locals":{"total":"10","count":"1","average":"None","value":"10"}},
+  {"event":"line","line":6,"stack":["<module>","averager"],"locals":{"total":"10","count":"1","average":"10.0","value":"10"}},
+  {"event":"line","line":7,"stack":["<module>","averager"],"locals":{"total":"10","count":"1","average":"10.0","value":"10"}},
+  {"event":"return","line":7,"stack":["<module>","averager"],"locals":{"total":"10","count":"1","average":"10.0","value":"10"},"value":"10.0"},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"averager":"<function>","avg":"<generator>"}},
+  {"event":"call","line":7,"stack":["<module>","averager"],"locals":{"total":"10","count":"1","average":"10.0","value":"10"}},
+  {"event":"line","line":8,"stack":["<module>","averager"],"locals":{"total":"10","count":"1","average":"10.0","value":"20"}},
+  {"event":"line","line":10,"stack":["<module>","averager"],"locals":{"total":"10","count":"1","average":"10.0","value":"20"}},
+  {"event":"line","line":11,"stack":["<module>","averager"],"locals":{"total":"30","count":"1","average":"10.0","value":"20"}},
+  {"event":"line","line":12,"stack":["<module>","averager"],"locals":{"total":"30","count":"2","average":"10.0","value":"20"}},
+  {"event":"line","line":6,"stack":["<module>","averager"],"locals":{"total":"30","count":"2","average":"15.0","value":"20"}},
+  {"event":"line","line":7,"stack":["<module>","averager"],"locals":{"total":"30","count":"2","average":"15.0","value":"20"}},
+  {"event":"return","line":7,"stack":["<module>","averager"],"locals":{"total":"30","count":"2","average":"15.0","value":"20"},"value":"15.0"},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"averager":"<function>","avg":"<generator>"}},
+  {"event":"call","line":7,"stack":["<module>","averager"],"locals":{"total":"30","count":"2","average":"15.0","value":"20"}},
+  {"event":"line","line":8,"stack":["<module>","averager"],"locals":{"total":"30","count":"2","average":"15.0","value":"60"}},
+  {"event":"line","line":10,"stack":["<module>","averager"],"locals":{"total":"30","count":"2","average":"15.0","value":"60"}},
+  {"event":"line","line":11,"stack":["<module>","averager"],"locals":{"total":"90","count":"2","average":"15.0","value":"60"}},
+  {"event":"line","line":12,"stack":["<module>","averager"],"locals":{"total":"90","count":"3","average":"15.0","value":"60"}},
+  {"event":"line","line":6,"stack":["<module>","averager"],"locals":{"total":"90","count":"3","average":"30.0","value":"60"}},
+  {"event":"line","line":7,"stack":["<module>","averager"],"locals":{"total":"90","count":"3","average":"30.0","value":"60"}},
+  {"event":"return","line":7,"stack":["<module>","averager"],"locals":{"total":"90","count":"3","average":"30.0","value":"60"},"value":"30.0"},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"averager":"<function>","avg":"<generator>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"averager":"<function>","avg":"<generator>"}},
+  {"event":"call","line":7,"stack":["<module>","averager"],"locals":{"total":"90","count":"3","average":"30.0","value":"60"}},
+  {"event":"line","line":8,"stack":["<module>","averager"],"locals":{"total":"90","count":"3","average":"30.0","value":"None"}},
+  {"event":"line","line":9,"stack":["<module>","averager"],"locals":{"total":"90","count":"3","average":"30.0","value":"None"}},
+  {"event":"line","line":13,"stack":["<module>","averager"],"locals":{"total":"90","count":"3","average":"30.0","value":"None"}},
+  {"event":"return","line":13,"stack":["<module>","averager"],"locals":{"total":"90","count":"3","average":"30.0","value":"None"},"value":"30.0"},
+  {"event":"exception","line":21,"stack":["<module>"],"locals":{"averager":"<function>","avg":"<generator>"},"exc":"StopIteration"},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"averager":"<function>","avg":"<generator>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"averager":"<function>","avg":"<generator>","e":"<StopIteration>"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"averager":"<function>","avg":"<generator>"}},
+  {"event":"line","line":33,"stack":["<module>"],"locals":{"averager":"<function>","avg":"<generator>","echo":"<function>"}},
+  {"event":"line","line":34,"stack":["<module>"],"locals":{"averager":"<function>","avg":"<generator>","echo":"<function>","e":"<generator>"}},
+  {"event":"call","line":25,"stack":["<module>","echo"],"locals":{}},
+  {"event":"line","line":26,"stack":["<module>","echo"],"locals":{}},
+  {"event":"line","line":27,"stack":["<module>","echo"],"locals":{}},
+  {"event":"line","line":28,"stack":["<module>","echo"],"locals":{}},
+  {"event":"return","line":28,"stack":["<module>","echo"],"locals":{},"value":"None"},
+  {"event":"line","line":35,"stack":["<module>"],"locals":{"averager":"<function>","avg":"<generator>","echo":"<function>","e":"<generator>"}},
+  {"event":"call","line":28,"stack":["<module>","echo"],"locals":{}},
+  {"event":"line","line":29,"stack":["<module>","echo"],"locals":{"got":"'hi'"}},
+  {"event":"line","line":27,"stack":["<module>","echo"],"locals":{"got":"'hi'"}},
+  {"event":"line","line":28,"stack":["<module>","echo"],"locals":{"got":"'hi'"}},
+  {"event":"return","line":28,"stack":["<module>","echo"],"locals":{"got":"'hi'"},"value":"None"},
+  {"event":"line","line":36,"stack":["<module>"],"locals":{"averager":"<function>","avg":"<generator>","echo":"<function>","e":"<generator>"}},
+  {"event":"call","line":28,"stack":["<module>","echo"],"locals":{"got":"'hi'"}},
+  {"event":"line","line":29,"stack":["<module>","echo"],"locals":{"got":"42"}},
+  {"event":"line","line":27,"stack":["<module>","echo"],"locals":{"got":"42"}},
+  {"event":"line","line":28,"stack":["<module>","echo"],"locals":{"got":"42"}},
+  {"event":"return","line":28,"stack":["<module>","echo"],"locals":{"got":"42"},"value":"None"},
+  {"event":"line","line":37,"stack":["<module>"],"locals":{"averager":"<function>","avg":"<generator>","echo":"<function>","e":"<generator>"}},
+  {"event":"call","line":28,"stack":["<module>","echo"],"locals":{"got":"42"}},
+  {"event":"exception","line":28,"stack":["<module>","echo"],"locals":{"got":"42"},"exc":"GeneratorExit"},
+  {"event":"line","line":31,"stack":["<module>","echo"],"locals":{"got":"42"}},
+  {"event":"return","line":31,"stack":["<module>","echo"],"locals":{"got":"42"},"value":"None"},
+  {"event":"line","line":38,"stack":["<module>"],"locals":{"averager":"<function>","avg":"<generator>","echo":"<function>","e":"<generator>"}},
+  {"event":"return","line":38,"stack":["<module>"],"locals":{"averager":"<function>","avg":"<generator>","echo":"<function>","e":"<generator>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 73,
+ "finalGlobals": {
+  "averager": "<function>",
+  "avg": "<generator>",
+  "echo": "<function>",
+  "e": "<generator>"
+ },
+ "continuation": [],
+ "sourceSha256": "cc97c2c9914e222865bbfec0fbb8cf398ece79cc050796c0d169f822f2f6b71b"
+}

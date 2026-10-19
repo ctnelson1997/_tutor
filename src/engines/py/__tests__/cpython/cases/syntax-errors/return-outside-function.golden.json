@@ -1,0 +1,21 @@
+{
+ "stdout": "",
+ "stderr": "",
+ "console": [],
+ "exception": null,
+ "traceback": null,
+ "compileError": {
+  "class": "SyntaxError",
+  "msg": "'return' outside function",
+  "line": 7,
+  "offset": 1,
+  "text": "  File \"main.py\", line 7\nSyntaxError: 'return' outside function\n"
+ },
+ "endless": false,
+ "events": [],
+ "truncated": false,
+ "stepEvents": 0,
+ "finalGlobals": {},
+ "continuation": [],
+ "sourceSha256": "0a7ce000a9721ed066829151bd6c0c61b03c4d733b690d6ef5f7dd2b1213be2b"
+}

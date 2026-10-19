@@ -1,0 +1,80 @@
+{
+ "stdout": "['']\n(3, 12) True\n1000\nTrue\n1.7976931348623157e+308 2.220446049250313e-16\ndict True\nwritten with sys.stdout.write\n30\nint digits limit: 4300\n1267650600228229401496703205376 31\n",
+ "stderr": "to stderr\n",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "['']"
+  },
+  {
+   "stream": "stdout",
+   "text": "(3, 12) True"
+  },
+  {
+   "stream": "stdout",
+   "text": "1000"
+  },
+  {
+   "stream": "stdout",
+   "text": "True"
+  },
+  {
+   "stream": "stdout",
+   "text": "1.7976931348623157e+308 2.220446049250313e-16"
+  },
+  {
+   "stream": "stdout",
+   "text": "dict True"
+  },
+  {
+   "stream": "stdout",
+   "text": "written with sys.stdout.write"
+  },
+  {
+   "stream": "stdout",
+   "text": "30"
+  },
+  {
+   "stream": "stderr",
+   "text": "to stderr"
+  },
+  {
+   "stream": "stdout",
+   "text": "int digits limit: 4300"
+  },
+  {
+   "stream": "stdout",
+   "text": "1267650600228229401496703205376 31"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"sys":"<module>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"sys":"<module>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"sys":"<module>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"sys":"<module>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"sys":"<module>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"sys":"<module>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"sys":"<module>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"sys":"<module>","count":"30"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"sys":"<module>","count":"30"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"sys":"<module>","count":"30"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"sys":"<module>","count":"30"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"sys":"<module>","count":"30","big":"1267650600228229401496703205376"}},
+  {"event":"return","line":15,"stack":["<module>"],"locals":{"sys":"<module>","count":"30","big":"1267650600228229401496703205376"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 15,
+ "finalGlobals": {
+  "sys": "<module>",
+  "count": "30",
+  "big": "1267650600228229401496703205376"
+ },
+ "continuation": [],
+ "sourceSha256": "6de7dc197cf22b78a9dcd94b62b92eab2fb332c055d8359844dfa5c4e24f58d7"
+}

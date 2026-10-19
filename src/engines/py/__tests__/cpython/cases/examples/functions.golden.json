@@ -1,0 +1,33 @@
+{
+ "stdout": "Hello, Alice\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Hello, Alice"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":1,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"greet":"<function>"}},
+  {"event":"call","line":1,"stack":["<module>","greet"],"locals":{"name":"'Alice'"}},
+  {"event":"line","line":2,"stack":["<module>","greet"],"locals":{"name":"'Alice'"}},
+  {"event":"line","line":3,"stack":["<module>","greet"],"locals":{"name":"'Alice'","message":"'Hello, Alice'"}},
+  {"event":"return","line":3,"stack":["<module>","greet"],"locals":{"name":"'Alice'","message":"'Hello, Alice'"},"value":"'Hello, Alice'"},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"greet":"<function>","result":"'Hello, Alice'"}},
+  {"event":"return","line":6,"stack":["<module>"],"locals":{"greet":"<function>","result":"'Hello, Alice'"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 9,
+ "finalGlobals": {
+  "greet": "<function>",
+  "result": "'Hello, Alice'"
+ },
+ "continuation": [],
+ "sourceSha256": "7591e25f87a4898805b3c2db96516248c00ced30925a4c53aee39a5352a77a1b"
+}
