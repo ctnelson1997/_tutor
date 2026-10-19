@@ -33,6 +33,9 @@ sys.stderr = io.TextIOWrapper(io.FileIO(2, 'w', closefd=False), encoding='utf-8'
  */
 export const REFERENCE_TRACER = String.raw`
 import sys, json, types, traceback, linecache, time, builtins, dis
+# The recorder's own builtins: a program that replaces builtins.str or
+# builtins.len doesn't change what the recorder calls.
+globals().update({_k: _v for _k, _v in vars(builtins).items() if not _k.startswith('_')})
 import ast as _ast
 
 _MAX_EVENTS = ${MAX_GOLDEN_EVENTS}
@@ -46,13 +49,16 @@ _t0 = time.time()
 class _Endless(BaseException):
     pass
 
-# The trace function's own frames count against the recursion limit, so a
-# traced program would fail a few frames short of where CPython fails. While
-# tracing, the real limit is raised by _HEADROOM, the program sees its own
-# limit (_limit, through sys.getrecursionlimit/setrecursionlimit), and a new
-# frame deeper than _limit gets CPython's RecursionError from _trace.
+# The recursion limit as "python main.py" has it: the module frame is depth 1.
+# Here Pyodide's and the recorder's frames lie below it (_base of them), so the
+# real limit is the program's plus _base; the program sees its own limit
+# (_limit, through sys.getrecursionlimit/setrecursionlimit). The trace
+# function's own frames count against the limit too, so while tracing the real
+# limit is _HEADROOM higher still, and a new frame deeper than _limit gets
+# CPython's RecursionError from _trace.
 _HEADROOM = 50
 _limit = sys.getrecursionlimit()
+_base = 0
 _real_getlimit = sys.getrecursionlimit
 _real_setlimit = sys.setrecursionlimit
 _refused = set()
@@ -66,9 +72,9 @@ def _getrecursionlimit():
 
 def _setrecursionlimit(n):
     global _limit
-    _real_setlimit(n)
+    _real_setlimit(n + _base)
     _limit = n
-    _real_setlimit(n + _HEADROOM)
+    _real_setlimit(n + _base + (_HEADROOM if __traced else 0))
 
 def _depth(frame):
     n = 0
@@ -128,7 +134,7 @@ def _user_stack(frame):
 
 def _trace(frame, event, arg):
     global _truncated, _count
-    if event == 'call' and _depth(frame) > _limit:
+    if event == 'call' and _depth(frame) - _base > _limit:
         _refused.add(frame)
         sys.setprofile(_retrace)
         raise RecursionError('maximum recursion depth exceeded')
@@ -172,10 +178,11 @@ except SyntaxError as ex:
     _compile_error = {'class': type(ex).__name__, 'msg': ex.msg, 'line': ex.lineno, 'offset': ex.offset,
                       'text': ''.join(traceback.format_exception_only(type(ex), ex))}
 if _compile_error is None:
+    _base = _depth(sys._getframe())
+    sys.getrecursionlimit = _getrecursionlimit
+    sys.setrecursionlimit = _setrecursionlimit
+    _real_setlimit(_limit + _base + (_HEADROOM if __traced else 0))
     if __traced:
-        sys.getrecursionlimit = _getrecursionlimit
-        sys.setrecursionlimit = _setrecursionlimit
-        _real_setlimit(_limit + _HEADROOM)
         sys.settrace(_trace)
     try:
         exec(_code, _g)

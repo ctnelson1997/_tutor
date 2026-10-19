@@ -224,6 +224,8 @@ export function compareValue(refRepr: string, shown: RuntimeValue): string | nul
   if (refRepr.endsWith('…')) return null;
   const s = shownValue(shown);
   const showsAs = `${refRepr} shown as ${typeof s === 'string' ? s : JSON.stringify(shown)}`;
+  // An int past Python's digit limit is shown by its size, as the reference repr has it (#34).
+  if (/^<int with \d+ digits>$/.test(refRepr)) return s === refRepr ? null : showsAs;
   if (refRepr.startsWith('<') && refRepr.endsWith('>')) {
     return typeof s === 'object' && 'ref' in s ? null : showsAs;
   }
@@ -423,10 +425,13 @@ function compareSteps(c: PyCase, golden: PyGolden, reply: WorkerMessage): StepCo
     // event (or the module's return, the last step). A frame an exception
     // leaves gets no step for its return.
     const returns = top.variables.some(v => v.name === 'return ↵');
+    // Up to 60 events ahead, not counting the ones no step stands for (an
+    // exception passing through, a frame unwinding: hundreds after a RecursionError).
     let found = -1;
-    for (let k = j; k < Math.min(events.length, j + 60); k++) {
+    for (let k = j, seen = 0; k < events.length && seen < 60; k++) {
       const e = events[k];
       if (e.event === 'exception' || e.unwinding) continue;
+      seen++;
       if (returns !== (e.event === 'return' && e.stack.length > 1)) continue;
       if (e.line === s.line && e.stack.length === names.length && e.stack.every((n, q) => n === names[q])) { found = k; break; }
     }

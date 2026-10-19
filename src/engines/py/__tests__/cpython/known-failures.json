@@ -66,20 +66,6 @@
         "reason": "visualization model (classes, builtin names, modules)"
       }
     },
-    "exceptions/recursion-error-message": {
-      "output": {
-        "issues": [
-          34
-        ],
-        "reason": "the tracer runs on the program's terms"
-      },
-      "steps": {
-        "issues": [
-          34
-        ],
-        "reason": "the tracer runs on the program's terms"
-      }
-    },
     "exceptions/uncaught-chained-from": {
       "traceback": {
         "issues": [
@@ -126,20 +112,6 @@
           38
         ],
         "reason": "visualization model (classes, builtin names, modules)"
-      }
-    },
-    "extra/low-recursion-limit": {
-      "output": {
-        "issues": [
-          34
-        ],
-        "reason": "the tracer runs on the program's terms"
-      },
-      "steps": {
-        "issues": [
-          34
-        ],
-        "reason": "the tracer runs on the program's terms"
       }
     },
     "functional/generator-send": {
@@ -280,20 +252,6 @@
           37
         ],
         "reason": "numbers shown as JSON numbers"
-      }
-    },
-    "numbers/huge-int-variable": {
-      "output": {
-        "issues": [
-          34
-        ],
-        "reason": "the tracer runs on the program's terms"
-      },
-      "ending": {
-        "issues": [
-          34
-        ],
-        "reason": "the tracer runs on the program's terms"
       }
     },
     "numbers/int-bases-and-bits": {
@@ -461,24 +419,6 @@
       }
     },
     "oop/getattr-fallback": {
-      "output": {
-        "issues": [
-          34
-        ],
-        "reason": "the tracer runs on the program's terms"
-      },
-      "ending": {
-        "issues": [
-          34
-        ],
-        "reason": "the tracer runs on the program's terms"
-      },
-      "steps": {
-        "issues": [
-          34
-        ],
-        "reason": "the tracer runs on the program's terms"
-      },
       "variables": {
         "issues": [
           38
@@ -503,6 +443,14 @@
       }
     },
     "oop/linked-list": {
+      "variables": {
+        "issues": [
+          38
+        ],
+        "reason": "visualization model (classes, builtin names, modules)"
+      }
+    },
+    "oop/loud-dunder-methods": {
       "variables": {
         "issues": [
           38
@@ -910,20 +858,6 @@
     },
     "scope-mutation/same-object-many-paths": {
       "variables": {
-        "issues": [
-          38
-        ],
-        "reason": "visualization model (classes, builtin names, modules)"
-      }
-    },
-    "scope-mutation/shadowing-builtins": {
-      "variables": {
-        "issues": [
-          38
-        ],
-        "reason": "visualization model (classes, builtin names, modules)"
-      },
-      "final-state": {
         "issues": [
           38
         ],

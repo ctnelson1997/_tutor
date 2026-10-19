@@ -254,6 +254,18 @@
   {"event":"line","line":6,"stack":["<module>","depth*115"],"locals":{"n":"114"}},
   {"event":"call","line":5,"stack":["<module>","depth*116"],"locals":{"n":"115"}},
   {"event":"line","line":6,"stack":["<module>","depth*116"],"locals":{"n":"115"}},
+  {"event":"call","line":5,"stack":["<module>","depth*117"],"locals":{"n":"116"}},
+  {"event":"line","line":6,"stack":["<module>","depth*117"],"locals":{"n":"116"}},
+  {"event":"call","line":5,"stack":["<module>","depth*118"],"locals":{"n":"117"}},
+  {"event":"line","line":6,"stack":["<module>","depth*118"],"locals":{"n":"117"}},
+  {"event":"call","line":5,"stack":["<module>","depth*119"],"locals":{"n":"118"}},
+  {"event":"line","line":6,"stack":["<module>","depth*119"],"locals":{"n":"118"}},
+  {"event":"exception","line":6,"stack":["<module>","depth*119"],"locals":{"n":"118"},"exc":"RecursionError"},
+  {"event":"return","line":6,"stack":["<module>","depth*119"],"locals":{"n":"118"},"value":"None","unwinding":true},
+  {"event":"exception","line":6,"stack":["<module>","depth*118"],"locals":{"n":"117"},"exc":"RecursionError"},
+  {"event":"return","line":6,"stack":["<module>","depth*118"],"locals":{"n":"117"},"value":"None","unwinding":true},
+  {"event":"exception","line":6,"stack":["<module>","depth*117"],"locals":{"n":"116"},"exc":"RecursionError"},
+  {"event":"return","line":6,"stack":["<module>","depth*117"],"locals":{"n":"116"},"value":"None","unwinding":true},
   {"event":"exception","line":6,"stack":["<module>","depth*116"],"locals":{"n":"115"},"exc":"RecursionError"},
   {"event":"return","line":6,"stack":["<module>","depth*116"],"locals":{"n":"115"},"value":"None","unwinding":true},
   {"event":"exception","line":6,"stack":["<module>","depth*115"],"locals":{"n":"114"},"exc":"RecursionError"},
@@ -493,7 +505,7 @@
   {"event":"return","line":12,"stack":["<module>"],"locals":{"sys":"<module>","depth":"<function>"},"value":"None"}
  ],
  "truncated": false,
- "stepEvents": 358,
+ "stepEvents": 367,
  "finalGlobals": {
   "sys": "<module>",
   "depth": "<function>"

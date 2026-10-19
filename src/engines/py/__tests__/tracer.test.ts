@@ -46,7 +46,7 @@ describe('getTracerCode', () => {
 
   it('returns JSON from run_traced', () => {
     expect(code).toContain('result = {"type": "result", "snapshots": _snapshots}');
-    expect(code).toContain('return json.dumps(result)');
+    expect(code).toContain('return _json_dumps(result)');
   });
 
   // ── Trace function ──
@@ -55,12 +55,15 @@ describe('getTracerCode', () => {
     expect(code).toContain('def _tracer(frame, event, arg):');
   });
 
-  it('registers sys.settrace', () => {
-    expect(code).toContain('sys.settrace(_tracer)');
+  it('registers its trace function, and takes it off when the run ends', () => {
+    expect(code).toContain('_settrace(_tracer)');
+    expect(code).toContain('_settrace(None)');
   });
 
-  it('unregisters sys.settrace in finally block', () => {
-    expect(code).toContain('sys.settrace(None)');
+  it("calls its own builtins and library functions, which the program can't replace (#34)", () => {
+    expect(code).toContain("globals().update({_k: _v for _k, _v in vars(_builtins).items() if not _k.startswith('_')})");
+    expect(code).toContain('_json_dumps = json.dumps');
+    expect(code).toContain('_settrace = sys.settrace');
   });
 
   it('handles call events', () => {
@@ -90,76 +93,40 @@ describe('getTracerCode', () => {
     expect(code).toContain('_linecache.cache[_USER_FILE]');
   });
 
-  // ── Serialization ──
+  // ── Serialization (#34: never runs the program's code; safety.test.ts runs it) ──
 
-  it('defines value serializer', () => {
-    expect(code).toContain('def _serialize_value(val, heap_objects, visited):');
+  it('serializes from a queue, not by recursion', () => {
+    expect(code).toContain('def _serialize_value(val, heap_objects, visited, pending):');
+    expect(code).toContain('def _serialize_heap_object(obj, heap_id, heap_objects, visited, pending):');
+    expect(code).toContain('while next_object < len(pending):');
   });
 
-  it('defines heap object serializer', () => {
-    expect(code).toContain('def _serialize_heap_object(obj, heap_id, heap_objects, visited):');
-  });
-
-  it('handles None serialization', () => {
-    expect(code).toContain('if val is None:');
+  it('serializes None and bools before ints (bool is a subclass of int)', () => {
     expect(code).toContain('return {"type": "null", "value": None}');
-  });
-
-  it('handles bool serialization before int (bool is subclass of int)', () => {
-    // Must check True/False BEFORE isinstance(val, int)
     const trueCheck = code.indexOf('if val is True:');
-    const intCheck = code.indexOf('if isinstance(val, int):');
+    const intCheck = code.indexOf('if issubclass(t, int):');
     expect(trueCheck).toBeGreaterThan(-1);
-    expect(intCheck).toBeGreaterThan(-1);
     expect(trueCheck).toBeLessThan(intCheck);
   });
 
-  it('handles float edge cases (inf, nan)', () => {
-    expect(code).toContain('math.isinf(val)');
-    expect(code).toContain('math.isnan(val)');
+  it('serializes inf and nan, and ints past the digit limit by their size', () => {
     expect(code).toContain('"Infinity"');
     expect(code).toContain('"-Infinity"');
     expect(code).toContain('"NaN"');
+    expect(code).toContain("'<int with %d digits>'");
   });
 
-  it('handles string serialization', () => {
-    expect(code).toContain('if isinstance(val, str):');
-    expect(code).toContain('return {"type": "string", "value": val}');
+  it("reads containers through their own methods, not the program's overrides", () => {
+    expect(code).toContain('list.__getitem__(obj, i)');
+    expect(code).toContain('dict.items(obj)');
+    expect(code).toContain("object.__getattribute__(obj, '__dict__')");
+    expect(code).not.toMatch(/\bhasattr\(obj/);
+    expect(code).not.toMatch(/\bgetattr\(obj/);
   });
 
-  it('handles complex number serialization as string', () => {
-    expect(code).toContain('if isinstance(val, complex):');
-  });
-
-  // ── Heap object types ──
-
-  it('serializes lists with objectType "list"', () => {
-    expect(code).toContain('if isinstance(obj, list):');
-    expect(code).toContain('object_type = "list"');
-  });
-
-  it('serializes tuples with objectType "tuple"', () => {
-    expect(code).toContain('isinstance(obj, tuple)');
-    expect(code).toContain('object_type = "tuple"');
-  });
-
-  it('serializes dicts with objectType "dict"', () => {
-    expect(code).toContain('isinstance(obj, dict)');
-    expect(code).toContain('object_type = "dict"');
-  });
-
-  it('serializes sets with objectType "set"', () => {
-    expect(code).toContain('isinstance(obj, (set, frozenset))');
-    expect(code).toContain('object_type = "set"');
-  });
-
-  it('serializes callables with objectType "function"', () => {
-    expect(code).toContain('callable(obj)');
-    expect(code).toContain('object_type = "function"');
-  });
-
-  it('serializes class instances with class name as label', () => {
-    expect(code).toContain("label = type(obj).__name__");
+  it('draws each kind of heap object', () => {
+    for (const kind of ['list', 'tuple', 'dict', 'set', 'function']) expect(code).toContain(`object_type = "${kind}"`);
+    expect(code).toContain('label = t.__name__');
   });
 
   // ── Limits ──
@@ -181,42 +148,20 @@ describe('getTracerCode', () => {
 
   it('captures output at sys.stdout and sys.stderr, not by replacing print', () => {
     expect(code).toContain('class _TutorStream(_io.TextIOBase):');
-    expect(code).toContain("sys.stdout = _TutorStream('stdout', 'strict')");
-    expect(code).toContain("sys.stderr = _TutorStream('stderr', 'backslashreplace')");
+    expect(code).toContain("sys.stdout = sys.__stdout__ = _TutorStream('stdout', 'strict')");
+    expect(code).toContain("sys.stderr = sys.__stderr__ = _TutorStream('stderr', 'backslashreplace')");
     expect(code).not.toContain("namespace['print']");
     expect(code).not.toContain('_capture_print');
   });
 
   it('gives the streams back after the run', () => {
-    expect(code).toContain('sys.stdout, sys.stderr = saved_streams');
+    expect(code).toContain('sys.stdin, sys.stdout, sys.stderr, sys.__stdin__, sys.__stdout__, sys.__stderr__ = saved_streams');
   });
 
-  // ── Security: sandboxed builtins ──
+  // ── The namespace (#34; #35 decides what a program may use) ──
 
-  it('removes dangerous builtins from namespace', () => {
-    const dangerousBuiltins = ['open', 'exec', 'eval', 'compile', 'exit', 'quit', 'breakpoint', 'input'];
-    for (const name of dangerousBuiltins) {
-      expect(code).toContain(`'${name}'`);
-    }
-  });
-
-  it('installs safe import function', () => {
-    expect(code).toContain('def _safe_import(name, *args, **kwargs):');
-    expect(code).toContain("namespace['__import__'] = _safe_import");
-  });
-
-  it('defines a safe modules whitelist', () => {
-    expect(code).toContain('_SAFE_MODULES = frozenset(');
-    // Verify core safe modules are listed
-    const safeModules = ['math', 'random', 'collections', 'itertools', 'functools', 'json', 're', 'datetime', 'copy'];
-    for (const mod of safeModules) {
-      expect(code, `safe module: ${mod}`).toContain(`'${mod}'`);
-    }
-  });
-
-  it('safe import rejects disallowed modules', () => {
-    expect(code).toContain("raise ImportError");
-    expect(code).toContain("is not allowed in PyTutor");
+  it("runs the program in a namespace of its own names, with CPython's builtins", () => {
+    expect(code).toContain("namespace = {'__name__': '__main__'}");
   });
 
   // ── Variable filtering ──
@@ -371,16 +316,10 @@ describe('getTracerCode', () => {
   });
 
   it('tracks visited objects to prevent circular and duplicate serialization', () => {
-    // Tracks both obj_id (Python identity) and heap_id (logical identity)
-    // so bridged objects (e.g. comp partial → real variable) aren't serialized twice
-    expect(code).toContain('if obj_id not in visited and heap_id not in visited:');
+    expect(code).toContain('if obj_id not in visited:');
     expect(code).toContain('visited.add(obj_id)');
-    expect(code).toContain('visited.add(heap_id)');
   });
 
   // ── Compilation ──
 
-  it('sets __name__ to __main__ in execution namespace', () => {
-    expect(code).toContain("namespace['__name__'] = '__main__'");
-  });
 });

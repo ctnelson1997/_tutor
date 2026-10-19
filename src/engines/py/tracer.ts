@@ -18,6 +18,25 @@ import linecache as _linecache
 import types as _types
 import dis as _dis
 import ast as _ast
+import traceback as _traceback
+import builtins as _builtins
+
+# The tracer's own builtins and library functions (#34): a program that
+# replaces builtins.len, json.dumps or sys.settrace doesn't change what the
+# tracer calls. (The program runs in a namespace of its own.)
+globals().update({_k: _v for _k, _v in vars(_builtins).items() if not _k.startswith('_')})
+_json_dumps = json.dumps
+_isinf = math.isinf
+_isnan = math.isnan
+_now = time.time
+_settrace = sys.settrace
+_setprofile = sys.setprofile
+_getframe = sys._getframe
+_real_getlimit = sys.getrecursionlimit
+_real_setlimit = sys.setrecursionlimit
+_real_stderr = sys.__stderr__
+_DEFAULT_LIMIT = sys.getrecursionlimit()
+_MemberDescriptor = _types.MemberDescriptorType
 
 # ══════════════════════════════════════
 # PyTutor Tracer
@@ -60,8 +79,59 @@ class _TutorStop(BaseException):
 def _stop(reason):
     global _stop_reason
     _stop_reason = reason
-    sys.settrace(None)
+    _settrace(None)
     raise _TutorStop()
+
+# What students see when the tracer itself fails (#30, #34): the steps so far,
+# and this. The details go to the browser's console.
+_INTERNAL_ERROR = 'Internal PyTutor error (please report it)'
+
+def _internal_failure():
+    try:
+        _real_stderr.write('PyTutor internal error:' + chr(10) + _traceback.format_exc())
+    except Exception:
+        pass
+    _stop("internal")
+
+# ── The recursion limit (#34) ──
+#
+# As "python main.py" has it: the program's module frame is depth 1, so the
+# tracer's and Pyodide's frames below it (_base of them) don't count, nor do
+# PyTutor's comprehension frames, and the program sees its own limit through
+# sys.getrecursionlimit/setrecursionlimit (_limit). The trace function's own
+# frames would count against the real limit, so it is _HEADROOM higher, and a
+# new frame deeper than _limit gets CPython's RecursionError from the tracer.
+# CPython turns tracing off when a trace function raises: a one-shot profile
+# hook (_retrace) turns it back on.
+_HEADROOM = 50
+_limit = _DEFAULT_LIMIT
+_base = 0
+_refused = set()      # frames refused for the recursion limit: they never ran
+
+def _getrecursionlimit():
+    return _limit
+
+def _setrecursionlimit(n):
+    global _limit
+    _real_setlimit(n + _base)  # CPython's own checks of n
+    _limit = n
+    _real_setlimit(n + _base + _HEADROOM)
+
+_getrecursionlimit.__name__ = _getrecursionlimit.__qualname__ = 'getrecursionlimit'
+_setrecursionlimit.__name__ = _setrecursionlimit.__qualname__ = 'setrecursionlimit'
+
+def _depth(frame):
+    n = 0
+    while frame is not None:
+        code = frame.f_code
+        if not (code.co_name in _COMP_FRAMES and code.co_filename == _USER_FILE):
+            n += 1
+        frame = frame.f_back
+    return n
+
+def _retrace(frame, event, arg):
+    _setprofile(None)
+    _settrace(_tracer)
 
 # Set of namespace keys present BEFORE user code runs.
 # Populated in run_traced(); used to filter out builtins and tracer internals.
@@ -383,6 +453,18 @@ def _scan_continuation_lines(source_code):
                         _continuation_lines.add(ln)
 
 # ── Heap serialization ──
+#
+# Serializing reads the program's objects without running its code (#34): no
+# hasattr or getattr (a class's __getattr__ or __getattribute__), no len() or
+# iteration through a subclass's __len__ or __iter__, no str() or repr() of
+# its objects. The containers' own methods (list.__getitem__, dict.items, ...),
+# object.__getattribute__ for an instance's __dict__ and the member
+# descriptors of __slots__ read what is stored. Heap objects are serialized
+# from a queue, not by recursion, so a long linked list doesn't take the tracer
+# near the recursion limit.
+
+_FUNCTION_TYPES = (_types.FunctionType, _types.BuiltinFunctionType, _types.MethodType, _types.BuiltinMethodType, type)
+_BIG_INT = 10 ** 15
 
 def _get_heap_id(obj):
     global _heap_counter
@@ -394,8 +476,28 @@ def _get_heap_id(obj):
     _heap_map[obj_id] = heap_id
     return heap_id
 
-def _serialize_value(val, heap_objects, visited):
-    """Serialize a Python value to the snapshot PrimitiveValue or HeapRef format."""
+def _digits(v):
+    v = abs(v)
+    n = int(v.bit_length() * 0.30102999566398) + 1
+    while n > 1 and 10 ** (n - 1) > v:
+        n -= 1
+    return n
+
+def _int_value(val):
+    val = int.__int__(val)
+    if -_BIG_INT < val < _BIG_INT:
+        return {"type": "number", "value": val}
+    try:
+        int.__repr__(val)
+    except ValueError:
+        # Past Python's limit for converting an int to text: shown by its size.
+        text = '<int with %d digits>' % _digits(val)
+        return {"type": "number", "value": text, "display": text}
+    return {"type": "number", "value": val}
+
+def _serialize_value(val, heap_objects, visited, pending):
+    # A value as the snapshot shows it: a primitive inline, a heap object as a
+    # reference (queued in pending to be serialized once per snapshot).
     global _work
     _work += 1
     if val is None:
@@ -404,119 +506,156 @@ def _serialize_value(val, heap_objects, visited):
         return {"type": "boolean", "value": True}
     if val is False:
         return {"type": "boolean", "value": False}
-    if isinstance(val, bool):
-        # Should not reach here, but safety check
-        return {"type": "boolean", "value": val}
-    if isinstance(val, int):
-        return {"type": "number", "value": val}
-    if isinstance(val, float):
-        if math.isinf(val):
-            return {"type": "number", "value": "Infinity" if val > 0 else "-Infinity"}
-        if math.isnan(val):
+    t = type(val)
+    if issubclass(t, int):
+        return _int_value(val)
+    if issubclass(t, float):
+        f = float.__float__(val)
+        if _isinf(f):
+            return {"type": "number", "value": "Infinity" if f > 0 else "-Infinity"}
+        if _isnan(f):
             return {"type": "number", "value": "NaN"}
-        return {"type": "number", "value": val}
-    if isinstance(val, str):
-        return {"type": "string", "value": val}
-    if isinstance(val, complex):
-        return {"type": "string", "value": str(val)}
+        return {"type": "number", "value": f}
+    if issubclass(t, str):
+        return {"type": "string", "value": str.__str__(val)}
+    if issubclass(t, complex):
+        return {"type": "string", "value": complex.__repr__(val)}
 
     # Heap objects: list, dict, tuple, set, function, class instances
     obj_id = id(val)
     heap_id = _get_heap_id(val)
-    if obj_id not in visited and heap_id not in visited:
+    if obj_id not in visited:
         visited.add(obj_id)
-        visited.add(heap_id)
-        heap_obj = _serialize_heap_object(val, heap_id, heap_objects, visited)
-        heap_objects.append(heap_obj)
+        pending.append((val, heap_id))
     return {"type": "ref", "heapId": heap_id}
 
-def _serialize_heap_object(obj, heap_id, heap_objects, visited):
-    """Serialize a Python object to a HeapObject dict."""
+def _safe_repr(v, depth=2):
+    # A dict key's text, without running the program's code.
+    t = type(v)
+    if v is None or t is bool:
+        return repr(v)
+    if issubclass(t, int):
+        try:
+            return int.__repr__(v)
+        except ValueError:
+            return '<int with %d digits>' % _digits(v)
+    if issubclass(t, float):
+        return float.__repr__(v)
+    if issubclass(t, complex):
+        return complex.__repr__(v)
+    if issubclass(t, str):
+        return str.__repr__(v)
+    if issubclass(t, tuple) and depth > 0:
+        items = [_safe_repr(x, depth - 1) for x in tuple.__iter__(v)]
+        return '(' + ', '.join(items) + (',' if len(items) == 1 else '') + ')'
+    if issubclass(t, frozenset) and depth > 0:
+        return 'frozenset({' + ', '.join(_safe_repr(x, depth - 1) for x in frozenset.__iter__(v)) + '})'
+    return '<' + t.__name__ + ' object>'
+
+def _key_text(k):
+    if issubclass(type(k), str):
+        return str.__str__(k)
+    return _safe_repr(k)
+
+def _is_primitive(v):
+    return v is None or issubclass(type(v), (bool, int, float, str, complex))
+
+def _safe_name(obj):
+    # A function's or class's name, read through the data descriptor of its type.
+    for attr in ('__name__', '__qualname__'):
+        try:
+            name = object.__getattribute__(obj, attr)
+        except Exception:
+            continue
+        if type(name) is str and name:
+            return name
+    return ''
+
+def _object_dict(obj):
+    try:
+        d = object.__getattribute__(obj, '__dict__')
+    except Exception:
+        return None
+    return d if type(d) is dict else None
+
+def _slot_values(obj):
+    # (name, value) for the __slots__ of Python classes in obj's MRO, read
+    # through their member descriptors (an unset slot is skipped).
+    out = []
+    for cls in type(obj).__mro__:
+        cls_dict = type.__dict__['__dict__'].__get__(cls)
+        slots = cls_dict.get('__slots__')
+        if slots is None:
+            continue
+        if type(slots) is str:
+            slots = (slots,)
+        for name in slots:
+            if type(name) is not str or name in ('__dict__', '__weakref__'):
+                continue
+            stored = name
+            if name.startswith('__') and not name.endswith('__'):
+                stored = '_' + cls.__name__.lstrip('_') + name
+            descr = cls_dict.get(stored)
+            if type(descr) is not _MemberDescriptor:
+                continue
+            try:
+                out.append((name, descr.__get__(obj, cls)))
+            except AttributeError:
+                continue
+    return out
+
+def _serialize_heap_object(obj, heap_id, heap_objects, visited, pending):
+    # A heap object as the snapshot draws it.
     properties = []
     object_type = "object"
     label = ""
+    t = type(obj)
 
-    if isinstance(obj, list):
+    if issubclass(t, list):
         object_type = "list"
-        for i in range(min(len(obj), _MAX_SEQ_PROPS)):
-            properties.append({
-                "key": str(i),
-                "value": _serialize_value(obj[i], heap_objects, visited)
-            })
-    elif isinstance(obj, tuple):
+        for i in range(min(list.__len__(obj), _MAX_SEQ_PROPS)):
+            properties.append({"key": str(i), "value": _serialize_value(list.__getitem__(obj, i), heap_objects, visited, pending)})
+    elif issubclass(t, tuple):
         object_type = "tuple"
-        for i in range(min(len(obj), _MAX_SEQ_PROPS)):
-            properties.append({
-                "key": str(i),
-                "value": _serialize_value(obj[i], heap_objects, visited)
-            })
-    elif isinstance(obj, dict):
+        for i in range(min(tuple.__len__(obj), _MAX_SEQ_PROPS)):
+            properties.append({"key": str(i), "value": _serialize_value(tuple.__getitem__(obj, i), heap_objects, visited, pending)})
+    elif issubclass(t, dict):
         object_type = "dict"
-        count = 0
-        for k, v in obj.items():
+        for count, (k, v) in enumerate(dict.items(obj)):
             if count >= _MAX_DICT_PROPS:
                 break
-            properties.append({
-                "key": str(k),
-                "value": _serialize_value(v, heap_objects, visited)
-            })
-            count += 1
-    elif isinstance(obj, (set, frozenset)):
+            prop = {"key": _key_text(k), "value": _serialize_value(v, heap_objects, visited, pending)}
+            if not _is_primitive(k):
+                # An object key is drawn as a value: an arrow to it.
+                prop["keyValue"] = _serialize_value(k, heap_objects, visited, pending)
+            properties.append(prop)
+    elif issubclass(t, (set, frozenset)):
         object_type = "set"
-        count = 0
-        for item in obj:
+        items = set.__iter__(obj) if issubclass(t, set) else frozenset.__iter__(obj)
+        for count, item in enumerate(items):
             if count >= _MAX_SEQ_PROPS:
                 break
-            properties.append({
-                "key": str(count),
-                "value": _serialize_value(item, heap_objects, visited)
-            })
-            count += 1
-    elif callable(obj):
+            properties.append({"key": str(count), "value": _serialize_value(item, heap_objects, visited, pending)})
+    elif issubclass(t, _FUNCTION_TYPES):
         object_type = "function"
-        label = getattr(obj, '__name__', '') or getattr(obj, '__qualname__', '')
-    elif hasattr(obj, '__dict__') or hasattr(obj, '__slots__'):
-        # Class instance. We iterate __dict__ directly (not via getattr) so
-        # that user-defined @property descriptors and __getattr__ hooks are
-        # NOT triggered during snapshot serialization (which could recurse
-        # or raise).
-        object_type = "object"
-        label = type(obj).__name__
+        label = _safe_name(obj)
+    else:
+        # An instance: its __dict__ and its __slots__, as stored.
+        label = t.__name__
         count = 0
-        if hasattr(obj, '__dict__'):
-            for k, v in obj.__dict__.items():
+        d = _object_dict(obj)
+        if d is not None:
+            for k, v in dict.items(d):
                 if count >= _MAX_DICT_PROPS:
                     break
-                if not k.startswith('_'):
-                    properties.append({
-                        "key": k,
-                        "value": _serialize_value(v, heap_objects, visited)
-                    })
+                if type(k) is str and not k.startswith('_'):
+                    properties.append({"key": k, "value": _serialize_value(v, heap_objects, visited, pending)})
                     count += 1
-        # __slots__-backed attributes. Slots are descriptor-backed by the
-        # class — reading them does NOT invoke user __getattr__ / @property.
-        # Wrap in try/except so a slot raising on read doesn't corrupt the
-        # whole snapshot.
-        slots = getattr(type(obj), '__slots__', None) or getattr(obj, '__slots__', None)
-        if slots:
-            slot_names = [slots] if isinstance(slots, str) else slots
-            for slot_name in slot_names:
-                if count >= _MAX_DICT_PROPS:
-                    break
-                if not isinstance(slot_name, str) or slot_name.startswith('_'):
-                    continue
-                try:
-                    sval = getattr(obj, slot_name)
-                except AttributeError:
-                    continue  # uninitialized slot
-                except Exception:
-                    properties.append({"key": slot_name, "value": {"type": "string", "value": "<error>"}})
-                    count += 1
-                    continue
-                properties.append({
-                    "key": slot_name,
-                    "value": _serialize_value(sval, heap_objects, visited)
-                })
+        for name, v in _slot_values(obj):
+            if count >= _MAX_DICT_PROPS:
+                break
+            if not name.startswith('_'):
+                properties.append({"key": name, "value": _serialize_value(v, heap_objects, visited, pending)})
                 count += 1
 
     result = {"id": heap_id, "objectType": object_type, "properties": properties}
@@ -537,6 +676,7 @@ def _capture_snapshot(line, current_locals, return_value=None, has_return=False,
 
     heap_objects = []
     visited = set()
+    pending = []
 
     # Build call stack with serialized variables
     stack = []
@@ -544,7 +684,7 @@ def _capture_snapshot(line, current_locals, return_value=None, has_return=False,
         variables = []
         local_vars = current_locals if i == len(_call_stack) - 1 else frame_info.get("locals", {})
 
-        for name in sorted(local_vars.keys()):
+        for name in sorted(k for k in dict.keys(local_vars) if type(k) is str):
             # For the module frame, skip everything that was in the
             # namespace before user code started (builtins, tracer
             # internals, etc.). For function frames, f_locals only
@@ -556,17 +696,24 @@ def _capture_snapshot(line, current_locals, return_value=None, has_return=False,
             # Skip CPython internal positional args (a comprehension's or generator expression's iterable)
             if name.startswith('.'):
                 continue
-            val = local_vars[name]
-            serialized = _serialize_value(val, heap_objects, visited)
+            val = dict.__getitem__(local_vars, name)
+            serialized = _serialize_value(val, heap_objects, visited, pending)
             variables.append({"name": name, "value": serialized})
 
         # Add return value display
         if has_return and i == len(_call_stack) - 1:
-            ret_serialized = _serialize_value(return_value, heap_objects, visited)
+            ret_serialized = _serialize_value(return_value, heap_objects, visited, pending)
             variables.append({"name": "return \\u21b5", "value": ret_serialized})
 
         frame_dict = {"name": frame_info["name"], "variables": variables}
         stack.append(frame_dict)
+
+    # The heap objects the frames reach, each once, from the queue.
+    next_object = 0
+    while next_object < len(pending):
+        obj, heap_id = pending[next_object]
+        next_object += 1
+        heap_objects.append(_serialize_heap_object(obj, heap_id, heap_objects, visited, pending))
 
     snapshot = {
         "step": _step_counter,
@@ -603,10 +750,25 @@ _COMP_DISPLAY_NAMES = {
 _EXPRESSION_FRAMES = frozenset({'<lambda>', '<genexpr>'})
 
 def _tracer(frame, event, arg):
-    global _events
-
     if _stop_reason is not None:
         return None
+    # A new frame past the program's recursion limit: CPython's RecursionError.
+    if event == 'call' and _depth(frame) - _base > _limit:
+        _refused.add(frame)
+        _setprofile(_retrace)
+        raise RecursionError('maximum recursion depth exceeded')
+    if frame in _refused:
+        return None
+    try:
+        return _trace_event(frame, event, arg)
+    except _TutorStop:
+        raise
+    except BaseException:
+        # The tracer failed, not the program: its steps so far, and an engine error.
+        _internal_failure()
+
+def _trace_event(frame, event, arg):
+    global _events
 
     # Only trace user code
     code = frame.f_code
@@ -622,7 +784,7 @@ def _tracer(frame, event, arg):
     if _step_counter >= _MAX_SNAPSHOTS:
         _stop("steps")
     _events += 1
-    if _events % 1024 == 0 and time.time() - _start_time > _TIME_BUDGET:
+    if _events % 1024 == 0 and _now() - _start_time > _TIME_BUDGET:
         _stop("time")
 
     if event == 'call':
@@ -709,7 +871,7 @@ def _user_line(e):
     tb = e.__traceback__
     line = None
     while tb is not None:
-        if tb.tb_frame.f_code.co_filename == _USER_FILE:
+        if tb.tb_frame.f_code.co_filename == _USER_FILE and tb.tb_frame not in _refused:
             line = tb.tb_lineno
         tb = tb.tb_next
     return line
@@ -721,7 +883,7 @@ def _traceback_text(e, source_code):
     tb = e.__traceback__
     while tb is not None:
         code = tb.tb_frame.f_code
-        if code.co_filename == _USER_FILE and not _is_comprehension(code):
+        if code.co_filename == _USER_FILE and not _is_comprehension(code) and tb.tb_frame not in _refused:
             out.append(f'  File "main.py", line {tb.tb_lineno}, in {code.co_name}')
             if 1 <= tb.tb_lineno <= len(lines):
                 out.append("    " + lines[tb.tb_lineno - 1].strip())
@@ -733,11 +895,14 @@ def run_traced(source_code, stdin_text=''):
     global _snapshots, _call_stack, _heap_map, _heap_counter, _step_counter, _baseline_keys, _continuation_lines
     global _stop_reason, _start_time, _events, _unwinding, _work
     global _out_lines, _console, _console_open, _stderr_used, _stdin_used, _output_count, _output_seen
+    global _limit, _base, _refused
     _stop_reason = None
-    _start_time = time.time()
+    _start_time = _now()
     _events = 0
     _work = 0
     _unwinding = set()
+    _refused = set()
+    _limit = _DEFAULT_LIMIT
     _snapshots = []
     _out_lines = ['']
     _console = []
@@ -755,13 +920,11 @@ def run_traced(source_code, stdin_text=''):
     # Pre-scan source for multi-line statements
     _scan_continuation_lines(source_code)
 
-    namespace = dict(__builtins__.__dict__) if hasattr(__builtins__, '__dict__') else dict(__builtins__)
-    # Remove dangerous builtins
-    for name in ('open', 'exec', 'eval', 'compile', 'exit', 'quit',
-                 'breakpoint', 'help', 'input', '__import__'):
-        namespace.pop(name, None)
-    namespace['__import__'] = _safe_import
-    namespace['__name__'] = '__main__'
+    # The program's module namespace, as CPython has main.py's: its names
+    # only, the builtins found through the builtins module (exec adds
+    # __builtins__), so a program that replaces builtins.len calls its own len
+    # and a variable named list or max is the program's (#34).
+    namespace = {'__name__': '__main__'}
 
     # Snapshot the namespace keys BEFORE user code runs so we can
     # filter them out of the module-level variable display later.
@@ -775,10 +938,11 @@ def run_traced(source_code, stdin_text=''):
     # stdin panel ends with Enter, the last one too.
     if stdin_text and not stdin_text.endswith(chr(10)):
         stdin_text += chr(10)
-    saved_streams = (sys.stdin, sys.stdout, sys.stderr)
-    sys.stdin = _TutorStdin(stdin_text)
-    sys.stdout = _TutorStream('stdout', 'strict')
-    sys.stderr = _TutorStream('stderr', 'backslashreplace')
+    saved_streams = (sys.stdin, sys.stdout, sys.stderr, sys.__stdin__, sys.__stdout__, sys.__stderr__)
+    sys.stdin = sys.__stdin__ = _TutorStdin(stdin_text)
+    sys.stdout = sys.__stdout__ = _TutorStream('stdout', 'strict')
+    sys.stderr = sys.__stderr__ = _TutorStream('stderr', 'backslashreplace')
+    saved_limit_functions = (sys.getrecursionlimit, sys.setrecursionlimit)
     try:
         try:
             code = _compile_program(source_code)
@@ -787,12 +951,17 @@ def run_traced(source_code, stdin_text=''):
             result = {"type": "error", "message": f"{type(e).__name__}: {getattr(e, 'msg', None) or e}"}
             if getattr(e, 'lineno', None):
                 result["line"] = e.lineno
-            return json.dumps(result)
+            return _json_dumps(result)
 
         # A run that ends early (an uncaught exception, the step or time limit)
         # still returns its steps, with the reason in "error".
         error = None
-        sys.settrace(_tracer)
+        # The program's module frame is depth 1 (see _depth).
+        _base = _depth(_getframe())
+        sys.getrecursionlimit = _getrecursionlimit
+        sys.setrecursionlimit = _setrecursionlimit
+        _real_setlimit(_limit + _base + _HEADROOM)
+        _settrace(_tracer)
         try:
             exec(code, namespace)
         except _TutorStop:
@@ -800,23 +969,26 @@ def run_traced(source_code, stdin_text=''):
         except SystemExit as e:
             # sys.exit() ends the program; as CPython ends, a code that isn't
             # None or an int is printed to stderr.
-            sys.settrace(None)
+            _settrace(None)
             if e.code is not None and not isinstance(e.code, int):
                 sys.stderr.write(str(e.code) + chr(10))
             _finish_output()
         except BaseException as e:
             # Any other exception the program raised is its own, KeyboardInterrupt
             # and BaseException subclasses included, as CPython reports them.
-            sys.settrace(None)
+            _settrace(None)
             error = {"kind": "exception", "message": _exception_text(e), "stderr": _traceback_text(e, source_code)}
             line = _user_line(e)
             if line is not None:
                 error["line"] = line
             _finish_output()
         finally:
-            sys.settrace(None)
+            _settrace(None)
+            _setprofile(None)
     finally:
-        sys.stdin, sys.stdout, sys.stderr = saved_streams
+        sys.stdin, sys.stdout, sys.stderr, sys.__stdin__, sys.__stdout__, sys.__stderr__ = saved_streams
+        sys.getrecursionlimit, sys.setrecursionlimit = saved_limit_functions
+        _real_setlimit(_DEFAULT_LIMIT)
 
     if _stop_reason == "steps":
         error = {"kind": "limit", "message": f"Stopped after {_MAX_SNAPSHOTS} steps, the most that can be shown. Your code may contain an infinite loop."}
@@ -824,9 +996,13 @@ def run_traced(source_code, stdin_text=''):
         error = {"kind": "limit", "message": f"Stopped after {_TIME_BUDGET:g} seconds, the longest a program can run here."}
     elif _stop_reason == "work":
         error = {"kind": "limit", "message": f"Stopped after drawing {_WORK_BUDGET} values, the most a program can draw here."}
+    elif _stop_reason == "internal":
+        error = {"kind": "error", "message": _INTERNAL_ERROR}
+        if _snapshots:
+            error["line"] = _snapshots[-1]["line"]
     result = {"type": "result", "snapshots": _snapshots}
     if error is not None:
         result["error"] = error
-    return json.dumps(result)
+    return _json_dumps(result)
 `;
 }

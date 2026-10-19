@@ -11,7 +11,7 @@
   "class": "RecursionError",
   "message": "maximum recursion depth exceeded"
  },
- "traceback": "Traceback (most recent call last):\n  File \"main.py\", line 6, in <module>\n    print(factorial(5))\n          ^^^^^^^^^^^^\n  File \"main.py\", line 3, in factorial\n    return n * factorial(n - 1)\n               ^^^^^^^^^^^^^^^^\n  File \"main.py\", line 3, in factorial\n    return n * factorial(n - 1)\n               ^^^^^^^^^^^^^^^^\n  File \"main.py\", line 3, in factorial\n    return n * factorial(n - 1)\n               ^^^^^^^^^^^^^^^^\n  [Previous line repeated 993 more times]\nRecursionError: maximum recursion depth exceeded\n",
+ "traceback": "Traceback (most recent call last):\n  File \"main.py\", line 6, in <module>\n    print(factorial(5))\n          ^^^^^^^^^^^^\n  File \"main.py\", line 3, in factorial\n    return n * factorial(n - 1)\n               ^^^^^^^^^^^^^^^^\n  File \"main.py\", line 3, in factorial\n    return n * factorial(n - 1)\n               ^^^^^^^^^^^^^^^^\n  File \"main.py\", line 3, in factorial\n    return n * factorial(n - 1)\n               ^^^^^^^^^^^^^^^^\n  [Previous line repeated 996 more times]\nRecursionError: maximum recursion depth exceeded\n",
  "compileError": null,
  "endless": false,
  "events": [
@@ -2011,6 +2011,18 @@
   {"event":"line","line":3,"stack":["<module>","factorial*995"],"locals":{"n":"-989"}},
   {"event":"call","line":2,"stack":["<module>","factorial*996"],"locals":{"n":"-990"}},
   {"event":"line","line":3,"stack":["<module>","factorial*996"],"locals":{"n":"-990"}},
+  {"event":"call","line":2,"stack":["<module>","factorial*997"],"locals":{"n":"-991"}},
+  {"event":"line","line":3,"stack":["<module>","factorial*997"],"locals":{"n":"-991"}},
+  {"event":"call","line":2,"stack":["<module>","factorial*998"],"locals":{"n":"-992"}},
+  {"event":"line","line":3,"stack":["<module>","factorial*998"],"locals":{"n":"-992"}},
+  {"event":"call","line":2,"stack":["<module>","factorial*999"],"locals":{"n":"-993"}},
+  {"event":"line","line":3,"stack":["<module>","factorial*999"],"locals":{"n":"-993"}},
+  {"event":"exception","line":3,"stack":["<module>","factorial*999"],"locals":{"n":"-993"},"exc":"RecursionError"},
+  {"event":"return","line":3,"stack":["<module>","factorial*999"],"locals":{"n":"-993"},"value":"None","unwinding":true},
+  {"event":"exception","line":3,"stack":["<module>","factorial*998"],"locals":{"n":"-992"},"exc":"RecursionError"},
+  {"event":"return","line":3,"stack":["<module>","factorial*998"],"locals":{"n":"-992"},"value":"None","unwinding":true},
+  {"event":"exception","line":3,"stack":["<module>","factorial*997"],"locals":{"n":"-991"},"exc":"RecursionError"},
+  {"event":"return","line":3,"stack":["<module>","factorial*997"],"locals":{"n":"-991"},"value":"None","unwinding":true},
   {"event":"exception","line":3,"stack":["<module>","factorial*996"],"locals":{"n":"-990"},"exc":"RecursionError"},
   {"event":"return","line":3,"stack":["<module>","factorial*996"],"locals":{"n":"-990"},"value":"None","unwinding":true},
   {"event":"exception","line":3,"stack":["<module>","factorial*995"],"locals":{"n":"-989"},"exc":"RecursionError"},
@@ -4007,7 +4019,7 @@
   {"event":"return","line":6,"stack":["<module>"],"locals":{"factorial":"<function>"},"value":"None","unwinding":true}
  ],
  "truncated": false,
- "stepEvents": 2993,
+ "stepEvents": 3002,
  "finalGlobals": {
   "factorial": "<function>"
  },
