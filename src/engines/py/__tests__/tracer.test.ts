@@ -102,7 +102,7 @@ describe('getTracerCode', () => {
   });
 
   it('serializes None and bools before ints (bool is a subclass of int)', () => {
-    expect(code).toContain('return {"type": "null", "value": None}');
+    expect(code).toContain('return {"type": "null", "value": None, "display": "None"}');
     const trueCheck = code.indexOf('if val is True:');
     const intCheck = code.indexOf('if issubclass(t, int):');
     expect(trueCheck).toBeGreaterThan(-1);

@@ -7,7 +7,9 @@ export interface PrimitiveValue {
   /**
    * The text to show, when the engine renders the value itself, e.g. Java's
    * `'B'` for a char (not `"B"`), `5.0` for a double, `"a\nb"` for a string
-   * with a line break. Without it the UI renders `value` by `type`.
+   * with a line break; Python's `5.0`, `-0.0`, `1e+16`, `True`, `None`, a big
+   * int's every digit (its `value` the digits as text too), `(3+4j)`. Without
+   * it the UI renders `value` by `type`.
    */
   display?: string;
 }

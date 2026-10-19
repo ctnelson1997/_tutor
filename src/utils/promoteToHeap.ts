@@ -6,7 +6,11 @@ import type { ExecutionSnapshot, HeapObject, RuntimeValue, PrimitiveValue } from
  */
 function pythonTypeName(prim: PrimitiveValue): string {
   if (prim.type === 'number') {
-    return typeof prim.value === 'number' && prim.value % 1 !== 0 ? 'float' : 'int';
+    // The text Python writes for it (display, #37) tells 5.0 from 5, and a complex number.
+    const text = prim.display ?? String(prim.value);
+    if (/j\)?$/.test(text)) return 'complex';
+    if (/[.e]|inf|nan/.test(text)) return 'float';
+    return 'int';
   }
   if (prim.type === 'string') return 'str';
   if (prim.type === 'boolean') return 'bool';
@@ -19,6 +23,7 @@ function pythonTypeName(prim: PrimitiveValue): string {
  */
 function formatLabel(prim: PrimitiveValue): string {
   if (prim.type === 'string') return `"${prim.value}"`;
+  if (prim.display !== undefined) return prim.display;
   if (prim.type === 'null') return 'None';
   if (prim.type === 'boolean') return prim.value ? 'True' : 'False';
   return String(prim.value);
@@ -44,7 +49,8 @@ export function promoteToHeap(snapshot: ExecutionSnapshot): ExecutionSnapshot {
     if (value.type === 'ref') return value;
 
     const prim = value as PrimitiveValue;
-    const key = `${prim.type}:${prim.value}`;
+    // One object per value as Python writes it: 5 and 5.0 are two objects.
+    const key = `${prim.type}:${prim.display ?? prim.value}`;
     let id = valueToId.get(key);
 
     if (!id) {

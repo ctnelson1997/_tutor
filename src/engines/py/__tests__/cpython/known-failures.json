@@ -1,19 +1,5 @@
 {
   "failures": {
-    "data-structures/nested-json-data": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      },
-      "final-state": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
     "examples/classes": {
       "variables": {
         "issues": [
@@ -22,32 +8,12 @@
         "reason": "visualization model (classes, builtin names, modules)"
       }
     },
-    "exceptions/assert-statements": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
     "exceptions/builtin-error-messages": {
       "variables": {
         "issues": [
           38
         ],
         "reason": "visualization model (classes, builtin names, modules)"
-      },
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      },
-      "final-state": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
       }
     },
     "exceptions/context-manager-class": {
@@ -82,14 +48,6 @@
         "reason": "visualization model (classes, builtin names, modules)"
       }
     },
-    "exceptions/uncaught-in-list-comprehension": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
     "exceptions/uncaught-in-method": {
       "variables": {
         "issues": [
@@ -98,36 +56,12 @@
         "reason": "visualization model (classes, builtin names, modules)"
       }
     },
-    "exceptions/uncaught-through-functions": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
     "extra/class-attributes": {
       "variables": {
         "issues": [
           38
         ],
         "reason": "visualization model (classes, builtin names, modules)"
-      }
-    },
-    "functional/generator-send": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
-    "functional/lambdas-in-dicts": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
       }
     },
     "limits/deep-recursion-500": {
@@ -152,190 +86,6 @@
           39
         ],
         "reason": "every step re-serialized: too slow"
-      }
-    },
-    "numbers/big-int-powers": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      },
-      "final-state": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
-    "numbers/complex-numbers": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      },
-      "final-state": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
-    "numbers/divmod-and-pow": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      },
-      "final-state": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
-    "numbers/factorial-30": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      },
-      "final-state": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
-    "numbers/float-accumulation-steps": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
-    "numbers/float-overflow-error": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
-    "numbers/float-repr": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      },
-      "final-state": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
-    "numbers/floor-div-mod-negatives": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      },
-      "final-state": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
-    "numbers/int-bases-and-bits": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      },
-      "final-state": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
-    "numbers/int-conversion-truncation": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      },
-      "final-state": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
-    "numbers/math-functions": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      },
-      "final-state": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
-    "numbers/negative-zero": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      },
-      "final-state": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
-    "numbers/round-bankers": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      },
-      "final-state": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
-    "numbers/whole-floats-in-variables": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      },
-      "final-state": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
       }
     },
     "oop/abc-abstract": {
@@ -392,14 +142,6 @@
           38
         ],
         "reason": "visualization model (classes, builtin names, modules)"
-      }
-    },
-    "oop/dataclass-basics": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
       }
     },
     "oop/enum-basics": {
@@ -488,12 +230,6 @@
           38
         ],
         "reason": "visualization model (classes, builtin names, modules)"
-      },
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
       }
     },
     "oop/override-polymorphism": {
@@ -526,12 +262,6 @@
           38
         ],
         "reason": "visualization model (classes, builtin names, modules)"
-      },
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
       }
     },
     "oop/slots-class": {
@@ -590,70 +320,6 @@
         "reason": "visualization model (classes, builtin names, modules)"
       }
     },
-    "print-format/fstring-align-width": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      },
-      "final-state": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
-    "print-format/repr-vs-str": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      },
-      "final-state": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
-    "print-format/sep-and-end": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      },
-      "final-state": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
-    "print-format/str-format-method": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      },
-      "final-state": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
-    "realistic/average-of-n": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
     "realistic/balanced-parens": {
       "variables": {
         "issues": [
@@ -678,36 +344,6 @@
         "reason": "visualization model (classes, builtin names, modules)"
       }
     },
-    "realistic/grade-calculator": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
-    "realistic/gradebook-input": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      },
-      "final-state": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
-    "realistic/group-students": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
     "realistic/linked-list": {
       "variables": {
         "issues": [
@@ -716,42 +352,12 @@
         "reason": "visualization model (classes, builtin names, modules)"
       }
     },
-    "realistic/list-stats": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
-    "realistic/menu-bank": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
     "realistic/printer-queue": {
       "variables": {
         "issues": [
           38
         ],
         "reason": "visualization model (classes, builtin names, modules)"
-      }
-    },
-    "realistic/quiz-input": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      },
-      "final-state": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
       }
     },
     "realistic/shapes-inheritance": {
@@ -768,12 +374,6 @@
           38
         ],
         "reason": "visualization model (classes, builtin names, modules)"
-      },
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
       }
     },
     "realistic/student-course": {
@@ -782,46 +382,6 @@
           38
         ],
         "reason": "visualization model (classes, builtin names, modules)"
-      },
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      },
-      "final-state": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
-    "realistic/temperature-converter-input": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      },
-      "final-state": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      }
-    },
-    "realistic/temperature-table": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      },
-      "final-state": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
       }
     },
     "scope-mutation/class-vs-instance-attributes": {
@@ -870,20 +430,6 @@
           38
         ],
         "reason": "visualization model (classes, builtin names, modules)"
-      }
-    },
-    "stdlib/sys-info": {
-      "values": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
-      },
-      "final-state": {
-        "issues": [
-          37
-        ],
-        "reason": "numbers shown as JSON numbers"
       }
     }
   }

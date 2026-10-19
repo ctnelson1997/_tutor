@@ -206,13 +206,11 @@ type Shown = string | { str: string } | { ref: string };
 /** What a step shows for a value: the text of a primitive as Python writes it, a string's characters, or a heap reference. */
 export function shownValue(v: RuntimeValue): Shown {
   switch (v.type) {
-    case 'null': return 'None';
-    case 'boolean': return v.value ? 'True' : 'False';
+    // What the UI shows: the engine's text (display, #37), else the value rendered by type.
+    case 'null': return v.display ?? 'null';
+    case 'boolean': return v.display ?? String(v.value);
     case 'number':
-      if (v.value === 'Infinity') return 'inf';
-      if (v.value === '-Infinity') return '-inf';
-      if (v.value === 'NaN') return 'nan';
-      return String(v.value);
+      return v.display ?? String(v.value);
     case 'string': return { str: String(v.value) };
     case 'ref': return { ref: v.heapId };
     default: return JSON.stringify(v);

@@ -169,9 +169,14 @@ describe('value comparison', () => {
     expect(compareValue("'hi'", str('ho'))).toMatch(/shown as/);
     expect(compareValue('<list>', ref('3'))).toBeNull();
     expect(compareValue('<list>', num(1))).toMatch(/shown as/);
-    expect(compareValue('None', { type: 'null', value: null })).toBeNull();
-    expect(compareValue('True', { type: 'boolean', value: true })).toBeNull();
-    expect(compareValue('inf', { type: 'number', value: 'Infinity' })).toBeNull();
+    // What the UI shows: the engine's text (display, #37), else the value rendered by type.
+    expect(compareValue('5.0', { type: 'number', value: 5, display: '5.0' })).toBeNull();
+    expect(compareValue('None', { type: 'null', value: null, display: 'None' })).toBeNull();
+    expect(compareValue('None', { type: 'null', value: null })).toBe('None shown as null');
+    expect(compareValue('True', { type: 'boolean', value: true, display: 'True' })).toBeNull();
+    expect(compareValue('True', { type: 'boolean', value: true })).toBe('True shown as true');
+    expect(compareValue('inf', { type: 'number', value: 'Infinity', display: 'inf' })).toBeNull();
+    expect(compareValue('(3+4j)', { type: 'number', value: '(3+4j)', display: '(3+4j)' })).toBeNull();
     expect(compareValue("'long…", str('anything'))).toBeNull();
   });
 

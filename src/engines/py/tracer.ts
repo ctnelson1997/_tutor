@@ -456,7 +456,8 @@ def _scan_continuation_lines(source_code):
 # near the recursion limit.
 
 _FUNCTION_TYPES = (_types.FunctionType, _types.BuiltinFunctionType, _types.MethodType, _types.BuiltinMethodType, type)
-_BIG_INT = 10 ** 15
+# Ints JavaScript holds exactly: their text is the same in both languages.
+_EXACT_INT = 2 ** 53
 
 def _get_heap_id(obj):
     global _heap_counter
@@ -476,42 +477,48 @@ def _digits(v):
     return n
 
 def _int_value(val):
+    # An int as Python writes it (#37): a JSON number while JavaScript holds it
+    # exactly, else its digits as text (a JSON number would lose them).
     val = int.__int__(val)
-    if -_BIG_INT < val < _BIG_INT:
+    if -_EXACT_INT <= val <= _EXACT_INT:
         return {"type": "number", "value": val}
     try:
-        int.__repr__(val)
+        text = int.__repr__(val)
     except ValueError:
         # Past Python's limit for converting an int to text: shown by its size.
         text = '<int with %d digits>' % _digits(val)
-        return {"type": "number", "value": text, "display": text}
-    return {"type": "number", "value": val}
+    return {"type": "number", "value": text, "display": text}
 
 def _serialize_value(val, heap_objects, visited, pending):
     # A value as the snapshot shows it: a primitive inline, a heap object as a
     # reference (queued in pending to be serialized once per snapshot).
     global _work
     _work += 1
+    # Values carry the text Python writes for them (display, #37): None, True,
+    # False, a float's repr (5.0, -0.0, 1e+16, inf), an int past what JavaScript
+    # holds exactly, a complex number's repr.
     if val is None:
-        return {"type": "null", "value": None}
+        return {"type": "null", "value": None, "display": "None"}
     if val is True:
-        return {"type": "boolean", "value": True}
+        return {"type": "boolean", "value": True, "display": "True"}
     if val is False:
-        return {"type": "boolean", "value": False}
+        return {"type": "boolean", "value": False, "display": "False"}
     t = type(val)
     if issubclass(t, int):
         return _int_value(val)
     if issubclass(t, float):
         f = float.__float__(val)
+        text = float.__repr__(f)
         if _isinf(f):
-            return {"type": "number", "value": "Infinity" if f > 0 else "-Infinity"}
+            return {"type": "number", "value": "Infinity" if f > 0 else "-Infinity", "display": text}
         if _isnan(f):
-            return {"type": "number", "value": "NaN"}
-        return {"type": "number", "value": f}
+            return {"type": "number", "value": "NaN", "display": text}
+        return {"type": "number", "value": f, "display": text}
     if issubclass(t, str):
         return {"type": "string", "value": str.__str__(val)}
     if issubclass(t, complex):
-        return {"type": "string", "value": complex.__repr__(val)}
+        text = complex.__repr__(val)
+        return {"type": "number", "value": text, "display": text}
 
     # Heap objects: list, dict, tuple, set, function, class instances
     obj_id = id(val)
