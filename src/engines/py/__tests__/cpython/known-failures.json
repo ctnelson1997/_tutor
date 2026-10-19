@@ -214,26 +214,6 @@
         "reason": "comprehension display re-runs code / stale f_locals"
       }
     },
-    "extra/ends-with-quote": {
-      "output": {
-        "issues": [
-          30
-        ],
-        "reason": "the source is pasted into Python code"
-      },
-      "ending": {
-        "issues": [
-          30
-        ],
-        "reason": "the source is pasted into Python code"
-      },
-      "names": {
-        "issues": [
-          30
-        ],
-        "reason": "the source is pasted into Python code"
-      }
-    },
     "extra/low-recursion-limit": {
       "output": {
         "issues": [
@@ -504,12 +484,6 @@
         "reason": "the tracer runs on the program's terms"
       },
       "ending": {
-        "issues": [
-          34
-        ],
-        "reason": "the tracer runs on the program's terms"
-      },
-      "names": {
         "issues": [
           34
         ],

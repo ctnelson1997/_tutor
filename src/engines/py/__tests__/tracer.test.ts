@@ -600,8 +600,8 @@ describe('getTracerCode', () => {
 
   // ── Error handling ──
 
-  it('catches exceptions during execution', () => {
-    expect(code).toContain('except Exception as e:');
+  it("catches every exception the program raises, BaseExceptions included, as the program's own", () => {
+    expect(code).toContain('except BaseException as e:');
   });
 
   it('extracts line numbers from traceback', () => {

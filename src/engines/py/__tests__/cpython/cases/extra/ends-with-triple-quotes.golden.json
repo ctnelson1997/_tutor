@@ -1,0 +1,47 @@
+{
+ "stdout": "start\nFIRST LINE\nSECOND \"LINE\" \t TABBED\nHe said \"\"\"hi\"\"\" and left 25\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "start"
+  },
+  {
+   "stream": "stdout",
+   "text": "FIRST LINE"
+  },
+  {
+   "stream": "stdout",
+   "text": "SECOND \"LINE\" \t TABBED"
+  },
+  {
+   "stream": "stdout",
+   "text": "He said \"\"\"hi\"\"\" and left 25"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"doc":"'first line\\nsecond \"line\" \\t tabbed'"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"doc":"'first line\\nsecond \"line\" \\t tabbed'"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"doc":"'first line\\nsecond \"line\" \\t tabbed'","quote":"'He said \"\"\"hi\"\"\" and left'"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"doc":"'first line\\nsecond \"line\" \\t tabbed'","quote":"'He said \"\"\"hi\"\"\" and left'"}},
+  {"event":"return","line":8,"stack":["<module>"],"locals":{"doc":"'first line\\nsecond \"line\" \\t tabbed'","quote":"'He said \"\"\"hi\"\"\" and left'","note":"'done'"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 8,
+ "finalGlobals": {
+  "doc": "'first line\\nsecond \"line\" \\t tabbed'",
+  "quote": "'He said \"\"\"hi\"\"\" and left'",
+  "note": "'done'"
+ },
+ "continuation": [
+  4
+ ],
+ "sourceSha256": "621e5c3325cac49cd1533b3caab3b814809755680250f29fac11bbaa2222b76b"
+}

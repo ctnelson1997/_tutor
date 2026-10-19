@@ -1,0 +1,84 @@
+{
+ "stdout": "0\n2\n4\ncaught Quit stopping at 3\nthen uncaught\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "0"
+  },
+  {
+   "stream": "stdout",
+   "text": "2"
+  },
+  {
+   "stream": "stdout",
+   "text": "4"
+  },
+  {
+   "stream": "stdout",
+   "text": "caught Quit stopping at 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "then uncaught"
+  }
+ ],
+ "exception": {
+  "class": "KeyboardInterrupt",
+  "message": "pressed Ctrl-C"
+ },
+ "traceback": "Traceback (most recent call last):\n  File \"main.py\", line 16, in <module>\n    raise KeyboardInterrupt(\"pressed Ctrl-C\")\nKeyboardInterrupt: pressed Ctrl-C\n",
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"call","line":2,"stack":["<module>","Quit"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>","Quit"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>","Quit"],"locals":{"__module__":"'__main__'","__qualname__":"'Quit'"}},
+  {"event":"return","line":3,"stack":["<module>","Quit"],"locals":{"__module__":"'__main__'","__qualname__":"'Quit'"},"value":"None"},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"Quit":"<type>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"Quit":"<type>","run":"<function>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"Quit":"<type>","run":"<function>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"Quit":"<type>","run":"<function>","i":"0"}},
+  {"event":"call","line":5,"stack":["<module>","run"],"locals":{"n":"0"}},
+  {"event":"line","line":6,"stack":["<module>","run"],"locals":{"n":"0"}},
+  {"event":"line","line":8,"stack":["<module>","run"],"locals":{"n":"0"}},
+  {"event":"return","line":8,"stack":["<module>","run"],"locals":{"n":"0"},"value":"0"},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"Quit":"<type>","run":"<function>","i":"0"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"Quit":"<type>","run":"<function>","i":"1"}},
+  {"event":"call","line":5,"stack":["<module>","run"],"locals":{"n":"1"}},
+  {"event":"line","line":6,"stack":["<module>","run"],"locals":{"n":"1"}},
+  {"event":"line","line":8,"stack":["<module>","run"],"locals":{"n":"1"}},
+  {"event":"return","line":8,"stack":["<module>","run"],"locals":{"n":"1"},"value":"2"},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"Quit":"<type>","run":"<function>","i":"1"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"Quit":"<type>","run":"<function>","i":"2"}},
+  {"event":"call","line":5,"stack":["<module>","run"],"locals":{"n":"2"}},
+  {"event":"line","line":6,"stack":["<module>","run"],"locals":{"n":"2"}},
+  {"event":"line","line":8,"stack":["<module>","run"],"locals":{"n":"2"}},
+  {"event":"return","line":8,"stack":["<module>","run"],"locals":{"n":"2"},"value":"4"},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"Quit":"<type>","run":"<function>","i":"2"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"Quit":"<type>","run":"<function>","i":"3"}},
+  {"event":"call","line":5,"stack":["<module>","run"],"locals":{"n":"3"}},
+  {"event":"line","line":6,"stack":["<module>","run"],"locals":{"n":"3"}},
+  {"event":"line","line":7,"stack":["<module>","run"],"locals":{"n":"3"}},
+  {"event":"exception","line":7,"stack":["<module>","run"],"locals":{"n":"3"},"exc":"Quit"},
+  {"event":"return","line":7,"stack":["<module>","run"],"locals":{"n":"3"},"value":"None"},
+  {"event":"exception","line":12,"stack":["<module>"],"locals":{"Quit":"<type>","run":"<function>","i":"3"},"exc":"Quit"},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"Quit":"<type>","run":"<function>","i":"3"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"Quit":"<type>","run":"<function>","i":"3","e":"<Quit>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"Quit":"<type>","run":"<function>","i":"3"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"Quit":"<type>","run":"<function>","i":"3"}},
+  {"event":"exception","line":16,"stack":["<module>"],"locals":{"Quit":"<type>","run":"<function>","i":"3"},"exc":"KeyboardInterrupt"},
+  {"event":"return","line":16,"stack":["<module>"],"locals":{"Quit":"<type>","run":"<function>","i":"3"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 37,
+ "finalGlobals": {
+  "Quit": "<type>",
+  "run": "<function>",
+  "i": "3"
+ },
+ "continuation": [],
+ "sourceSha256": "32394003dc1ec97932558d22868828ee2c0b3720348d579295b762ef51b58d64"
+}

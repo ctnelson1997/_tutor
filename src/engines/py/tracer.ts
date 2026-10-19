@@ -724,7 +724,9 @@ def run_traced(source_code):
         pass
     except SystemExit:
         pass  # raise SystemExit ends the program
-    except Exception as e:
+    except BaseException as e:
+        # Any other exception the program raised is its own, KeyboardInterrupt
+        # and BaseException subclasses included, as CPython reports them.
         sys.settrace(None)
         error = {"kind": "exception", "message": _exception_text(e), "stderr": _traceback_text(e, source_code)}
         line = _user_line(e)

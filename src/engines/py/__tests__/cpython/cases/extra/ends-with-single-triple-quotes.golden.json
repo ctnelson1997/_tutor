@@ -1,0 +1,45 @@
+{
+ "stdout": "\\d+\\s* 6\nit's \\ fine 11\n['the', 'end']\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "\\d+\\s* 6"
+  },
+  {
+   "stream": "stdout",
+   "text": "it's \\ fine 11"
+  },
+  {
+   "stream": "stdout",
+   "text": "['the', 'end']"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"raw":"'\\\\d+\\\\s*'"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"raw":"'\\\\d+\\\\s*'"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"raw":"'\\\\d+\\\\s*'","escaped":"\"it's \\\\ fine\""}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"raw":"'\\\\d+\\\\s*'","escaped":"\"it's \\\\ fine\""}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"raw":"'\\\\d+\\\\s*'","escaped":"\"it's \\\\ fine\"","tail":"'the\\nend'"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"raw":"'\\\\d+\\\\s*'","escaped":"\"it's \\\\ fine\"","tail":"'the\\nend'"}},
+  {"event":"return","line":9,"stack":["<module>"],"locals":{"raw":"'\\\\d+\\\\s*'","escaped":"\"it's \\\\ fine\"","tail":"'the\\nend'","last":"'x'"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 9,
+ "finalGlobals": {
+  "raw": "'\\\\d+\\\\s*'",
+  "escaped": "\"it's \\\\ fine\"",
+  "tail": "'the\\nend'",
+  "last": "'x'"
+ },
+ "continuation": [
+  7
+ ],
+ "sourceSha256": "6f7109f7490401c291cc3baf904dd0473b051615f860ae1f23d87be07c6d1f9d"
+}

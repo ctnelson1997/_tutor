@@ -18,10 +18,17 @@ export const TIMEOUT_REPLY: WorkerMessage = {
   message: `Execution timed out after ${WORKER_TIMEOUT / 1000} seconds. Your code may contain an infinite loop.`,
 };
 
+/** What a student sees when PyTutor itself fails: never Pyodide's traceback or the tracer's names. */
+export const INTERNAL_ERROR = 'Internal PyTutor error (please report it)';
+
 /** The part of Pyodide's API a run uses. */
 export interface PyodideApi {
   runPython(code: string): unknown;
+  globals: { get(name: string): unknown };
 }
+
+/** A Python function as Pyodide hands it to JavaScript. */
+type PyCallable = ((...args: unknown[]) => unknown) & { destroy?: () => void };
 
 /** The Pyodides the tracer's definitions are loaded in (once each). */
 const withTracer = new WeakSet<object>();
@@ -30,8 +37,7 @@ export interface RunOptions {
   /**
    * How long the tracer lets a program run before stopping it with its steps
    * (8.5 s by default, before the worker's kill). The CPython suite turns it
-   * off and judges the run's CPU time instead, so its results don't depend on
-   * the machine's load.
+   * off for a work budget, so its results don't depend on the machine's load.
    */
   timeBudgetSeconds?: number;
   /**
@@ -55,22 +61,19 @@ export function runProgram(pyodide: PyodideApi, tracerCode: string, source: stri
     }
     if (options.workBudget !== undefined) pyodide.runPython(`_WORK_BUDGET = ${options.workBudget}`);
 
-    // Run traced execution — pass user source as a Python string
-    const escapedSource = source
-      .replace(/\\/g, '\\\\')
-      .replace(/"""/g, '\\"\\"\\"');
-    const result = pyodide.runPython(`run_traced("""${escapedSource}""")`) as string;
-
-    // result is a JSON string from Python
-    return JSON.parse(result) as WorkerMessage;
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    // Try to extract line number from Python traceback
-    let line: number | undefined;
-    const lineMatch = message.match(/File "<(?:exec|user_code)>", line (\d+)/);
-    if (lineMatch) {
-      line = parseInt(lineMatch[1], 10);
+    // The source goes to run_traced as a str (data), never into Python code:
+    // a program ending in a quote or a backslash runs as written.
+    const runTraced = pyodide.globals.get('run_traced') as PyCallable;
+    try {
+      return JSON.parse(runTraced(source) as string) as WorkerMessage;
+    } finally {
+      runTraced.destroy?.();
     }
-    return { type: 'error', message, line };
+  } catch (err) {
+    // run_traced reports the program's own errors in its reply, so this is
+    // PyTutor failing: the details go to the developer's console, not to the
+    // student, who would only see Pyodide's internals.
+    console.error('PyTutor internal error:', err);
+    return { type: 'error', message: INTERNAL_ERROR };
   }
 }
