@@ -8,6 +8,7 @@ import {
   downloadHtml,
   fetchViewerTemplate,
   ExportTemplateError,
+  offlineNote,
   slugifyFilename,
 } from '../utils/exportHtml';
 
@@ -108,6 +109,11 @@ export default function ExportModal({ show, onHide }: Props) {
           backend required. Drop it into your own website. To combine multiple visualizations
           into one file, paste their <code>__EXAMPLES__</code> entries together.
         </p>
+        {offlineNote(language) && (
+          <div className="alert alert-info py-2 mb-3" style={{ fontSize: '0.8rem' }}>
+            {offlineNote(language)}
+          </div>
+        )}
         <Form.Group className="mb-2">
           <Form.Label style={{ fontSize: '0.85rem' }}>Title</Form.Label>
           <Form.Control

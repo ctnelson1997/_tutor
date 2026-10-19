@@ -111,6 +111,17 @@ export function downloadHtml(html: string, filename: string): void {
  * Slugify a free-form title for use as a filename. Lowercases, replaces
  * non-alphanumerics with hyphens, collapses repeats, trims.
  */
+/**
+ * What the export dialog says about using the file offline, for a language
+ * whose engine the viewer fetches (#36's decision: Python's Pyodide stays on
+ * the CDN, about 12 MB, rather than making each file about 19.6 MB); null
+ * when the file needs nothing else.
+ */
+export function offlineNote(language: LanguageId): string | null {
+  if (language !== 'py') return null;
+  return 'The file shows these steps without a network connection, but running Python code in it loads the Python engine (Pyodide, about 12 MB) from cdn.jsdelivr.net, so editing and running the code needs an internet connection.';
+}
+
 export function slugifyFilename(input: string): string {
   const cleaned = input
     .toLowerCase()

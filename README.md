@@ -255,7 +255,7 @@ src/
 .env.java                       # Java build branding (VITE_APP_NAME=JavaTutor, etc.)
 viewer.html                     # HTML entry for the viewer-<lang> build (contains the __EXAMPLES__ placeholder)
 vite.config.ts                  # Build config — mode-based outDir + language targeting + singlefile viewer mode
-scripts/                        # Dev tools, run with tsx: java-golden.ts (JDK goldens), java-diff.ts, java-viz.ts, java-payload.ts, js-golden.ts (Node goldens), js-diff.ts, js-viz.ts, js-payload.ts, py-golden.ts (CPython goldens), py-diff.ts, py-viz.ts
+scripts/                        # Dev tools, run with tsx: java-golden.ts (JDK goldens), java-diff.ts, java-viz.ts, java-payload.ts, js-golden.ts (Node goldens), js-diff.ts, js-viz.ts, js-payload.ts, py-golden.ts (CPython goldens), py-diff.ts, py-viz.ts, py-measure.ts
 ```
 
 ---
@@ -301,7 +301,7 @@ The Java engine is a teaching-oriented subset, not a full JVM. It does not curre
 
 1. The viewer build (`vite build --mode viewer-<lang>` with [vite-plugin-singlefile](https://github.com/richardtallent/vite-plugin-singlefile)) bundles the React app + the target engine into a single HTML file at `docs/viewer-<lang>.html`, with an empty `window.__EXAMPLES__ = []` between explicit `EXPORT_PLACEHOLDER_START` / `EXPORT_PLACEHOLDER_END` markers.
 2. When the user clicks Export, the live app calls `runCode` (if needed) to capture snapshots, fetches `./viewer-<lang>.html` from the same origin, then splices a JSON-stringified example object into the placeholder via `src/utils/exportHtml.ts`.
-3. The resulting HTML downloads as a single file. Recipients can open it offline (network only required for Python's Pyodide CDN load) and edit/re-run code with the full engine onboard.
+3. The resulting HTML downloads as a single file. Recipients can open it offline and edit/re-run code with the full engine onboard. A Python file shows its recorded steps offline too, but running Python code loads the Python engine (Pyodide, about 12 MB) from the CDN, which the export dialog says; bundling it would make every exported file about 19.6 MB.
 4. To combine multiple visualizations, paste additional example objects into the `__EXAMPLES__` array between the placeholder markers — the viewer shows a picker in the navbar whenever the array has 2+ entries.
 
 The Python and Java engines use Vite's `?worker&inline` syntax for their Web Workers so the workers serialize as base64 blob URLs inside the singlefile bundle.

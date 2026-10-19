@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildExportHtml, slugifyFilename, ExportTemplateError } from '../exportHtml';
+import { buildExportHtml, offlineNote, slugifyFilename, ExportTemplateError } from '../exportHtml';
 import type { ExecutionSnapshot } from '../../types/snapshot';
 
 const SAMPLE_TEMPLATE = `<!doctype html>
@@ -174,6 +174,18 @@ describe('multi-example merge scenario', () => {
     expect(parsed).toHaveLength(2);
     expect((parsed[0] as { title: string }).title).toBe('A');
     expect((parsed[1] as { title: string }).title).toBe('B');
+  });
+});
+
+describe('offlineNote', () => {
+  it("says a Python file needs the network to run code, as its engine stays on the CDN (#36)", () => {
+    expect(offlineNote('py')).toMatch(/internet connection/);
+    expect(offlineNote('py')).toMatch(/cdn\.jsdelivr\.net/);
+  });
+
+  it('says nothing for JavaScript and Java, whose engines are in the file', () => {
+    expect(offlineNote('js')).toBeNull();
+    expect(offlineNote('java')).toBeNull();
   });
 });
 
