@@ -1,6 +1,6 @@
 /**
  * CPython differential harness (#29): runs a case through PyTutor exactly as
- * the browser's worker does (runner.ts: runProgram in a fresh Pyodide), and
+ * the browser's worker does (runner.ts: a PySession, a fresh interpreter for each), and
  * compares the run with what CPython did (the golden).
  *
  * The checks, each its own test in cpython-differential.test.ts:

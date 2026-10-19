@@ -8,7 +8,7 @@
  */
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { ExecutionSnapshot, HeapObject, StackFrame } from '../../../types/snapshot';
-import { INTERNAL_ERROR, runProgram } from '../run';
+import { INTERNAL_ERROR, loadTracer, runProgram } from '../run';
 import { getTracerCode } from '../tracer';
 import { loadNodePyodide, textSink, type PyodideInterface } from './cpython/pyodideNode';
 
@@ -18,13 +18,14 @@ const pyStderr = textSink();
 
 beforeAll(async () => {
   py = await loadNodePyodide();
+  loadTracer(py, tracer);
   py.setStderr(pyStderr);
 }, 60_000);
 
 afterEach(() => vi.restoreAllMocks());
 
 function runFull(source: string) {
-  const reply = runProgram(py, tracer, source);
+  const reply = runProgram(py, source);
   if (reply.type !== 'result') throw new Error(reply.message);
   return reply;
 }

@@ -1,7 +1,7 @@
 /**
  * CPython differential suite (#29): every corpus case (./cases, plus the
  * shipped examples) runs through PyTutor as the browser's worker runs it
- * (runProgram in a fresh Pyodide, runner.ts) and is compared with what CPython
+ * (a fresh interpreter for each, runner.ts) and is compared with what CPython
  * 3.12 did, as recorded in the committed goldens. Nothing beyond the dev
  * dependencies is needed to run it.
  *

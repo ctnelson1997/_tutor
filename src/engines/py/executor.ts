@@ -53,7 +53,7 @@ function createWorker(): Promise<void> {
       reject(new Error(e.message || 'Failed to create Python worker.'));
     };
 
-    w.postMessage({ type: 'init' });
+    w.postMessage({ type: 'init', tracerCode });
   });
 }
 
@@ -113,7 +113,7 @@ export async function execute(source: string, options?: EngineExecuteOptions): P
       });
     };
 
-    worker.postMessage({ type: 'run', source, stdin: options?.stdin ?? '', tracerCode });
+    worker.postMessage({ type: 'run', source, stdin: options?.stdin ?? '' });
   });
 }
 

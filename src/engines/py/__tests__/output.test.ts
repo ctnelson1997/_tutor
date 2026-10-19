@@ -6,7 +6,7 @@
  */
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { ExecutionSnapshot, WorkerMessage } from '../../../types/snapshot';
-import { runProgram } from '../run';
+import { loadTracer, runProgram } from '../run';
 import { getTracerCode } from '../tracer';
 import { loadNodePyodide, type PyodideInterface } from './cpython/pyodideNode';
 
@@ -15,10 +15,11 @@ const tracer = getTracerCode();
 
 beforeAll(async () => {
   py = await loadNodePyodide();
+  loadTracer(py, tracer);
 }, 60_000);
 
 function runReply(source: string, stdin = ''): WorkerMessage {
-  return runProgram(py, tracer, source, { stdin });
+  return runProgram(py, source, { stdin });
 }
 
 function run(source: string, stdin = ''): ExecutionSnapshot[] {

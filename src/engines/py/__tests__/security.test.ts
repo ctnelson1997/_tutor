@@ -29,6 +29,13 @@ describe('analyzeCode', () => {
 
   // ── Dangerous imports ──
 
+  it("flags Pyodide's bridges to the browser's JavaScript", () => {
+    for (const code of ['import js\njs.fetch("x")', 'from js import fetch', 'import pyodide', 'from pyodide.ffi import to_js']) {
+      expect(analyzeCode(code).map(f => f.message), code).toContain("This code reaches the browser's JavaScript (the js or pyodide module)");
+    }
+    expect(analyzeCode('jsdata = 1\nimport json')).toEqual([]);
+  });
+
   it('flags import os', () => {
     const flags = analyzeCode('import os');
     expect(flags).toHaveLength(1);

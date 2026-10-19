@@ -160,8 +160,10 @@ describe('getTracerCode', () => {
 
   // ── The namespace (#34; #35 decides what a program may use) ──
 
-  it("runs the program in a namespace of its own names, with CPython's builtins", () => {
+  it("runs the program in a namespace of its own names, with all of CPython's builtins (#35)", () => {
     expect(code).toContain("namespace = {'__name__': '__main__'}");
+    expect(code).not.toContain('_safe_import');
+    expect(code).not.toContain('_SAFE_MODULES');
   });
 
   // ── Variable filtering ──
@@ -251,14 +253,6 @@ describe('getTracerCode', () => {
   it('adds condition to snapshot when condition is provided', () => {
     expect(code).toContain('if condition:');
     expect(code).toContain('snapshot["condition"] = condition');
-  });
-
-  it('still skips tracer-internal frames', () => {
-    const skipSection = code.slice(
-      code.indexOf('_SKIP_FRAME_NAMES'),
-      code.indexOf(')', code.indexOf('_SKIP_FRAME_NAMES')) + 1,
-    );
-    expect(skipSection).toContain('_safe_import');
   });
 
   // ── Error handling ──

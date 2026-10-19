@@ -1,8 +1,8 @@
 /**
  * Running a program through the tracer in a loaded Pyodide: what the worker
- * does with a 'run' request. The CPython differential suite (#29) calls it
- * with a Pyodide loaded in Node, so the suite runs exactly what the browser
- * runs.
+ * does with a 'run' request, in a fresh interpreter each time (session.ts).
+ * The CPython differential suite (#29) calls it with a Pyodide loaded in Node,
+ * so the suite runs exactly what the browser runs.
  */
 import type { WorkerMessage } from '../../types/snapshot';
 
@@ -30,8 +30,19 @@ export interface PyodideApi {
 /** A Python function as Pyodide hands it to JavaScript. */
 type PyCallable = ((...args: unknown[]) => unknown) & { destroy?: () => void };
 
-/** The Pyodides the tracer's definitions are loaded in (once each). */
+/** The Pyodides the tracer's definitions are loaded in. */
 const withTracer = new WeakSet<object>();
+
+/**
+ * Load the tracer's definitions (`tracerCode`, from getTracerCode()) into an
+ * interpreter, once; null when it already has them (restored from a snapshot
+ * taken after they were loaded).
+ */
+export function loadTracer(pyodide: PyodideApi, tracerCode: string | null): void {
+  if (withTracer.has(pyodide)) return;
+  if (tracerCode !== null) pyodide.runPython(tracerCode);
+  withTracer.add(pyodide);
+}
 
 export interface RunOptions {
   /** What input() and sys.stdin read: the text of the stdin panel (#32). */
@@ -50,13 +61,10 @@ export interface RunOptions {
   workBudget?: number;
 }
 
-/** Run a program through the tracer (`tracerCode`, from getTracerCode()) and return the worker's reply. */
-export function runProgram(pyodide: PyodideApi, tracerCode: string, source: string, options: RunOptions = {}): WorkerMessage {
+/** Run a program through the tracer (loaded with loadTracer) and return the worker's reply. */
+export function runProgram(pyodide: PyodideApi, source: string, options: RunOptions = {}): WorkerMessage {
   try {
-    if (!withTracer.has(pyodide)) {
-      pyodide.runPython(tracerCode);
-      withTracer.add(pyodide);
-    }
+    if (!withTracer.has(pyodide)) throw new Error('the tracer is not loaded in this interpreter');
     if (options.timeBudgetSeconds !== undefined) {
       const budget = options.timeBudgetSeconds;
       pyodide.runPython(`_TIME_BUDGET = ${Number.isFinite(budget) ? budget : "float('inf')"}`);

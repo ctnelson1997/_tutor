@@ -1,6 +1,8 @@
 import type { CodeFlag } from '../../types/engine';
 
 const SUSPICIOUS_PATTERNS: { pattern: RegExp; message: string }[] = [
+  // Pyodide's bridges to the browser: a program can reach the worker's JavaScript through them.
+  { pattern: /\b(import|from)\s+(js|pyodide)\b/, message: "This code reaches the browser's JavaScript (the js or pyodide module)" },
   { pattern: /\bimport\s+os\b/, message: 'This code imports the os module' },
   { pattern: /\bimport\s+sys\b/, message: 'This code imports the sys module' },
   { pattern: /\bimport\s+subprocess\b/, message: 'This code imports subprocess' },

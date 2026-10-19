@@ -1,10 +1,10 @@
 /**
- * runProgram (run.ts): what the worker does with a 'run' request, against a
- * fake Pyodide that records the Python it is given. The CPython suite runs it
- * in a real one.
+ * loadTracer and runProgram (run.ts): what the worker does with a 'run'
+ * request, against a fake Pyodide that records the Python it is given. The
+ * CPython suite runs them in a real one.
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { INTERNAL_ERROR, TIMEOUT_REPLY, WORKER_TIMEOUT, runProgram, type PyodideApi } from '../run';
+import { INTERNAL_ERROR, TIMEOUT_REPLY, WORKER_TIMEOUT, loadTracer, runProgram, type PyodideApi } from '../run';
 
 const OK = JSON.stringify({ type: 'result', snapshots: [] });
 
@@ -30,20 +30,36 @@ function fakePyodide(runTraced: (source: string, stdin: string) => unknown = () 
 
 afterEach(() => vi.restoreAllMocks());
 
-describe('runProgram', () => {
+describe('loadTracer and runProgram', () => {
   it('loads the tracer once per interpreter, then runs each program', () => {
     const { py, ran, sources, destroyed } = fakePyodide();
-    expect(runProgram(py, 'TRACER', 'x = 1')).toEqual({ type: 'result', snapshots: [] });
-    runProgram(py, 'TRACER', 'y = 2');
+    loadTracer(py, 'TRACER');
+    loadTracer(py, 'TRACER');
+    expect(runProgram(py, 'x = 1')).toEqual({ type: 'result', snapshots: [] });
+    runProgram(py, 'y = 2');
     expect(ran.filter(c => c === 'TRACER')).toHaveLength(1);
     expect(sources).toEqual(['x = 1', 'y = 2']);
     expect(destroyed()).toBe(2);
   });
 
+  it('takes an interpreter restored from a snapshot as having the tracer already', () => {
+    const { py, ran } = fakePyodide();
+    loadTracer(py, null);
+    expect(runProgram(py, 'x = 1').type).toBe('result');
+    expect(ran).toEqual([]);
+  });
+
+  it('refuses an interpreter without the tracer, as an internal error', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { py } = fakePyodide();
+    expect(runProgram(py, 'x = 1')).toEqual({ type: 'error', message: INTERNAL_ERROR });
+  });
+
   it('passes the source as data, so any last character works (#30)', () => {
     const { py, ran, sources } = fakePyodide();
+    loadTracer(py, 'TRACER');
     const tricky = ['name = "Ada"', '# C:\\', 'doc = """x"""', "t = '''x'''", 'a = "\\\\"\nb = """\\"""" + \'"\''];
-    for (const source of tricky) runProgram(py, 'TRACER', source);
+    for (const source of tricky) runProgram(py, source);
     expect(sources).toEqual(tricky);
     // The source never becomes Python code.
     expect(ran.some(code => tricky.some(t => code.includes(t)))).toBe(false);
@@ -51,8 +67,9 @@ describe('runProgram', () => {
 
   it("passes the stdin panel's text to run_traced, empty when there is none (#32)", () => {
     const { py, stdins } = fakePyodide();
-    runProgram(py, 'TRACER', 'x = input()', { stdin: 'Ada' });
-    runProgram(py, 'TRACER', 'x = 1');
+    loadTracer(py, 'TRACER');
+    runProgram(py, 'x = input()', { stdin: 'Ada' });
+    runProgram(py, 'x = 1');
     expect(stdins).toEqual(['Ada', '']);
   });
 
@@ -61,7 +78,8 @@ describe('runProgram', () => {
     const { py } = fakePyodide(() => {
       throw new Error('Traceback (most recent call last):\n  File "/lib/python312.zip/_pyodide/_base.py", line 513, in eval_code\n  File "<exec>", line 7, in run_traced\nIndexError');
     });
-    const reply = runProgram(py, 'TRACER', 'z');
+    loadTracer(py, 'TRACER');
+    const reply = runProgram(py, 'z');
     expect(reply).toEqual({ type: 'error', message: INTERNAL_ERROR });
     expect(JSON.stringify(reply)).not.toMatch(/_pyodide|<exec>|run_traced/);
     expect(String(error.mock.calls[0]?.[1])).toContain('IndexError');
@@ -69,8 +87,9 @@ describe('runProgram', () => {
 
   it('sets the time and work budgets when asked (the CPython suite trades one for the other)', () => {
     const { py, ran } = fakePyodide();
-    runProgram(py, 'TRACER', 'x = 1', { timeBudgetSeconds: Infinity, workBudget: 500 });
-    runProgram(py, 'TRACER', 'x = 1', { timeBudgetSeconds: 2 });
+    loadTracer(py, 'TRACER');
+    runProgram(py, 'x = 1', { timeBudgetSeconds: Infinity, workBudget: 500 });
+    runProgram(py, 'x = 1', { timeBudgetSeconds: 2 });
     expect(ran).toContain("_TIME_BUDGET = float('inf')");
     expect(ran).toContain('_WORK_BUDGET = 500');
     expect(ran).toContain('_TIME_BUDGET = 2');

@@ -1,9 +1,10 @@
 /**
  * A PyTutor runner for the CPython differential suite (#29): a child process
- * (forked with tsx by harness.ts) that runs each program it is sent through
- * runProgram, the worker's own code, in a fresh Pyodide set up as the
+ * (forked with tsx by harness.ts) that runs each program it is sent as the
+ * browser's worker does, through a PySession (a fresh interpreter for each
+ * program, restored from a memory snapshot taken once), each set up as the
  * browser's worker has it:
- *   - the case's stdin goes to runProgram, as the stdin panel's text does;
+ *   - the case's stdin is the run's, as the stdin panel's text is;
  *     Pyodide's own stdin is a Web Worker's default, which has no prompt();
  *   - what reaches Pyodide's own stdout and stderr goes to the browser's
  *     console, which students don't see: it is reported as lost.
@@ -14,9 +15,9 @@
  * threads) is reported for py-diff.
  */
 import { performance } from 'node:perf_hooks';
-import { runProgram } from '../../run';
+import { PySession } from '../../session';
 import { getTracerCode } from '../../tracer';
-import { loadNodePyodide, textSink } from './pyodideNode';
+import { loadNodePyodide, textSink, type NodePyodide } from './pyodideNode';
 import type { WorkerMessage } from '../../../../types/snapshot';
 
 export interface RunRequest {
@@ -30,7 +31,17 @@ export type RunnerMessage =
   | { id: number; type: 'reply'; reply: WorkerMessage; cpuMs: number; wallMs: number; lostStdout: string; lostStderr: string }
   | { id: number; type: 'failed'; message: string };
 
-const tracerCode = getTracerCode();
+// What reaches Pyodide's own streams in the current run.
+let lostOut = textSink();
+let lostErr = textSink();
+const session = new PySession<NodePyodide>(options => loadNodePyodide(options), getTracerCode(), py => {
+  py.setStdin({ stdin: () => { throw new ReferenceError('prompt is not defined'); } });
+  lostOut = textSink();
+  lostErr = textSink();
+  py.setStdout(lostOut);
+  py.setStderr(lostErr);
+});
+const ready = session.init();
 
 /**
  * Values the tracer may serialize before it stops the run, in place of its
@@ -48,16 +59,11 @@ const send = (m: RunnerMessage) => process.send!(m);
 process.on('message', (req: RunRequest) => {
   void (async () => {
     try {
-      const py = await loadNodePyodide();
-      py.setStdin({ stdin: () => { throw new ReferenceError('prompt is not defined'); } });
-      const out = textSink();
-      const err = textSink();
-      py.setStdout(out);
-      py.setStderr(err);
+      await ready;
       send({ id: req.id, type: 'started' });
       const cpu = threadCpuUsage();
       const t0 = performance.now();
-      const reply = runProgram(py, tracerCode, req.source, { stdin: req.stdin ?? '', timeBudgetSeconds: Infinity, workBudget: SUITE_WORK_BUDGET });
+      const reply = await session.run(req.source, { stdin: req.stdin ?? '', timeBudgetSeconds: Infinity, workBudget: SUITE_WORK_BUDGET });
       const used = threadCpuUsage(cpu);
       send({
         id: req.id,
@@ -65,8 +71,8 @@ process.on('message', (req: RunRequest) => {
         reply,
         cpuMs: (used.user + used.system) / 1000,
         wallMs: performance.now() - t0,
-        lostStdout: out.text(),
-        lostStderr: err.text(),
+        lostStdout: lostOut.text(),
+        lostStderr: lostErr.text(),
       });
     } catch (e) {
       send({ id: req.id, type: 'failed', message: e instanceof Error ? e.stack ?? e.message : String(e) });

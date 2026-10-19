@@ -141,14 +141,6 @@ _baseline_keys = set()
 # These produce no visible variable changes, so we skip snapshots for them.
 _continuation_lines = set()
 
-# Modules allowed for import
-_SAFE_MODULES = frozenset({
-    'math', 'random', 'string', 'collections', 'itertools',
-    'functools', 'operator', 'typing', 'dataclasses', 'enum',
-    'json', 're', 'datetime', 'copy', 'heapq', 'bisect',
-    'statistics', 'fractions', 'decimal', 'abc', 'textwrap',
-})
-
 # The program's file name, as CPython names it in tracebacks and warnings.
 _USER_FILE = 'main.py'
 
@@ -732,10 +724,6 @@ def _capture_snapshot(line, current_locals, return_value=None, has_return=False,
 
 # ── Trace function ──
 
-_SKIP_FRAME_NAMES = frozenset({
-    '_safe_import',
-})
-
 # Display names of the comprehensions' frames: theirs (see _CompWrapper), and
 # a generator expression's, which CPython calls <genexpr>.
 _COMP_DISPLAY_NAMES = {
@@ -776,8 +764,6 @@ def _trace_event(frame, event, arg):
         return None
 
     fname = code.co_name
-    if fname in _SKIP_FRAME_NAMES:
-        return None
 
     # Stop the program at the step cap or the time budget, instead of letting
     # it run on unrecorded until the worker is killed.
@@ -851,14 +837,6 @@ def _trace_event(frame, event, arg):
         return _tracer
 
     return _tracer
-
-# ── Safe import ──
-
-def _safe_import(name, *args, **kwargs):
-    top_level = name.split('.')[0]
-    if top_level not in _SAFE_MODULES:
-        raise ImportError(f"Import of '{name}' is not allowed in PyTutor")
-    return __builtins__.__import__(name, *args, **kwargs)
 
 # ── Entry point ──
 

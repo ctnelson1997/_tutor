@@ -16,12 +16,16 @@ export type { PyodideInterface };
  * a set of strings differs from one interpreter to the next in CPython and in
  * the browser, and a golden must be comparable with a run in another process.
  */
-export async function loadNodePyodide(): Promise<PyodideInterface> {
+export async function loadNodePyodide(options: { _makeSnapshot?: boolean; _loadSnapshot?: Uint8Array } = {}): Promise<NodePyodide> {
   if (version !== PYODIDE_VERSION) {
     throw new Error(`The pyodide dev dependency is ${version}, but PyTutor loads ${PYODIDE_VERSION}: install pyodide@${PYODIDE_VERSION}`);
   }
-  return loadPyodide({ env: { PYTHONHASHSEED: '0' } });
+  // (A snapshot's interpreter has the hash seed of the one the snapshot was taken of.)
+  return loadPyodide({ env: { PYTHONHASHSEED: '0' }, ...options } as Parameters<typeof loadPyodide>[0]) as Promise<NodePyodide>;
 }
+
+/** A Pyodide under Node, as a PySession can take a memory snapshot of it. */
+export type NodePyodide = PyodideInterface & { makeMemorySnapshot?(): Uint8Array };
 
 /** Collects what one stream receives, decoding UTF-8 across writes. */
 export function textSink(): { write: (bytes: Uint8Array) => number; text: () => string } {

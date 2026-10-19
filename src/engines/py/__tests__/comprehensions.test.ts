@@ -10,7 +10,7 @@
  */
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { ExecutionSnapshot, RuntimeValue, StackFrame } from '../../../types/snapshot';
-import { runProgram } from '../run';
+import { loadTracer, runProgram } from '../run';
 import { getTracerCode } from '../tracer';
 import { loadNodePyodide, type PyodideInterface } from './cpython/pyodideNode';
 
@@ -19,10 +19,11 @@ const tracer = getTracerCode();
 
 beforeAll(async () => {
   py = await loadNodePyodide();
+  loadTracer(py, tracer);
 }, 60_000);
 
 function runFull(source: string) {
-  const reply = runProgram(py, tracer, source);
+  const reply = runProgram(py, source);
   if (reply.type !== 'result') throw new Error(reply.message);
   return reply;
 }
