@@ -116,7 +116,7 @@
   {"event":"call","line":28,"stack":["<module>","echo"],"locals":{"got":"42"}},
   {"event":"exception","line":28,"stack":["<module>","echo"],"locals":{"got":"42"},"exc":"GeneratorExit"},
   {"event":"line","line":31,"stack":["<module>","echo"],"locals":{"got":"42"}},
-  {"event":"return","line":31,"stack":["<module>","echo"],"locals":{"got":"42"},"value":"None"},
+  {"event":"return","line":31,"stack":["<module>","echo"],"locals":{"got":"42"},"value":"None","unwinding":true},
   {"event":"line","line":38,"stack":["<module>"],"locals":{"averager":"<function>","avg":"<generator>","echo":"<function>","e":"<generator>"}},
   {"event":"return","line":38,"stack":["<module>"],"locals":{"averager":"<function>","avg":"<generator>","echo":"<function>","e":"<generator>"},"value":"None"}
  ],

@@ -18,8 +18,10 @@
  *   refs, lines, names, reachable   snapshot invariants.
  *
  * PyTutor's deliberate rules are part of the comparison, not exceptions per
- * case: the lines inside a multi-line statement are one step, a comprehension
- * has a frame of its own, and a class body's bookkeeping is hidden.
+ * case: the lines inside a multi-line statement are one step, a list, set or
+ * dict comprehension has a frame of its own (its iterations matched to
+ * CPython's events in the frame around it), and a class body's bookkeeping is
+ * hidden.
  */
 import { fork, type ChildProcess } from 'node:child_process';
 import { availableParallelism } from 'node:os';
@@ -374,9 +376,14 @@ function checkTraceback(golden: PyGolden, reply: WorkerMessage): string[] {
 
 /** A class body's bookkeeping, which PyTutor hides. */
 const HIDDEN_CLASS_NAMES = new Set(['__classcell__', '__class__', '__module__', '__qualname__', '__doc__', '__firstlineno__', '__static_attributes__', '__annotations__']);
-/** PyTutor's own frame for a comprehension (3.12 inlines them; pythontutor.com showed `<listcomp>`). */
-const PYTUTOR_COMPREHENSION = / comprehension$|^generator expression$/;
-const CPYTHON_COMPREHENSION = /^<(genexpr|listcomp|dictcomp|setcomp)>$/;
+/**
+ * PyTutor's frame for a list, set or dict comprehension, its own as before
+ * 3.12 (#33), where CPython 3.12 runs the comprehension inlined in the frame
+ * around it.
+ */
+const INLINED_COMPREHENSION = /^(list|set|dict) comprehension$/;
+/** CPython's names for the frames PyTutor names in words. */
+const CPYTHON_FRAME_NAMES: Record<string, string> = { 'generator expression': '<genexpr>' };
 
 interface StepComparison {
   steps: string[];
@@ -397,7 +404,7 @@ function compareSteps(c: PyCase, golden: PyGolden, reply: WorkerMessage): StepCo
   const importedNames = new Set([...c.source.matchAll(/^\s*import\s+([\w., ]+)$/gm)].flatMap(m => m[1].split(',').map(x => x.trim().split(/\s+as\s+/).pop()!.split('.')[0])));
   const events = referenceEvents(golden);
   const matched = new Array<boolean>(events.length).fill(false);
-  const compLines = new Set(golden.continuation);
+  const continuation = new Set(golden.continuation);
   let j = 0;
   let misaligned = 0;
   const firstMisaligned: string[] = [];
@@ -406,39 +413,60 @@ function compareSteps(c: PyCase, golden: PyGolden, reply: WorkerMessage): StepCo
   const extra = new Set<string>();
   const returnDiffs: string[] = [];
   snaps.forEach((s, i) => {
-    const names = s.callStack.map(f => f.name).filter(n => !PYTUTOR_COMPREHENSION.test(n));
-    if (names.length !== s.callStack.length) {
-      compLines.add(s.line);
-      if (PYTUTOR_COMPREHENSION.test(s.callStack[s.callStack.length - 1].name)) return;
-    }
+    const top = s.callStack[s.callStack.length - 1];
+    const inComprehension = INLINED_COMPREHENSION.test(top.name);
+    // A comprehension returning its collection: CPython's inlined comprehension has no event for it.
+    if (inComprehension && top.variables.some(v => v.name === 'return ↵')) return;
+    // A comprehension's iterations are CPython's events in the frame around it.
+    const names = s.callStack.filter(f => !INLINED_COMPREHENSION.test(f.name)).map(f => CPYTHON_FRAME_NAMES[f.name] ?? f.name);
+    // A step showing `return ↵` is a return event; any other, a call or line
+    // event (or the module's return, the last step). A frame an exception
+    // leaves gets no step for its return.
+    const returns = top.variables.some(v => v.name === 'return ↵');
     let found = -1;
     for (let k = j; k < Math.min(events.length, j + 60); k++) {
       const e = events[k];
-      if (e.event === 'exception') continue;
-      const es = e.stack.filter(n => !CPYTHON_COMPREHENSION.test(n));
-      if (e.line === s.line && es.length === names.length && es.every((n, q) => n === names[q])) { found = k; break; }
+      if (e.event === 'exception' || e.unwinding) continue;
+      if (returns !== (e.event === 'return' && e.stack.length > 1)) continue;
+      if (e.line === s.line && e.stack.length === names.length && e.stack.every((n, q) => n === names[q])) { found = k; break; }
     }
     if (found < 0) {
+      // The last step repeating the one before with the output written since
+      // (input()'s prompt before an EOFError, sys.exit()'s message): PyTutor's, not an event.
+      const before = snaps[i - 1];
+      if (i === snaps.length - 1 && before && before.line === s.line && before.callStack.map(f => f.name).join('>') === s.callStack.map(f => f.name).join('>')) return;
       misaligned++;
-      if (firstMisaligned.length < 3) firstMisaligned.push(`step ${i} line ${s.line} [${names.join(' > ')}]`);
+      if (firstMisaligned.length < 3) firstMisaligned.push(`step ${i} line ${s.line} [${s.callStack.map(f => f.name).join(' > ')}]`);
       return;
     }
     matched[found] = true;
     j = found + 1;
     const e = events[found];
-    const top = s.callStack[s.callStack.length - 1];
     const shown = new Map((top.variables ?? []).map(v => [v.name, v.value]));
     // The recorder couldn't read this frame's variables (see `!unreadable` in record.ts): nothing to compare.
     if (Object.keys(e.locals ?? {}).some(name => name.startsWith('!'))) return;
+    if (inComprehension) {
+      // Its variables are in CPython's frame around it: a function's shows
+      // them; a module's hides them (a global of the same name is another variable).
+      if (e.stack[e.stack.length - 1] === '<module>') return;
+      for (const [name, v] of shown) {
+        const rep = e.locals[name];
+        if (rep === undefined) continue;
+        const d = compareValue(rep, v);
+        if (d) valueDiffs.push(`step ${i} ${top.name}.${name}: ${d}`);
+      }
+      return;
+    }
     for (const [name, rep] of Object.entries(e.locals ?? {})) {
-      if (rep === '<module>' || HIDDEN_CLASS_NAMES.has(name)) continue;
+      // CPython's own (a generator expression's `.0`), a class body's bookkeeping, modules.
+      if (name.startsWith('.') || rep === '<module>' || HIDDEN_CLASS_NAMES.has(name)) continue;
       const v = shown.get(name);
       if (!v) { missing.add(`${top.name}.${name}`); continue; }
       const d = compareValue(rep, v);
       if (d) valueDiffs.push(`step ${i} ${top.name}.${name}: ${d}`);
     }
     for (const [name, v] of shown) {
-      if (name === 'return ↵' || name.startsWith('→') || name in (e.locals ?? {})) continue;
+      if (name === 'return ↵' || name in (e.locals ?? {})) continue;
       const h = v.type === 'ref' ? s.heap.find(x => x.id === v.heapId) : null;
       if (h && /module/.test(h.objectType)) continue;
       if (importedNames.has(name)) continue;
@@ -455,14 +483,22 @@ function compareSteps(c: PyCase, golden: PyGolden, reply: WorkerMessage): StepCo
   });
   const covered = limited ? j : events.length;
   const skipped: GoldenEvent[] = [];
+  const unreturned: GoldenEvent[] = [];
   for (let k = 0; k < covered; k++) {
     const e = events[k];
-    if (!matched[k] && e.event === 'line' && !compLines.has(e.line) && !e.stack.includes('<genexpr>')) skipped.push(e);
+    if (matched[k]) continue;
+    if (e.event === 'line' && !continuation.has(e.line)) skipped.push(e);
+    // A function returning (not unwinding) with no step showing its `return ↵`.
+    if (e.event === 'return' && !e.unwinding && e.stack.length > 1) unreturned.push(e);
   }
   if (misaligned) out.steps.push(`${misaligned} step(s) match no CPython event in order, first: ${firstMisaligned.join('; ')}`);
   if (skipped.length) {
     const lines = [...new Set(skipped.map(e => e.line))];
     out.steps.push(`${skipped.length} CPython line event(s) have no step, lines ${lines.slice(0, 12).join(', ')}${lines.length > 12 ? ', …' : ''}`);
+  }
+  if (unreturned.length) {
+    const first = unreturned[0];
+    out.steps.push(`${unreturned.length} return(s) have no step showing return ↵, first: ${first.stack[first.stack.length - 1]} at line ${first.line} (returns ${first.value})`);
   }
   if (missing.size) out.variables.push(`not shown: ${[...missing].slice(0, 8).join(', ')}`);
   if (extra.size) out.variables.push(`shown but not in CPython's frame: ${[...extra].slice(0, 8).join(', ')}`);
@@ -531,8 +567,8 @@ function checkLines(snapshots: ExecutionSnapshot[], lineCount: number): string[]
   return firstViolations(snapshots, s => (Number.isInteger(s.line) && s.line >= 1 && s.line <= lineCount ? [] : [`line ${s.line} isn't a line of the program (1–${lineCount})`]));
 }
 
-/** Names PyTutor shows that aren't the program's own, on purpose. */
-const SHOWN_NAMES = (name: string) => name === 'return ↵' || name.startsWith('→') || name === '__comp_result__';
+/** The name PyTutor shows that isn't the program's own, on purpose: a return value. */
+const SHOWN_NAMES = (name: string) => name === 'return ↵';
 
 function checkNames(c: PyCase, reply: WorkerMessage): { problems: string[]; internal: boolean } {
   const words = new Set(c.source.match(/[A-Za-z_][A-Za-z0-9_]*/g) ?? []);

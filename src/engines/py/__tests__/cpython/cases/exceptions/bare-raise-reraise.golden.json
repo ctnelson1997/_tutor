@@ -59,7 +59,7 @@
   {"event":"line","line":12,"stack":["<module>","load_logged"],"locals":{"name":"'b.csv'"}},
   {"event":"line","line":13,"stack":["<module>","load_logged"],"locals":{"name":"'b.csv'","e":"<ValueError>"}},
   {"event":"line","line":14,"stack":["<module>","load_logged"],"locals":{"name":"'b.csv'","e":"<ValueError>"}},
-  {"event":"return","line":14,"stack":["<module>","load_logged"],"locals":{"name":"'b.csv'"},"value":"None"},
+  {"event":"return","line":14,"stack":["<module>","load_logged"],"locals":{"name":"'b.csv'"},"value":"None","unwinding":true},
   {"event":"exception","line":19,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>","results":"<list>","name":"'b.csv'"},"exc":"ValueError"},
   {"event":"line","line":20,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>","results":"<list>","name":"'b.csv'"}},
   {"event":"line","line":21,"stack":["<module>"],"locals":{"log":"<list>","load":"<function>","load_logged":"<function>","results":"<list>","name":"'b.csv'","e":"<ValueError>"}},

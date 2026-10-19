@@ -301,11 +301,43 @@ describe('checkCase', () => {
     expect(checkCase(c, g, outcome(result(skipping))).checks.steps.join()).toMatch(/have no step, lines 2/);
   });
 
-  it("doesn't count a multi-line statement's inner lines, or a comprehension's own frame", () => {
+  it("doesn't count a multi-line statement's inner lines", () => {
     const g2 = golden({ ...g, continuation: [2] });
     expect(checkCase(c, g2, outcome(result([good[0], good[2], good[3]]))).checks.steps).toEqual([]);
-    const withComp = [...good.slice(0, 2), snap(9, 2, [frame('<module>', { x: num(1) }), frame('list comprehension', { i: num(0) })]), ...good.slice(2)];
-    expect(checkCase(c, g, outcome(result(withComp))).checks.steps).toEqual([]);
+  });
+
+  it("matches a comprehension's iterations with CPython's events in the frame around it (#33)", () => {
+    // CPython 3.12 runs the comprehension inlined: a line event for the statement, one per iteration.
+    const gc = golden({ ...g, events: [...events.slice(0, 3), ev('line', 2, ['<module>'], { x: '1' }), ...events.slice(3)] });
+    const comp = (step: number, vars: Record<string, RuntimeValue>) => snap(step, 2, [frame('<module>', { x: num(1) }), frame('list comprehension', vars)]);
+    const withComp = [good[0], good[1], comp(2, { i: num(0) }), comp(3, { 'return ↵': ref('5') }), good[2], good[3]];
+    expect(checkCase(c, gc, outcome(result(withComp))).checks.steps).toEqual([]);
+    // One step too many: an iteration CPython didn't run.
+    const extra = [good[0], good[1], comp(2, { i: num(0) }), comp(3, { i: num(1) }), good[2], good[3]];
+    expect(checkCase(c, gc, outcome(result(extra))).checks.steps.join()).toMatch(/match no CPython event/);
+  });
+
+  it("compares a comprehension's variables with a function's frame, not with the module's globals (#33)", () => {
+    const fc = pyCase('def f(xs):\n    return [x for x in xs]\nx = "outer"\nf([7])\n');
+    const fg = golden({
+      events: [
+        ev('line', 3, ['<module>']), ev('line', 4, ['<module>'], { x: "'outer'" }),
+        ev('call', 1, ['<module>', 'f'], { xs: '<list>' }), ev('line', 2, ['<module>', 'f'], { xs: '<list>' }), ev('line', 2, ['<module>', 'f'], { xs: '<list>', x: '7' }),
+      ],
+    });
+    const at = (step: number, line: number, stack: StackFrame[]) => snap(step, line, stack, [], [{ id: '1', objectType: 'list', properties: [] }]);
+    const run = (iteration: number) => [
+      at(0, 3, [frame('<module>')]), at(1, 4, [frame('<module>', { x: str('outer') })]),
+      at(2, 1, [frame('<module>', { x: str('outer') }), frame('f', { xs: ref('1') })]), at(3, 2, [frame('<module>', { x: str('outer') }), frame('f', { xs: ref('1') })]),
+      at(4, 2, [frame('<module>', { x: str('outer') }), frame('f', { xs: ref('1') }), frame('list comprehension', { x: num(iteration) })]),
+    ];
+    expect(checkCase(fc, fg, outcome(result(run(7)))).checks.values).toEqual([]);
+    expect(checkCase(fc, fg, outcome(result(run(8)))).checks.values.join()).toMatch(/list comprehension\.x: 7 shown as 8/);
+    // At module level CPython's frame shows the global x, a different variable.
+    const mc = pyCase('x = "outer"\nys = [x for x in [7]]\n');
+    const mg = golden({ events: [ev('line', 1, ['<module>']), ev('line', 2, ['<module>'], { x: "'outer'" }), ev('line', 2, ['<module>'], { x: "'outer'" })] });
+    const msteps = [snap(0, 1, [frame('<module>')]), snap(1, 2, [frame('<module>', { x: str('outer') })]), snap(2, 2, [frame('<module>', { x: str('outer') }), frame('list comprehension', { x: num(7) })])];
+    expect(checkCase(mc, mg, outcome(result(msteps))).checks.values).toEqual([]);
   });
 
   it('finds missing and extra variables, and wrong values', () => {
@@ -336,7 +368,7 @@ describe('checkCase', () => {
       snap(3, 2, [frame('<module>', { f: ref('1') }), frame('f', ret ? { 'return ↵': ret } : {})], [], [{ id: '1', objectType: 'function', properties: [] }]),
     ];
     expect(checkCase(fc, fg, outcome(result(steps(num(5))))).checks.values.join()).toMatch(/f return: 5\.0 shown as 5/);
-    expect(checkCase(fc, fg, outcome(result(steps(null)))).checks.values.join()).toMatch(/no return ↵/);
+    expect(checkCase(fc, fg, outcome(result(steps(null)))).checks.steps.join()).toMatch(/1 return\(s\) have no step showing return ↵, first: f at line 2 \(returns 5\.0\)/);
   });
 
   it("checks the final globals in the last step's module frame", () => {

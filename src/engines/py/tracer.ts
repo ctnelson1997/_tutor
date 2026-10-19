@@ -15,6 +15,8 @@ import json
 import math
 import time
 import linecache as _linecache
+import types as _types
+import dis as _dis
 import ast as _ast
 
 # ══════════════════════════════════════
@@ -43,6 +45,15 @@ _work = 0
 _WORK_BUDGET = None
 _unwinding = set()    # frames an exception is propagating out of
 
+# The instructions a frame returns (or yields) at. A 'return' event anywhere
+# else is the frame unwinding: an exception leaving it, perhaps after a
+# finally block or an inlined comprehension's cleanup ran (whose line events
+# end _unwinding's mark) and re-raised it.
+_RETURN_OPS = frozenset(_dis.opmap[name] for name in ('RETURN_VALUE', 'RETURN_CONST', 'YIELD_VALUE') if name in _dis.opmap)
+
+def _returns(frame):
+    return frame not in _unwinding and frame.f_code.co_code[frame.f_lasti] in _RETURN_OPS
+
 class _TutorStop(BaseException):
     """Ends a run from the tracer. A BaseException, so the program's own 'except Exception' doesn't catch it."""
 
@@ -55,13 +66,6 @@ def _stop(reason):
 # Set of namespace keys present BEFORE user code runs.
 # Populated in run_traced(); used to filter out builtins and tracer internals.
 _baseline_keys = set()
-
-# Comprehension info populated by AST scan before execution.
-# Maps line number -> dict with target_vars, display_name, elt_code, etc.
-_comp_info = {}
-
-# Tracks the currently active synthetic comprehension frame (or None).
-_active_comp = None
 
 # Lines that are continuations of multi-line simple statements.
 # These produce no visible variable changes, so we skip snapshots for them.
@@ -125,11 +129,6 @@ def _console_add(stream, s, echo):
 
 def _write(stream, s):
     global _stderr_used
-    if stream == 'stderr' and s.startswith(_USER_FILE + ':') and ': RuntimeWarning: assigning None to unbound local ' in s:
-        # CPython 3.12 warns when the tracer reads a frame's f_locals while an
-        # inlined comprehension's hidden locals exist: the tracer's doing, not
-        # the program's, so not its output (#33 stops reading f_locals there).
-        return
     if stream == 'stderr':
         _stderr_used = True
     if stream == 'stdout':
@@ -276,93 +275,82 @@ def _finish_output():
     _snapshots.append(_with_output(dict(_snapshots[-1], step=_step_counter)))
     _step_counter += 1
 
-# ── Comprehension detection (Python 3.12+ inlined comprehensions) ──
+# ── Comprehension frames (#33) ──
+#
+# Python 3.12 inlines list, set and dict comprehensions into the code around
+# them (PEP 709): no frame of their own, their variables hidden fast locals of
+# the enclosing frame, which 3.12's frame.f_locals can't read without
+# corrupting them. So each comprehension is compiled as a function called on
+# its outermost iterable, named <listcomp>, <setcomp> or <dictcomp> as before
+# 3.12: it gets a real frame, as pythontutor.com showed one, with its own
+# variables, the frames of the calls it makes on top of it, and the collection
+# it builds as its return value. The tracer never evaluates the program's code
+# itself. A comprehension whose meaning depends on the scope it runs in
+# (an assignment expression, super(), locals(), ...) stays inlined.
+# Generator expressions have real frames already.
 
-def _scan_comprehensions(source_code):
-    """Pre-scan source with ast to find comprehension lines and their iteration variables."""
-    global _comp_info
-    _comp_info = {}
+_COMP_ARGS = {'.listcomp': '<listcomp>', '.setcomp': '<setcomp>', '.dictcomp': '<dictcomp>'}
+_COMP_FRAMES = frozenset(_COMP_ARGS.values())
+_SCOPE_NAMES = frozenset({'super', '__class__', 'locals', 'vars', 'dir', 'eval', 'exec'})
+
+class _CompWrapper(_ast.NodeTransformer):
+    def _wrap(self, node, arg):
+        self.generic_visit(node)
+        if any(g.is_async for g in node.generators):
+            return node
+        for sub in _ast.walk(node):
+            if isinstance(sub, (_ast.NamedExpr, _ast.Await, _ast.Yield, _ast.YieldFrom)):
+                return node
+            if isinstance(sub, _ast.Name) and sub.id in _SCOPE_NAMES:
+                return node
+        outer = node.generators[0].iter
+        node.generators[0].iter = _ast.copy_location(_ast.Name(arg, _ast.Load()), outer)
+        params = _ast.arguments(posonlyargs=[], args=[_ast.arg(arg)], kwonlyargs=[], kw_defaults=[], defaults=[])
+        func = _ast.copy_location(_ast.Lambda(params, node), node)
+        return _ast.fix_missing_locations(_ast.copy_location(_ast.Call(func, [outer], []), node))
+
+    def visit_ListComp(self, node):
+        return self._wrap(node, '.listcomp')
+
+    def visit_SetComp(self, node):
+        return self._wrap(node, '.setcomp')
+
+    def visit_DictComp(self, node):
+        return self._wrap(node, '.dictcomp')
+
+def _name_comprehensions(code):
+    # The wrapping lambdas, named as their comprehension.
+    consts = tuple(_name_comprehensions(c) if isinstance(c, _types.CodeType) else c for c in code.co_consts)
+    if code.co_name == '<lambda>' and code.co_argcount == 1 and code.co_varnames[0] in _COMP_ARGS:
+        name = _COMP_ARGS[code.co_varnames[0]]
+        return code.replace(co_consts=consts, co_name=name, co_qualname=code.co_qualname[:-len('<lambda>')] + name)
+    return code.replace(co_consts=consts)
+
+def _compile_program(source_code):
+    # The program's code with its comprehensions in frames of their own.
+    # SyntaxErrors are compile()'s for the source as written.
+    tree = _ast.parse(source_code, _USER_FILE)
     try:
-        tree = _ast.parse(source_code)
+        return _name_comprehensions(compile(_CompWrapper().visit(tree), _USER_FILE, 'exec'))
     except SyntaxError:
-        return
+        return compile(source_code, _USER_FILE, 'exec')
 
-    _type_names = {
-        'ListComp': 'list comprehension',
-        'SetComp': 'set comprehension',
-        'DictComp': 'dict comprehension',
-        'GeneratorExp': 'generator expression',
-    }
+def _is_comprehension(code):
+    return code.co_name in _COMP_FRAMES
 
-    # First pass: collect comprehension info
-    for node in _ast.walk(tree):
-        type_name = type(node).__name__
-        if type_name in _type_names:
-            target_vars = set()
-            for gen in node.generators:
-                for n in _ast.walk(gen.target):
-                    if isinstance(n, _ast.Name):
-                        target_vars.add(n.id)
+_CO_OPTIMIZED = 1
 
-            # Compile element expression for eval during tracing
-            elt_code = None
-            elt_label = None
-            try:
-                if type_name == 'DictComp':
-                    key_src = _ast.unparse(node.key)
-                    val_src = _ast.unparse(node.value)
-                    elt_label = key_src + ': ' + val_src
-                    elt_code = compile('(' + key_src + ', ' + val_src + ')', '<comp>', 'eval')
-                elif type_name != 'GeneratorExp':
-                    elt_label = _ast.unparse(node.elt)
-                    elt_code = compile(elt_label, '<comp>', 'eval')
-            except Exception:
-                pass
-
-            # Compile filter conditions (if clauses)
-            filter_codes = []
-            filter_texts = []
-            filter_ranges = []
-            gen = node.generators[0]
-            for if_clause in gen.ifs:
-                try:
-                    filter_codes.append(compile(_ast.unparse(if_clause), '<comp>', 'eval'))
-                    filter_texts.append(_ast.unparse(if_clause))
-                    filter_ranges.append((if_clause.col_offset, getattr(if_clause, 'end_col_offset', None)))
-                except Exception:
-                    pass
-
-            # Column ranges for sub-line highlighting of comprehension phases
-            iter_range = (gen.target.col_offset, getattr(gen.iter, 'end_col_offset', None))
-            if type_name == 'DictComp':
-                elt_range = (node.key.col_offset, getattr(node.value, 'end_col_offset', None))
-            elif hasattr(node, 'elt'):
-                elt_range = (node.elt.col_offset, getattr(node.elt, 'end_col_offset', None))
-            else:
-                elt_range = None
-
-            _comp_info[node.lineno] = {
-                'target_vars': target_vars,
-                'display_name': _type_names[type_name],
-                'comp_type': type_name,
-                'result_var': None,
-                'elt_code': elt_code,
-                'elt_label': elt_label,
-                'filter_codes': filter_codes,
-                'filter_texts': filter_texts,
-                'filter_ranges': filter_ranges,
-                'iter_range': iter_range,
-                'elt_range': elt_range,
-            }
-
-    # Second pass: find assignment targets for comprehensions
-    # e.g. squares = [x*x for x in nums] -> result_var = 'squares'
-    for node in _ast.walk(tree):
-        if isinstance(node, _ast.Assign) and len(node.targets) == 1:
-            target = node.targets[0]
-            value = node.value
-            if isinstance(target, _ast.Name) and value.lineno in _comp_info:
-                _comp_info[value.lineno]['result_var'] = target.id
+def _frame_locals(frame):
+    # A frame's variables. The module's are its globals: 3.12's f_locals would
+    # merge an inlined comprehension's hidden locals into them and write them
+    # back corrupted. A class body that holds an inlined comprehension (one
+    # left inlined) can't be read safely either.
+    code = frame.f_code
+    if code.co_name == '<module>':
+        return frame.f_globals
+    if not (code.co_flags & _CO_OPTIMIZED) and code.co_nlocals > 0:
+        return {}
+    return frame.f_locals
 
 # ── Multi-line statement detection ──
 
@@ -565,36 +553,12 @@ def _capture_snapshot(line, current_locals, return_value=None, has_return=False,
                 continue
             if name.startswith('__') and name.endswith('__'):
                 continue
-            # Skip CPython internal positional args (e.g. .0 iterator in comprehensions)
+            # Skip CPython internal positional args (a comprehension's or generator expression's iterable)
             if name.startswith('.'):
                 continue
-            # When inside a synthetic comprehension frame, split variables:
-            # comp frame shows only iteration vars, enclosing frame hides them
-            if _active_comp:
-                is_comp_frame = frame_info.get("_is_comp", False)
-                is_target = name in _active_comp['target_vars']
-                if is_comp_frame and not is_target:
-                    continue
-                if not is_comp_frame and is_target:
-                    continue
             val = local_vars[name]
             serialized = _serialize_value(val, heap_objects, visited)
             variables.append({"name": name, "value": serialized})
-
-        # Show the partial result and current element in the comprehension frame
-        if _active_comp and frame_info.get("_is_comp") and not has_return:
-            # Show the collection being built — uses a marker name so the UI
-            # can render it distinctly (not as a regular variable)
-            partial = _active_comp.get('partial_result')
-            if partial is not None:
-                partial_serialized = _serialize_value(partial, heap_objects, visited)
-                variables.append({"name": "__comp_result__", "value": partial_serialized})
-
-            elt = _active_comp.get('current_elt')
-            if elt is not None:
-                elt_label = _active_comp.get('elt_label', 'element')
-                elt_serialized = _serialize_value(elt, heap_objects, visited)
-                variables.append({"name": "\\u2192 " + elt_label, "value": elt_serialized})
 
         # Add return value display
         if has_return and i == len(_call_stack) - 1:
@@ -625,9 +589,8 @@ _SKIP_FRAME_NAMES = frozenset({
     '_safe_import',
 })
 
-# Display name mapping for real comprehension frames (Python < 3.12).
-# Python 3.12+ inlines comprehensions so these frame names no longer appear;
-# synthetic frames are created instead via _comp_info from the AST scan.
+# Display names of the comprehensions' frames: theirs (see _CompWrapper), and
+# a generator expression's, which CPython calls <genexpr>.
 _COMP_DISPLAY_NAMES = {
     '<listcomp>': 'list comprehension',
     '<dictcomp>': 'dict comprehension',
@@ -635,50 +598,22 @@ _COMP_DISPLAY_NAMES = {
     '<genexpr>': 'generator expression',
 }
 
-def _pop_comp_frame(frame):
-    """Pop the synthetic comprehension frame, capturing a return snapshot first."""
-    global _active_comp
-    comp_line = _active_comp.get('_line', frame.f_lineno)
-    result_var = _active_comp.get('result_var')
-
-    # Use our partial_result as the return value so the comp frame's
-    # return snapshot shows the same collection that was building up.
-    partial = _active_comp.get('partial_result')
-
-    if partial is not None:
-        _active_comp['current_elt'] = None
-
-        # Bridge BEFORE the return snapshot so the real variable and
-        # return value share the same heap ID in that snapshot.
-        if id(partial) in _heap_map and result_var and result_var in frame.f_locals:
-            real_obj = frame.f_locals[result_var]
-            if id(real_obj) != id(partial):
-                _heap_map[id(real_obj)] = _heap_map[id(partial)]
-
-        # Sync enclosing frame locals so the return snapshot shows all variables
-        if len(_call_stack) >= 2:
-            _call_stack[-2]["locals"] = dict(frame.f_locals)
-        _capture_snapshot(comp_line, frame.f_locals, return_value=partial, has_return=True)
-
-        # Clean up synthetic entry — once partial is GC'd, CPython can
-        # reuse its address for an unrelated object.
-        if id(partial) in _heap_map:
-            del _heap_map[id(partial)]
-
-    _call_stack.pop()
-    _active_comp = None
+# Frames whose code is an expression, not statements: they run on whatever
+# lines the expression spans.
+_EXPRESSION_FRAMES = frozenset({'<lambda>', '<genexpr>'})
 
 def _tracer(frame, event, arg):
-    global _active_comp, _events
+    global _events
 
     if _stop_reason is not None:
         return None
 
     # Only trace user code
-    if frame.f_code.co_filename != _USER_FILE:
+    code = frame.f_code
+    if code.co_filename != _USER_FILE:
         return None
 
-    fname = frame.f_code.co_name
+    fname = code.co_name
     if fname in _SKIP_FRAME_NAMES:
         return None
 
@@ -692,13 +627,16 @@ def _tracer(frame, event, arg):
 
     if event == 'call':
         if fname == '<module>':
-            _call_stack.append({"name": "<module>", "locals": {}})
+            # The module's variables are its globals, read as they are at each step.
+            _call_stack.append({"name": "<module>", "locals": frame.f_globals})
         else:
             display_name = _COMP_DISPLAY_NAMES.get(fname, fname)
             # Capture function parameters from f_locals at call time
-            params = dict(frame.f_locals)
+            params = dict(_frame_locals(frame))
             _call_stack.append({"name": display_name, "locals": params})
-            _capture_snapshot(frame.f_lineno, frame.f_locals)
+            # A comprehension's frame first shows with its first iteration's variables.
+            if not _is_comprehension(code):
+                _capture_snapshot(frame.f_lineno, params)
         return _tracer
 
     elif event == 'exception':
@@ -710,103 +648,29 @@ def _tracer(frame, event, arg):
     elif event == 'line':
         _unwinding.discard(frame)  # the frame handled the exception and goes on
         line = frame.f_lineno
-        comp = _comp_info.get(line)
-
-        # Pop the synthetic comprehension frame when we leave its line
-        # (whether moving to another comprehension or a regular line).
-        if _active_comp and _active_comp.get('_line') != line:
-            _pop_comp_frame(frame)
-
-        if comp and _active_comp is None:
-            # Entering a comprehension — push synthetic frame
-            _active_comp = dict(comp)  # copy so we can add runtime state
-            ct = comp.get('comp_type')
-            _active_comp['partial_result'] = {} if ct == 'DictComp' else set() if ct == 'SetComp' else []
-            _active_comp['current_elt'] = None
-            _active_comp['_line'] = line
-            _call_stack.append({
-                "name": comp['display_name'],
-                "locals": {},
-                "_is_comp": True,
-            })
-            # Skip capture for the initial setup event (iteration var not set yet)
-            return _tracer
-
-        # If in a comprehension, emit phased snapshots for each iteration
-        if _active_comp and _active_comp.get('elt_code'):
-            iter_range = _active_comp.get('iter_range')
-            elt_range = _active_comp.get('elt_range')
-            filter_codes = _active_comp.get('filter_codes', [])
-            filter_ranges = _active_comp.get('filter_ranges', [])
-            filter_texts = _active_comp.get('filter_texts', [])
-
-            # Clear previous element before showing new iteration
-            _active_comp['current_elt'] = None
-
-            # Update locals for both the comp frame and enclosing frame
-            # (frame.f_locals is the real Python frame — the module scope —
-            # since Python 3.12 inlines comprehensions)
-            locals_copy = dict(frame.f_locals)
-            if len(_call_stack) >= 2:
-                _call_stack[-2]["locals"] = locals_copy
-            if _call_stack:
-                _call_stack[-1]["locals"] = locals_copy
-
-            # Phase 1: Iteration snapshot — highlight the for clause
-            _capture_snapshot(line, frame.f_locals, column_range=iter_range)
-
-            # Phase 2: Filter evaluation (one snapshot per filter condition)
-            passes_filter = True
-            for i, fc in enumerate(filter_codes):
-                try:
-                    result = bool(eval(fc, frame.f_globals, frame.f_locals))
-                except Exception:
-                    result = False
-                cond = {
-                    "expression": filter_texts[i] if i < len(filter_texts) else "",
-                    "result": result,
-                    "line": line,
-                }
-                fr = filter_ranges[i] if i < len(filter_ranges) else None
-                _capture_snapshot(line, frame.f_locals, column_range=fr, condition=cond)
-                if not result:
-                    passes_filter = False
-                    break
-
-            # Phase 3: Element evaluation (only if all filters passed)
-            if passes_filter:
-                try:
-                    elt_val = eval(_active_comp['elt_code'], frame.f_globals, frame.f_locals)
-                    pr = _active_comp['partial_result']
-                    if isinstance(pr, dict):
-                        pr[elt_val[0]] = elt_val[1]
-                    elif isinstance(pr, set):
-                        pr.add(elt_val)
-                    else:
-                        pr.append(elt_val)
-                    _active_comp['current_elt'] = elt_val
-                except Exception:
-                    _active_comp['current_elt'] = None
-                _capture_snapshot(line, frame.f_locals, column_range=elt_range)
-
-            return _tracer
-
-        # Skip continuation lines of multi-line statements (no visible changes)
-        if line in _continuation_lines:
+        if _is_comprehension(code):
+            # The first line event comes before the first iteration: nothing to
+            # show yet. Then one per iteration, on whichever of the
+            # comprehension's lines it is (they aren't a statement's
+            # continuation lines here).
+            if _call_stack and not _call_stack[-1].get("started"):
+                _call_stack[-1]["started"] = True
+                return _tracer
+        elif line in _continuation_lines and fname not in _EXPRESSION_FRAMES:
+            # Skip continuation lines of multi-line statements (no visible
+            # changes), in the frame the statement runs in: a lambda's or
+            # generator expression's frame written inside it has only those lines.
             return _tracer
 
         if _call_stack:
-            # Update stored locals for the current frame
-            _call_stack[-1]["locals"] = dict(frame.f_locals)
-            _capture_snapshot(line, frame.f_locals)
+            # Update stored locals for the current frame (the module's are its live globals)
+            local_vars = _frame_locals(frame)
+            _call_stack[-1]["locals"] = local_vars if fname == '<module>' else dict(local_vars)
+            _capture_snapshot(line, local_vars)
         return _tracer
 
     elif event == 'return':
-        # Clean up any active synthetic comprehension frame
-        if _active_comp:
-            _pop_comp_frame(frame)
-
-        if frame in _unwinding:
+        if not _returns(frame):
             # Leaving because of an exception: no "return ↵ None" step. The
             # last step stays where the exception was raised.
             _unwinding.discard(frame)
@@ -815,11 +679,12 @@ def _tracer(frame, event, arg):
             return _tracer
 
         if _call_stack:
+            local_vars = _frame_locals(frame)
             if fname == '<module>':
                 # Capture final state so stdout from the last line is visible
-                _capture_snapshot(frame.f_lineno, frame.f_locals)
+                _capture_snapshot(frame.f_lineno, local_vars)
             else:
-                _capture_snapshot(frame.f_lineno, frame.f_locals, return_value=arg, has_return=True)
+                _capture_snapshot(frame.f_lineno, local_vars, return_value=arg, has_return=True)
             _call_stack.pop()
         return _tracer
 
@@ -856,7 +721,7 @@ def _traceback_text(e, source_code):
     tb = e.__traceback__
     while tb is not None:
         code = tb.tb_frame.f_code
-        if code.co_filename == _USER_FILE:
+        if code.co_filename == _USER_FILE and not _is_comprehension(code):
             out.append(f'  File "main.py", line {tb.tb_lineno}, in {code.co_name}')
             if 1 <= tb.tb_lineno <= len(lines):
                 out.append("    " + lines[tb.tb_lineno - 1].strip())
@@ -865,7 +730,7 @@ def _traceback_text(e, source_code):
     return chr(10).join(out)
 
 def run_traced(source_code, stdin_text=''):
-    global _snapshots, _call_stack, _heap_map, _heap_counter, _step_counter, _baseline_keys, _active_comp, _continuation_lines
+    global _snapshots, _call_stack, _heap_map, _heap_counter, _step_counter, _baseline_keys, _continuation_lines
     global _stop_reason, _start_time, _events, _unwinding, _work
     global _out_lines, _console, _console_open, _stderr_used, _stdin_used, _output_count, _output_seen
     _stop_reason = None
@@ -885,11 +750,9 @@ def run_traced(source_code, stdin_text=''):
     _heap_map = {}
     _heap_counter = 0
     _step_counter = 0
-    _active_comp = None
     _continuation_lines = set()
 
-    # Pre-scan source for comprehensions and multi-line statements
-    _scan_comprehensions(source_code)
+    # Pre-scan source for multi-line statements
     _scan_continuation_lines(source_code)
 
     namespace = dict(__builtins__.__dict__) if hasattr(__builtins__, '__dict__') else dict(__builtins__)
@@ -918,7 +781,7 @@ def run_traced(source_code, stdin_text=''):
     sys.stderr = _TutorStream('stderr', 'backslashreplace')
     try:
         try:
-            code = compile(source_code, _USER_FILE, 'exec')
+            code = _compile_program(source_code)
         except (SyntaxError, ValueError) as e:
             # Nothing ran: report the syntax error and its line.
             result = {"type": "error", "message": f"{type(e).__name__}: {getattr(e, 'msg', None) or e}"}

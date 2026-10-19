@@ -32,7 +32,7 @@ sys.stderr = io.TextIOWrapper(io.FileIO(2, 'w', closefd=False), encoding='utf-8'
  * record the reference trace) in its globals; evaluates to the result as JSON.
  */
 export const REFERENCE_TRACER = String.raw`
-import sys, json, types, traceback, linecache, time, builtins
+import sys, json, types, traceback, linecache, time, builtins, dis
 import ast as _ast
 
 _MAX_EVENTS = ${MAX_GOLDEN_EVENTS}
@@ -57,6 +57,9 @@ _real_getlimit = sys.getrecursionlimit
 _real_setlimit = sys.setrecursionlimit
 _refused = set()
 _unwinding = set()   # frames an exception is passing through: their 'return' event is the frame unwinding
+# A 'return' event at any other instruction is the frame unwinding too, after
+# a finally block or an inlined comprehension's cleanup re-raised.
+_RETURN_OPS = frozenset(dis.opmap[n] for n in ('RETURN_VALUE', 'RETURN_CONST', 'YIELD_VALUE'))
 
 def _getrecursionlimit():
     return _limit
@@ -146,9 +149,9 @@ def _trace(frame, event, arg):
         ev['locals'] = {'!error': repr(ex)}
     if event == 'return':
         ev['value'] = _r(arg)
-        if frame in _unwinding:
+        if frame in _unwinding or frame.f_code.co_code[frame.f_lasti] not in _RETURN_OPS:
             ev['unwinding'] = True
-            _unwinding.discard(frame)
+        _unwinding.discard(frame)
     elif event == 'exception':
         ev['exc'] = arg[0].__name__
         _unwinding.add(frame)

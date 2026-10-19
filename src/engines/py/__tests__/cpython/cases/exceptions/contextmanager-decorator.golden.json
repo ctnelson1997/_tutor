@@ -115,7 +115,7 @@
   {"event":"line","line":12,"stack":["<module>","section"],"locals":{"title":"'broken'"}},
   {"event":"line","line":15,"stack":["<module>","section"],"locals":{"title":"'broken'"}},
   {"event":"line","line":16,"stack":["<module>","section"],"locals":{"title":"'broken'"}},
-  {"event":"return","line":16,"stack":["<module>","section"],"locals":{"title":"'broken'"},"value":"None"},
+  {"event":"return","line":16,"stack":["<module>","section"],"locals":{"title":"'broken'"},"value":"None","unwinding":true},
   {"event":"line","line":29,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>","section":"<function>","heading":"'INTRO'"}},
   {"event":"line","line":30,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>","section":"<function>","heading":"'INTRO'","e":"<ValueError>"}},
   {"event":"line","line":32,"stack":["<module>"],"locals":{"contextmanager":"<function>","suppress":"<ABCMeta>","events":"<list>","section":"<function>","heading":"'INTRO'"}},

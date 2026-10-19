@@ -1,67 +1,17 @@
 {
   "failures": {
-    "data-structures/dict-comprehension": {
-      "output": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
-      "ending": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
-      "steps": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      }
-    },
-    "data-structures/heapq-priority-queue": {
-      "output": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
-      "ending": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
-      "steps": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      }
-    },
-    "data-structures/int-set-operations": {
-      "values": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      }
-    },
     "data-structures/nested-json-data": {
       "values": {
         "issues": [
-          37,
-          33
+          37
         ],
-        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+        "reason": "numbers shown as JSON numbers"
       },
       "final-state": {
         "issues": [
-          37,
-          33
+          37
         ],
-        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+        "reason": "numbers shown as JSON numbers"
       }
     },
     "examples/classes": {
@@ -75,10 +25,9 @@
     "exceptions/assert-statements": {
       "values": {
         "issues": [
-          37,
-          33
+          37
         ],
-        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+        "reason": "numbers shown as JSON numbers"
       }
     },
     "exceptions/builtin-error-messages": {
@@ -150,10 +99,9 @@
     "exceptions/uncaught-in-list-comprehension": {
       "values": {
         "issues": [
-          37,
-          33
+          37
         ],
-        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+        "reason": "numbers shown as JSON numbers"
       }
     },
     "exceptions/uncaught-in-method": {
@@ -172,46 +120,12 @@
         "reason": "numbers shown as JSON numbers"
       }
     },
-    "extra/calls-inside-comprehensions": {
-      "steps": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      }
-    },
     "extra/class-attributes": {
       "variables": {
         "issues": [
           38
         ],
         "reason": "visualization model (classes, builtin names, modules)"
-      }
-    },
-    "extra/comprehension-side-effects": {
-      "output": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
-      "ending": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
-      "steps": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
-      "variables": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
       }
     },
     "extra/low-recursion-limit": {
@@ -228,68 +142,6 @@
         "reason": "the tracer runs on the program's terms"
       }
     },
-    "extra/stale-with-later-comprehension": {
-      "values": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      }
-    },
-    "functional/any-all": {
-      "steps": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
-      "variables": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      }
-    },
-    "functional/closure-counter": {
-      "output": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
-      "ending": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
-      "steps": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
-      "variables": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      }
-    },
-    "functional/generator-expressions": {
-      "steps": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
-      "variables": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      }
-    },
     "functional/generator-send": {
       "values": {
         "issues": [
@@ -298,58 +150,12 @@
         "reason": "numbers shown as JSON numbers"
       }
     },
-    "functional/higher-order-functions": {
-      "steps": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
-      "variables": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
+    "functional/lambdas-in-dicts": {
       "values": {
         "issues": [
-          33
+          37
         ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      }
-    },
-    "functional/list-comprehensions": {
-      "output": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
-      "ending": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
-      "steps": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      }
-    },
-    "functional/recursion-returning-functions": {
-      "steps": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
-      "values": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
+        "reason": "numbers shown as JSON numbers"
       }
     },
     "limits/deep-recursion-500": {
@@ -549,17 +355,15 @@
     "numbers/round-bankers": {
       "values": {
         "issues": [
-          37,
-          33
+          37
         ],
-        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+        "reason": "numbers shown as JSON numbers"
       },
       "final-state": {
         "issues": [
-          37,
-          33
+          37
         ],
-        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+        "reason": "numbers shown as JSON numbers"
       }
     },
     "numbers/whole-floats-in-variables": {
@@ -632,6 +436,14 @@
         "reason": "visualization model (classes, builtin names, modules)"
       }
     },
+    "oop/dataclass-basics": {
+      "values": {
+        "issues": [
+          37
+        ],
+        "reason": "numbers shown as JSON numbers"
+      }
+    },
     "oop/enum-basics": {
       "names": {
         "issues": [
@@ -688,14 +500,6 @@
           38
         ],
         "reason": "visualization model (classes, builtin names, modules)"
-      }
-    },
-    "oop/isinstance-and-type": {
-      "steps": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
       }
     },
     "oop/linked-list": {
@@ -783,12 +587,6 @@
       }
     },
     "oop/slots-class": {
-      "steps": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
       "variables": {
         "issues": [
           38
@@ -805,12 +603,6 @@
       }
     },
     "oop/staticmethod-classmethod": {
-      "steps": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
       "variables": {
         "issues": [
           38
@@ -867,17 +659,15 @@
     "print-format/repr-vs-str": {
       "values": {
         "issues": [
-          37,
-          33
+          37
         ],
-        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+        "reason": "numbers shown as JSON numbers"
       },
       "final-state": {
         "issues": [
-          37,
-          33
+          37
         ],
-        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+        "reason": "numbers shown as JSON numbers"
       }
     },
     "print-format/sep-and-end": {
@@ -908,30 +698,15 @@
         "reason": "numbers shown as JSON numbers"
       }
     },
-    "print-format/very-long-lines": {
-      "steps": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      }
-    },
     "realistic/average-of-n": {
       "values": {
         "issues": [
-          37,
-          33
+          37
         ],
-        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+        "reason": "numbers shown as JSON numbers"
       }
     },
     "realistic/balanced-parens": {
-      "steps": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
       "variables": {
         "issues": [
           38
@@ -955,50 +730,20 @@
         "reason": "visualization model (classes, builtin names, modules)"
       }
     },
-    "realistic/caesar-cipher": {
-      "steps": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
-      "variables": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
-      "values": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      }
-    },
-    "realistic/dice-simulation": {
-      "values": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      }
-    },
     "realistic/grade-calculator": {
       "values": {
         "issues": [
-          37,
-          33
+          37
         ],
-        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+        "reason": "numbers shown as JSON numbers"
       }
     },
     "realistic/gradebook-input": {
       "values": {
         "issues": [
-          37,
-          33
+          37
         ],
-        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+        "reason": "numbers shown as JSON numbers"
       },
       "final-state": {
         "issues": [
@@ -1010,9 +755,9 @@
     "realistic/group-students": {
       "values": {
         "issues": [
-          33
+          37
         ],
-        "reason": "comprehension display re-runs code / stale f_locals"
+        "reason": "numbers shown as JSON numbers"
       }
     },
     "realistic/linked-list": {
@@ -1026,61 +771,17 @@
     "realistic/list-stats": {
       "values": {
         "issues": [
-          37,
-          33
+          37
         ],
-        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
-      }
-    },
-    "realistic/matrix-input": {
-      "output": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
-      "ending": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
-      "steps": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
+        "reason": "numbers shown as JSON numbers"
       }
     },
     "realistic/menu-bank": {
       "values": {
         "issues": [
-          37,
-          33
+          37
         ],
-        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
-      }
-    },
-    "realistic/password-checker": {
-      "steps": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      }
-    },
-    "realistic/permutations": {
-      "steps": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
-      "values": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
+        "reason": "numbers shown as JSON numbers"
       }
     },
     "realistic/printer-queue": {
@@ -1094,10 +795,9 @@
     "realistic/quiz-input": {
       "values": {
         "issues": [
-          37,
-          33
+          37
         ],
-        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+        "reason": "numbers shown as JSON numbers"
       },
       "final-state": {
         "issues": [
@@ -1106,43 +806,7 @@
         "reason": "numbers shown as JSON numbers"
       }
     },
-    "realistic/recursion-basics": {
-      "steps": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
-      "values": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      }
-    },
-    "realistic/selection-sort": {
-      "steps": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      }
-    },
-    "realistic/sentence-analyzer": {
-      "values": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      }
-    },
     "realistic/shapes-inheritance": {
-      "steps": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
       "variables": {
         "issues": [
           38
@@ -1159,18 +823,9 @@
       },
       "values": {
         "issues": [
-          37,
-          33
+          37
         ],
-        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
-      }
-    },
-    "realistic/shopping-list-input": {
-      "values": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
+        "reason": "numbers shown as JSON numbers"
       }
     },
     "realistic/student-course": {
@@ -1182,26 +837,23 @@
       },
       "values": {
         "issues": [
-          37,
-          33
+          37
         ],
-        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+        "reason": "numbers shown as JSON numbers"
       },
       "final-state": {
         "issues": [
-          37,
-          33
+          37
         ],
-        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+        "reason": "numbers shown as JSON numbers"
       }
     },
     "realistic/temperature-converter-input": {
       "values": {
         "issues": [
-          37,
-          33
+          37
         ],
-        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+        "reason": "numbers shown as JSON numbers"
       },
       "final-state": {
         "issues": [
@@ -1213,33 +865,15 @@
     "realistic/temperature-table": {
       "values": {
         "issues": [
-          37,
-          33
+          37
         ],
-        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
+        "reason": "numbers shown as JSON numbers"
       },
       "final-state": {
         "issues": [
-          37,
-          33
+          37
         ],
-        "reason": "numbers shown as JSON numbers; comprehension display re-runs code / stale f_locals"
-      }
-    },
-    "realistic/vowel-counter": {
-      "values": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      }
-    },
-    "realistic/word-frequency": {
-      "values": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
+        "reason": "numbers shown as JSON numbers"
       }
     },
     "scope-mutation/class-vs-instance-attributes": {
@@ -1266,33 +900,7 @@
         "reason": "visualization model (classes, builtin names, modules)"
       }
     },
-    "scope-mutation/late-binding-closures": {
-      "steps": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
-      "variables": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
-      "values": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      }
-    },
     "scope-mutation/object-cycles": {
-      "steps": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      },
       "variables": {
         "issues": [
           38
@@ -1328,30 +936,6 @@
           38
         ],
         "reason": "visualization model (classes, builtin names, modules)"
-      }
-    },
-    "stdlib/heapq-bisect": {
-      "steps": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      }
-    },
-    "stdlib/itertools-misc": {
-      "output": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
-      }
-    },
-    "stdlib/random-seeded": {
-      "output": {
-        "issues": [
-          33
-        ],
-        "reason": "comprehension display re-runs code / stale f_locals"
       }
     },
     "stdlib/sys-info": {
