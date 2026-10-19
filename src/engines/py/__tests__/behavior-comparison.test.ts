@@ -19,6 +19,7 @@ import { writeFileSync, unlinkSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { getTracerCode } from '../tracer';
+import { decodeReply } from '../run';
 
 let PYTHON: string | null = null;
 let TMP: string;
@@ -59,9 +60,9 @@ function runTraced(src: string): { ok: boolean; out?: string; err?: string; snap
   if (r.status !== 0) return { ok: false, err: r.stderr };
   try {
     const lines = r.stdout.trim().split('\n');
-    const parsed = JSON.parse(lines[lines.length - 1]);
+    const parsed = decodeReply(lines[lines.length - 1]);
     if (parsed.type === 'error') return { ok: false, err: parsed.message };
-    const snaps = (parsed.snapshots || []) as Snapshot[];
+    const snaps = parsed.snapshots as unknown as Snapshot[];
     const last = snaps[snaps.length - 1];
     return { ok: true, out: (last?.stdout || []).join('\n'), snapshots: snaps };
   } catch (e) {
@@ -489,7 +490,7 @@ function runTracedResult(src: string): TracedResult {
   const r = spawnSync(PYTHON!, [file], { encoding: 'utf-8', timeout: 20000 });
   try { unlinkSync(file); } catch { /* ignore */ }
   const lines = r.stdout.trim().split('\n');
-  return JSON.parse(lines[lines.length - 1]) as TracedResult;
+  return decodeReply(lines[lines.length - 1]) as TracedResult;
 }
 
 describe.skipIf(!PYTHON_AVAILABLE)('Python tracer: runs that end early', () => {

@@ -44,9 +44,9 @@ describe('getTracerCode', () => {
     expect(code).toContain('_step_counter = 0');
   });
 
-  it('returns JSON from run_traced', () => {
-    expect(code).toContain('result = {"type": "result", "snapshots": _snapshots}');
-    expect(code).toContain('return _json_dumps(result)');
+  it('returns JSON from run_traced: each part once, the steps referring to them by index (#39)', () => {
+    expect(code).toContain('result = {"type": "result", "parts": _parts, "snapshots": _snapshots}');
+    expect(code).toContain("return _json_dumps(result, separators=(',', ':'))");
   });
 
   // ── Trace function ──
@@ -96,9 +96,22 @@ describe('getTracerCode', () => {
   // ── Serialization (#34: never runs the program's code; safety.test.ts runs it) ──
 
   it('serializes from a queue, not by recursion', () => {
-    expect(code).toContain('def _serialize_value(val, heap_objects, visited, pending):');
-    expect(code).toContain('def _serialize_heap_object(obj, heap_id, heap_objects, visited, pending):');
+    expect(code).toContain('def _serialize_value(val):');
+    expect(code).toContain('def _draw_heap_object(obj, visited, pending, cache):');
     expect(code).toContain('while next_object < len(pending):');
+  });
+
+  it('draws each step from the parts of the step before that are unchanged (#39)', () => {
+    expect(code).toContain('def _draw_frame(frame_info, local_vars, live, return_value, has_return, visited, pending):');
+    expect(code).toContain('if not live and frame_info.get("drawn_from") is local_vars:');
+    expect(code).toContain('if hit is not None and hit[0] is val:');
+    expect(code).toContain('ids = list(map(id, values))');
+    expect(code).toContain('_heap_cache = cache');
+  });
+
+  it('checks the time and work budgets while drawing a step (#39)', () => {
+    expect(code).toContain('def _check_budgets():');
+    expect(code).toContain('if next_object % 1024 == 0:');
   });
 
   it('serializes None and bools before ints (bool is a subclass of int)', () => {
@@ -117,7 +130,7 @@ describe('getTracerCode', () => {
   });
 
   it("reads containers through their own methods, not the program's overrides", () => {
-    expect(code).toContain('list.__getitem__(obj, i)');
+    expect(code).toContain('list.__getitem__(obj, slice(0, _MAX_SEQ_PROPS))');
     expect(code).toContain('dict.items(obj)');
     expect(code).toContain("object.__getattribute__(obj, '__dict__')");
     expect(code).not.toMatch(/\bhasattr\(obj/);
@@ -125,8 +138,8 @@ describe('getTracerCode', () => {
   });
 
   it('draws each kind of heap object', () => {
-    for (const kind of ['list', 'tuple', 'dict', 'set', 'function', 'class', 'module']) expect(code).toContain(`object_type = "${kind}"`);
-    expect(code).toContain('label = _type_name(t)');
+    for (const kind of ['list', 'tuple', 'dict', 'set', 'function', 'method', 'class', 'module', 'enum']) expect(code).toContain(`("${kind}", `);
+    expect(code).toContain('return "object", _type_name(t), keys, values, None');
   });
 
   // ── Limits ──
@@ -192,9 +205,9 @@ describe('getTracerCode', () => {
   });
 
   it('draws classes, modules and Enum members as themselves', () => {
-    expect(code).toContain('object_type = "class"');
-    expect(code).toContain('object_type = "module"');
-    expect(code).toContain('issubclass(t, _Enum)');
+    expect(code).toContain('return "class", label, keys, values, None');
+    expect(code).toContain('return "module", _safe_name(obj), [], [], None');
+    expect(code).toContain('("enum", _Enum)');
   });
 
   // ── Comprehension frames (#33; comprehensions.test.ts runs them) ──
@@ -290,8 +303,8 @@ describe('getTracerCode', () => {
     expect(code).toContain('"line": line');
     expect(code).toContain('"callStack": stack');
     expect(code).toContain('"heap": heap_objects');
-    expect(code).toContain('snapshot["stdout"] = _stdout_shown()');
-    expect(code).toContain('snapshot["console"]');
+    expect(code).toContain('snapshot["stdout"] = _output_parts[1]');
+    expect(code).toContain('snapshot["console"] = _output_parts[2]');
   });
 
   it('includes return value in snapshots', () => {
@@ -319,12 +332,12 @@ describe('getTracerCode', () => {
   });
 
   it('uses Python id() for object identity', () => {
-    expect(code).toContain('obj_id = id(val)');
+    expect(code).toContain('obj_id = id(obj)');
   });
 
   it('tracks visited objects to prevent circular and duplicate serialization', () => {
-    expect(code).toContain('if obj_id not in visited:');
-    expect(code).toContain('visited.add(obj_id)');
+    expect(code).toContain('if k not in visited:');
+    expect(code).toContain('visited.add(k)');
   });
 
   // ── Compilation ──

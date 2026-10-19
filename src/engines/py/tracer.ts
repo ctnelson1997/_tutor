@@ -65,11 +65,16 @@ _TIME_BUDGET = 8.5
 _stop_reason = None   # "steps", "time" or "work" once the tracer has stopped the run
 _start_time = 0.0
 _events = 0
-# Values serialized so far, and how many a run may serialize before it is
-# stopped as out of time: None in the app. The CPython suite sets it (and turns
-# the time budget off), so a slow run stops at the same step on any machine.
+# The work done so far, in units of about a microsecond under Node (#39: a
+# step 10, a frame drawn 1, a heap object drawn 5, a value serialized 2), and
+# how much a run may do before it is stopped as out of time: None in the app.
+# The CPython suite sets it (and turns the time budget off), so a slow run
+# stops at the same step on any machine.
 _work = 0
 _WORK_BUDGET = None
+_STEP_WORK = 10
+_OBJECT_WORK = 5
+_VALUE_WORK = 2
 _unwinding = set()    # frames an exception is propagating out of
 
 # The instructions a frame returns (or yields) at. A 'return' event anywhere
@@ -364,23 +369,57 @@ def _stdout_shown():
     # stdout's lines, without the empty line after a final newline
     return _out_lines[:-1] if _out_lines[-1] == '' else list(_out_lines)
 
-def _console_shown():
-    # every line with its stream (and its echoed input), once stderr or stdin was used
+def _console_line_parts():
+    # Every console line as a part (its stream, text and echoed input), once
+    # stderr or stdin was used. Only the last line can have changed since the
+    # last call: the ones before it are finished.
     if not (_stderr_used or _stdin_used):
         return None
-    return [
-        {"text": t, "stream": st, "input": [list(r) for r in rs]} if rs else {"text": t, "stream": st}
-        for st, t, rs in _console
-    ]
+    n = len(_console_lines)
+    for i in range(n - 1 if n else 0, len(_console)):
+        st, t, rs = _console[i]
+        key = (st, t, tuple(map(tuple, rs)) if rs else None)
+        if i < n and _console_lines[i][0] == key:
+            continue
+        line = {"text": t, "stream": st, "input": [list(r) for r in rs]} if rs else {"text": t, "stream": st}
+        entry = (key, _part(line))
+        if i < n:
+            _console_lines[i] = entry
+        else:
+            _console_lines.append(entry)
+    return [e[1] for e in _console_lines]
+
+def _lines_part(lines, last):
+    # A list of lines as a part: the previous list's first lines and the ones
+    # added since, when it grew (run.ts builds the whole list).
+    if last is None:
+        return _part({"add": lines})
+    before = last[1]
+    keep = len(before)
+    if keep and (keep > len(lines) or before[keep - 1] != lines[keep - 1]):
+        keep -= 1
+    if keep > len(lines) or before[:keep] != lines[:keep]:
+        return _part({"add": lines})
+    return _part({"base": last[0], "keep": keep, "add": lines[keep:]})
 
 def _with_output(snapshot):
-    # The output as it is now, on a step.
-    global _output_seen
+    # The output as it is now, on a step: the same parts as the last step's
+    # while nothing was written (#39).
+    global _output_seen, _output_parts, _stdout_last, _console_last
     _output_seen = _output_count
-    snapshot["stdout"] = _stdout_shown()
-    console = _console_shown()
-    if console is not None:
-        snapshot["console"] = console
+    if _output_parts is None or _output_parts[0] != _output_count:
+        lines = _stdout_shown()
+        stdout = _lines_part(lines, _stdout_last)
+        _stdout_last = (stdout, lines)
+        console = _console_line_parts()
+        if console is not None:
+            part = _lines_part(console, _console_last)
+            _console_last = (part, console)
+            console = part
+        _output_parts = (_output_count, stdout, console)
+    snapshot["stdout"] = _output_parts[1]
+    if _output_parts[2] is not None:
+        snapshot["console"] = _output_parts[2]
     return snapshot
 
 def _finish_output():
@@ -548,11 +587,11 @@ def _int_value(val):
         text = '<int with %d digits>' % _digits(val)
     return {"type": "number", "value": text, "display": text}
 
-def _serialize_value(val, heap_objects, visited, pending):
+def _serialize_value(val):
     # A value as the snapshot shows it: a primitive inline, a heap object as a
-    # reference (queued in pending to be serialized once per snapshot).
+    # reference to it.
     global _work
-    _work += 1
+    _work += _VALUE_WORK
     # Values carry the text Python writes for them (display, #37): None, True,
     # False, a float's repr (5.0, -0.0, 1e+16, inf), an int past what JavaScript
     # holds exactly, a complex number's repr.
@@ -580,12 +619,7 @@ def _serialize_value(val, heap_objects, visited, pending):
         return {"type": "number", "value": text, "display": text}
 
     # Heap objects: list, dict, tuple, set, function, class instances
-    obj_id = id(val)
-    heap_id = _get_heap_id(val)
-    if obj_id not in visited:
-        visited.add(obj_id)
-        pending.append((val, heap_id))
-    return {"type": "ref", "heapId": heap_id}
+    return {"type": "ref", "heapId": _get_heap_id(val)}
 
 def _safe_repr(v, depth=2):
     # A dict key's text, without running the program's code.
@@ -636,30 +670,40 @@ def _object_dict(obj):
         return None
     return d if type(d) is dict else None
 
+def _slot_descriptors(t):
+    # (name, member descriptor, class) for the __slots__ of the Python classes
+    # in t's MRO, found once per class.
+    found = _slots_of.get(t)
+    if found is None:
+        found = []
+        for cls in _type_mro(t):
+            cls_dict = _type_dict(cls)
+            slots = cls_dict.get('__slots__')
+            if slots is None:
+                continue
+            if type(slots) is str:
+                slots = (slots,)
+            for name in slots:
+                if type(name) is not str or name in ('__dict__', '__weakref__'):
+                    continue
+                stored = name
+                if name.startswith('__') and not name.endswith('__'):
+                    stored = '_' + _type_name(cls).lstrip('_') + name
+                descr = cls_dict.get(stored)
+                if type(descr) is _MemberDescriptor:
+                    found.append((name, descr, cls))
+        _slots_of[t] = found
+    return found
+
 def _slot_values(obj):
-    # (name, value) for the __slots__ of Python classes in obj's MRO, read
-    # through their member descriptors (an unset slot is skipped).
+    # (name, value) for obj's slots, read through their member descriptors
+    # (an unset slot is skipped).
     out = []
-    for cls in type(obj).__mro__:
-        cls_dict = type.__dict__['__dict__'].__get__(cls)
-        slots = cls_dict.get('__slots__')
-        if slots is None:
+    for name, descr, cls in _slot_descriptors(type(obj)):
+        try:
+            out.append((name, descr.__get__(obj, cls)))
+        except AttributeError:
             continue
-        if type(slots) is str:
-            slots = (slots,)
-        for name in slots:
-            if type(name) is not str or name in ('__dict__', '__weakref__'):
-                continue
-            stored = name
-            if name.startswith('__') and not name.endswith('__'):
-                stored = '_' + _type_name(cls).lstrip('_') + name
-            descr = cls_dict.get(stored)
-            if type(descr) is not _MemberDescriptor:
-                continue
-            try:
-                out.append((name, descr.__get__(obj, cls)))
-            except AttributeError:
-                continue
     return out
 
 def _wrapped_function(v):
@@ -711,136 +755,268 @@ def _instance_attribute_shown(name):
     # program names it (self._balance).
     return not name.startswith('_') or _is_source_word(name)
 
-def _serialize_heap_object(obj, heap_id, heap_objects, visited, pending):
-    # A heap object as the snapshot draws it.
-    properties = []
-    object_type = "object"
-    label = ""
-    t = type(obj)
+_INDEX_KEYS = [str(i) for i in range(max(_MAX_SEQ_PROPS, _MAX_DICT_PROPS))]
+# How each type's objects are drawn, in the order they are tried.
+_KIND_TYPES = (
+    ("list", list), ("tuple", tuple), ("dict", dict), ("set", (set, frozenset)),
+    ("function", _FUNCTION_TYPES), ("method", _METHOD_WRAPPERS), ("class", type),
+    ("module", _types.ModuleType), ("enum", _Enum),
+)
+_kinds = {}           # type -> its kind, for this run
+_slots_of = {}        # type -> its slots' descriptors, for this run
 
-    if issubclass(t, list):
-        object_type = "list"
-        for i in range(min(list.__len__(obj), _MAX_SEQ_PROPS)):
-            properties.append({"key": str(i), "value": _serialize_value(list.__getitem__(obj, i), heap_objects, visited, pending)})
-    elif issubclass(t, tuple):
-        object_type = "tuple"
-        for i in range(min(tuple.__len__(obj), _MAX_SEQ_PROPS)):
-            properties.append({"key": str(i), "value": _serialize_value(tuple.__getitem__(obj, i), heap_objects, visited, pending)})
-    elif issubclass(t, dict):
-        object_type = "dict"
-        for count, (k, v) in enumerate(dict.items(obj)):
-            if count >= _MAX_DICT_PROPS:
+def _kind(t):
+    # How a type's objects are drawn, found once per type.
+    kind = _kinds.get(t)
+    if kind is None:
+        for kind, types in _KIND_TYPES:
+            if issubclass(t, types):
                 break
-            prop = {"key": _key_text(k), "value": _serialize_value(v, heap_objects, visited, pending)}
-            if not _is_primitive(k):
+        else:
+            kind = "instance"
+        _kinds[t] = kind
+    return kind
+
+def _heap_contents(obj, t):
+    # What a heap object shows: (object type, label, keys, values, key
+    # objects), the key objects a list of a dict's keys that are drawn as
+    # arrows (None in other objects and for primitive keys).
+    kind = _kind(t)
+    if kind == "instance":
+        # An instance: its __dict__ and its __slots__, as stored.
+        keys, values = [], []
+        d = _object_dict(obj)
+        if d is not None:
+            for k, v in dict.items(d):
+                if len(keys) >= _MAX_DICT_PROPS:
+                    break
+                if type(k) is str and _instance_attribute_shown(k):
+                    keys.append(k)
+                    values.append(v)
+        if _slot_descriptors(t):
+            for name, v in _slot_values(obj):
+                if len(keys) >= _MAX_DICT_PROPS:
+                    break
+                if _instance_attribute_shown(name):
+                    keys.append(name)
+                    values.append(v)
+        return "object", _type_name(t), keys, values, None
+    if kind == "list":
+        values = list.__getitem__(obj, slice(0, _MAX_SEQ_PROPS))
+        return "list", "", _INDEX_KEYS[:len(values)], values, None
+    if kind == "tuple":
+        values = list(tuple.__getitem__(obj, slice(0, _MAX_SEQ_PROPS)))
+        return "tuple", "", _INDEX_KEYS[:len(values)], values, None
+    if kind == "dict":
+        keys, values, key_objects = [], [], []
+        drawn = False
+        for k, v in dict.items(obj):
+            if len(keys) >= _MAX_DICT_PROPS:
+                break
+            keys.append(_key_text(k))
+            values.append(v)
+            if _is_primitive(k):
+                key_objects.append(None)
+            else:
                 # An object key is drawn as a value: an arrow to it.
-                prop["keyValue"] = _serialize_value(k, heap_objects, visited, pending)
-            properties.append(prop)
-    elif issubclass(t, (set, frozenset)):
-        object_type = "set"
+                key_objects.append(k)
+                drawn = True
+        return "dict", "", keys, values, key_objects if drawn else None
+    if kind == "set":
         items = set.__iter__(obj) if issubclass(t, set) else frozenset.__iter__(obj)
-        for count, item in enumerate(items):
-            if count >= _MAX_SEQ_PROPS:
+        values = []
+        for item in items:
+            if len(values) >= _MAX_SEQ_PROPS:
                 break
-            properties.append({"key": str(count), "value": _serialize_value(item, heap_objects, visited, pending)})
-    elif issubclass(t, _FUNCTION_TYPES):
-        object_type = "function"
-        label = _safe_name(obj)
-    elif issubclass(t, _METHOD_WRAPPERS):
+            values.append(item)
+        return "set", "", _INDEX_KEYS[:len(values)], values, None
+    if kind == "function":
+        return "function", _safe_name(obj), [], [], None
+    if kind == "method":
         # A staticmethod, classmethod or property in a class: drawn as its function.
-        object_type = "function"
         f = _wrapped_function(obj)
-        kind = 'staticmethod' if issubclass(t, staticmethod) else 'classmethod' if issubclass(t, classmethod) else 'property'
-        label = '@' + kind + ' ' + (_safe_name(f) if f is not None else '')
-    elif issubclass(t, type):
+        decorator = 'staticmethod' if issubclass(t, staticmethod) else 'classmethod' if issubclass(t, classmethod) else 'property'
+        return "function", '@' + decorator + ' ' + (_safe_name(f) if f is not None else ''), [], [], None
+    if kind == "class":
         # A class (#38): one the program defined with its bases, the methods it
         # wrote and its class attributes; a library's by its name only.
-        object_type = "class"
         label = _type_name(obj)
+        keys, values = [], []
         if _is_program_class(obj):
             bases = [b for b in _type_bases(obj) if b is not object]
             if bases:
                 label += '(' + ', '.join(_type_name(b) for b in bases) + ')'
             for k, v in _type_dict(obj).items():
-                if len(properties) >= _MAX_DICT_PROPS:
+                if len(keys) >= _MAX_DICT_PROPS:
                     break
                 if type(k) is str and _class_attribute_shown(k, v):
-                    properties.append({"key": k, "value": _serialize_value(v, heap_objects, visited, pending)})
-    elif issubclass(t, _types.ModuleType):
+                    keys.append(k)
+                    values.append(v)
+        return "class", label, keys, values, None
+    if kind == "module":
         # A module is one object, by its name, never drawn in full (#38).
-        object_type = "module"
-        label = _safe_name(obj)
-    elif issubclass(t, _Enum):
-        # An Enum member, as Python names it, with its value.
-        d = _object_dict(obj) or {}
-        member = d.get('_name_')
-        label = _type_name(t) + ('.' + member if type(member) is str else '')
-        if '_value_' in d:
-            properties.append({"key": "value", "value": _serialize_value(d['_value_'], heap_objects, visited, pending)})
+        return "module", _safe_name(obj), [], [], None
+    # An Enum member, as Python names it, with its value.
+    d = _object_dict(obj) or {}
+    member = d.get('_name_')
+    label = _type_name(t) + ('.' + member if type(member) is str else '')
+    if '_value_' in d:
+        return "object", label, ["value"], [d['_value_']], None
+    return "object", label, [], [], None
+
+# ── Recording steps (#39) ──
+#
+# A step shows every frame and every object they reach, but costs what
+# changed since the step before: each frame, variable, heap object and
+# property is a part (_part), made once and used again by every later step
+# that shows it unchanged, which identity checks find (a variable bound to the
+# same object, a list holding the same objects). The reply is the parts and
+# the steps referring to them by index; run.ts rebuilds the steps with those
+# parts shared, so the worker's postMessage (a structured clone) carries each
+# once. What a cache entry holds stays alive (a value replaced since the last
+# step), so an id in it is never another object's.
+
+_parts = []           # every frame, variable, heap object, property and output list, by index
+_heap_cache = {}      # id(obj) -> what the last step drew of it, for the objects it drew
+_output_parts = None  # (_output_count, stdout part, console part) of the last step
+_stdout_last = None   # (part, lines) of the last stdout list
+_console_last = None  # (part, line parts) of the last console list
+_console_lines = []   # (key, part) of each console line
+
+def _part(obj):
+    _parts.append(obj)
+    return len(_parts) - 1
+
+def _enqueue(v, visited, pending):
+    k = id(v)
+    if k not in visited:
+        visited.add(k)
+        pending.append(v)
+
+def _draw_frame(frame_info, local_vars, live, return_value, has_return, visited, pending):
+    # A frame as a part. A frame below the top shows the variables it had at
+    # its last line (a copy): the same part while that copy is the same.
+    if not live and frame_info.get("drawn_from") is local_vars:
+        for v in frame_info["heap_values"]:
+            _enqueue(v, visited, pending)
+        return frame_info["part"]
+    old = frame_info.get("variable_parts") or {}
+    cache = {}
+    parts = []
+    heap_values = []
+    for name in _shown_names(frame_info, local_vars):
+        val = dict.__getitem__(local_vars, name)
+        hit = old.get(name)
+        if hit is not None and hit[0] is val:
+            p = hit[1]
+        else:
+            p = _part({"name": name, "value": _serialize_value(val)})
+        cache[name] = (val, p)
+        parts.append(p)
+        if not _is_primitive(val):
+            heap_values.append(val)
+    frame_info["variable_parts"] = cache
+    if has_return:
+        parts.append(_part({"name": "return \\u21b5", "value": _serialize_value(return_value)}))
+        if not _is_primitive(return_value):
+            heap_values.append(return_value)
+    if parts != frame_info.get("parts"):
+        frame_info["parts"] = parts
+        frame_info["part"] = _part({"name": frame_info["name"], "variables": parts})
+    frame_info["drawn_from"] = None if has_return else local_vars
+    frame_info["heap_values"] = heap_values
+    for v in heap_values:
+        _enqueue(v, visited, pending)
+    return frame_info["part"]
+
+def _draw_heap_object(obj, visited, pending, cache):
+    # A heap object as a part: the last step's while it shows the same
+    # objects; else its properties that did, with the ones that changed.
+    t = type(obj)
+    object_type, label, keys, values, key_objects = _heap_contents(obj, t)
+    ids = list(map(id, values))
+    key_ids = None if key_objects is None else list(map(id, key_objects))
+    obj_id = id(obj)
+    entry = _heap_cache.get(obj_id)
+    if entry is not None and entry[0] is t and entry[1] == object_type and entry[2] == label and entry[3] == keys and entry[5] == ids and entry[7] == key_ids:
+        # values and key_objects as this step read them, so they stay alive
+        entry = (t, object_type, label, keys, values, ids, key_objects, key_ids, entry[8], entry[9], entry[10])
     else:
-        # An instance: its __dict__ and its __slots__, as stored.
-        label = _type_name(t)
-        count = 0
-        d = _object_dict(obj)
-        if d is not None:
-            for k, v in dict.items(d):
-                if count >= _MAX_DICT_PROPS:
-                    break
-                if type(k) is str and _instance_attribute_shown(k):
-                    properties.append({"key": k, "value": _serialize_value(v, heap_objects, visited, pending)})
-                    count += 1
-        for name, v in _slot_values(obj):
-            if count >= _MAX_DICT_PROPS:
-                break
-            if _instance_attribute_shown(name):
-                properties.append({"key": name, "value": _serialize_value(v, heap_objects, visited, pending)})
-                count += 1
+        old_props = None
+        if entry is not None and entry[0] is t:
+            old_props = entry
+        props = []
+        children = []
+        for i in range(len(keys)):
+            v = values[i]
+            ko = None if key_objects is None else key_objects[i]
+            if (old_props is not None and i < len(old_props[3]) and old_props[3][i] == keys[i] and old_props[5][i] == ids[i]
+                    and (old_props[7][i] if old_props[7] is not None else None) == (None if ko is None else key_ids[i])):
+                props.append(old_props[8][i])
+            else:
+                prop = {"key": keys[i], "value": _serialize_value(v)}
+                if ko is not None:
+                    prop["keyValue"] = _serialize_value(ko)
+                props.append(_part(prop))
+            if not _is_primitive(v):
+                children.append(v)
+            if ko is not None:
+                children.append(ko)
+        if entry is not None and entry[8] == props and entry[1] == object_type and entry[2] == label:
+            part = entry[9]
+        else:
+            heap_object = {"id": _get_heap_id(obj), "objectType": object_type, "properties": props}
+            if label:
+                heap_object["label"] = label
+            part = _part(heap_object)
+        entry = (t, object_type, label, keys, values, ids, key_objects, key_ids, props, part, children)
+    cache[obj_id] = entry
+    for c in entry[10]:
+        _enqueue(c, visited, pending)
+    return entry[9]
 
-    result = {"id": heap_id, "objectType": object_type, "properties": properties}
-    if label:
-        result["label"] = label
-    return result
-
-# ── Call stack + snapshot building ──
+def _check_budgets():
+    # The run stops with its steps before the worker's kill: at the time
+    # budget, or the work budget the CPython suite sets instead.
+    if _WORK_BUDGET is not None and _work > _WORK_BUDGET:
+        _stop("work")
+    if _now() - _start_time > _TIME_BUDGET:
+        _stop("time")
 
 def _capture_snapshot(line, current_locals, return_value=None, has_return=False, column_range=None, condition=None):
     """Capture a full execution snapshot at the given line."""
-    global _step_counter
+    global _step_counter, _heap_cache, _work
 
     if _step_counter >= _MAX_SNAPSHOTS:
         return
-    if _WORK_BUDGET is not None and _work > _WORK_BUDGET:
-        _stop("work")
+    _check_budgets()
 
-    heap_objects = []
     visited = set()
     pending = []
 
-    # Build call stack with serialized variables
+    # Every frame, the innermost with its live variables (and its return value).
+    top = len(_call_stack) - 1
     stack = []
     for i, frame_info in enumerate(_call_stack):
-        variables = []
-        local_vars = current_locals if i == len(_call_stack) - 1 else frame_info.get("locals", {})
-
-        for name in _shown_names(frame_info, local_vars):
-            val = dict.__getitem__(local_vars, name)
-            serialized = _serialize_value(val, heap_objects, visited, pending)
-            variables.append({"name": name, "value": serialized})
-
-        # Add return value display
-        if has_return and i == len(_call_stack) - 1:
-            ret_serialized = _serialize_value(return_value, heap_objects, visited, pending)
-            variables.append({"name": "return \\u21b5", "value": ret_serialized})
-
-        frame_dict = {"name": frame_info["name"], "variables": variables}
-        stack.append(frame_dict)
+        if i == top:
+            stack.append(_draw_frame(frame_info, current_locals, True, return_value, has_return, visited, pending))
+        else:
+            stack.append(_draw_frame(frame_info, frame_info.get("locals", {}), frame_info["kind"] == "module", None, False, visited, pending))
+    _work += _STEP_WORK + len(stack)
 
     # The heap objects the frames reach, each once, from the queue.
+    cache = {}
+    heap_objects = []
     next_object = 0
     while next_object < len(pending):
-        obj, heap_id = pending[next_object]
+        obj = pending[next_object]
         next_object += 1
-        heap_objects.append(_serialize_heap_object(obj, heap_id, heap_objects, visited, pending))
+        heap_objects.append(_draw_heap_object(obj, visited, pending, cache))
+        if next_object % 1024 == 0:
+            _work += 1024 * _OBJECT_WORK
+            _check_budgets()
+    _work += (next_object % 1024) * _OBJECT_WORK
+    _heap_cache = cache
 
     snapshot = {
         "step": _step_counter,
@@ -1012,6 +1188,7 @@ def run_traced(source_code, stdin_text=''):
     global _snapshots, _call_stack, _heap_map, _heap_counter, _step_counter, _continuation_lines, _module_order, _source_words
     global _stop_reason, _start_time, _events, _unwinding, _work
     global _out_lines, _console, _console_open, _stderr_used, _stdin_used, _output_count, _output_seen
+    global _parts, _heap_cache, _output_parts, _stdout_last, _console_last, _console_lines, _kinds, _slots_of
     global _limit, _base, _refused
     _stop_reason = None
     _start_time = _now()
@@ -1028,6 +1205,14 @@ def run_traced(source_code, stdin_text=''):
     _stdin_used = False
     _output_count = 0
     _output_seen = 0
+    _parts = []
+    _heap_cache = {}
+    _kinds = {}
+    _slots_of = {}
+    _output_parts = None
+    _stdout_last = None
+    _console_last = None
+    _console_lines = []
     _call_stack = []
     _heap_map = {}
     _heap_counter = 0
@@ -1110,14 +1295,16 @@ def run_traced(source_code, stdin_text=''):
     elif _stop_reason == "time":
         error = {"kind": "limit", "message": f"Stopped after {_TIME_BUDGET:g} seconds, the longest a program can run here."}
     elif _stop_reason == "work":
-        error = {"kind": "limit", "message": f"Stopped after drawing {_WORK_BUDGET} values, the most a program can draw here."}
+        error = {"kind": "limit", "message": f"Stopped after {_WORK_BUDGET} units of work, the most a program can do here."}
     elif _stop_reason == "internal":
         error = {"kind": "error", "message": _INTERNAL_ERROR}
         if _snapshots:
             error["line"] = _snapshots[-1]["line"]
-    result = {"type": "result", "snapshots": _snapshots}
+    # Each part once, the steps referring to them by index (run.ts decodes it).
+    result = {"type": "result", "parts": _parts, "snapshots": _snapshots}
     if error is not None:
         result["error"] = error
-    return _json_dumps(result)
+    _heap_cache = {}
+    return _json_dumps(result, separators=(',', ':'))
 `;
 }

@@ -10,7 +10,8 @@
  *     console, which students don't see: it is reported as lost.
  *
  * The tracer's time budget is replaced by a work budget (SUITE_WORK_BUDGET
- * values serialized), so a slow run stops at the same step on every machine.
+ * units of work, about a microsecond each), so a slow run stops at the same
+ * step on every machine.
  * The run's CPU time (this thread's, so not the garbage collector's other
  * threads) is reported for py-diff.
  */
@@ -44,13 +45,13 @@ const session = new PySession<NodePyodide>(options => loadNodePyodide(options), 
 const ready = session.init();
 
 /**
- * Values the tracer may serialize before it stops the run, in place of its
- * time budget. Between what the corpus's slowest finished runs serialize
- * (large-list-10000: 0.50 M, 3.7 s; recursion-error-message: 0.44 M, 5.6 s)
- * and what the runs the browser kills reach first (recursion-error-caught:
- * 0.99 M in 12 s; deep-recursion-500: far more).
+ * The work the tracer may do before it stops the run, in place of its time
+ * budget: its units are about a microsecond under Node (#39: a step 10, a
+ * frame drawn 1, a heap object drawn 5, a value serialized 2), so this is
+ * about the browser's 8.5 seconds. The corpus's heaviest run,
+ * limits/deep-recursion-500, does about 1.4 M in 1.5 s.
  */
-export const SUITE_WORK_BUDGET = 750_000;
+export const SUITE_WORK_BUDGET = 8_500_000;
 
 /** This thread's CPU time (Node 24): unlike process.cpuUsage(), without V8's parallel garbage collection. */
 const threadCpuUsage = (process as unknown as { threadCpuUsage?: typeof process.cpuUsage }).threadCpuUsage?.bind(process) ?? process.cpuUsage.bind(process);

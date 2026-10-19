@@ -8,28 +8,12 @@
         "reason": "traceback differs from CPython's"
       }
     },
-    "limits/deep-recursion-500": {
-      "ending": {
-        "issues": [
-          39
-        ],
-        "reason": "every step re-serialized: too slow"
-      }
-    },
-    "limits/recursion-error-caught": {
-      "ending": {
-        "issues": [
-          39
-        ],
-        "reason": "every step re-serialized: too slow"
-      }
-    },
     "limits/recursion-error-uncaught": {
-      "ending": {
+      "traceback": {
         "issues": [
-          39
+          40
         ],
-        "reason": "every step re-serialized: too slow"
+        "reason": "CPython folds the repeated frames: [Previous line repeated 996 more times]"
       }
     }
   }
