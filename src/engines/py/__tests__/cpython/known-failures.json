@@ -1,20 +1,3 @@
 {
-  "failures": {
-    "exceptions/uncaught-chained-from": {
-      "traceback": {
-        "issues": [
-          40
-        ],
-        "reason": "traceback differs from CPython's"
-      }
-    },
-    "limits/recursion-error-uncaught": {
-      "traceback": {
-        "issues": [
-          40
-        ],
-        "reason": "CPython folds the repeated frames: [Previous line repeated 996 more times]"
-      }
-    }
-  }
+  "failures": {}
 }

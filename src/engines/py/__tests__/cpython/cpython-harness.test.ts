@@ -16,7 +16,6 @@ import {
   exceptionText,
   unrepr,
   validateKnownFailures,
-  withoutCarets,
   withoutInput,
   type RunOutcome,
 } from './harness';
@@ -149,6 +148,11 @@ describe('the reference recorder (Pyodide)', () => {
     expect(g.compileError!.text).toContain('File "main.py", line 2');
     expect(g.stdout).toBe('');
   }, 30_000);
+
+  it('records an error only the compiler finds with its source line, as python main.py reads it from the file (#40)', async () => {
+    const g = await record('x = 1\nreturn x\n', null);
+    expect(g.compileError!.text).toBe('  File "main.py", line 2\n    return x\n    ^^^^^^^^\nSyntaxError: \'return\' outside function\n');
+  }, 30_000);
 });
 
 // ── Values ──
@@ -180,10 +184,9 @@ describe('value comparison', () => {
     expect(compareValue("'long…", str('anything'))).toBeNull();
   });
 
-  it('formats exceptions and drops traceback carets', () => {
+  it('formats exceptions', () => {
     expect(exceptionText({ class: 'ValueError', message: 'bad' })).toBe('ValueError: bad');
     expect(exceptionText({ class: 'StopIteration', message: '' })).toBe('StopIteration');
-    expect(withoutCarets('Traceback\n  File "main.py", line 1\n    x = 1 / 0\n        ~~^~~\nZeroDivisionError')).toBe('Traceback\n  File "main.py", line 1\n    x = 1 / 0\nZeroDivisionError');
   });
 
   it('expects the step cap only for long or endless programs', () => {
@@ -283,19 +286,27 @@ describe('checkCase', () => {
     expect(r4.checks.ending[0]).toMatch(/never finishes/);
   });
 
-  it('checks a program CPython rejects: no steps, its message and line', () => {
+  it('checks a program CPython rejects: no steps, a compile error with its message and line, and its display on the console (#40)', () => {
     const sc = pyCase('if x = 1:\n    pass\n', 'syntax-errors');
-    const sg = golden({ compileError: { class: 'SyntaxError', msg: 'invalid syntax', line: 1, offset: 4, text: '' } });
-    expect(checkCase(sc, sg, outcome({ type: 'error', message: 'SyntaxError: invalid syntax', line: 1 })).verdict).toBe('match');
-    const wrong = checkCase(sc, sg, outcome({ type: 'error', message: 'SyntaxError: invalid syntax', line: 2 }));
-    expect(wrong.checks.ending[0]).toMatch(/line 1 \| PyTutor: line 2/);
+    const display = '  File "main.py", line 1\n    if x = 1:\n       ^^^^^\nSyntaxError: invalid syntax';
+    const sg = golden({ compileError: { class: 'SyntaxError', msg: 'invalid syntax', line: 1, offset: 4, text: display + '\n' } });
+    const compile = (over: Partial<RunError> = {}): RunError => ({ kind: 'compile', message: 'SyntaxError: invalid syntax', line: 1, lines: [1], stderr: display, ...over });
+    expect(checkCase(sc, sg, outcome(result([], compile()))).verdict).toBe('match');
+    const wrong = checkCase(sc, sg, outcome(result([], compile({ line: 2, lines: [2] }))));
+    expect(wrong.checks.ending[0]).toMatch(/line 1 \| PyTutor: line 2, lines 2/);
     expect(wrong.verdict).toBe('compile');
+    expect(checkCase(sc, sg, outcome(result([], compile({ stderr: 'SyntaxError: invalid syntax' })))).checks.ending[0]).toMatch(/the console shows "SyntaxError: invalid syntax", CPython prints/);
+    expect(checkCase(sc, sg, outcome({ type: 'error', message: 'SyntaxError: invalid syntax', line: 1 })).checks.ending[0]).toMatch(/not a compile error/);
+    // The compiler's warnings come first.
+    const warned = golden({ ...sg, console: [{ stream: 'stderr', text: "main.py:1: SyntaxWarning: invalid escape sequence '\\d'" }] });
+    expect(checkCase(sc, warned, outcome(result([], compile({ stderr: "main.py:1: SyntaxWarning: invalid escape sequence '\\d'\n" + display })))).verdict).toBe('match');
   });
 
-  it('compares tracebacks without their carets', () => {
+  it('compares tracebacks byte for byte, carets included (#40)', () => {
     const raises = golden({ ...g, exception: { class: 'ZeroDivisionError', message: 'division by zero' }, traceback: 'Traceback (most recent call last):\n  File "main.py", line 2, in <module>\n    y = x / 0\n        ~~^~~\nZeroDivisionError: division by zero\n' });
     const err = (stderr: string): RunError => ({ kind: 'exception', message: 'ZeroDivisionError: division by zero', stderr });
-    expect(checkCase(c, raises, outcome(result(good, err('Traceback (most recent call last):\n  File "main.py", line 2, in <module>\n    y = x / 0\nZeroDivisionError: division by zero')))).checks.traceback).toEqual([]);
+    expect(checkCase(c, raises, outcome(result(good, err('Traceback (most recent call last):\n  File "main.py", line 2, in <module>\n    y = x / 0\n        ~~^~~\nZeroDivisionError: division by zero')))).checks.traceback).toEqual([]);
+    expect(checkCase(c, raises, outcome(result(good, err('Traceback (most recent call last):\n  File "main.py", line 2, in <module>\n    y = x / 0\nZeroDivisionError: division by zero')))).checks.traceback[0]).toMatch(/traceback line 4: CPython " {8}~~\^~~"/);
     expect(checkCase(c, raises, outcome(result(good, err('ZeroDivisionError: division by zero')))).checks.traceback[0]).toMatch(/traceback line 1/);
   });
 

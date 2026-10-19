@@ -20,6 +20,7 @@ import dis as _dis
 import ast as _ast
 import traceback as _traceback
 import builtins as _builtins
+import warnings as _warnings
 import re as _re
 import enum as _enum
 
@@ -484,13 +485,17 @@ def _name_comprehensions(code):
     return code.replace(co_consts=consts)
 
 def _compile_program(source_code):
-    # The program's code with its comprehensions in frames of their own.
-    # SyntaxErrors are compile()'s for the source as written.
-    tree = _ast.parse(source_code, _USER_FILE)
+    # The program's code with its comprehensions in frames of their own. The
+    # source is compiled as written first, so its warnings and SyntaxError are
+    # CPython's own, each once (#40); the transformed tree is compiled quietly.
+    plain = compile(source_code, _USER_FILE, 'exec', dont_inherit=True)
     try:
-        return _name_comprehensions(compile(_CompWrapper().visit(tree), _USER_FILE, 'exec'))
+        with _warnings.catch_warnings():
+            _warnings.simplefilter('ignore')
+            tree = _ast.parse(source_code, _USER_FILE)
+            return _name_comprehensions(compile(_CompWrapper().visit(tree), _USER_FILE, 'exec', dont_inherit=True))
     except SyntaxError:
-        return compile(source_code, _USER_FILE, 'exec')
+        return plain
 
 def _is_comprehension(code):
     return code.co_name in _COMP_FRAMES
@@ -1169,20 +1174,70 @@ def _user_line(e):
         tb = tb.tb_next
     return line
 
-def _traceback_text(e, source_code):
-    """What Python prints for an uncaught exception, limited to the user's own code."""
-    lines = source_code.splitlines()
-    out = ["Traceback (most recent call last):"]
-    tb = e.__traceback__
-    while tb is not None:
-        code = tb.tb_frame.f_code
-        if code.co_filename == _USER_FILE and not _is_comprehension(code) and tb.tb_frame not in _refused:
-            out.append(f'  File "main.py", line {tb.tb_lineno}, in {code.co_name}')
-            if 1 <= tb.tb_lineno <= len(lines):
-                out.append("    " + lines[tb.tb_lineno - 1].strip())
-        tb = tb.tb_next
-    out.append(_exception_text(e))
-    return chr(10).join(out)
+# ── Tracebacks and syntax errors as CPython prints them (#40) ──
+
+# The file the tracer's own code runs from (Pyodide's <exec>): its frames are
+# never the program's.
+_TRACER_FILE = _getframe().f_code.co_filename
+
+def _program_stack(te, e, seen):
+    # A TracebackException's frames as python main.py has them, for e and the
+    # exceptions chained to it: without the tracer's frames or a frame refused
+    # for the recursion limit (it never ran), and with PyTutor's comprehension
+    # frames folded into the frame around them, where CPython 3.12 runs a
+    # comprehension inlined (that frame's line and carets are the
+    # comprehension's).
+    if te is None or e is None or id(e) in seen:
+        return
+    seen.add(id(e))
+    frames = [f for f, _ in _traceback.walk_tb(e.__traceback__)]
+    if len(frames) == len(te.stack):
+        kept = []
+        for summary, f in zip(te.stack, frames):
+            code = f.f_code
+            if code.co_filename == _TRACER_FILE or f in _refused:
+                continue
+            if code.co_filename == _USER_FILE and _is_comprehension(code):
+                if kept and kept[-1].filename == _USER_FILE:
+                    outer = kept[-1]
+                    kept[-1] = _traceback.FrameSummary(
+                        outer.filename, summary.lineno, outer.name, lookup_line=False,
+                        end_lineno=summary.end_lineno, colno=summary.colno, end_colno=summary.end_colno)
+                continue
+            kept.append(summary)
+        te.stack = _traceback.StackSummary.from_list(kept)
+    _program_stack(te.__cause__, e.__cause__, seen)
+    _program_stack(te.__context__, e.__context__, seen)
+    for sub_te, sub_e in zip(te.exceptions or (), getattr(e, 'exceptions', None) or ()):
+        _program_stack(sub_te, sub_e, seen)
+
+def _traceback_text(e):
+    """What python main.py prints for an uncaught exception: CPython's own
+    traceback (chained exceptions, carets, repeated lines folded), of the
+    program's frames."""
+    te = _traceback.TracebackException(type(e), e, e.__traceback__, compact=True)
+    _program_stack(te, e, set())
+    return ''.join(te.format()).rstrip(chr(10))
+
+def _compile_error(e, source_code):
+    # A program CPython rejects: nothing ran, and the console shows what
+    # python main.py prints (warnings first), the editor marks the line.
+    error = {"kind": "compile", "message": f"{type(e).__name__}: {getattr(e, 'msg', None) or e}"}
+    if isinstance(e, SyntaxError) and e.text is None and e.lineno:
+        # An error only the compiler finds ('return' outside function) has no
+        # source text from compile(); python main.py reads it from the file.
+        source_lines = source_code.splitlines(True)
+        if 1 <= e.lineno <= len(source_lines):
+            e.text = source_lines[e.lineno - 1]
+    shown = ''.join(_traceback.format_exception_only(type(e), e))
+    if _console:
+        shown = chr(10).join(t for st, t, rs in _console) + chr(10) + shown
+    error["stderr"] = shown.rstrip(chr(10))
+    line = getattr(e, 'lineno', None)
+    if line:
+        error["line"] = line
+        error["lines"] = [line]
+    return error
 
 def run_traced(source_code, stdin_text=''):
     global _snapshots, _call_stack, _heap_map, _heap_counter, _step_counter, _continuation_lines, _module_order, _source_words
@@ -1247,11 +1302,8 @@ def run_traced(source_code, stdin_text=''):
         try:
             code = _compile_program(source_code)
         except (SyntaxError, ValueError) as e:
-            # Nothing ran: report the syntax error and its line.
-            result = {"type": "error", "message": f"{type(e).__name__}: {getattr(e, 'msg', None) or e}"}
-            if getattr(e, 'lineno', None):
-                result["line"] = e.lineno
-            return _json_dumps(result)
+            # Nothing ran: no steps, and a compile error (#40).
+            return _json_dumps({"type": "result", "parts": [], "snapshots": [], "error": _compile_error(e, source_code)}, separators=(',', ':'))
 
         # A run that ends early (an uncaught exception, the step or time limit)
         # still returns its steps, with the reason in "error".
@@ -1277,7 +1329,7 @@ def run_traced(source_code, stdin_text=''):
             # Any other exception the program raised is its own, KeyboardInterrupt
             # and BaseException subclasses included, as CPython reports them.
             _settrace(None)
-            error = {"kind": "exception", "message": _exception_text(e), "stderr": _traceback_text(e, source_code)}
+            error = {"kind": "exception", "message": _exception_text(e), "stderr": _traceback_text(e)}
             line = _user_line(e)
             if line is not None:
                 error["line"] = line

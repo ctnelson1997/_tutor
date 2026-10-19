@@ -1,0 +1,46 @@
+{
+ "stdout": "3\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "3"
+  }
+ ],
+ "exception": {
+  "class": "TypeError",
+  "message": "can only concatenate str (not \"int\") to str"
+ },
+ "traceback": "Traceback (most recent call last):\n  File \"main.py\", line 4, in lookup\n    return table[key]\n           ~~~~~^^^^^\nKeyError: 'pear'\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"main.py\", line 10, in <module>\n    print(lookup(prices, \"pear\"))\n          ^^^^^^^^^^^^^^^^^^^^^^\n  File \"main.py\", line 6, in lookup\n    return table[\"default\"] + 1\n           ~~~~~~~~~~~~~~~~~^~~\nTypeError: can only concatenate str (not \"int\") to str\n",
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"lookup":"<function>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"lookup":"<function>","prices":"<dict>"}},
+  {"event":"call","line":2,"stack":["<module>","lookup"],"locals":{"table":"<dict>","key":"'apple'"}},
+  {"event":"line","line":3,"stack":["<module>","lookup"],"locals":{"table":"<dict>","key":"'apple'"}},
+  {"event":"line","line":4,"stack":["<module>","lookup"],"locals":{"table":"<dict>","key":"'apple'"}},
+  {"event":"return","line":4,"stack":["<module>","lookup"],"locals":{"table":"<dict>","key":"'apple'"},"value":"3"},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"lookup":"<function>","prices":"<dict>"}},
+  {"event":"call","line":2,"stack":["<module>","lookup"],"locals":{"table":"<dict>","key":"'pear'"}},
+  {"event":"line","line":3,"stack":["<module>","lookup"],"locals":{"table":"<dict>","key":"'pear'"}},
+  {"event":"line","line":4,"stack":["<module>","lookup"],"locals":{"table":"<dict>","key":"'pear'"}},
+  {"event":"exception","line":4,"stack":["<module>","lookup"],"locals":{"table":"<dict>","key":"'pear'"},"exc":"KeyError"},
+  {"event":"line","line":5,"stack":["<module>","lookup"],"locals":{"table":"<dict>","key":"'pear'"}},
+  {"event":"line","line":6,"stack":["<module>","lookup"],"locals":{"table":"<dict>","key":"'pear'"}},
+  {"event":"exception","line":6,"stack":["<module>","lookup"],"locals":{"table":"<dict>","key":"'pear'"},"exc":"TypeError"},
+  {"event":"return","line":6,"stack":["<module>","lookup"],"locals":{"table":"<dict>","key":"'pear'"},"value":"None","unwinding":true},
+  {"event":"exception","line":10,"stack":["<module>"],"locals":{"lookup":"<function>","prices":"<dict>"},"exc":"TypeError"},
+  {"event":"return","line":10,"stack":["<module>"],"locals":{"lookup":"<function>","prices":"<dict>"},"value":"None","unwinding":true}
+ ],
+ "truncated": false,
+ "stepEvents": 16,
+ "finalGlobals": {
+  "lookup": "<function>",
+  "prices": "<dict>"
+ },
+ "continuation": [],
+ "sourceSha256": "8111cbd191aa50cd0ffeed3106f7293bdcec9b48ac95ba2abb38013ee65a9787"
+}

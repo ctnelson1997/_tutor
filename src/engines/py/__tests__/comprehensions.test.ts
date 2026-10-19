@@ -96,10 +96,10 @@ describe('comprehension frames', () => {
     expect(reply.snapshots.some(s => names(s).includes('list comprehension'))).toBe(false);
   });
 
-  it("keeps the comprehension's frame out of a traceback, as CPython 3.12 has none", () => {
+  it("keeps the comprehension's frame out of a traceback, as CPython 3.12 has none, its carets in the frame around it (#40)", () => {
     const reply = runFull('xs = [1, 0]\nys = [1 / x for x in xs]\n');
     expect(reply.error?.kind).toBe('exception');
-    expect(reply.error?.stderr).toBe('Traceback (most recent call last):\n  File "main.py", line 2, in <module>\n    ys = [1 / x for x in xs]\nZeroDivisionError: division by zero');
+    expect(reply.error?.stderr).toBe('Traceback (most recent call last):\n  File "main.py", line 2, in <module>\n    ys = [1 / x for x in xs]\n          ~~^~~\nZeroDivisionError: division by zero');
     // The comprehension the exception leaves shows no return value.
     expect(reply.snapshots.some(s => top(s).name === 'list comprehension' && 'return ↵' in vars(top(s)))).toBe(false);
   });

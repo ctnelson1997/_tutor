@@ -175,6 +175,11 @@ linecache.cache['main.py'] = (len(__src), None, __src.splitlines(True), 'main.py
 try:
     _code = compile(__src, 'main.py', 'exec')
 except SyntaxError as ex:
+    # An error only the compiler finds ('return' outside function) has no
+    # source text when compile() is given a string; python main.py reads it
+    # from the file, and shows the line and its carets.
+    if ex.text is None and ex.lineno and 1 <= ex.lineno <= len(__src.splitlines()):
+        ex.text = __src.splitlines(True)[ex.lineno - 1]
     _compile_error = {'class': type(ex).__name__, 'msg': ex.msg, 'line': ex.lineno, 'offset': ex.offset,
                       'text': ''.join(traceback.format_exception_only(type(ex), ex))}
 if _compile_error is None:

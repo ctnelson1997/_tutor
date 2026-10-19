@@ -88,7 +88,7 @@ describe('getTracerCode', () => {
     // tracer's frames would be traced as if they were user code. main.py is
     // what CPython's tracebacks and warnings name (#31).
     expect(code).toContain("_USER_FILE = 'main.py'");
-    expect(code).toContain("compile(source_code, _USER_FILE, 'exec')");
+    expect(code).toContain("compile(source_code, _USER_FILE, 'exec', dont_inherit=True)");
     expect(code).not.toContain("compile(source_code, '<exec>', 'exec')");
     expect(code).toContain('_linecache.cache[_USER_FILE]');
   });

@@ -477,7 +477,7 @@ c = C()
 interface TracedResult {
   type: 'result' | 'error';
   snapshots?: Array<{ line: number; stdout: string[]; callStack: Array<{ name: string; variables: Array<{ name: string }> }> }>;
-  error?: { kind: string; message: string; line?: number; stderr?: string };
+  error?: { kind: string; message: string; line?: number; lines?: number[]; stderr?: string };
   message?: string;
   line?: number;
 }
@@ -493,11 +493,14 @@ function runTracedResult(src: string): TracedResult {
   return decodeReply(lines[lines.length - 1]) as TracedResult;
 }
 
+/** A traceback without the carets under the failing expressions, which the python on PATH draws as its version does (3.11 and later). */
+const withoutCaretLines = (text: string | undefined) => (text ?? '').split('\n').filter(l => !/^\s*[~^]+\s*$/.test(l)).join('\n');
+
 describe.skipIf(!PYTHON_AVAILABLE)('Python tracer: runs that end early', () => {
   it('keeps the steps before an uncaught exception, ending where it was raised', () => {
     const r = runTracedResult('def divide(a, b):\n    return a / b\n\nx = 1\nprint(divide(10, x - 1))\nprint("never")');
     expect(r.type).toBe('result');
-    expect(r.error).toEqual({
+    expect({ ...r.error, stderr: withoutCaretLines(r.error?.stderr) }).toEqual({
       kind: 'exception',
       message: 'ZeroDivisionError: division by zero',
       line: 2,
@@ -531,8 +534,10 @@ describe.skipIf(!PYTHON_AVAILABLE)('Python tracer: runs that end early', () => {
     expect(r.snapshots!.at(-1)!.stdout).toEqual([]);
   });
 
-  it('reports a syntax error with its line, before running anything', () => {
-    expect(runTracedResult('x = 1\ny = = 2')).toEqual({ type: 'error', message: 'SyntaxError: invalid syntax', line: 2 });
+  it('reports a syntax error as a compile error with its line and its display, before running anything (#40)', () => {
+    const r = runTracedResult('x = 1\ny = = 2');
+    expect(r).toMatchObject({ type: 'result', snapshots: [], error: { kind: 'compile', message: 'SyntaxError: invalid syntax', line: 2, lines: [2] } });
+    expect(r.error?.stderr).toMatch(/^ {2}File "main\.py", line 2\n {4}y = = 2\n {8}\^\nSyntaxError: invalid syntax$/);
   });
 
   it('ends quietly on raise SystemExit', () => {

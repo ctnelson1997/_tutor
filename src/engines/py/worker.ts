@@ -9,7 +9,7 @@
  *   Main → Worker:  { type: 'init', tracerCode }      → load Pyodide and the tracer, take the snapshot
  *   Main → Worker:  { type: 'run', source, stdin }    → run a program, input() reading stdin
  *   Worker → Main:  { type: 'ready' }                 → ready to run
- *   Worker → Main:  { type: 'result', snapshots } or { type: 'error', message, line? }
+ *   Worker → Main:  { type: 'result', snapshots, error? } (a syntax error: no steps, a compile error) or { type: 'error', message }
  */
 import { PYODIDE_VERSION } from './run';
 import { PySession, type SessionPyodide } from './session';

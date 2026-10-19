@@ -1,0 +1,58 @@
+{
+ "stdout": "[1, 2]\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[1, 2]"
+  }
+ ],
+ "exception": {
+  "class": "ValueError",
+  "message": "invalid literal for int() with base 10: 'four'"
+ },
+ "traceback": "Traceback (most recent call last):\n  File \"main.py\", line 9, in <module>\n    values = parse_all([\"3\", \"four\", \"5\"])\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"main.py\", line 6, in parse_all\n    return [parse(t) for t in items]\n            ^^^^^^^^\n  File \"main.py\", line 3, in parse\n    return int(text)\n           ^^^^^^^^^\nValueError: invalid literal for int() with base 10: 'four'\n",
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"parse":"<function>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"parse":"<function>","parse_all":"<function>"}},
+  {"event":"call","line":5,"stack":["<module>","parse_all"],"locals":{"items":"<list>"}},
+  {"event":"line","line":6,"stack":["<module>","parse_all"],"locals":{"items":"<list>"}},
+  {"event":"call","line":2,"stack":["<module>","parse_all","parse"],"locals":{"text":"'1'"}},
+  {"event":"line","line":3,"stack":["<module>","parse_all","parse"],"locals":{"text":"'1'"}},
+  {"event":"return","line":3,"stack":["<module>","parse_all","parse"],"locals":{"text":"'1'"},"value":"1"},
+  {"event":"line","line":6,"stack":["<module>","parse_all"],"locals":{"items":"<list>","t":"'1'"}},
+  {"event":"call","line":2,"stack":["<module>","parse_all","parse"],"locals":{"text":"'2'"}},
+  {"event":"line","line":3,"stack":["<module>","parse_all","parse"],"locals":{"text":"'2'"}},
+  {"event":"return","line":3,"stack":["<module>","parse_all","parse"],"locals":{"text":"'2'"},"value":"2"},
+  {"event":"line","line":6,"stack":["<module>","parse_all"],"locals":{"items":"<list>","t":"'2'"}},
+  {"event":"return","line":6,"stack":["<module>","parse_all"],"locals":{"items":"<list>"},"value":"<list>"},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"parse":"<function>","parse_all":"<function>"}},
+  {"event":"call","line":5,"stack":["<module>","parse_all"],"locals":{"items":"<list>"}},
+  {"event":"line","line":6,"stack":["<module>","parse_all"],"locals":{"items":"<list>"}},
+  {"event":"call","line":2,"stack":["<module>","parse_all","parse"],"locals":{"text":"'3'"}},
+  {"event":"line","line":3,"stack":["<module>","parse_all","parse"],"locals":{"text":"'3'"}},
+  {"event":"return","line":3,"stack":["<module>","parse_all","parse"],"locals":{"text":"'3'"},"value":"3"},
+  {"event":"line","line":6,"stack":["<module>","parse_all"],"locals":{"items":"<list>","t":"'3'"}},
+  {"event":"call","line":2,"stack":["<module>","parse_all","parse"],"locals":{"text":"'four'"}},
+  {"event":"line","line":3,"stack":["<module>","parse_all","parse"],"locals":{"text":"'four'"}},
+  {"event":"exception","line":3,"stack":["<module>","parse_all","parse"],"locals":{"text":"'four'"},"exc":"ValueError"},
+  {"event":"return","line":3,"stack":["<module>","parse_all","parse"],"locals":{"text":"'four'"},"value":"None","unwinding":true},
+  {"event":"exception","line":6,"stack":["<module>","parse_all"],"locals":{"items":"<list>","t":"'four'"},"exc":"ValueError"},
+  {"event":"line","line":6,"stack":["<module>","parse_all"],"locals":{"items":"<list>","t":"'four'"}},
+  {"event":"return","line":6,"stack":["<module>","parse_all"],"locals":{"items":"<list>"},"value":"None","unwinding":true},
+  {"event":"exception","line":9,"stack":["<module>"],"locals":{"parse":"<function>","parse_all":"<function>"},"exc":"ValueError"},
+  {"event":"return","line":9,"stack":["<module>"],"locals":{"parse":"<function>","parse_all":"<function>"},"value":"None","unwinding":true}
+ ],
+ "truncated": false,
+ "stepEvents": 28,
+ "finalGlobals": {
+  "parse": "<function>",
+  "parse_all": "<function>"
+ },
+ "continuation": [],
+ "sourceSha256": "b3bc83b1774ff52610c8515faa50e12427341277afc5ffe30a7cce4bb7564849"
+}

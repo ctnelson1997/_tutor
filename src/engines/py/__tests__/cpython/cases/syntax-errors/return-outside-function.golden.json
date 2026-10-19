@@ -9,7 +9,7 @@
   "msg": "'return' outside function",
   "line": 7,
   "offset": 1,
-  "text": "  File \"main.py\", line 7\nSyntaxError: 'return' outside function\n"
+  "text": "  File \"main.py\", line 7\n    return biggest\n    ^^^^^^^^^^^^^^\nSyntaxError: 'return' outside function\n"
  },
  "endless": false,
  "events": [],

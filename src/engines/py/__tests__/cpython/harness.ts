@@ -8,8 +8,10 @@
  *                stopped at the step cap shows a prefix).
  *   ending       the run ends as CPython's did: normally, with the same
  *                uncaught exception, at the step cap for an endless loop, or,
- *                for a program CPython rejects, with its SyntaxError and line.
- *   traceback    an uncaught exception's traceback is CPython's.
+ *                for a program CPython rejects, with a compile error: its
+ *                SyntaxError and line, and on the console what CPython prints.
+ *   traceback    an uncaught exception's traceback is CPython's, byte for
+ *                byte (chained exceptions and carets included).
  *   steps        each step is a CPython event at the same line with the same
  *                stack of frames, in order, and every line CPython ran has one.
  *   variables    each step's innermost frame shows the variables CPython's has,
@@ -323,16 +325,23 @@ function checkEnding(golden: PyGolden, outcome: RunOutcome): { problems: string[
   const none = { problems: [], kind: 'none' as const };
   const { reply } = outcome;
   if (golden.compileError) {
+    // A compile error (#40): no steps, CPython's message and line, the line
+    // marked, and the console showing what python main.py prints.
     const want = golden.compileError;
     const text = `${want.class}: ${want.msg}`;
-    const err = reply.type === 'error' ? reply : reply.error;
-    const steps = reply.type === 'result' ? reply.snapshots.length : 0;
+    if (reply.type === 'error') return { problems: [`CPython: ${text} (line ${want.line}); PyTutor stops with ${quote(reply.message)}, not a compile error`], kind: 'compile' };
+    const err = reply.error;
     const problems: string[] = [];
-    if (steps > 0) problems.push(`CPython rejects the program, but PyTutor took ${steps} step(s)`);
+    if (reply.snapshots.length > 0) problems.push(`CPython rejects the program, but PyTutor took ${reply.snapshots.length} step(s)`);
     if (!err) problems.push(`CPython: ${text} (line ${want.line}); PyTutor reports no error`);
     else {
+      if (err.kind !== 'compile') problems.push(`PyTutor reports a ${err.kind} error, not a compile error`);
       if (err.message !== text) problems.push(`CPython: ${text} | PyTutor: ${err.message}`);
-      if (err.line !== want.line) problems.push(`CPython: line ${want.line} | PyTutor: line ${err.line ?? '?'}`);
+      if (err.line !== want.line || err.lines?.join() !== String(want.line)) problems.push(`CPython: line ${want.line} | PyTutor: line ${err.line ?? '?'}, lines ${err.lines?.join(', ') ?? '?'}`);
+      // The compiler's warnings first (CPython 3.12 prints a SyntaxWarning
+      // again from its second pass over a program it rejects), then the error.
+      const shown = [...golden.console.map(l => l.text), want.text.replace(/\n$/, '')].join('\n');
+      if (err.stderr !== shown) problems.push(`the console shows ${quote(err.stderr ?? '')}, CPython prints ${quote(shown)}`);
     }
     return problems.length ? { problems, kind: 'compile' } : none;
   }
@@ -356,15 +365,11 @@ function checkEnding(golden: PyGolden, outcome: RunOutcome): { problems: string[
   return none;
 }
 
-/** A traceback without the carets under the failing expression, which PyTutor doesn't draw yet. */
-export function withoutCarets(text: string): string {
-  return text.replace(/\r/g, '').trim().split('\n').filter(l => !/^\s*\^+\s*$|^\s*~+\^*~*\s*$/.test(l)).join('\n');
-}
-
 function checkTraceback(golden: PyGolden, reply: WorkerMessage): string[] {
   if (!golden.exception || !golden.traceback || reply.type !== 'result' || reply.error?.kind !== 'exception' || !reply.error.stderr) return [];
-  const want = withoutCarets(golden.traceback);
-  const got = withoutCarets(reply.error.stderr);
+  // The console shows the traceback without its last newline.
+  const want = golden.traceback.replace(/\r/g, '').replace(/\n$/, '');
+  const got = reply.error.stderr;
   if (want === got) return [];
   const a = want.split('\n');
   const b = got.split('\n');
