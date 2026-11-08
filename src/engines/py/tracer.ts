@@ -23,6 +23,7 @@ import builtins as _builtins
 import warnings as _warnings
 import re as _re
 import enum as _enum
+from importlib.machinery import SourceFileLoader as _SourceFileLoader
 
 # The tracer's own builtins and library functions (#34): a program that
 # replaces builtins.len, json.dumps or sys.settrace doesn't change what the
@@ -205,6 +206,20 @@ _continuation_lines = set()
 
 # The program's file name, as CPython names it in tracebacks and warnings.
 _USER_FILE = 'main.py'
+
+def _main_module():
+    # A fresh __main__ module with the names python main.py gives it, in its
+    # order (#77): __name__, __doc__, __package__, __loader__ and __spec__
+    # from ModuleType, then __annotations__ and __builtins__ (the builtins
+    # module), then __file__ and __cached__.
+    module = _types.ModuleType('__main__')
+    ns = module.__dict__
+    ns['__loader__'] = _SourceFileLoader('__main__', _USER_FILE)
+    ns['__annotations__'] = {}
+    ns['__builtins__'] = _builtins
+    ns['__file__'] = _USER_FILE
+    ns['__cached__'] = None
+    return module
 
 # ── Output: captured at the streams (#31) ──
 #
@@ -1279,11 +1294,19 @@ def run_traced(source_code, stdin_text=''):
     # Pre-scan source for multi-line statements
     _scan_continuation_lines(source_code)
 
-    # The program's module namespace, as CPython has main.py's: its names
-    # only, the builtins found through the builtins module (exec adds
-    # __builtins__), so a program that replaces builtins.len calls its own len
-    # and a variable named list or max is the program's (#34).
-    namespace = {'__name__': '__main__'}
+    # The program's module, as python main.py has it (#77): a module named
+    # __main__ in sys.modules (where unittest.main(), doctest.testmod() and
+    # pickle look), its names only, the builtins module as __builtins__ (so a
+    # program that replaces builtins.len calls its own len, and a variable
+    # named list or max is the program's, #34), __file__, sys.argv, and the
+    # source as main.py in the working directory.
+    main_module = _main_module()
+    namespace = main_module.__dict__
+    try:
+        with open(_USER_FILE, 'w', encoding='utf-8') as f:
+            f.write(source_code)
+    except OSError:
+        pass
 
     # The source, for tracebacks, warnings and traceback.print_exc(), as CPython has main.py's.
     _linecache.cache[_USER_FILE] = (len(source_code), None, source_code.splitlines(True), _USER_FILE)
@@ -1298,6 +1321,11 @@ def run_traced(source_code, stdin_text=''):
     sys.stdout = sys.__stdout__ = _TutorStream('stdout', 'strict')
     sys.stderr = sys.__stderr__ = _TutorStream('stderr', 'backslashreplace')
     saved_limit_functions = (sys.getrecursionlimit, sys.setrecursionlimit)
+    saved_main = (sys.modules.get('__main__'), sys.argv, sys.path)
+    sys.modules['__main__'] = main_module
+    sys.argv = [_USER_FILE]
+    # The working directory (main.py's) first, once: a restored interpreter lists it twice.
+    sys.path = list(dict.fromkeys(sys.path))
     try:
         try:
             code = _compile_program(source_code)
@@ -1340,6 +1368,7 @@ def run_traced(source_code, stdin_text=''):
     finally:
         sys.stdin, sys.stdout, sys.stderr, sys.__stdin__, sys.__stdout__, sys.__stderr__ = saved_streams
         sys.getrecursionlimit, sys.setrecursionlimit = saved_limit_functions
+        sys.modules['__main__'], sys.argv, sys.path = saved_main
         _real_setlimit(_DEFAULT_LIMIT)
 
     if _stop_reason == "steps":

@@ -1,0 +1,120 @@
+{
+ "stdout": "",
+ "stderr": ".F\n======================================================================\nFAIL: test_wrong (__main__.TestAdd.test_wrong)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"main.py\", line 16, in test_wrong\n    self.assertEqual(add(2, 2), 5)\nAssertionError: 4 != 5\n\n----------------------------------------------------------------------\nRan 2 tests in 0.000s\n\nFAILED (failures=1)\n",
+ "console": [
+  {
+   "stream": "stderr",
+   "text": ".F"
+  },
+  {
+   "stream": "stderr",
+   "text": "======================================================================"
+  },
+  {
+   "stream": "stderr",
+   "text": "FAIL: test_wrong (__main__.TestAdd.test_wrong)"
+  },
+  {
+   "stream": "stderr",
+   "text": "----------------------------------------------------------------------"
+  },
+  {
+   "stream": "stderr",
+   "text": "Traceback (most recent call last):"
+  },
+  {
+   "stream": "stderr",
+   "text": "  File \"main.py\", line 16, in test_wrong"
+  },
+  {
+   "stream": "stderr",
+   "text": "    self.assertEqual(add(2, 2), 5)"
+  },
+  {
+   "stream": "stderr",
+   "text": "AssertionError: 4 != 5"
+  },
+  {
+   "stream": "stderr",
+   "text": ""
+  },
+  {
+   "stream": "stderr",
+   "text": "----------------------------------------------------------------------"
+  },
+  {
+   "stream": "stderr",
+   "text": "Ran 2 tests in 0.000s"
+  },
+  {
+   "stream": "stderr",
+   "text": ""
+  },
+  {
+   "stream": "stderr",
+   "text": "FAILED (failures=1)"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":1,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{"time":"<module>"}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"time":"<module>","unittest":"<module>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"time":"<module>","unittest":"<module>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"time":"<module>","unittest":"<module>","add":"<function>"}},
+  {"event":"call","line":11,"stack":["<module>","TestAdd"],"locals":{}},
+  {"event":"line","line":11,"stack":["<module>","TestAdd"],"locals":{}},
+  {"event":"line","line":12,"stack":["<module>","TestAdd"],"locals":{"__module__":"'__main__'","__qualname__":"'TestAdd'"}},
+  {"event":"line","line":15,"stack":["<module>","TestAdd"],"locals":{"__module__":"'__main__'","__qualname__":"'TestAdd'","test_small":"<function>"}},
+  {"event":"return","line":15,"stack":["<module>","TestAdd"],"locals":{"__module__":"'__main__'","__qualname__":"'TestAdd'","test_small":"<function>","test_wrong":"<function>"},"value":"None"},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"time":"<module>","unittest":"<module>","add":"<function>","TestAdd":"<type>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"time":"<module>","unittest":"<module>","add":"<function>","TestAdd":"<type>"}},
+  {"event":"call","line":4,"stack":["<module>","<lambda>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>","<lambda>"],"locals":{}},
+  {"event":"return","line":4,"stack":["<module>","<lambda>"],"locals":{},"value":"0.0"},
+  {"event":"call","line":4,"stack":["<module>","<lambda>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>","<lambda>"],"locals":{}},
+  {"event":"return","line":4,"stack":["<module>","<lambda>"],"locals":{},"value":"0.0"},
+  {"event":"call","line":12,"stack":["<module>","test_small"],"locals":{"self":"<TestAdd>"}},
+  {"event":"line","line":13,"stack":["<module>","test_small"],"locals":{"self":"<TestAdd>"}},
+  {"event":"call","line":7,"stack":["<module>","test_small","add"],"locals":{"a":"1","b":"2"}},
+  {"event":"line","line":8,"stack":["<module>","test_small","add"],"locals":{"a":"1","b":"2"}},
+  {"event":"return","line":8,"stack":["<module>","test_small","add"],"locals":{"a":"1","b":"2"},"value":"3"},
+  {"event":"return","line":13,"stack":["<module>","test_small"],"locals":{"self":"<TestAdd>"},"value":"None"},
+  {"event":"call","line":4,"stack":["<module>","<lambda>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>","<lambda>"],"locals":{}},
+  {"event":"return","line":4,"stack":["<module>","<lambda>"],"locals":{},"value":"0.0"},
+  {"event":"call","line":4,"stack":["<module>","<lambda>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>","<lambda>"],"locals":{}},
+  {"event":"return","line":4,"stack":["<module>","<lambda>"],"locals":{},"value":"0.0"},
+  {"event":"call","line":15,"stack":["<module>","test_wrong"],"locals":{"self":"<TestAdd>"}},
+  {"event":"line","line":16,"stack":["<module>","test_wrong"],"locals":{"self":"<TestAdd>"}},
+  {"event":"call","line":7,"stack":["<module>","test_wrong","add"],"locals":{"a":"2","b":"2"}},
+  {"event":"line","line":8,"stack":["<module>","test_wrong","add"],"locals":{"a":"2","b":"2"}},
+  {"event":"return","line":8,"stack":["<module>","test_wrong","add"],"locals":{"a":"2","b":"2"},"value":"4"},
+  {"event":"exception","line":16,"stack":["<module>","test_wrong"],"locals":{"self":"<TestAdd>"},"exc":"AssertionError"},
+  {"event":"return","line":16,"stack":["<module>","test_wrong"],"locals":{"self":"<TestAdd>"},"value":"None","unwinding":true},
+  {"event":"call","line":4,"stack":["<module>","<lambda>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>","<lambda>"],"locals":{}},
+  {"event":"return","line":4,"stack":["<module>","<lambda>"],"locals":{},"value":"0.0"},
+  {"event":"call","line":4,"stack":["<module>","<lambda>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>","<lambda>"],"locals":{}},
+  {"event":"return","line":4,"stack":["<module>","<lambda>"],"locals":{},"value":"0.0"},
+  {"event":"exception","line":20,"stack":["<module>"],"locals":{"time":"<module>","unittest":"<module>","add":"<function>","TestAdd":"<type>"},"exc":"SystemExit"},
+  {"event":"return","line":20,"stack":["<module>"],"locals":{"time":"<module>","unittest":"<module>","add":"<function>","TestAdd":"<type>"},"value":"None","unwinding":true}
+ ],
+ "truncated": false,
+ "stepEvents": 44,
+ "finalGlobals": {
+  "time": "<module>",
+  "unittest": "<module>",
+  "add": "<function>",
+  "TestAdd": "<type>"
+ },
+ "continuation": [],
+ "sourceSha256": "55e278ee019479203c41dc1d7f5a24938d5a8295f91d5e555fabb5debcf713dc"
+}

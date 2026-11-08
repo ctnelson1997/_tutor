@@ -170,7 +170,21 @@ _endless = False
 _exc = None
 _compile_error = None
 _tb = None
-_g = {'__name__': '__main__'}
+# The program's module as python main.py has it: __main__ in sys.modules,
+# with the names CPython gives it, the builtins module as __builtins__,
+# sys.argv, and the source as main.py in the working directory.
+import importlib.machinery
+_main = types.ModuleType('__main__')
+_g = _main.__dict__
+_g['__loader__'] = importlib.machinery.SourceFileLoader('__main__', 'main.py')
+_g['__annotations__'] = {}
+_g['__builtins__'] = builtins
+_g['__file__'] = 'main.py'
+_g['__cached__'] = None
+sys.modules['__main__'] = _main
+sys.argv = ['main.py']
+with open('main.py', 'w', encoding='utf-8') as _f:
+    _f.write(__src)
 linecache.cache['main.py'] = (len(__src), None, __src.splitlines(True), 'main.py')
 try:
     _code = compile(__src, 'main.py', 'exec')
@@ -216,7 +230,11 @@ _continuation = []
 try:
     _starts = set()
     _spans = []
-    for _n in _ast.walk(_ast.parse(__src)):
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore')
+        _tree = _ast.parse(__src)
+    for _n in _ast.walk(_tree):
         if isinstance(_n, _ast.stmt):
             _starts.add(_n.lineno)
             if not isinstance(_n, (_ast.FunctionDef, _ast.AsyncFunctionDef, _ast.ClassDef, _ast.If, _ast.For, _ast.While, _ast.With, _ast.Try, _ast.Match)):

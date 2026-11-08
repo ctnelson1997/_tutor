@@ -173,8 +173,10 @@ describe('getTracerCode', () => {
 
   // ── The namespace (#34; #35 decides what a program may use) ──
 
-  it("runs the program in a namespace of its own names, with all of CPython's builtins (#35)", () => {
-    expect(code).toContain("namespace = {'__name__': '__main__'}");
+  it("runs the program in a __main__ module of its own, with all of CPython's builtins (#35, #77; program.test.ts runs it)", () => {
+    expect(code).toContain("module = _types.ModuleType('__main__')");
+    expect(code).toContain("ns['__builtins__'] = _builtins");
+    expect(code).toContain("sys.modules['__main__'] = main_module");
     expect(code).not.toContain('_safe_import');
     expect(code).not.toContain('_SAFE_MODULES');
   });
