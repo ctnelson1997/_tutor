@@ -1,0 +1,61 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "1776 7/4/1776"
+  },
+  {
+   "stream": "stdout",
+   "text": "Date { day: 4, month: 7, year: 1776 }"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:1776",
+    "str:7/4/1776"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "Date",
+     "props": {
+      "day": "num:4",
+      "month": "num:7",
+      "year": "num:1776"
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  4,
+  5,
+  6,
+  9,
+  12,
+  13,
+  14
+ ],
+ "statementRuns": 7,
+ "functionCalls": 2,
+ "finalGlobals": {
+  "Date": "fn:Date",
+  "independence": {
+   "object": "Date",
+   "props": {
+    "day": "num:4",
+    "month": "num:7",
+    "year": "num:1776"
+   }
+  }
+ },
+ "sourceSha256": "02eb8661c901fa7bd2b7e873c559dee9d9e02543b6e6c94ec235b31625c8f475"
+}

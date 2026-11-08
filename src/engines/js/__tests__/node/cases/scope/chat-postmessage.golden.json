@@ -1,0 +1,84 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "new message from ana"
+  },
+  {
+   "stream": "stdout",
+   "text": "new message from ben"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'ana: hi', 'ben: hello' ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:new message from",
+    "str:ana"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:new message from",
+    "str:ben"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:ana: hi",
+      "str:ben: hello"
+     ],
+     "len": 2
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  5,
+  8,
+  9,
+  11,
+  12,
+  13,
+  14
+ ],
+ "statementRuns": 13,
+ "functionCalls": 5,
+ "finalGlobals": {
+  "inbox": {
+   "array": [
+    "str:ana: hi",
+    "str:ben: hello"
+   ],
+   "len": 2
+  },
+  "handlers": {
+   "object": "",
+   "props": {
+    "message": {
+     "array": [
+      "fn:"
+     ],
+     "len": 1
+    }
+   }
+  },
+  "addEventListener": "fn:addEventListener",
+  "postMessage": "fn:postMessage"
+ },
+ "sourceSha256": "41f1f7930c678b48ef961258b92b0e10163834d5b37dfa1c143a3e0e62312be6"
+}

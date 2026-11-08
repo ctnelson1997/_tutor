@@ -1,16 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { createContext, runInContext } from 'node:vm';
-import { instrument } from '../../engines/js/instrumenter';
-import { getRuntimeCode } from '../../engines/js/runtime';
+import { runInVm } from '../../engines/js/__tests__/vmRun';
 import type { ExecutionSnapshot, WorkerMessage } from '../../types/snapshot';
 
 /**
  * Helper: run instrumented code through the full pipeline (without a Web Worker).
  * Returns the resulting snapshots array.
  *
- * Uses Node's `vm.createContext` + `vm.runInContext` to execute code in an
- * isolated sandbox. Each call gets a fresh context so there's no global leakage
- * between tests.
+ * Runs the program in an isolated vm context (runInVm); each call gets a
+ * fresh context so there's no global leakage between tests.
  */
 function runPipeline(source: string): ExecutionSnapshot[] {
   const result = runPipelineResult(source);
@@ -21,61 +18,11 @@ function runPipeline(source: string): ExecutionSnapshot[] {
 /**
  * Helper: run code as the worker does and return its reply: the steps, and
  * why the run stopped early (an uncaught exception, the step cap), if it did.
+ * The runtime and the program run in a fresh vm context, each a script of
+ * its own (runInVm), so there's no global leakage between tests.
  */
 function runPipelineResult(source: string): WorkerMessage {
-  const instrumented = instrument(source);
-  const fullCode = getRuntimeCode() + '\n' + instrumented;
-
-  // Create a sandboxed context with all builtins the runtime preamble needs.
-  // In a real browser Worker, `self === globalThis === this` — we mirror that
-  // by pointing `self` at the sandbox itself, so the runtime's
-  // `thisVal !== self` filter correctly skips the global object. Without this
-  // the runtime would deeply serialize the entire sandbox as `thisArg` on
-  // every top-level function call, causing huge per-snapshot bloat.
-  const sandbox: Record<string, unknown> = {
-    // Builtins used by the runtime preamble
-    console: {
-      log: () => {},
-      warn: () => {},
-      error: () => {},
-    },
-    Map,
-    Set,
-    Array,
-    Object,
-    String,
-    Number,
-    Boolean,
-    Date,
-    RegExp,
-    Error,
-    JSON,
-    Math,
-    parseInt,
-    parseFloat,
-    isNaN,
-    isFinite,
-    undefined,
-    NaN,
-    Infinity,
-    TypeError,
-    RangeError,
-    SyntaxError,
-    ReferenceError,
-    URIError,
-  };
-  sandbox.self = sandbox;
-
-  const ctx = createContext(sandbox);
-  const runResult = ctx as unknown as { __runResult__: (err?: unknown) => WorkerMessage };
-  let reply: WorkerMessage;
-  try {
-    runInContext(fullCode, ctx);
-    reply = runResult.__runResult__();
-  } catch (err) {
-    reply = runResult.__runResult__(err);
-  }
-  return JSON.parse(JSON.stringify(reply));
+  return JSON.parse(JSON.stringify(runInVm(source)));
 }
 
 /** Helper to find a variable in a snapshot's callstack */
@@ -1100,5 +1047,162 @@ hello();`).map(s => s.replace(/add=ref,hello=ref,?/, ''))).toEqual([
   it('names a frame as JavaScript names the function: a class member, a constructor by its class, a variable', () => {
     expect(steps('class Box {\n  constructor(v) { this.v = v; }\n  get() { return this.v; }\n}\nconst twice = n => n * 2;\nconst b = new Box(3);\ntwice(b.get());')
       .map(s => s.split(' > ').slice(1).map(f => f.replace(/\(.*/, '')).join(' > ')).filter(Boolean)).toEqual(['Box', 'Box', 'get', 'get', 'twice', 'twice']);
+  });
+});
+
+/** A heap object a value refers to in a snapshot. */
+function heapOf(snap: ExecutionSnapshot, value: unknown) {
+  const ref = value as { type?: string; heapId?: string } | undefined;
+  return snap.heap.find(h => ref?.type === 'ref' && h.id === ref.heapId);
+}
+
+describe('the runtime on its own terms (#87, #88)', () => {
+  it("keeps the program's globals apart from the runtime's: its own Date, Map and postMessage, the global object's names", () => {
+    const snaps = runPipeline(`class Date { constructor(y) { this.y = y; } }
+function Map() { this.cells = []; }
+function postMessage(text) { return 'sent ' + text; }
+var mine = 1;
+console.log(new Date(1776).y, new Map().cells.length, postMessage('hi'), Object.keys(globalThis));
+const g = globalThis;`);
+    const last = lastSnap(snaps);
+    expect(last.stdout).toEqual(["1776 0 sent hi [ 'Map', 'postMessage', 'mine' ]"]);
+    // The global object is a card of its own, not the browser's names.
+    expect(heapOf(last, findVar(last, 'g')?.value)).toMatchObject({ objectType: 'object', label: 'globalThis', properties: [] });
+  });
+
+  it('draws a step without calling a getter, a proxy trap, or a method the program replaced', () => {
+    const snaps = runPipeline(`let calls = 0;
+const counted = { get v() { calls++; return 1; } };
+const p = new Proxy({ a: 1 }, { get() { calls++; }, ownKeys() { calls++; return []; }, getPrototypeOf() { calls++; return null; } });
+class Logged extends Map { forEach(cb) { calls++; super.forEach(cb); } }
+const m = new Logged([[1, 2]]);
+Object.keys = function () { calls++; return []; };
+Array.prototype.push = function () { calls++; return 0; };
+console.log(calls);`);
+    const last = lastSnap(snaps);
+    expect(last.stdout).toEqual(['0']);
+    expect(heapOf(last, findVar(last, 'counted')?.value)?.properties).toEqual([{ key: 'v', value: { type: 'string', value: '<getter>' } }]);
+    expect(heapOf(last, findVar(last, 'p')?.value)?.properties).toEqual([{ key: 'a', value: { type: 'number', value: 1 } }]);
+    expect(heapOf(last, findVar(last, 'm')?.value)?.objectType).toBe('map');
+  });
+
+  it('draws an invalid date as Invalid Date, also as a return value', () => {
+    const snaps = runPipeline(`function parse(text) {
+  return new Date(text);
+}
+const d = parse('31/12/2020');`);
+    const ret = snaps.find(s => s.callStack[s.callStack.length - 1].variables.some(v => v.name === 'return ↵'))!;
+    const value = ret.callStack[ret.callStack.length - 1].variables.find(v => v.name === 'return ↵')!.value;
+    expect(heapOf(ret, value)).toMatchObject({ objectType: 'date', label: 'Invalid Date' });
+  });
+});
+
+describe('closure variables (#90)', () => {
+  it("shows the outer variables a function closes over, not its own of the same name", () => {
+    const snaps = runPipeline(`function createCart() {
+  const items = [];
+  let total = 0;
+  return {
+    add(price) {
+      items.push(price);
+      let total = items.reduce((a, b) => a + b, 0);
+      return total;
+    },
+  };
+}
+console.log(createCart().add(5));`);
+    expect(lastSnap(snaps).stdout).toEqual(['5']);
+    const inAdd = snaps.filter(s => s.callStack[s.callStack.length - 1].name === 'add');
+    expect(inAdd.length).toBeGreaterThan(0);
+    for (const s of inAdd) expect(s.callStack[s.callStack.length - 1].closureVars?.map(v => v.name)).toEqual(['items']);
+  });
+
+  it('leaves out a closure variable still in its temporal dead zone (a helper declared at the bottom)', () => {
+    const snaps = runPipeline(`function solve() {
+  const scale = 2;
+  const answer = helper(3);
+  return answer;
+  function helper(x) {
+    return x * x * scale;
+  }
+}
+console.log(solve());`);
+    expect(lastSnap(snaps).stdout).toEqual(['18']);
+    const inHelper = snaps.find(s => s.callStack[s.callStack.length - 1].name === 'helper')!;
+    expect(inHelper.callStack[inHelper.callStack.length - 1].closureVars?.map(v => v.name)).toEqual(['helper', 'scale']);
+  });
+});
+
+describe('frames and heap (#93)', () => {
+  it("keeps a var declared in a block in its function's frame after the block, and a sloppy block function", () => {
+    const snaps = runPipeline(`for (var i = 0; i < 2; i++) {
+  var sq = i * i;
+}
+if (true) {
+  var msg = 'hi';
+  function greet() { return 'hello'; }
+}
+console.log(sq, msg, greet());`);
+    const names = lastSnap(snaps).callStack[0].variables.map(v => v.name);
+    expect(names).toEqual(expect.arrayContaining(['i', 'sq', 'msg', 'greet']));
+    expect(lastSnap(snaps).stdout).toEqual(['1 hi hello']);
+  });
+
+  it("shows a derived constructor's this once super() returns", () => {
+    const snaps = runPipeline(`class Animal {
+  constructor(name) {
+    this.name = name;
+  }
+}
+class Dog extends Animal {
+  constructor(name) {
+    super(name);
+    this.tricks = 0;
+  }
+}
+new Dog('Rex');`);
+    const atTricks = snaps.find(s => s.line === 9)!;
+    const dog = atTricks.callStack[atTricks.callStack.length - 1];
+    expect(dog.name).toBe('Dog');
+    expect(heapOf(atTricks, dog.thisArg)?.properties.map(p => p.key)).toEqual(['name']);
+  });
+
+  it("draws private fields and static members, a class's own name, and computed method names", () => {
+    const snaps = runPipeline(`class Account {
+  static count = 0;
+  #balance = 10;
+  *[Symbol.iterator]() {
+    yield this.#balance;
+  }
+  ['to' + 'Text']() {
+    return 'account';
+  }
+}
+const acct = new Account();
+const items = [...acct];
+acct.toText();
+const withGetter = { get total() { return 1; } };`);
+    const last = lastSnap(snaps);
+    const acct = heapOf(last, findVar(last, 'acct')?.value)!;
+    expect(acct).toMatchObject({ objectType: 'class', label: 'Account' });
+    expect(acct.properties).toEqual([{ key: '#balance', value: { type: 'number', value: 10 } }]);
+    expect(heapOf(last, findVar(last, 'Account')?.value)?.properties).toEqual([{ key: 'count', value: { type: 'number', value: 0 } }]);
+    expect(heapOf(last, findVar(last, 'withGetter')?.value)).toMatchObject({ objectType: 'object', label: '' });
+    const frameNames = new Set(snaps.flatMap(s => s.callStack.map(f => f.name)));
+    expect([...frameNames]).toEqual(expect.arrayContaining(['[Symbol.iterator]', 'toText']));
+  });
+
+  it('says a BigInt is one, marks entries past 50, and shows variables named like __count__', () => {
+    const snaps = runPipeline(`const big = 10n;
+const o = {};
+for (let k = 0; k < 52; k++) o['k' + k] = k;
+const s = new Set();
+for (let k = 0; k < 53; k++) s.add(k);
+let __count__ = 1;`);
+    const last = lastSnap(snaps);
+    expect(findVar(last, 'big')?.value).toEqual({ type: 'bigint', value: '10', display: '10n' });
+    expect(heapOf(last, findVar(last, 'o')?.value)?.properties.at(-1)).toEqual({ key: '...', value: { type: 'string', value: '(2 more)' } });
+    expect(heapOf(last, findVar(last, 's')?.value)?.properties.at(-1)).toEqual({ key: '...', value: { type: 'string', value: '(3 more)' } });
+    expect(findVar(last, '__count__')?.value).toEqual({ type: 'number', value: 1 });
   });
 });

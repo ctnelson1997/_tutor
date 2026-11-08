@@ -131,3 +131,70 @@ spin().catch(() => console.log("swallowed"));`);
     expect(last(r.snapshots).stdout).toEqual([]);
   });
 });
+
+describe('async fidelity (#92)', () => {
+  it('prints a promise with its state once the runtime has seen it settle', async () => {
+    const r = await run(`const now = Promise.resolve(42);
+const failed = Promise.reject('nope');
+failed.catch(() => {});
+const later = new Promise((resolve) => setTimeout(() => resolve(7), 10));
+console.log(now, failed, later);
+setTimeout(() => console.log(later), 20);
+async function g() { return 'done'; }
+const q = g();
+q.then((v) => console.log(v, q));`);
+    expect(last(r.snapshots).stdout).toEqual(["Promise { 42 } Promise { <rejected> 'nope' } Promise { <pending> }", "done Promise { 'done' }", 'Promise { 7 }']);
+  });
+
+  it("keeps promises the browser's: async functions and Promise.resolve give the same object, and await takes as many turns", async () => {
+    const r = await run(`const p = Promise.resolve(1);
+console.log(Promise.resolve(p) === p, p instanceof Promise, (async () => {})() instanceof Promise);
+const order = [];
+(async () => { await null; order.push('a1'); await null; order.push('a2'); })();
+Promise.resolve().then(() => order.push('t1')).then(() => order.push('t2'));
+setTimeout(() => console.log(order.join(' ')), 0);`);
+    expect(last(r.snapshots).stdout).toEqual(['true true true', 'a1 t1 a2 t2']);
+  });
+
+  it('moves the clock with virtual time: Date.now, new Date and console.time see a timer\'s delay', async () => {
+    const r = await run(`const start = Date.now();
+console.time('wait');
+setTimeout(() => {
+  console.log(Date.now() - start >= 2000, new Date().getTime() - start >= 2000);
+  console.timeEnd('wait');
+}, 2000);`);
+    const out = last(r.snapshots).stdout;
+    expect(out[0]).toBe('true true');
+    expect(out[1]).toMatch(/^wait: 2\.\d{3}s$/);
+  });
+
+  it('waits for fetch and for reading the response, then runs their callbacks', async () => {
+    const r = await run(`async function load() {
+  const response = await fetch('data:text/plain,payload');
+  const text = await response.text();
+  console.log('got', text);
+}
+load();
+console.log('sent');`);
+    expect(last(r.snapshots).stdout).toEqual(['sent', 'got payload']);
+    expect(r.error).toBeUndefined();
+  });
+
+  it('ends the run at close(), with its steps, running no timer after it', async () => {
+    const r = await run(`console.log('a');
+setTimeout(() => console.log('never'), 10);
+close();
+console.log('b');`);
+    expect(last(r.snapshots).stdout).toEqual(['a', 'b']);
+    expect(r.error).toEqual({ kind: 'error', message: 'The program called close(), which ends the worker: nothing after it runs.' });
+  });
+
+  it("ends the run at an exception in a task of the program's own (a MessageChannel handler), with its steps", async () => {
+    const r = await run(`const channel = new MessageChannel();
+channel.port1.onmessage = () => { throw new Error('in handler'); };
+channel.port2.postMessage(1);
+console.log('posted');`);
+    expect(last(r.snapshots).stdout).toEqual(['posted']);
+    expect(r.error).toMatchObject({ kind: 'exception', message: 'Error: in handler' });
+  });
+});

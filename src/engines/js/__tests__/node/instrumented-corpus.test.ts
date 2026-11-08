@@ -18,8 +18,12 @@ const STEP_CALLS = new Set(['__capture__', '__condition__', '__popFrame__', '__e
 const FUNCTIONS = new Set(['FunctionDeclaration', 'FunctionExpression', 'ArrowFunctionExpression']);
 const LOOPS = new Set(['ForStatement', 'ForInStatement', 'ForOfStatement', 'WhileStatement', 'DoWhileStatement']);
 
+/** The runtime calls whose arguments are readers the instrumenter made (#87, #90, #93), not the program's functions. */
+const READER_CALLS = new Set(['__pushFrame__', '__setGlobals__', '__privateNames__']);
+
 function walk(node: AnyNode, visit: (n: AnyNode) => void): void {
   if (!node || typeof node.type !== 'string') return;
+  if (node.type === 'CallExpression' && node.callee.type === 'Identifier' && READER_CALLS.has(node.callee.name)) return;
   visit(node);
   for (const [key, value] of Object.entries(node)) {
     if (key === 'loc') continue;
@@ -45,14 +49,15 @@ function check(source: string): string[] {
       const line = lineOf(n.callee.name === '__capture__' || n.callee.name === '__endScript__' ? n.arguments[0] : n.arguments[1]);
       if (line) stepLines.add(line);
     }
-    if (FUNCTIONS.has(n.type) && n.id?.name !== '__globals__') {
-      const first = n.body.body?.[0];
+    if (FUNCTIONS.has(n.type)) {
+      // (after its directives, which stay first, #89)
+      const first = n.body.body?.find((st: AnyNode) => typeof st.directive !== 'string');
       const keepsFrame = first?.type === 'VariableDeclaration' && first.declarations[0]?.id.name === '__fr__';
       if (!keepsFrame) problems.push(`a function (${n.id?.name ?? 'anonymous'}) without a frame`);
     }
     if (LOOPS.has(n.type)) {
       const guard = n.body.body?.[0];
-      if (!(guard?.type === 'IfStatement' && JSON.stringify(guard.test).includes('__loopCount'))) problems.push('a loop without its guard');
+      if (!(guard?.type === 'ExpressionStatement' && guard.expression.callee?.name === '__loop__')) problems.push('a loop without its guard');
     }
   });
   for (const s of stepStatements(source)) {

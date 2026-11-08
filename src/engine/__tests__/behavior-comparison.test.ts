@@ -19,8 +19,8 @@
  */
 import { describe, it, expect } from 'vitest';
 import { createContext, runInContext } from 'node:vm';
-import { instrument } from '../../engines/js/instrumenter';
-import { getRuntimeCode } from '../../engines/js/runtime';
+import { runInVm } from '../../engines/js/__tests__/vmRun';
+import type { WorkerMessage } from '../../types/snapshot';
 
 type Result =
   | { ok: true; out: string[]; snapCount: number; callStackDepth: number }
@@ -58,23 +58,17 @@ function runPlain(src: string): Result {
 }
 
 function runInstrumented(src: string): Result {
-  let instrumented: string;
+  let reply: WorkerMessage;
   try {
-    instrumented = instrument(src);
+    reply = runInVm(src, {}, 8000);
   } catch (e) {
     return { ok: false, err: 'instrument: ' + (e as Error).message };
   }
-  const sandbox = makeSandbox(false);
-  const ctx = createContext(sandbox);
-  try {
-    runInContext(getRuntimeCode() + '\n' + instrumented, ctx, { timeout: 8000 });
-    const snaps = (sandbox.__snapshots__ as Array<{ callStack: unknown[] }>) ?? [];
-    const stdout = (sandbox.__stdout__ as string[]) ?? [];
-    const lastStack = snaps[snaps.length - 1]?.callStack ?? [];
-    return { ok: true, out: stdout, snapCount: snaps.length, callStackDepth: lastStack.length };
-  } catch (e) {
-    return { ok: false, err: (e as Error).message };
-  }
+  if (reply.type !== 'result') return { ok: false, err: reply.message };
+  if (reply.error && reply.error.kind !== 'compile') return { ok: false, err: reply.error.message };
+  const snaps = reply.snapshots;
+  const lastSnap = snaps[snaps.length - 1];
+  return { ok: true, out: lastSnap?.stdout ?? [], snapCount: snaps.length, callStackDepth: lastSnap?.callStack.length ?? 1 };
 }
 
 function expectSameBehavior(src: string) {

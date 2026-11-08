@@ -46,13 +46,13 @@
    "method": "log",
    "args": [
     {
-     "object": "Uint8Array",
-     "props": {
-      "0": "num:255",
-      "1": "num:0",
-      "2": "num:255",
-      "3": "num:3"
-     }
+     "array": [
+      "num:255",
+      "num:0",
+      "num:255",
+      "num:3"
+     ],
+     "len": 4
     },
     "num:4"
    ]
@@ -67,13 +67,13 @@
    "method": "log",
    "args": [
     {
-     "object": "Int8Array",
-     "props": {
-      "0": "num:127",
-      "1": "num:-128",
-      "2": "num:127",
-      "3": "num:-56"
-     }
+     "array": [
+      "num:127",
+      "num:-128",
+      "num:127",
+      "num:-56"
+     ],
+     "len": 4
     }
    ]
   },
@@ -81,13 +81,13 @@
    "method": "log",
    "args": [
     {
-     "object": "Uint8ClampedArray",
-     "props": {
-      "0": "num:255",
-      "1": "num:0",
-      "2": "num:2",
-      "3": "num:2"
-     }
+     "array": [
+      "num:255",
+      "num:0",
+      "num:2",
+      "num:2"
+     ],
+     "len": 4
     }
    ]
   },
@@ -119,12 +119,12 @@
    "method": "log",
    "args": [
     {
-     "object": "Uint8Array",
-     "props": {
-      "0": "num:100",
-      "1": "num:200",
-      "2": "num:44"
-     }
+     "array": [
+      "num:100",
+      "num:200",
+      "num:44"
+     ],
+     "len": 3
     },
     {
      "array": [
@@ -135,12 +135,12 @@
      "len": 3
     },
     {
-     "object": "Uint8Array",
-     "props": {
-      "0": "num:200",
-      "1": "num:144",
-      "2": "num:88"
-     }
+     "array": [
+      "num:200",
+      "num:144",
+      "num:88"
+     ],
+     "len": 3
     }
    ]
   },
@@ -163,13 +163,13 @@
    "method": "log",
    "args": [
     {
-     "object": "Uint8Array",
-     "props": {
-      "0": "num:1",
-      "1": "num:9",
-      "2": "num:10",
-      "3": "num:100"
-     }
+     "array": [
+      "num:1",
+      "num:9",
+      "num:10",
+      "num:100"
+     ],
+     "len": 4
     },
     {
      "array": [
@@ -221,46 +221,46 @@
  "functionCalls": 9,
  "finalGlobals": {
   "bytes": {
-   "object": "Uint8Array",
-   "props": {
-    "0": "num:0",
-    "1": "num:0",
-    "2": "num:255",
-    "3": "num:3"
-   }
+   "array": [
+    "num:0",
+    "num:0",
+    "num:255",
+    "num:3"
+   ],
+   "len": 4
   },
   "signed": {
-   "object": "Int8Array",
-   "props": {
-    "0": "num:127",
-    "1": "num:-128",
-    "2": "num:127",
-    "3": "num:-56"
-   }
+   "array": [
+    "num:127",
+    "num:-128",
+    "num:127",
+    "num:-56"
+   ],
+   "len": 4
   },
   "clamped": {
-   "object": "Uint8ClampedArray",
-   "props": {
-    "0": "num:255",
-    "1": "num:0",
-    "2": "num:2",
-    "3": "num:2"
-   }
+   "array": [
+    "num:255",
+    "num:0",
+    "num:2",
+    "num:2"
+   ],
+   "len": 4
   },
   "f32": {
-   "object": "Float32Array",
-   "props": {
-    "0": "num:0.10000000149011612",
-    "1": "num:0.3333333432674408"
-   }
+   "array": [
+    "num:0.10000000149011612",
+    "num:0.3333333432674408"
+   ],
+   "len": 2
   },
   "fromArr": {
-   "object": "Uint8Array",
-   "props": {
-    "0": "num:100",
-    "1": "num:200",
-    "2": "num:44"
-   }
+   "array": [
+    "num:100",
+    "num:200",
+    "num:44"
+   ],
+   "len": 3
   },
   "total": "num:344",
   "buffer": {
@@ -268,28 +268,28 @@
    "props": {}
   },
   "view8": {
-   "object": "Uint8Array",
-   "props": {
-    "0": "num:1",
-    "1": "num:1",
-    "2": "num:0",
-    "3": "num:0"
-   }
+   "array": [
+    "num:1",
+    "num:1",
+    "num:0",
+    "num:0"
+   ],
+   "len": 4
   },
   "view32": {
-   "object": "Uint32Array",
-   "props": {
-    "0": "num:257"
-   }
+   "array": [
+    "num:257"
+   ],
+   "len": 1
   },
   "sortedBytes": {
-   "object": "Uint8Array",
-   "props": {
-    "0": "num:1",
-    "1": "num:9",
-    "2": "num:10",
-    "3": "num:100"
-   }
+   "array": [
+    "num:1",
+    "num:9",
+    "num:10",
+    "num:100"
+   ],
+   "len": 4
   }
  },
  "sourceSha256": "707c992e231210f08b04639f3abc98ef27c619d1899aba6bfb5e09c1a70c23f6"

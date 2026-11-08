@@ -1,304 +1,494 @@
 /**
  * Runtime Helpers
  *
- * This module generates the runtime JavaScript code that gets prepended
- * to the instrumented user code inside the Web Worker.
- *
- * It provides:
+ * The JavaScript the worker runs before the program: the functions the
+ * instrumented program calls, which record its steps.
  *  - __capture__(line, vars) — serialize state into a snapshot
  *  - __pushFrame__(name, params) — push a call stack frame
  *  - __popFrame__() — pop a call stack frame
  *  - the program's console (inspect.ts: Node's format, #43), writing
  *    stdout and stderr lines that each snapshot carries
  *  - Serialization logic for primitives, objects, arrays, functions
+ *
+ * It runs in a closure of its own (#87): its state is local to it, its
+ * functions are non-enumerable properties of the global object (so
+ * `console.log(this)` shows the program's globals only), and every built-in
+ * it uses is the browser's own, taken when it loads, before the program runs
+ * (primordials.ts). So a program declaring `class Date`, `function Map` or
+ * `var self`, or replacing `Array.prototype.push`, changes nothing it does,
+ * and drawing a step runs none of the program's code (#88): properties are
+ * read by their descriptors, getters never called, proxies drawn as their
+ * targets. The program itself runs as a script of its own (executor.ts).
  */
 
 import { CONSOLE_SOURCE } from './inspect';
+import { PRIMORDIALS_SOURCE } from './primordials';
 import { SHARER_SOURCE } from './sharer';
 
 /**
- * Returns the runtime preamble as a string of JavaScript to be
- * evaluated in the worker before the instrumented user code.
+ * The runtime: an expression whose value is `{ runResult, eventLoop }`, the
+ * two functions the worker calls once the program's script has run.
  */
 export function getRuntimeCode(): string {
-  // This is a self-contained JS string — no imports, no TypeScript.
-  return `
-// ══════════════════════════════════════
-// JS Runtime Helpers
-// ══════════════════════════════════════
+  // A self-contained JS string — no imports, no TypeScript, no backticks or dollar-brace.
+  return String.raw`(function () {
+'use strict';
+${PRIMORDIALS_SOURCE}
 
-var __snapshots__ = [];
+// ── Built-ins, as they were before the program ran (#87, #88) ──
+
+var ObjectKeys = Object.keys, ObjectGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+var ObjectGetOwnPropertyNames = Object.getOwnPropertyNames, ObjectGetOwnPropertySymbols = Object.getOwnPropertySymbols;
+var ObjectGetPrototypeOf = Object.getPrototypeOf, ObjectDefineProperty = Object.defineProperty, ObjectCreate = Object.create;
+var ObjectAssign = Object.assign, ArrayIsArray = Array.isArray, ReflectConstruct = Reflect.construct, ReflectGet = Reflect.get;
+var isEnumerable = uncurryThis(Object.prototype.propertyIsEnumerable);
+var objectToString = uncurryThis(Object.prototype.toString);
+var functionToString = uncurryThis(Function.prototype.toString);
+var errorToString = uncurryThis(Error.prototype.toString);
+var StringPrototypeLastIndexOf = uncurryThis(String.prototype.lastIndexOf);
+var symbolToString = uncurryThis(Symbol.prototype.toString);
+var bigintToString = typeof BigInt === 'function' ? uncurryThis(BigInt.prototype.toString) : null;
+var getter = function (proto, key) { var d = ObjectGetOwnPropertyDescriptor(proto, key); return d && d.get ? uncurryThis(d.get) : null; };
+var DateNow = Date.now, dateGetTime = uncurryThis(Date.prototype.getTime);
+var dateToISOString = uncurryThis(Date.prototype.toISOString), dateToString = uncurryThis(Date.prototype.toString);
+var mapSize = getter(Map.prototype, 'size'), setSize = getter(Set.prototype, 'size');
+var mapEntries = uncurryThis(Map.prototype.entries), setValues = uncurryThis(Set.prototype.values);
+var mapIteratorNext = uncurryThis(ObjectGetPrototypeOf(new Map().entries()).next);
+var setIteratorNext = uncurryThis(ObjectGetPrototypeOf(new Set().values()).next);
+var regexpSource = getter(RegExp.prototype, 'source');
+var REGEXP_FLAGS = [['hasIndices', 'd'], ['global', 'g'], ['ignoreCase', 'i'], ['multiline', 'm'], ['dotAll', 's'], ['unicode', 'u'], ['unicodeSets', 'v'], ['sticky', 'y']];
+for (var rf = 0; rf < REGEXP_FLAGS.length; rf++) REGEXP_FLAGS[rf][2] = getter(RegExp.prototype, REGEXP_FLAGS[rf][0]);
+var TypedArrayPrototype = ObjectGetPrototypeOf(Uint8Array.prototype);
+var typedArrayTag = getter(TypedArrayPrototype, Symbol.toStringTag), typedArrayLength = getter(TypedArrayPrototype, 'length');
+var DatePrototype = Date.prototype, RegExpPrototype = RegExp.prototype, ErrorPrototype = Error.prototype;
+var MapPrototype = Map.prototype, SetPrototype = Set.prototype;
+var errorIsError = typeof Error.isError === 'function' ? Error.isError : null;
+var HostPromise = Promise, hostThen = Promise.prototype.then, promiseThen = uncurryThis(hostThen);
+var HostProxy = Proxy, HostDate = Date;
+var HostMessageChannel = global.MessageChannel, hostSetTimeout = global.setTimeout, hostQueueMicrotask = global.queueMicrotask;
+var hostStructuredClone = global.structuredClone, hostFetch = global.fetch, HostResponse = global.Response;
+var hostAddEventListener = global.addEventListener;
+var hostPerformance = global.performance;
+var perfNow = hostPerformance && typeof hostPerformance.now === 'function' ? uncurryThis(hostPerformance.now) : null;
+
+// A non-enumerable property, as the browser's own globals are.
+var define = function (target, name, value) {
+  ObjectDefineProperty(target, name, { value: value, writable: true, configurable: true, enumerable: false });
+};
+
+// ── State ──
+
+var snapshots = [];
 // The console, by line: stdout's lines, and every line with its stream (the
 // snapshot's console once the program has written to stderr).
-var __stdout__ = [];
-var __console__ = [];
-var __stderrUsed__ = false;
-var __callStack__ = [{ name: "Global", variables: {} }];
-var __heapMap__ = new Map();  // object identity → heap ID
-var __heapRegistry__ = {};   // heapId → most recent serialized HeapObject
-var __heapCounter__ = 0;
+var stdout = [];
+var consoleLines = [];
+var stderrUsed = false;
+var outputChars = 0;
+var callStack = [{ name: 'Global', variables: [] }];
+var heapIds = new SafeWeakMap();      // object → heap id
+var heapRegistry = ObjectCreate(null); // heap id → its latest drawing
+var heapCounter = 0;
 // Since the last step: was a frame pushed (a call, a loop's block), and how
 // many loop iterations had begun. Either makes the next capture a step even
 // on the line the frame last stepped at, as a call or a loop's backward jump
 // is in CPython.
-var __framePushed__ = false;
-var __stepLoopCount__ = 0;
-var __MAX_SNAPSHOTS = 5000;
-// Thrown at the step cap, so the program stops instead of running on unrecorded.
-var __STOP__ = { __tutorStop__: true };
-// Set once the cap is hit: a callback that hits it inside a promise only rejects that promise.
-var __stopped__ = false;
-// The time budget for the program's callbacks, before the worker's 10-second kill.
-var __TIME_LIMIT__ = { __tutorTime__: true };
-var __TIME_BUDGET_MS__ = 8500;
+var framePushed = false;
+var iterations = 0;
+var stepIterations = 0;
+// Loop iterations since the last step: a loop that takes no step (an empty
+// body) is only stopped by this and the time budget (#91).
+var sinceStep = 0;
+var MAX_SNAPSHOTS = 5000;
+var MAX_SILENT_ITERATIONS = 10000000;
+var MAX_CONSOLE_LINES = 10000;
+var MAX_CONSOLE_CHARS = 1000000;
+// The time budget for the whole run, script and callbacks, before the worker's 10-second kill (#91).
+var TIME_BUDGET_MS = 8500;
+var runStart = DateNow();
+// Why the run stopped early ('steps', 'time', 'loop', 'output'): once set, every
+// step the program tries throws STOP again, so catching it doesn't let it run on.
+var STOP = { tutorStop: true };
+var stopReason = null;
+// While a step is being recorded: the program's code, if the runtime ever ran
+// some, takes no step and changes no frame (#88).
+var busy = 0;
 // After the script's synchronous code (#45): its timers and promise callbacks
 // run before the reply. The step that starts a callback gets a label saying so.
-var __scriptDone__ = false;
-var __scriptEndStep__ = 0;
-var __nextLabel__ = null;
+var scriptDone = false;
+var scriptEndStep = 0;
+var nextLabel = null;
+// Reads the program's top-level names (the instrumenter's __setGlobals__).
+var globalsReader = null;
+// Set by the program's close() (#92): no timer or callback runs after it.
+var closed = false;
 
-// Expose snapshots on the global scope so the worker can read them
-self.__snapshots__ = __snapshots__;
+function stop(reason) {
+  if (stopReason === null) stopReason = reason;
+  throw STOP;
+}
+function timeUp() { return DateNow() - runStart > TIME_BUDGET_MS; }
+// Before each step: the step cap, the time budget, and a run already stopped.
+function going() {
+  if (stopReason !== null) throw STOP;
+  if (snapshots.length >= MAX_SNAPSHOTS) stop('steps');
+  if (timeUp()) stop('time');
+}
 
 // Each step is recorded sharing what didn't change with the steps before it
 // (sharer.ts, #49), so the reply's structured clone carries each unchanged
 // frame, variable, heap object and console line once.
 ${SHARER_SOURCE}
-function __record__(snap) {
-  __snapshots__.push(__shareSnapshot__(snap));
+function record(snap) {
+  $push(snapshots, __shareSnapshot__(snap));
+  sinceStep = 0;
 }
 
+// ── The reply ──
+
+var LIMIT_MESSAGES = {
+  steps: 'Stopped after ' + MAX_SNAPSHOTS + ' steps, the most that can be shown. Your code may contain an infinite loop.',
+  loop: 'Infinite loop detected (a loop ran ' + MAX_SILENT_ITERATIONS + ' times without a step)',
+  output: 'Stopped after ' + MAX_CONSOLE_LINES + ' lines of output, the most that can be shown.',
+};
+var CLOSED_MESSAGE = 'The program called close(), which ends the worker: nothing after it runs.';
+
 // The worker's reply once the program has run: its steps, and why it stopped
-// early if it did. Called with the thrown value when the program threw: the
-// step cap, the loop guard, or an exception the program didn't catch.
-function __runResult__(err) {
-  __finishOutput__();
-  var msg = { type: "result", snapshots: __snapshots__ };
-  if (arguments.length === 0) {
-    if (__snapshots__.length >= __MAX_SNAPSHOTS) {
-      msg.error = { kind: "limit", message: "Stopped recording after " + __MAX_SNAPSHOTS + " steps, the most that can be shown." };
+// early if it did. Called with the thrown value when the program threw.
+function runResult(err, kind) {
+  var thrown = arguments.length > 0;
+  busy++;
+  try {
+    finishOutput();
+    var msg = { type: 'result', snapshots: snapshots };
+    if (stopReason !== null) {
+      msg.error = { kind: 'limit', message: stopReason === 'time'
+        ? 'Stopped after ' + (TIME_BUDGET_MS / 1000) + ' seconds, the longest a run can take.' + (scriptDone ? ' A timer may keep running forever (a setInterval never cleared).' : ' Your code may run too long to show step by step.')
+        : LIMIT_MESSAGES[stopReason] };
+    } else if (!thrown) {
+      if (closed) msg.error = { kind: 'error', message: CLOSED_MESSAGE };
+      else if (snapshots.length >= MAX_SNAPSHOTS) msg.error = { kind: 'limit', message: 'Stopped recording after ' + MAX_SNAPSHOTS + ' steps, the most that can be shown.' };
+    } else {
+      var text = uncaughtText(err);
+      // A rejected promise nothing handled ends the run as Node ends it; the browser says "(in promise)".
+      msg.error = { kind: 'exception', message: text.message, stderr: (kind === 'promise' ? 'Uncaught (in promise) ' : 'Uncaught ') + text.trace };
     }
     return msg;
+  } finally {
+    busy--;
   }
-  if (err === __STOP__) {
-    msg.error = { kind: "limit", message: "Stopped after " + __MAX_SNAPSHOTS + " steps, the most that can be shown. Your code may contain an infinite loop." };
-  } else if (err === __TIME_LIMIT__) {
-    msg.error = { kind: "limit", message: "Stopped after " + (__TIME_BUDGET_MS__ / 1000) + " seconds, the longest a run can take. A timer may keep running forever (a setInterval never cleared)." };
-  } else if (err instanceof Error && err.message.indexOf("Infinite loop detected") === 0) {
-    msg.error = { kind: "limit", message: err.message };
-  } else {
-    var text = err instanceof Error ? err.name + ": " + err.message : String(err);
-    // The console shows the stack, whose frames name the program's lines (#47).
-    var trace = text;
-    if (err instanceof Error) {
-      try { if (typeof err.stack === "string" && err.stack.indexOf(text) === 0) trace = err.stack; } catch (e) { /* a stack getter that throws */ }
-    }
-    // A rejected promise nothing handled ends the run as Node ends it; the browser says "(in promise)".
-    msg.error = { kind: "exception", message: text, stderr: (arguments[1] === "promise" ? "Uncaught (in promise) " : "Uncaught ") + trace };
-  }
-  return msg;
 }
-self.__runResult__ = __runResult__;
+
+// An uncaught value's text (#94): an error as name: message, with its stack on
+// the console (its frames name the program's lines, #47); anything else as the
+// console prints it ({ code: 404 }), a primitive as String() writes it. Never
+// throws, whatever was thrown.
+function uncaughtText(err) {
+  var message;
+  try {
+    if (err !== null && typeof err === 'object' && objectToString(err) === '[object Error]') {
+      message = String(err.name) + ': ' + String(err.message);
+      var trace = message;
+      try { if (typeof err.stack === 'string' && $indexOf(err.stack, message) === 0) trace = err.stack; } catch (e) { /* a stack getter that throws */ }
+      return { message: message, trace: trace };
+    }
+    if (typeof err === 'symbol') message = symbolToString(err);
+    else if (err !== null && (typeof err === 'object' || typeof err === 'function')) message = __inspect__(err);
+    else message = String(err);
+  } catch (e) {
+    try { message = objectToString(err); } catch (e2) { message = 'a value that can\'t be shown'; }
+  }
+  return { message: message, trace: message };
+}
 
 // Output written after the last step (a finally block's, on the way out of an
 // uncaught exception) gets one more step, the last, at the same place.
-function __finishOutput__() {
-  var last = __snapshots__[__snapshots__.length - 1];
-  if (!last || __snapshots__.length >= __MAX_SNAPSHOTS) return;
-  if (last.stdout.length === __stdout__.length && (last.console ? last.console.length : last.stdout.length) === __console__.length) return;
-  var snap = { step: __snapshots__.length, line: last.line, callStack: last.callStack, heap: last.heap };
-  __outputOf__(snap);
-  __record__(snap);
+function finishOutput() {
+  var last = snapshots[snapshots.length - 1];
+  if (!last || snapshots.length >= MAX_SNAPSHOTS) return;
+  if (last.stdout.length === stdout.length && (last.console ? last.console.length : last.stdout.length) === consoleLines.length) return;
+  var snap = { step: snapshots.length, line: last.line, callStack: last.callStack, heap: last.heap };
+  outputOf(snap);
+  record(snap);
 }
 
 // A snapshot's console: stdout's lines, and once the program has used stderr, every line with its stream.
-function __outputOf__(snap) {
-  snap.stdout = __stdout__.slice();
-  if (__stderrUsed__) snap.console = __console__.slice();
-  if (__nextLabel__) { snap.label = __nextLabel__; __nextLabel__ = null; }
+function outputOf(snap) {
+  snap.stdout = $slice(stdout, 0);
+  if (stderrUsed) snap.console = $slice(consoleLines, 0);
+  if (nextLabel) { snap.label = nextLabel; nextLabel = null; }
   return snap;
 }
 
 // The Global frame shows each top-level name's current value at every step,
-// inside functions too (a callback changing a global, #45): __globals__(),
-// which the instrumenter adds to the program, reads them all.
-function __refreshGlobals__(heapObjects, visited) {
-  if (__callStack__.length > 1 && typeof __globals__ === "function") {
-    __callStack__[0].variables = __serializeVars__(__globals__(), heapObjects, visited);
-  }
+// inside functions too (a callback changing a global, #45): the reader the
+// instrumenter gives __setGlobals__ reads them all.
+function refreshGlobals(ctx) {
+  if (callStack.length > 1 && globalsReader !== null) callStack[0].variables = serializeVars(globalsReader(), ctx);
 }
 
-// ── Serialization ──
+// ── Drawing values (#48, #88, #93) ──
 
-function __getHeapId__(obj) {
-  if (__heapMap__.has(obj)) return __heapMap__.get(obj);
-  var id = String(++__heapCounter__);
-  __heapMap__.set(obj, id);
+// A drawing's bookkeeping: the heap objects drawn so far, once each.
+function newDrawing() { return { heap: [], visited: new SafeSet() }; }
+
+function heapIdOf(obj) {
+  var id = heapIds.get(obj);
+  if (id === undefined) { id = String(++heapCounter); heapIds.set(obj, id); }
   return id;
 }
 
-function __serializeValue__(val, heapObjects, visited) {
-  // Primitives
-  if (val === null) return { type: "null", value: null };
-  if (val === undefined) return { type: "undefined", value: null };
+function serializeValue(val, ctx) {
+  if (val === null) return { type: 'null', value: null };
+  if (val === undefined) return { type: 'undefined', value: null };
   var t = typeof val;
   // NaN, the infinities and -0 say what they are (#48): JSON has no such numbers, and -0 prints as 0.
-  if (t === "number") {
-    if (val !== val) return { type: t, value: val, display: "NaN" };
-    if (val === Infinity || val === -Infinity) return { type: t, value: val, display: val > 0 ? "Infinity" : "-Infinity" };
-    if (val === 0 && 1 / val < 0) return { type: t, value: val, display: "-0" };
+  if (t === 'number') {
+    if (val !== val) return { type: t, value: val, display: 'NaN' };
+    if (val === Infinity || val === -Infinity) return { type: t, value: val, display: val > 0 ? 'Infinity' : '-Infinity' };
+    if (val === 0 && 1 / val < 0) return { type: t, value: val, display: '-0' };
     return { type: t, value: val };
   }
-  if (t === "boolean") return { type: t, value: val };
-  if (t === "string") return { type: "string", value: val };
-  if (t === "symbol") return { type: "symbol", value: val.toString() };
-  if (t === "bigint") return { type: "bigint", value: val.toString() };
-
-  // Objects / Arrays / Functions → heap reference
-  if (t === "object" || t === "function") {
-    var heapId = __getHeapId__(val);
-    // Only serialize the object once per snapshot
-    if (!visited.has(val)) {
-      visited.add(val);
-      var heapObj = __serializeHeapObject__(val, heapId, heapObjects, visited);
-      heapObjects.push(heapObj);
+  if (t === 'boolean') return { type: t, value: val };
+  if (t === 'string') return { type: 'string', value: val };
+  if (t === 'symbol') return { type: 'symbol', value: symbolToString(val) };
+  // A BigInt says it is one: 10n, not 10 (#93).
+  if (t === 'bigint') { var digits = bigintToString(val); return { type: 'bigint', value: digits, display: digits + 'n' }; }
+  if (t === 'object' || t === 'function') {
+    // A proxy is drawn as its target, running none of its traps, as Node's console shows it (#88).
+    var obj = val;
+    while (proxyTargets.has(obj) && proxyTargets.get(obj) !== null) obj = proxyTargets.get(obj);
+    var heapId = heapIdOf(obj);
+    if (!ctx.visited.has(obj)) {
+      ctx.visited.add(obj);
+      $push(ctx.heap, serializeHeapObject(obj, heapId, ctx));
     }
-    return { type: "ref", heapId: heapId };
+    return { type: 'ref', heapId: heapId };
   }
-
-  return { type: "undefined", value: null };
+  return { type: 'undefined', value: null };
 }
 
-function __serializeHeapObject__(obj, heapId, heapObjects, visited) {
-  var objectType = "object";
-  var label = "";
-  var properties = [];
+// Never throws: an object that can't be read is still drawn, so no reference to it dangles (#88).
+function serializeHeapObject(obj, heapId, ctx) {
+  var heapObj;
+  try {
+    heapObj = drawObject(obj, heapId, ctx);
+  } catch (e) {
+    heapObj = { id: heapId, objectType: 'object', label: '[unreadable]', properties: [] };
+  }
+  heapRegistry[heapId] = heapObj;
+  return heapObj;
+}
 
-  if (Array.isArray(obj)) {
-    objectType = "array";
-    for (var i = 0; i < obj.length && i < 100; i++) {
-      // A hole is drawn as empty, not undefined; a getter isn't called (#48).
-      var cell = Object.getOwnPropertyDescriptor(obj, i);
-      var cellValue = !cell ? { type: "empty", value: null, display: "empty" }
-        : !("value" in cell) ? { type: "string", value: cell.get && cell.set ? "<accessor>" : cell.get ? "<getter>" : "<setter>" }
-        : __serializeValue__(cell.value, heapObjects, visited);
-      properties.push({ key: String(i), value: cellValue });
-    }
-    if (obj.length > 100) {
-      properties.push({ key: "...", value: { type: "string", value: "(" + (obj.length - 100) + " more)" } });
-    }
-  } else if (typeof obj === "function") {
-    objectType = "function";
-    label = obj.name || "anonymous";
-  } else if (obj instanceof Date) {
-    objectType = "date";
-    label = obj.toISOString();
-  } else if (obj instanceof RegExp) {
-    objectType = "regexp";
-    label = obj.toString();
-  } else if (obj instanceof Error) {
+function drawObject(obj, heapId, ctx) {
+  var properties = [];
+  var card = function (objectType, label) { return { id: heapId, objectType: objectType, label: label, properties: properties }; };
+  // The global object is a card of its own, not the browser's thousands of names (#87).
+  if (obj === global) return card('object', 'globalThis');
+  if (proxyTargets.has(obj)) return card('object', 'Revoked Proxy');
+  if (ArrayIsArray(obj)) {
+    drawElements(obj, obj.length, properties, ctx);
+    return card('array', '');
+  }
+  if (typeof obj === 'function') {
+    // A class's static members, and a function's own properties (fib.cache), are drawn on its card (#93).
+    drawOwnProperties(obj, properties, ctx);
+    drawPrivateFields(obj, obj, properties, ctx);
+    return card('function', functionName(obj) || 'anonymous');
+  }
+  var kind = builtinKind(obj);
+  // A typed array is drawn as an array, its first 100 elements: not every index at every step (#91).
+  if (kind === 'typedArray') {
+    drawElements(obj, typedArrayLength(obj), properties, ctx);
+    return card('array', typedArrayTag(obj));
+  }
+  if (kind === 'date') {
+    var time = dateGetTime(obj);
+    return card('date', time !== time ? 'Invalid Date' : dateToISOString(obj));
+  }
+  if (kind === 'regexp') {
+    var flags = '';
+    for (var f = 0; f < REGEXP_FLAGS.length; f++) if (REGEXP_FLAGS[f][2] !== null && REGEXP_FLAGS[f][2](obj)) flags += REGEXP_FLAGS[f][1];
+    return card('regexp', '/' + regexpSource(obj) + '/' + flags);
+  }
+  if (kind === 'error') {
     // Its stack isn't read: V8 writes a stack's text the first time it is read,
     // from the error's name then, which a step taken before a constructor sets
-    // the name would freeze (#47).
-    objectType = "error";
-    label = obj.constructor.name;
-    properties.push({ key: "message", value: { type: "string", value: obj.message } });
-    var errorKeys = Object.keys(obj);
-    for (var ek = 0; ek < errorKeys.length && ek < 50; ek++) {
-      var ed = Object.getOwnPropertyDescriptor(obj, errorKeys[ek]);
-      if (errorKeys[ek] === "message" || errorKeys[ek] === "stack" || !ed || !("value" in ed)) continue;
-      properties.push({ key: errorKeys[ek], value: __serializeValue__(ed.value, heapObjects, visited) });
+    // the name would freeze (#47). Its message, unless a getter (#88).
+    var message = dataProperty(obj, 'message');
+    $push(properties, { key: 'message', value: message.found ? serializeValue(message.value, ctx) : { type: 'string', value: message.accessor ? '<getter>' : '' } });
+    drawOwnProperties(obj, properties, ctx, ['message', 'stack']);
+    return card('error', constructorName(obj) || 'Error');
+  }
+  if (kind === 'map') {
+    // The first 50 entries (and how many more), read from the map itself, not its forEach (#88, #93).
+    var mapIterator = mapEntries(obj);
+    for (var m = 0; m < 50; m++) {
+      var entry = mapIteratorNext(mapIterator);
+      if (entry.done) break;
+      var k = entry.value[0];
+      // The key is drawn as a value too, so an object key is a reference to its object (#48).
+      var keyValue = serializeValue(k, ctx);
+      $push(properties, {
+        key: keyValue.type === 'ref' ? '#' + keyValue.heapId : typeof k === 'symbol' ? symbolToString(k) : String(k),
+        keyValue: keyValue,
+        value: serializeValue(entry.value[1], ctx),
+      });
     }
-  } else if (obj instanceof Map) {
-    objectType = "map";
-    var idx = 0;
-    obj.forEach(function(v, k) {
-      if (idx < 50) {
-        // The key is drawn as a value too, so an object key is a reference to its object (#48).
-        var keyValue = __serializeValue__(k, heapObjects, visited);
-        properties.push({
-          key: keyValue.type === "ref" ? "#" + keyValue.heapId : typeof k === "symbol" ? k.toString() : String(k),
-          keyValue: keyValue,
-          value: __serializeValue__(v, heapObjects, visited)
-        });
-      }
-      idx++;
-    });
-  } else if (obj instanceof Set) {
-    objectType = "set";
-    var idx2 = 0;
-    obj.forEach(function(v) {
-      if (idx2 < 50) {
-        properties.push({
-          key: String(idx2),
-          value: __serializeValue__(v, heapObjects, visited)
-        });
-      }
-      idx2++;
-    });
-  } else {
-    // Regular object
-    var constructor = obj.constructor;
-    if (constructor && constructor.name && constructor.name !== "Object") {
-      objectType = "class";
-      label = constructor.name;
+    moreMarker(mapSize(obj) - 50, properties);
+    return card('map', '');
+  }
+  if (kind === 'set') {
+    var setIterator = setValues(obj);
+    for (var s = 0; s < 50; s++) {
+      var item = setIteratorNext(setIterator);
+      if (item.done) break;
+      $push(properties, { key: String(s), value: serializeValue(item.value, ctx) });
     }
-    // Its own enumerable keys, Symbol keys included, drawn as [Symbol(id)] (#48).
-    var keys = Object.keys(obj);
-    var symbols = Object.getOwnPropertySymbols(obj);
-    for (var sk = 0; sk < symbols.length; sk++) if (Object.prototype.propertyIsEnumerable.call(obj, symbols[sk])) keys.push(symbols[sk]);
-    for (var k = 0; k < keys.length && k < 50; k++) {
-      var ki = keys[k];
-      var keyText = typeof ki === "symbol" ? "[" + ki.toString() + "]" : ki;
-      // Skip accessor properties (get/set). Invoking the getter would run
-      // user code, which would re-enter serialization via __pushFrame__ /
-      // __capture__ and recurse without bound (the getter accesses \`this\`,
-      // which is the object being serialized).
-      var desc;
-      try { desc = Object.getOwnPropertyDescriptor(obj, ki); } catch(e) {}
-      if (desc && (desc.get || desc.set)) {
-        var label = desc.get && desc.set ? "<accessor>" : desc.get ? "<getter>" : "<setter>";
-        properties.push({ key: keyText, value: { type: "string", value: label } });
-        continue;
-      }
-      try {
-        properties.push({
-          key: keyText,
-          value: __serializeValue__(obj[ki], heapObjects, visited)
-        });
-      } catch(e) {
-        properties.push({
-          key: keyText,
-          value: { type: "string", value: "[error reading property]" }
-        });
-      }
+    moreMarker(setSize(obj) - 50, properties);
+    return card('set', '');
+  }
+  // An object: its class if it has one, its own enumerable properties, and its private fields (#93).
+  var name = constructorName(obj);
+  drawOwnProperties(obj, properties, ctx);
+  drawPrivateFields(obj, obj, properties, ctx);
+  return name && name !== 'Object' ? card('class', name) : card('object', '');
+}
+
+// What kind of built-in an object is, by the prototypes it inherits from,
+// confirmed by the built-in's own check (a Date made in a subclass is a date;
+// an object inheriting from Date.prototype isn't).
+function builtinKind(obj) {
+  for (var p = ObjectGetPrototypeOf(obj); p !== null; p = ObjectGetPrototypeOf(p)) {
+    if (p === TypedArrayPrototype) return typedArrayTag(obj) !== undefined ? 'typedArray' : null;
+    if (p === DatePrototype) return brand(dateGetTime, obj) ? 'date' : null;
+    if (p === RegExpPrototype) return brand(regexpSource, obj) ? 'regexp' : null;
+    if (p === MapPrototype) return brand(mapSize, obj) ? 'map' : null;
+    if (p === SetPrototype) return brand(setSize, obj) ? 'set' : null;
+    if (p === ErrorPrototype) return errorIsError === null || errorIsError(obj) ? 'error' : null;
+  }
+  return null;
+}
+function brand(check, v) { try { check(v); return true; } catch (e) { return false; } }
+
+// An array's or typed array's first 100 elements, read by their descriptors:
+// a hole is drawn as empty, a getter isn't called (#48).
+function drawElements(obj, length, properties, ctx) {
+  for (var i = 0; i < length && i < 100; i++) {
+    var cell = ObjectGetOwnPropertyDescriptor(obj, i);
+    var value = !cell ? { type: 'empty', value: null, display: 'empty' }
+      : !('value' in cell) ? { type: 'string', value: accessorText(cell) }
+      : serializeValue(cell.value, ctx);
+    $push(properties, { key: String(i), value: value });
+  }
+  moreMarker(length - 100, properties);
+}
+
+// "(N more)" after the entries drawn: arrays after 100, objects, maps and sets after 50 (#93).
+function moreMarker(more, properties) {
+  if (more > 0) $push(properties, { key: '...', value: { type: 'string', value: '(' + more + ' more)' } });
+}
+
+function accessorText(desc) { return desc.get && desc.set ? '<accessor>' : desc.get ? '<getter>' : '<setter>'; }
+
+// An object's own enumerable properties, Symbol keys included as [Symbol(id)]
+// (#48), the first 50, by their descriptors: a getter is drawn, never called.
+function drawOwnProperties(obj, properties, ctx, skip) {
+  var keys = ObjectKeys(obj);
+  var symbols = ObjectGetOwnPropertySymbols(obj);
+  for (var sk = 0; sk < symbols.length; sk++) if (isEnumerable(obj, symbols[sk])) $push(keys, symbols[sk]);
+  var shown = 0;
+  var more = 0;
+  for (var k = 0; k < keys.length; k++) {
+    var key = keys[k];
+    if (skip && $indexOf(skip, key) !== -1) continue;
+    if (shown === 50) { more++; continue; }
+    var desc = ObjectGetOwnPropertyDescriptor(obj, key);
+    if (!desc) continue;
+    var keyText = typeof key === 'symbol' ? '[' + symbolToString(key) + ']' : key;
+    $push(properties, { key: keyText, value: 'value' in desc ? serializeValue(desc.value, ctx) : { type: 'string', value: accessorText(desc) } });
+    shown++;
+  }
+  moreMarker(more, properties);
+}
+
+// A data property's value, up the prototype chain, never calling a getter.
+function dataProperty(obj, key) {
+  for (var p = obj; p !== null && p !== undefined; p = ObjectGetPrototypeOf(p)) {
+    var d = ObjectGetOwnPropertyDescriptor(p, key);
+    if (!d) continue;
+    return 'value' in d ? { found: true, value: d.value } : { found: false, accessor: true };
+  }
+  return { found: false, accessor: false };
+}
+
+// A function's name, unless a static getter computes it.
+function functionName(fn) {
+  var d = ObjectGetOwnPropertyDescriptor(fn, 'name');
+  return d && typeof d.value === 'string' ? d.value : '';
+}
+
+// The name of the class an object was made by, as obj.constructor.name reads
+// it: the first constructor up its prototype chain (an anonymous class has
+// none). A built-in getter (Iterator.prototype's) runs no program code, so it
+// is followed; a program's getter isn't called.
+function constructorName(obj) {
+  for (var p = ObjectGetPrototypeOf(obj); p !== null; p = ObjectGetPrototypeOf(p)) {
+    var d = ObjectGetOwnPropertyDescriptor(p, 'constructor');
+    if (!d) continue;
+    var ctor = 'value' in d ? d.value : isNative(d.get) ? ReflectApply(d.get, obj, []) : undefined;
+    return typeof ctor === 'function' ? functionName(ctor) || null : null;
+  }
+  return null;
+}
+function isNative(fn) {
+  if (typeof fn !== 'function' || looksNative.has(fn)) return false;
+  try { return $test(/\{\s*\[native code\]\s*\}$/, functionToString(fn)); } catch (e) { return false; }
+}
+
+// Private fields (#93): each class with some gives the runtime a reader for
+// each (__privateNames__, from a static block the instrumenter adds). An
+// object shows those of every class it was made by; a class its static ones.
+var privateReaders = new SafeWeakMap();
+var ABSENT = { absent: true };
+function drawPrivateFields(obj, target, properties, ctx) {
+  var classes = [];
+  if (typeof obj === 'function') $push(classes, obj);
+  else {
+    for (var p = ObjectGetPrototypeOf(obj); p !== null; p = ObjectGetPrototypeOf(p)) {
+      var d = ObjectGetOwnPropertyDescriptor(p, 'constructor');
+      if (d && typeof d.value === 'function' && privateReaders.has(d.value)) $unshift(classes, d.value);
     }
   }
-
-  var heapObj = {
-    id: heapId,
-    objectType: objectType,
-    label: label,
-    properties: properties
-  };
-  __heapRegistry__[heapId] = heapObj;
-  return heapObj;
+  for (var c = 0; c < classes.length; c++) {
+    var readers = privateReaders.get(classes[c]);
+    if (!readers) continue;
+    var names = ObjectKeys(readers);
+    for (var n = 0; n < names.length; n++) {
+      var value;
+      try { value = readers[names[n]](target, ABSENT); } catch (e) { value = ABSENT; }
+      if (value !== ABSENT) $push(properties, { key: names[n], value: serializeValue(value, ctx) });
+    }
+  }
+}
+function privateNames(cls, readers) {
+  if (typeof cls === 'function') privateReaders.set(cls, readers);
 }
 
 // ── Heap collection ──
 
 // Walk all frames in a stack snapshot and collect every referenced
 // HeapObject (transitively through object properties) from the registry.
-function __collectHeap__(stackSnapshot) {
-  var seen = {};
+function collectHeap(stackSnapshot) {
+  var seen = ObjectCreate(null);
   var result = [];
   function visit(val) {
-    if (!val || val.type !== "ref") return;
+    if (!val || val.type !== 'ref') return;
     if (seen[val.heapId]) return;
     seen[val.heapId] = true;
-    var obj = __heapRegistry__[val.heapId];
+    var obj = heapRegistry[val.heapId];
     if (obj) {
-      result.push(obj);
+      $push(result, obj);
       for (var p = 0; p < obj.properties.length; p++) {
         visit(obj.properties[p].value);
         if (obj.properties[p].keyValue) visit(obj.properties[p].keyValue);
@@ -307,302 +497,185 @@ function __collectHeap__(stackSnapshot) {
   }
   for (var f = 0; f < stackSnapshot.length; f++) {
     var vars = stackSnapshot[f].variables;
-    if (vars && vars.length) {
-      for (var v = 0; v < vars.length; v++) {
-        visit(vars[v].value);
-      }
-    }
+    for (var v = 0; vars && v < vars.length; v++) visit(vars[v].value);
     var cvars = stackSnapshot[f].closureVars;
-    if (cvars && cvars.length) {
-      for (var cv = 0; cv < cvars.length; cv++) {
-        visit(cvars[cv].value);
-      }
-    }
+    for (var cv = 0; cvars && cv < cvars.length; cv++) visit(cvars[cv].value);
     if (stackSnapshot[f].thisArg) visit(stackSnapshot[f].thisArg);
   }
   return result;
 }
 
-// ── Condition tracking ──
+// ── Steps ──
+
+// Each variable of a { name: value } object, serialized.
+function serializeVars(vars, ctx) {
+  var entries = [];
+  var keys = ObjectKeys(vars);
+  for (var i = 0; i < keys.length; i++) {
+    $push(entries, { name: keys[i], value: serializeValue(vars[keys[i]], ctx) });
+  }
+  return entries;
+}
+
+// Re-serialize every frame's this from its live reference, so mutations are visible.
+function refreshThis(ctx) {
+  for (var ti = 0; ti < callStack.length; ti++) {
+    if (callStack[ti].rawThis !== undefined) callStack[ti].thisArg = serializeValue(callStack[ti].rawThis, ctx);
+  }
+}
+
+// The call stack as a step shows it; the top frame's variables replaced by topVariables if given.
+function stackSnapshot(topVariables) {
+  var out = [];
+  for (var j = 0; j < callStack.length; j++) {
+    var frame = callStack[j];
+    var entry = { name: frame.name, variables: topVariables && j === callStack.length - 1 ? topVariables : frame.variables || [] };
+    if (frame.isBlockScope) entry.isBlockScope = true;
+    if (frame.closureVars && frame.closureVars.length > 0) entry.closureVars = frame.closureVars;
+    if (frame.thisArg) entry.thisArg = frame.thisArg;
+    $push(out, entry);
+  }
+  return out;
+}
 
 // A test's step (#24): it refreshes the variables the test sees, as a capture
 // does, so the step shows the current state with the test's result.
 // blockFrame ({ name, vars }) is a for loop's let/const variables, whose frame
 // is pushed in the loop body: the step shows them in a frame of their own.
-function __condition__(value, line, expression, vars, parentVarNames, closureVars, blockFrame) {
-  if (__snapshots__.length >= __MAX_SNAPSHOTS) { __stopped__ = true; throw __STOP__; }
-
+function condition(value, line, expression, vars, parentVarNames, blockFrame) {
+  if (busy) return value;
+  going();
   var columnRange = null;
-  if (Array.isArray(line)) {
+  if (ArrayIsArray(line)) {
     columnRange = { startCol: line[1], endCol: line[2] };
     line = line[0];
   }
-
-  // Re-serialize this context from live references
-  var heapObjects = [];
-  var visited = new Set();
-  if (vars) __updateFrames__(vars, parentVarNames, closureVars, heapObjects, visited);
-  __refreshGlobals__(heapObjects, visited);
-  for (var ti = 0; ti < __callStack__.length; ti++) {
-    if (__callStack__[ti].__rawThis !== undefined) {
-      try {
-        __callStack__[ti].thisArg = __serializeValue__(__callStack__[ti].__rawThis, heapObjects, visited);
-      } catch(e) {}
-    }
+  busy++;
+  try {
+    var ctx = newDrawing();
+    if (vars) updateFrames(vars, parentVarNames, ctx);
+    refreshGlobals(ctx);
+    refreshThis(ctx);
+    var stack = stackSnapshot();
+    if (blockFrame) $push(stack, { name: blockFrame.name, variables: serializeVars(blockFrame.vars, ctx), isBlockScope: true });
+    var snap = outputOf({ step: snapshots.length, line: line, callStack: stack, heap: collectHeap(stack), condition: { expression: expression, result: !!value, line: line } });
+    if (columnRange) snap.columnRange = columnRange;
+    record(snap);
+  } finally {
+    busy--;
   }
-
-  // Build a snapshot at the condition line using the current call stack state
-  var stackSnapshot = [];
-  for (var c = 0; c < __callStack__.length; c++) {
-    var fr = __callStack__[c];
-    var ent = {
-      name: fr.name,
-      variables: fr.variables || []
-    };
-    if (fr.isBlockScope) ent.isBlockScope = true;
-    if (fr.closureVars && fr.closureVars.length > 0) ent.closureVars = fr.closureVars;
-    if (fr.thisArg) ent.thisArg = fr.thisArg;
-    stackSnapshot.push(ent);
-  }
-  if (blockFrame) {
-    stackSnapshot.push({ name: blockFrame.name, variables: __serializeVars__(blockFrame.vars, heapObjects, visited), isBlockScope: true });
-  }
-
-  var snap = __outputOf__({
-    step: __snapshots__.length,
-    line: line,
-    callStack: stackSnapshot,
-    heap: __collectHeap__(stackSnapshot),
-    condition: { expression: expression, result: !!value, line: line }
-  });
-  if (columnRange) snap.columnRange = columnRange;
-  __record__(snap);
-
   return value;
-}
-
-// ── Capture ──
-
-// Each variable of a { name: value } object, serialized, except the runtime's own (__x__).
-function __serializeVars__(vars, heapObjects, visited) {
-  var entries = [];
-  var keys = Object.keys(vars);
-  for (var i = 0; i < keys.length; i++) {
-    var name = keys[i];
-    if (name.startsWith("__") && name.endsWith("__")) continue;
-    try {
-      entries.push({ name: name, value: __serializeValue__(vars[name], heapObjects, visited) });
-    } catch(e) {
-      entries.push({ name: name, value: { type: "string", value: "[error]" } });
-    }
-  }
-  return entries;
 }
 
 // The step before a statement runs (#24). As CPython reports a line once while
 // a frame stays on it, a statement on the line its frame last stepped at
-// (\`a(); b();\`, \`if (n < 2) return n;\`) takes no step of its own; its
-// variables still refresh the frames for the next step. The program's final
-// capture (isFinal) is always a step.
-function __capture__(line, vars, parentVarNames, closureVars, isFinal) {
-  if (__snapshots__.length >= __MAX_SNAPSHOTS) { __stopped__ = true; throw __STOP__; }
+// (a(); b();, if (n < 2) return n;) takes no step of its own; its variables
+// still refresh the frames for the next step. The final capture is always a step.
+function capture(line, vars, parentVarNames) {
+  if (busy) return;
+  going();
+  takeStep(line, vars, parentVarNames, false);
+}
 
+function takeStep(line, vars, parentVarNames, isFinal) {
   var columnRange = null;
-  if (Array.isArray(line)) {
+  if (ArrayIsArray(line)) {
     columnRange = { startCol: line[1], endCol: line[2] };
     line = line[0];
   }
-
-  var heapObjects = [];
-  var visited = new Set();
-  __updateFrames__(vars, parentVarNames, closureVars, heapObjects, visited);
-  __refreshGlobals__(heapObjects, visited);
-
-  var last = __snapshots__[__snapshots__.length - 1];
-  var loops = typeof __loopCount === "number" ? __loopCount : 0;
-  var sameDepth = last && last.callStack.length === __callStack__.length;
-  if (isFinal) {
-    // The final state marks the line that ran last, if the program's frame took that step.
-    if (sameDepth) line = last.line;
-  } else if (sameDepth && last.line === line && (last.condition || (!__framePushed__ && loops === __stepLoopCount__))) {
-    // (A statement on its test's line, as in \`while (a < 3) a++;\`, is part of the test's step.)
-    return;
-  }
-  __framePushed__ = false;
-  __stepLoopCount__ = loops;
-
-  // Re-serialize this context from live references so mutations are visible
-  for (var ti = 0; ti < __callStack__.length; ti++) {
-    if (__callStack__[ti].__rawThis !== undefined) {
-      try {
-        __callStack__[ti].thisArg = __serializeValue__(__callStack__[ti].__rawThis, heapObjects, visited);
-      } catch(e) {}
+  busy++;
+  try {
+    var ctx = newDrawing();
+    updateFrames(vars, parentVarNames, ctx);
+    refreshGlobals(ctx);
+    var last = snapshots[snapshots.length - 1];
+    var sameDepth = last && last.callStack.length === callStack.length;
+    if (isFinal) {
+      // The final state marks the line that ran last, if the program's frame took that step.
+      if (sameDepth) line = last.line;
+    } else if (sameDepth && last.line === line && (last.condition || (!framePushed && iterations === stepIterations))) {
+      // (A statement on its test's line, as in while (a < 3) a++;, is part of the test's step.)
+      return;
     }
+    framePushed = false;
+    stepIterations = iterations;
+    refreshThis(ctx);
+    var stack = stackSnapshot();
+    var snap = outputOf({ step: snapshots.length, line: line, callStack: stack, heap: collectHeap(stack) });
+    if (columnRange) snap.columnRange = columnRange;
+    record(snap);
+  } finally {
+    busy--;
   }
-
-  // Build snapshot of the full call stack
-  var stackSnapshot = [];
-  for (var j = 0; j < __callStack__.length; j++) {
-    var frame = __callStack__[j];
-    var entry = {
-      name: frame.name,
-      variables: frame.variables || []
-    };
-    if (frame.isBlockScope) entry.isBlockScope = true;
-    if (frame.closureVars && frame.closureVars.length > 0) entry.closureVars = frame.closureVars;
-    if (frame.thisArg) entry.thisArg = frame.thisArg;
-    stackSnapshot.push(entry);
-  }
-
-  var snap = __outputOf__({
-    step: __snapshots__.length,
-    line: line,
-    callStack: stackSnapshot,
-    heap: __collectHeap__(stackSnapshot)
-  });
-  if (columnRange) snap.columnRange = columnRange;
-  __record__(snap);
 }
 
 // Set the frames' variables from a capture's: the top frame's, or, inside a
-// block scope, the block frame's and its parent's (parentVarNames), and the
-// closed-over variables of the nearest function frame.
-function __updateFrames__(vars, parentVarNames, closureVars, heapObjects, visited) {
-  // Update closure vars on the nearest function (non-block-scope) frame
-  if (closureVars) {
-    var funcFrame = null;
-    for (var fi = __callStack__.length - 1; fi >= 0; fi--) {
-      if (!__callStack__[fi].isBlockScope) {
-        funcFrame = __callStack__[fi];
-        break;
-      }
-    }
-    if (funcFrame) {
-      var closureEntries = [];
-      var cKeys = Object.keys(closureVars);
-      for (var ci = 0; ci < cKeys.length; ci++) {
-        var cvName = cKeys[ci];
-        if (cvName.startsWith("__") && cvName.endsWith("__")) continue;
-        try {
-          closureEntries.push({
-            name: cvName,
-            value: __serializeValue__(closureVars[cvName], heapObjects, visited)
-          });
-        } catch(e) {
-          closureEntries.push({
-            name: cvName,
-            value: { type: "string", value: "[error]" }
-          });
-        }
-      }
-      funcFrame.closureVars = closureEntries;
-    }
+// block scope, the block frame's and its parent's (parentVarNames); and the
+// closed-over variables of the nearest function frame, from its reader.
+function updateFrames(vars, parentVarNames, ctx) {
+  for (var fi = callStack.length - 1; fi > 0; fi--) {
+    var fnFrame = callStack[fi];
+    if (fnFrame.isBlockScope) continue;
+    if (fnFrame.closure) fnFrame.closureVars = serializeVars(fnFrame.closure(), ctx);
+    break;
   }
-
-  if (parentVarNames && __callStack__.length >= 2) {
-    // Block-scope mode: distribute vars between the top (block) frame
-    // and the parent frame beneath it.
-    var parentSet = {};
-    for (var p = 0; p < parentVarNames.length; p++) {
-      parentSet[parentVarNames[p]] = true;
-    }
+  if (!vars) return;
+  if (parentVarNames && callStack.length >= 2) {
+    // Block-scope mode: distribute vars between the top (block) frame and the parent frame beneath it.
+    var parentSet = ObjectCreate(null);
+    for (var p = 0; p < parentVarNames.length; p++) parentSet[parentVarNames[p]] = true;
     var blockVars = [];
     var parentVars = [];
-    var keys = Object.keys(vars);
+    var keys = ObjectKeys(vars);
     for (var i = 0; i < keys.length; i++) {
-      var vName = keys[i];
-      if (vName.startsWith("__") && vName.endsWith("__")) continue;
-      try {
-        var entry = { name: vName, value: __serializeValue__(vars[vName], heapObjects, visited) };
-      } catch(e) {
-        var entry = { name: vName, value: { type: "string", value: "[error]" } };
-      }
-      if (parentSet[vName]) {
-        parentVars.push(entry);
-      } else {
-        blockVars.push(entry);
-      }
+      var entry = { name: keys[i], value: serializeValue(vars[keys[i]], ctx) };
+      $push(parentSet[keys[i]] ? parentVars : blockVars, entry);
     }
-    __callStack__[__callStack__.length - 1].variables = blockVars;
-    __callStack__[__callStack__.length - 2].variables = parentVars;
+    callStack[callStack.length - 1].variables = blockVars;
+    callStack[callStack.length - 2].variables = parentVars;
   } else {
-    // Normal mode: all vars go to the top frame
-    var topFrame = __callStack__[__callStack__.length - 1];
-    if (topFrame) {
-      var serializedVars = [];
-      var varKeys = Object.keys(vars);
-      for (var i2 = 0; i2 < varKeys.length; i2++) {
-        var name = varKeys[i2];
-        if (name.startsWith("__") && name.endsWith("__")) continue;
-        try {
-          serializedVars.push({
-            name: name,
-            value: __serializeValue__(vars[name], heapObjects, visited)
-          });
-        } catch(e) {
-          serializedVars.push({
-            name: name,
-            value: { type: "string", value: "[error]" }
-          });
-        }
-      }
-      topFrame.variables = serializedVars;
-    }
+    callStack[callStack.length - 1].variables = serializeVars(vars, ctx);
   }
 }
 
-// ── Frame management ──
+// ── Frames ──
 
-function __pushFrame__(name, params, isBlockScope, closureVars, thisVal) {
+// A frame the program's code would push while a step is being recorded: never on the stack.
+var DETACHED = { name: '', variables: [] };
+
+// closure: a function reading the variables the function closes over (#90),
+// made inside it by the instrumenter, each read in a try (one may still be in
+// its temporal dead zone). thisVal: its this, unless it is an arrow function.
+function pushFrame(name, params, isBlockScope, closure, thisVal) {
+  if (busy) return DETACHED;
   var frame = { name: name, variables: [], isBlockScope: !!isBlockScope };
-  // Serialize params as initial frame variables
-  var heapObjects = [];
-  var visited = new Set();
-  var keys = Object.keys(params);
-  for (var i = 0; i < keys.length; i++) {
-    try {
-      frame.variables.push({
-        name: keys[i],
-        value: __serializeValue__(params[keys[i]], heapObjects, visited)
-      });
-    } catch(e) {
-      frame.variables.push({
-        name: keys[i],
-        value: { type: "string", value: "[error]" }
-      });
+  busy++;
+  try {
+    var ctx = newDrawing();
+    frame.variables = serializeVars(params, ctx);
+    if (typeof closure === 'function') {
+      frame.closure = closure;
+      frame.closureVars = serializeVars(closure(), ctx);
     }
-  }
-  // Serialize closure variables from enclosing scope(s)
-  if (closureVars) {
-    var closureEntries = [];
-    var cKeys = Object.keys(closureVars);
-    for (var ci = 0; ci < cKeys.length; ci++) {
-      try {
-        closureEntries.push({
-          name: cKeys[ci],
-          value: __serializeValue__(closureVars[cKeys[ci]], heapObjects, visited)
-        });
-      } catch(e) {
-        closureEntries.push({
-          name: cKeys[ci],
-          value: { type: "string", value: "[error]" }
-        });
-      }
+    // Its this, unless it is the global object or there is none.
+    if (thisVal !== undefined && thisVal !== global) {
+      frame.rawThis = thisVal;
+      frame.thisArg = serializeValue(thisVal, ctx);
     }
-    if (closureEntries.length > 0) frame.closureVars = closureEntries;
-  }
-  // Store this context (skip global object and undefined)
-  if (thisVal !== undefined && thisVal !== self) {
-    frame.__rawThis = thisVal;
-    try {
-      frame.thisArg = __serializeValue__(thisVal, heapObjects, visited);
-    } catch(e) {}
+  } finally {
+    busy--;
   }
   // A function entered on an empty stack after the script ended was called by the event loop.
-  if (__scriptDone__ && __callStack__.length === 1 && !isBlockScope && !__nextLabel__) __nextLabel__ = "promise callback";
-  __callStack__.push(frame);
-  __framePushed__ = true;
+  if (scriptDone && callStack.length === 1 && !isBlockScope && !nextLabel) nextLabel = 'promise callback';
+  $push(callStack, frame);
+  framePushed = true;
   return frame;
+}
+
+// A derived class's constructor has its this once super() returns (#93): super(…)'s value.
+function thisReady(frame, value) {
+  if (frame && frame !== DETACHED) frame.rawThis = value;
+  return value;
 }
 
 // Take a frame, and every frame above it, off the stack, wherever it is now
@@ -611,322 +684,446 @@ function __pushFrame__(name, params, isBlockScope, closureVars, thisVal) {
 // (already popped: nothing to do), break, continue, a labeled break, a throw.
 // A suspended generator or async function that ends (a rejected await nothing
 // caught, a generator's return()) drops its saved frames.
-function __leave__(frame) {
-  if (!frame) return;
-  if (frame.__saved) { frame.__saved = null; return; }
-  var at = __callStack__.lastIndexOf(frame);
-  if (at > 0) __callStack__.length = at;
+function leave(frame) {
+  if (!frame || frame === DETACHED) return;
+  if (frame.saved) { frame.saved = null; return; }
+  var at = $lastIndexOf(callStack, frame);
+  if (at > 0) callStack.length = at;
 }
 
 // At a yield or await, a generator's or async function's frames (its own and
 // its loops') leave the stack, as a debugger shows them, and come back when it
 // resumes, on top of whatever is running then (#44).
-function __suspend__(frame, value) {
-  var at = __callStack__.lastIndexOf(frame);
-  if (at > 0) frame.__saved = __callStack__.splice(at);
+function suspend(frame, value) {
+  if (busy || frame === DETACHED) return value;
+  var at = $lastIndexOf(callStack, frame);
+  if (at > 0) frame.saved = $splice(callStack, at);
   return value;
 }
-function __resume__(frame, value) {
-  var saved = frame.__saved;
+function resume(frame, value) {
+  if (busy || frame === DETACHED) return value;
+  var saved = frame.saved;
   if (saved) {
-    if (__scriptDone__ && __callStack__.length === 1 && !__nextLabel__) __nextLabel__ = "resumed after await";
-    frame.__saved = null;
-    for (var i = 0; i < saved.length; i++) __callStack__.push(saved[i]);
-    __framePushed__ = true;
+    if (scriptDone && callStack.length === 1 && !nextLabel) nextLabel = 'resumed after await';
+    frame.saved = null;
+    for (var i = 0; i < saved.length; i++) $push(callStack, saved[i]);
+    framePushed = true;
   }
   return value;
 }
 
-function __popFrame__(retVal, line) {
-  // When called from a wrapped \`return\` (line is provided), the user is
-  // exiting the enclosing function. Any block-scope frames pushed by
-  // for/while/do-while loops sitting between the return and the function
-  // frame must also be popped — otherwise they leak across subsequent
-  // visualizations.
+// A return: with its line, a step showing the returned value, then the frame
+// leaves. Any block frames of loops between the return and its function's
+// frame leave with it.
+function popFrame(retVal, line) {
+  if (busy) return retVal;
+  if (stopReason === null && timeUp()) stop('time');
   if (line !== undefined) {
-    while (__callStack__.length > 1 && __callStack__[__callStack__.length - 1].isBlockScope) {
-      __callStack__.pop();
-    }
+    while (callStack.length > 1 && callStack[callStack.length - 1].isBlockScope) callStack.length--;
   }
-  if (__callStack__.length > 1) {
-    // Emit a snapshot showing the return value before popping the frame
-    if (line !== undefined && __snapshots__.length < __MAX_SNAPSHOTS) {
-      var heapObjects = [];
-      var visited = new Set();
-      var topFrame = __callStack__[__callStack__.length - 1];
-
-      __refreshGlobals__(heapObjects, visited);
-      // Copy existing variables and append the return value
-      var retVars = (topFrame.variables || []).slice();
-      retVars.push({
-        name: "return \u21b5",
-        value: __serializeValue__(retVal, heapObjects, visited)
-      });
-
-      // Re-serialize this context from live references
-      for (var ti = 0; ti < __callStack__.length; ti++) {
-        if (__callStack__[ti].__rawThis !== undefined) {
-          try {
-            __callStack__[ti].thisArg = __serializeValue__(__callStack__[ti].__rawThis, heapObjects, visited);
-          } catch(e) {}
-        }
+  if (callStack.length > 1) {
+    if (line !== undefined && stopReason === null && snapshots.length < MAX_SNAPSHOTS) {
+      busy++;
+      try {
+        var ctx = newDrawing();
+        refreshGlobals(ctx);
+        var top = callStack[callStack.length - 1];
+        var retVars = $slice(top.variables || [], 0);
+        $push(retVars, { name: 'return ↵', value: serializeValue(retVal, ctx) });
+        refreshThis(ctx);
+        var stack = stackSnapshot(retVars);
+        record(outputOf({ step: snapshots.length, line: line, callStack: stack, heap: collectHeap(stack) }));
+      } finally {
+        busy--;
       }
-
-      var stackSnapshot = [];
-      for (var j = 0; j < __callStack__.length; j++) {
-        var frame = __callStack__[j];
-        var entry2 = {
-          name: frame.name,
-          variables: j === __callStack__.length - 1 ? retVars : (frame.variables || [])
-        };
-        if (frame.isBlockScope) entry2.isBlockScope = true;
-        if (frame.closureVars && frame.closureVars.length > 0) entry2.closureVars = frame.closureVars;
-        if (frame.thisArg) entry2.thisArg = frame.thisArg;
-        stackSnapshot.push(entry2);
-      }
-      __record__(__outputOf__({
-        step: __snapshots__.length,
-        line: line,
-        callStack: stackSnapshot,
-        heap: __collectHeap__(stackSnapshot)
-      }));
     }
-
-    __callStack__.pop();
+    callStack.length--;
   }
   return retVal;
 }
 
+// Each loop iteration (the loop guard, #91): a loop that takes no step stops
+// after MAX_SILENT_ITERATIONS, and every loop at the time budget.
+function loop() {
+  if (busy) return;
+  if (stopReason !== null) throw STOP;
+  iterations++;
+  if (++sinceStep > MAX_SILENT_ITERATIONS) stop('loop');
+  if ((iterations & 1023) === 0 && timeUp()) stop('time');
+}
+
 // ── The end of the script, and its callbacks (#45) ──
+
+function setGlobals(reader) { globalsReader = reader; }
 
 // The script's last step: the state when its synchronous code has run (all
 // of it, if nothing is left to run). The program's timers and promise
 // callbacks run after it, each step that starts one labeled.
-function __endScript__(line) {
-  if (line > 0) __capture__(line, typeof __globals__ === "function" ? __globals__() : {}, null, null, true);
-  __scriptDone__ = true;
-  __scriptEndStep__ = __snapshots__.length;
+function endScript(line) {
+  if (line > 0) {
+    going();
+    takeStep(line, globalsReader !== null ? globalsReader() : {}, null, true);
+  }
+  scriptDone = true;
+  scriptEndStep = snapshots.length;
 }
 
 // Timers run by virtual time, so a 2-second timeout takes no time: in order
 // of when they are due, then of when they were set, a delay below 1 ms being 1
 // ms (as in Node). Each callback runs after the microtasks before it.
-var __now__ = 0;
-var __timers__ = [];
-var __timerId__ = 0;
-var __timerSeq__ = 0;
-function __addTimer__(fn, ms, args, repeat) {
+var virtualNow = 0;
+var timers = [];
+var timerId = 0;
+var timerSeq = 0;
+function addTimer(fn, ms, args, repeat) {
   ms = Number(ms);
   if (!(ms >= 1 && ms <= 2147483647)) ms = 1;
-  var t = { id: ++__timerId__, fn: fn, args: args, due: __now__ + Math.floor(ms), seq: ++__timerSeq__, interval: repeat ? Math.floor(ms) : null };
-  __timers__.push(t);
+  var t = { id: ++timerId, fn: fn, args: args, due: virtualNow + Math.floor(ms), seq: ++timerSeq, interval: repeat ? Math.floor(ms) : null };
+  $push(timers, t);
   return t.id;
 }
-function __clearTimer__(id) {
-  for (var i = 0; i < __timers__.length; i++) if (__timers__[i].id === id) { __timers__.splice(i, 1); return; }
+function clearTimer(id) {
+  for (var i = 0; i < timers.length; i++) if (timers[i].id === id) { $splice(timers, i, 1); return; }
 }
-function __nextTimer__() {
+function nextTimer() {
   var best = null;
-  for (var i = 0; i < __timers__.length; i++) {
-    var t = __timers__[i];
+  for (var i = 0; i < timers.length; i++) {
+    var t = timers[i];
     if (!best || t.due < best.due || (t.due === best.due && t.seq < best.seq)) best = t;
   }
   return best;
 }
-var __hostSetTimeout__ = typeof setTimeout === "function" ? setTimeout : null;
-(function () {
-  var define = function (name, fn) { Object.defineProperty(self, name, { value: fn, writable: true, configurable: true, enumerable: false }); };
-  define("setTimeout", function setTimeout(fn) { return __addTimer__(fn, arguments[1], Array.prototype.slice.call(arguments, 2), false); });
-  define("setInterval", function setInterval(fn) { return __addTimer__(fn, arguments[1], Array.prototype.slice.call(arguments, 2), true); });
-  define("clearTimeout", function clearTimeout(id) { __clearTimer__(id); });
-  define("clearInterval", function clearInterval(id) { __clearTimer__(id); });
-  if (typeof queueMicrotask === "function") {
-    var hostQueueMicrotask = queueMicrotask;
-    define("queueMicrotask", function queueMicrotask(fn) {
-      hostQueueMicrotask(function () {
-        __nextLabel__ = "queueMicrotask callback";
-        try { fn(); } catch (e) { if (!__callbackError__) __callbackError__ = { error: e, kind: "callback" }; }
-        __nextLabel__ = null;
-      });
-    });
-  }
-})();
 
-// The first rejection nothing handled, and the first exception a callback didn't catch: each ends the run, as in Node.
-var __unhandled__ = null;
-var __callbackError__ = null;
-if (typeof self.addEventListener === "function") {
-  self.addEventListener("unhandledrejection", function (e) {
-    if (!__unhandled__) __unhandled__ = { reason: e.reason };
+// The clock the program reads moves with virtual time too (#92): Date.now(),
+// new Date(), performance.now() and console.time are ahead of the real
+// clock by the time the timers skipped.
+function clock() { return DateNow() + virtualNow; }
+
+// The first rejection nothing handled, and the first exception a callback
+// didn't catch (a timer's, or a task of the program's own, like a
+// MessageChannel's handler): each ends the run, as in Node.
+var unhandled = null;
+var callbackError = null;
+if (typeof hostAddEventListener === 'function') {
+  ReflectApply(hostAddEventListener, global, ['unhandledrejection', function (e) {
+    if (!unhandled) unhandled = { reason: e.reason };
     if (e.preventDefault) e.preventDefault();
-  });
+  }]);
+  ReflectApply(hostAddEventListener, global, ['error', function (e) {
+    if (!callbackError) callbackError = { error: e.error, kind: 'callback' };
+    if (e.preventDefault) e.preventDefault();
+  }]);
 }
 
+// Network requests in flight (#92): the event loop waits for them, up to the time budget.
+var pendingIO = 0;
+
 // Run a function in a new task, once the current one's microtasks have run.
-var __hop__ = (function () {
-  if (typeof MessageChannel === "function") {
-    var channel = new MessageChannel();
+var hop = (function () {
+  if (typeof HostMessageChannel === 'function') {
+    var channel = new HostMessageChannel();
     var queue = [];
-    channel.port1.onmessage = function () { queue.shift()(); };
-    return function (fn) { queue.push(fn); channel.port2.postMessage(null); };
+    channel.port1.onmessage = function () { var fn = queue[0]; $splice(queue, 0, 1); fn(); };
+    var postToPort = uncurryThis(channel.port2.postMessage);
+    return function (fn) { $push(queue, fn); postToPort(channel.port2, null); };
   }
-  return __hostSetTimeout__ ? function (fn) { __hostSetTimeout__(fn, 0); } : null;
+  return typeof hostSetTimeout === 'function' ? function (fn) { hostSetTimeout(fn, 0); } : null;
 })();
 
 // After the script: let its microtasks run, then each timer that is due, and
 // reply (done) when nothing is left, at the first uncaught exception or
-// unhandled rejection, at the step cap, or at the time budget.
-function __eventLoop__(done) {
-  var started = Date.now();
-  var finish = function (err, kind) { done(arguments.length === 0 ? __runResult__() : __runResult__(err, kind)); };
-  if (!__hop__) { finish(); return; }
+// unhandled rejection, at a limit, or once the program called close().
+function eventLoop(done) {
+  var finish = function (err, kind) { done(arguments.length === 0 ? runResult() : runResult(err, kind)); };
+  if (!hop) { finish(); return; }
   var check = function () {
-    if (__stopped__) return finish(__STOP__);
-    if (typeof __loopCount === "number" && typeof __MAX_LOOPS === "number" && __loopCount > __MAX_LOOPS) {
-      return finish(new Error("Infinite loop detected (exceeded " + __MAX_LOOPS + " iterations)"));
+    if (stopReason !== null) return finish();
+    if (callbackError) return finish(callbackError.error, callbackError.kind);
+    if (unhandled) return finish(unhandled.reason, 'promise');
+    if (timeUp()) { stopReason = 'time'; return finish(); }
+    if (closed) { finalStep(); return finish(); }
+    var t = nextTimer();
+    // While a request is in flight, virtual time doesn't run ahead of the real clock: wait for it.
+    if (pendingIO > 0 && (!t || t.due > DateNow() - runStart)) {
+      hostSetTimeout(tick, 4);
+      return;
     }
-    if (__callbackError__) return finish(__callbackError__.error, __callbackError__.kind);
-    if (__unhandled__) return finish(__unhandled__.reason, "promise");
-    if (Date.now() - started > __TIME_BUDGET_MS__) return finish(__TIME_LIMIT__);
-    var t = __nextTimer__();
-    if (!t) { __finalStep__(); return finish(); }
-    __now__ = t.due;
-    if (t.interval !== null) { t.due = __now__ + t.interval; t.seq = ++__timerSeq__; }
-    else __clearTimer__(t.id);
-    __nextLabel__ = t.interval !== null ? "setInterval callback" : "setTimeout callback";
+    if (!t) { finalStep(); return finish(); }
+    virtualNow = t.due;
+    if (t.interval !== null) { t.due = virtualNow + t.interval; t.seq = ++timerSeq; }
+    else clearTimer(t.id);
+    nextLabel = t.interval !== null ? 'setInterval callback' : 'setTimeout callback';
     try {
-      if (typeof t.fn === "function") t.fn.apply(undefined, t.args);
+      if (typeof t.fn === 'function') ReflectApply(t.fn, undefined, t.args);
     } catch (e) {
-      __nextLabel__ = null;
-      return finish(e, "callback");
+      nextLabel = null;
+      return finish(e, 'callback');
     }
-    __nextLabel__ = null;
+    nextLabel = null;
     tick();
   };
   // Two hops: one for the microtasks, one for the browser's unhandledrejection task.
-  var tick = function () { __hop__(function () { __hop__(check); }); };
+  var tick = function () { hop(function () { hop(check); }); };
   tick();
 }
-self.__eventLoop__ = __eventLoop__;
 
 // When callbacks ran after the script, the last step is the state after them all.
-function __finalStep__() {
-  if (__snapshots__.length <= __scriptEndStep__ || typeof __globals__ !== "function") return;
-  var last = __snapshots__[__snapshots__.length - 1];
-  try { __capture__(last.line, __globals__(), null, null, true); } catch (e) { /* the step cap */ }
+function finalStep() {
+  if (snapshots.length <= scriptEndStep || globalsReader === null) return;
+  var last = snapshots[snapshots.length - 1];
+  try { going(); takeStep(last.line, globalsReader(), null, true); } catch (e) { /* a limit */ }
 }
 
-// ── What the program sees of its instrumentation (#47) ──
+// ── The globals the program sees ──
 
-// Each function's own text, by its instrumented text's key (the instrumenter's
-// sourceKey; the program's first lines call these two).
-var __sourceTextMap__ = new Map();
-function __sourceTexts__(texts) {
-  for (var key in texts) __sourceTextMap__.set(key, texts[key]);
+// Function.prototype.toString gives a function's own text, not its
+// instrumented one (#47), and the runtime's functions the program can reach
+// (setTimeout, console.log, toString itself) look like the browser's own.
+var looksNative = new SafeWeakSet();
+var sourceTextMap = new SafeMap();
+function sourceTexts(texts) {
+  var keys = ObjectKeys(texts);
+  for (var i = 0; i < keys.length; i++) sourceTextMap.set(keys[i], texts[keys[i]]);
 }
-function __sourceKey__(text) {
+function sourceKey(text) {
   var h1 = 0xdeadbeef;
   var h2 = 0x41c6ce57;
   for (var i = 0; i < text.length; i++) {
-    var c = text.charCodeAt(i);
+    var c = $charCodeAt(text, i);
     h1 = Math.imul(h1 ^ c, 2654435761);
     h2 = Math.imul(h2 ^ c, 1597334677);
   }
   h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
   h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
-  return text.length + ":" + (h2 >>> 0).toString(36) + (h1 >>> 0).toString(36);
+  return text.length + ':' + (h2 >>> 0).toString(36) + (h1 >>> 0).toString(36);
 }
+var nativeLooking = function (fn) { looksNative.add(fn); return fn; };
+define(Function.prototype, 'toString', nativeLooking(function toString() {
+  if (looksNative.has(this)) return 'function ' + functionName(this) + '() { [native code] }';
+  var text = functionToString(this);
+  var original = sourceTextMap.get(sourceKey(text));
+  return original === undefined ? text : original;
+}));
+var defineGlobal = function (name, value) { define(global, name, nativeLooking(value)); };
 
-// Function.prototype.toString gives a function's own text, not its
-// instrumented one, and the runtime's functions the program can reach
-// (setTimeout, console.log, toString itself) look like the browser's own.
-var __looksNative__ = new WeakSet();
-var __nativeToString__ = Function.prototype.toString;
-(function () {
-  var toString = function toString() {
-    if (__looksNative__.has(this)) return "function " + (this.name || "") + "() { [native code] }";
-    var text = __nativeToString__.call(this);
-    var original = __sourceTextMap__.get(__sourceKey__(text));
-    return original === undefined ? text : original;
-  };
-  __looksNative__.add(toString);
-  Object.defineProperty(Function.prototype, "toString", { value: toString, writable: true, configurable: true, enumerable: false });
-  ["setTimeout", "setInterval", "clearTimeout", "clearInterval", "queueMicrotask", "structuredClone"].forEach(function (name) {
-    if (typeof self[name] === "function") __looksNative__.add(self[name]);
+defineGlobal('setTimeout', function setTimeout(fn) { return addTimer(fn, arguments[1], $slice(arguments, 2), false); });
+defineGlobal('setInterval', function setInterval(fn) { return addTimer(fn, arguments[1], $slice(arguments, 2), true); });
+defineGlobal('clearTimeout', function clearTimeout(id) { clearTimer(id); });
+defineGlobal('clearInterval', function clearInterval(id) { clearTimer(id); });
+if (typeof hostQueueMicrotask === 'function') {
+  defineGlobal('queueMicrotask', function queueMicrotask(fn) {
+    hostQueueMicrotask(function () {
+      nextLabel = 'queueMicrotask callback';
+      try { fn(); } catch (e) { if (!callbackError) callbackError = { error: e, kind: 'callback' }; }
+      nextLabel = null;
+    });
   });
-})();
+}
+defineGlobal('close', function close() { closed = true; });
+
+// The clock (#92).
+var VirtualDate = new HostProxy(HostDate, {
+  construct: function (target, args, newTarget) {
+    return ReflectConstruct(HostDate, args.length === 0 ? [clock()] : args, newTarget === VirtualDate ? HostDate : newTarget);
+  },
+  apply: function () { return dateToString(new HostDate(clock())); },
+});
+define(HostDate, 'now', nativeLooking(function now() { return clock(); }));
+define(DatePrototype, 'constructor', VirtualDate);
+defineGlobal('Date', VirtualDate);
+if (perfNow !== null) define(hostPerformance, 'now', nativeLooking(function now() { return perfNow(hostPerformance) + virtualNow; }));
+
+// Proxies are drawn and printed as their targets (#88): each one's target is kept.
+var proxyTargets = new SafeWeakMap();
+var TrackedProxy = function Proxy(target, handler) {
+  if (new.target === undefined) throw new TypeError("Constructor Proxy requires 'new'");
+  var proxy = new HostProxy(target, handler);
+  proxyTargets.set(proxy, target);
+  return proxy;
+};
+define(TrackedProxy, 'revocable', nativeLooking(function revocable(target, handler) {
+  var made = HostProxy.revocable(target, handler);
+  proxyTargets.set(made.proxy, target);
+  return { proxy: made.proxy, revoke: nativeLooking([function () { proxyTargets.set(made.proxy, null); made.revoke(); }][0]) };
+}));
+ObjectDefineProperty(TrackedProxy, 'prototype', { value: undefined });
+defineGlobal('Proxy', TrackedProxy);
+
+// Promises' states (#92), for the console: a promise made by Promise.resolve
+// or Promise.reject, settled by its executor's resolve or reject, or seen
+// settled by a then callback. (An async function's promise isn't seen until
+// a then callback runs.)
+var promiseStates = new SafeWeakMap();
+function settle(p, rejected, value) { if (!promiseStates.has(p)) promiseStates.set(p, { rejected: rejected, value: value }); }
+// Whether resolving with a value waits for it (a thenable): its then, found without running a getter.
+function thenable(v) {
+  if (v === null || (typeof v !== 'object' && typeof v !== 'function')) return false;
+  if (proxyTargets.has(v)) return true;
+  for (var o = v; o !== null; o = ObjectGetPrototypeOf(o)) {
+    var d = ObjectGetOwnPropertyDescriptor(o, 'then');
+    if (d) return !('value' in d) || typeof d.value === 'function';
+  }
+  return false;
+}
+var TrackedPromise;
+var promiseStatics = new SafeMap();
+var hostThis = function (receiver) { return receiver === TrackedPromise ? HostPromise : receiver; };
+promiseStatics.set('resolve', nativeLooking(function resolve(value) {
+  var p = ReflectApply(HostPromise.resolve, hostThis(this), [value]);
+  if (p !== value && !thenable(value)) settle(p, false, value);
+  return p;
+}));
+promiseStatics.set('reject', nativeLooking(function reject(reason) {
+  var p = ReflectApply(HostPromise.reject, hostThis(this), [reason]);
+  settle(p, true, reason);
+  return p;
+}));
+$forEach(ObjectGetOwnPropertyNames(HostPromise), function (name) {
+  var d = ObjectGetOwnPropertyDescriptor(HostPromise, name);
+  if (promiseStatics.has(name) || !d || typeof d.value !== 'function') return;
+  var hostStatic = d.value;
+  // (Called on the global Promise, a static runs as on the browser's, so its promises are made as the browser makes them.)
+  var wrapper = { m: function () { return ReflectApply(hostStatic, hostThis(this), arguments); } }.m;
+  ObjectDefineProperty(wrapper, 'name', { value: name });
+  promiseStatics.set(name, nativeLooking(wrapper));
+});
+TrackedPromise = new HostProxy(HostPromise, {
+  construct: function (target, args, newTarget) {
+    var executor = args[0];
+    var made = null;
+    var early = null;
+    var once = false;
+    var note = function (rejected, value) { if (made) settle(made, rejected, value); else early = { rejected: rejected, value: value }; };
+    var promise = ReflectConstruct(HostPromise, typeof executor !== 'function' ? args : [function (resolve, reject) {
+      var fns = [
+        function (value) { if (!once) { once = true; if (!thenable(value)) note(false, value); } return resolve(value); },
+        function (reason) { if (!once) { once = true; note(true, reason); } return reject(reason); },
+      ];
+      nativeLooking(fns[0]);
+      nativeLooking(fns[1]);
+      return ReflectApply(executor, undefined, fns);
+    }], newTarget === TrackedPromise ? HostPromise : newTarget);
+    made = promise;
+    if (early) settle(promise, early.rejected, early.value);
+    return promise;
+  },
+  get: function (target, key, receiver) {
+    return promiseStatics.has(key) ? promiseStatics.get(key) : ReflectGet(target, key, receiver);
+  },
+});
+define(HostPromise.prototype, 'then', nativeLooking(function then(onFulfilled, onRejected) {
+  var p = this;
+  return ReflectApply(hostThen, p, [
+    typeof onFulfilled === 'function' ? function (value) { settle(p, false, value); return ReflectApply(onFulfilled, undefined, [value]); } : onFulfilled,
+    typeof onRejected === 'function' ? function (reason) { settle(p, true, reason); return ReflectApply(onRejected, undefined, [reason]); } : onRejected,
+  ]);
+}));
+defineGlobal('Promise', TrackedPromise);
+
+// Requests in flight keep the event loop waiting (#92): fetch, and reading a response's body.
+function trackIO(start) {
+  pendingIO++;
+  var settled = false;
+  var done = function () { if (!settled) { settled = true; pendingIO--; } };
+  var request;
+  try { request = start(); } catch (e) { done(); throw e; }
+  return new HostPromise(function (resolve, reject) {
+    promiseThen(request, function (value) { done(); resolve(value); }, function (reason) { done(); reject(reason); });
+  });
+}
+if (typeof hostFetch === 'function') {
+  defineGlobal('fetch', function fetch(input) {
+    var args = arguments;
+    return trackIO(function () { return ReflectApply(hostFetch, global, args); });
+  });
+}
+if (typeof HostResponse === 'function') {
+  $forEach(['text', 'json', 'arrayBuffer', 'blob', 'formData', 'bytes'], function (name) {
+    var d = ObjectGetOwnPropertyDescriptor(HostResponse.prototype, name);
+    if (!d || typeof d.value !== 'function') return;
+    var method = d.value;
+    var wrapper = { m: function () { var self = this; var args = arguments; return trackIO(function () { return ReflectApply(method, self, args); }); } }.m;
+    ObjectDefineProperty(wrapper, 'name', { value: name });
+    define(HostResponse.prototype, name, nativeLooking(wrapper));
+  });
+}
 
 // A DataCloneError quotes the function it couldn't clone: with its own text.
-if (typeof structuredClone === "function") {
-  (function () {
-    var hostClone = structuredClone;
-    var firstFunction = function (value, seen) {
-      if (typeof value === "function") return value;
-      if (value === null || typeof value !== "object" || seen.has(value)) return null;
-      seen.add(value);
-      var parts = value instanceof Map ? Array.from(value.keys()).concat(Array.from(value.values())) : value instanceof Set ? Array.from(value) : Object.keys(value).map(function (k) { return value[k]; });
-      for (var i = 0; i < parts.length; i++) { var f = firstFunction(parts[i], seen); if (f) return f; }
-      return null;
-    };
-    var clone = function structuredClone(value) {
-      try {
-        return hostClone.apply(this, arguments);
-      } catch (e) {
-        var fn = e && e.name === "DataCloneError" ? firstFunction(value, new Set()) : null;
-        if (fn) {
-          try {
-            // (The browser may shorten the text it quotes, so the quote is found by its start.)
-            var message = String(e.message);
-            var raw = __nativeToString__.call(fn);
-            var own = Function.prototype.toString.call(fn);
-            var start = message.indexOf(raw.slice(0, 20));
-            var end = message.lastIndexOf(" could not be cloned");
-            if (raw !== own && start !== -1 && end > start) {
-              Object.defineProperty(e, "message", { value: message.slice(0, start) + own + message.slice(end), writable: true, configurable: true, enumerable: false });
-            }
-          } catch (ignored) { /* leave the message */ }
-        }
-        throw e;
+if (typeof hostStructuredClone === 'function') {
+  var firstFunction = function (value, seen) {
+    if (typeof value === 'function') return value;
+    if (value === null || typeof value !== 'object' || seen.has(value)) return null;
+    seen.add(value);
+    var parts = [];
+    var kind = builtinKind(value);
+    if (kind === 'map') {
+      var it = mapEntries(value);
+      for (var e = mapIteratorNext(it); !e.done; e = mapIteratorNext(it)) { $push(parts, e.value[0]); $push(parts, e.value[1]); }
+    } else if (kind === 'set') {
+      var si = setValues(value);
+      for (var v = setIteratorNext(si); !v.done; v = setIteratorNext(si)) $push(parts, v.value);
+    } else {
+      var keys = ObjectKeys(value);
+      for (var k = 0; k < keys.length; k++) { var d = ObjectGetOwnPropertyDescriptor(value, keys[k]); if (d && 'value' in d) $push(parts, d.value); }
+    }
+    for (var i = 0; i < parts.length; i++) { var f = firstFunction(parts[i], seen); if (f) return f; }
+    return null;
+  };
+  defineGlobal('structuredClone', function structuredClone(value) {
+    try {
+      return ReflectApply(hostStructuredClone, this, arguments);
+    } catch (e) {
+      var fn = e && e.name === 'DataCloneError' ? firstFunction(value, new SafeSet()) : null;
+      if (fn) {
+        try {
+          // (The browser may shorten the text it quotes, so the quote is found by its start.)
+          var message = String(e.message);
+          var raw = functionToString(fn);
+          var own = ReflectApply(Function.prototype.toString, fn, []);
+          var start = $indexOf(message, $slice(raw, 0, 20));
+          var end = StringPrototypeLastIndexOf(message, ' could not be cloned');
+          if (raw !== own && start !== -1 && end > start) {
+            ObjectDefineProperty(e, 'message', { value: $slice(message, 0, start) + own + $slice(message, end), writable: true, configurable: true, enumerable: false });
+          }
+        } catch (ignored) { /* leave the message */ }
       }
-    };
-    Object.defineProperty(self, "structuredClone", { value: clone, writable: true, configurable: true, enumerable: false });
-    __looksNative__.add(clone);
-  })();
+      throw e;
+    }
+  });
 }
 
-// The program's line for each line of the instrumented code, and where the
-// instrumented code starts in the worker's script: a stack trace names the
-// program's functions and lines (at add (main.js:3)), and leaves out the
-// runtime's and the worker's frames. V8's Error.prepareStackTrace; other
-// browsers keep their own stacks.
-var __programLineMap__ = null;
-var __programSite__ = null;
-function __programLines__(map) {
-  __programLineMap__ = map;
-  if (typeof Error.captureStackTrace !== "function") return;
+// ── Stack traces (#47) ──
+
+// The program's line for each line of its script, and where its script is:
+// a stack trace names the program's functions and lines (at add (main.js:3)),
+// and leaves out the runtime's and the worker's frames. V8's
+// Error.prepareStackTrace; other browsers keep their own stacks.
+var programLineMap = null;
+var programSite = null;
+function programLines(map) {
+  programLineMap = map;
+  if (typeof Error.captureStackTrace !== 'function') return;
   var previous = Error.prepareStackTrace;
   var holder = {};
   Error.prepareStackTrace = function (e, sites) { return sites; };
   // (V8 makes the stack when it is first read: read it before putting prepareStackTrace back.)
   var sites;
-  try { Error.captureStackTrace(holder, __programLines__); sites = holder.stack; } finally { Error.prepareStackTrace = previous; }
-  if (!Array.isArray(sites) || !sites[0] || typeof sites[0].getLineNumber !== "function") return;
-  __programSite__ = { base: sites[0].getLineNumber() - 1, file: sites[0].getFileName(), origin: sites[0].getEvalOrigin() };
-  Error.prepareStackTrace = __prepareStackTrace__;
+  try { Error.captureStackTrace(holder, programLines); sites = holder.stack; } finally { Error.prepareStackTrace = previous; }
+  if (!ArrayIsArray(sites) || !sites[0] || typeof sites[0].getLineNumber !== 'function') return;
+  programSite = { base: sites[0].getLineNumber() - 1, file: sites[0].getFileName(), origin: sites[0].getEvalOrigin() };
+  Error.prepareStackTrace = prepareStackTrace;
 }
-function __prepareStackTrace__(error, sites) {
+function prepareStackTrace(error, sites) {
   var header;
-  try { header = Error.prototype.toString.call(error); } catch (e) { header = "Error"; }
+  try { header = errorToString(error); } catch (e) { header = 'Error'; }
   var out = header;
   for (var i = 0; i < sites.length; i++) {
     var site = sites[i];
-    if (site.getFileName() !== __programSite__.file || site.getEvalOrigin() !== __programSite__.origin) continue;
-    var line = __programLineMap__[site.getLineNumber() - __programSite__.base];
+    if (site.getFileName() !== programSite.file || site.getEvalOrigin() !== programSite.origin) continue;
+    var line = programLineMap[site.getLineNumber() - programSite.base];
     if (!line) continue;
     var name = site.getFunctionName();
-    // The program's top level runs as eval code: no function name there.
-    if (name === "eval" && site.isEval()) name = null;
-    out +="\\n    at " + (name ? (site.isConstructor() ? "new " : "") + name + " (main.js:" + line + ")" : "main.js:" + line);
+    out += '\n    at ' + (name ? (site.isConstructor() ? 'new ' : '') + name + ' (main.js:' + line + ')' : 'main.js:' + line);
   }
   return out;
 }
@@ -935,17 +1132,42 @@ function __prepareStackTrace__(error, sites) {
 
 // The program's console prints as Node does (inspect.ts). Each call's text
 // becomes lines on its stream: log, info, debug, dir, table, count, group and
-// time write to stdout; warn, error, trace and assert to stderr.
+// time write to stdout; warn, error, trace and assert to stderr. At most
+// MAX_CONSOLE_LINES lines and MAX_CONSOLE_CHARS characters, then the run stops (#91).
 ${CONSOLE_SOURCE}
-function __write__(stream, text) {
-  var lines = String(text).split("\\n");
+__tutorFormat__.hooks.now = function () { return (perfNow !== null ? perfNow(hostPerformance) : DateNow()) + virtualNow; };
+__tutorFormat__.hooks.promiseState = function (p) { return promiseStates.get(p); };
+__tutorFormat__.hooks.proxyTarget = function (v) { return proxyTargets.has(v) ? proxyTargets.get(v) : undefined; };
+function write(stream, text) {
+  if (stopReason !== null) throw STOP;
+  var lines = $split(String(text), '\n');
   for (var i = 0; i < lines.length; i++) {
-    __console__.push({ text: lines[i], stream: stream });
-    if (stream === "stdout") __stdout__.push(lines[i]);
+    var line = lines[i];
+    if (outputChars + line.length > MAX_CONSOLE_CHARS) line = $slice(line, 0, MAX_CONSOLE_CHARS - outputChars);
+    outputChars += line.length;
+    $push(consoleLines, { text: line, stream: stream });
+    if (stream === 'stdout') $push(stdout, line);
+    if (consoleLines.length >= MAX_CONSOLE_LINES || outputChars >= MAX_CONSOLE_CHARS) break;
   }
-  if (stream === "stderr") __stderrUsed__ = true;
+  if (stream === 'stderr') stderrUsed = true;
+  if (consoleLines.length >= MAX_CONSOLE_LINES || outputChars >= MAX_CONSOLE_CHARS) stop('output');
 }
-Object.defineProperty(self, "console", { value: __makeConsole__(__write__), writable: true, configurable: true, enumerable: false });
-Object.keys(console).forEach(function (name) { if (typeof console[name] === "function") __looksNative__.add(console[name]); });
-`;
+var programConsole = __makeConsole__(write);
+$forEach(ObjectKeys(programConsole), function (name) { if (typeof programConsole[name] === 'function') nativeLooking(programConsole[name]); });
+define(global, 'console', programConsole);
+
+// ── The functions the instrumented program calls ──
+
+var exposed = {
+  __capture__: capture, __condition__: condition, __pushFrame__: pushFrame, __popFrame__: popFrame,
+  __leave__: leave, __suspend__: suspend, __resume__: resume, __thisReady__: thisReady, __loop__: loop,
+  __endScript__: endScript, __setGlobals__: setGlobals, __privateNames__: privateNames,
+  __programLines__: programLines, __sourceTexts__: sourceTexts,
+};
+$forEach(ObjectKeys(exposed), function (name) {
+  ObjectDefineProperty(global, name, { value: exposed[name], writable: false, configurable: true, enumerable: false });
+});
+
+return { runResult: runResult, eventLoop: eventLoop };
+})()`;
 }

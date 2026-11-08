@@ -1,0 +1,45 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[ 1, 2, 3, 4, 6, 'function' ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:1",
+      "num:2",
+      "num:3",
+      "num:4",
+      "num:6",
+      "str:function"
+     ],
+     "len": 6
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  5,
+  7,
+  14,
+  17,
+  19
+ ],
+ "statementRuns": 7,
+ "functionCalls": 3,
+ "finalGlobals": {
+  "outer": "fn:outer"
+ },
+ "sourceSha256": "257105607bec388325e907854295312132fc23b2584feed408d882d45428cc6d"
+}

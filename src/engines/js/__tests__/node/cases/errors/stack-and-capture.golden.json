@@ -34,7 +34,7 @@
   },
   {
    "stream": "stdout",
-   "text": "    at recordGolden (C:\\Users\\ctnelson2\\Documents\\tutors\\_tutor\\src\\engines\\js\\__tests__\\node\\record.ts:202:12)"
+   "text": "    at recordGolden (C:\\Users\\ctnelson2\\Documents\\tutors\\_tutor\\src\\engines\\js\\__tests__\\node\\record.ts:228:12)"
   },
   {
    "stream": "stdout",

@@ -9,9 +9,13 @@
  * written as a script for the worker; sharer.test.ts checks the two share
  * exactly the same parts. A string, not a function's source, for the reason
  * inspect.ts gives (keepNames helpers); no backticks or dollar-brace inside.
+ * It uses the built-ins as they were before the program ran (primordials.ts).
  */
+import { PRIMORDIALS_SOURCE } from './primordials';
+
 export const SHARER_SOURCE = String.raw`
 var __shareSnapshot__ = (function () {
+${PRIMORDIALS_SOURCE}
   function sameValue(a, b) {
     if (a === b) return true;
     if (!a || !b || a.type !== b.type) return false;
@@ -28,7 +32,7 @@ var __shareSnapshot__ = (function () {
       var shared = share(old, next[i]);
       if (shared !== old) matchesPrevious = false;
       if (shared !== next[i]) unchanged = false;
-      out.push(shared);
+      $push(out, shared);
     }
     return matchesPrevious ? previous : unchanged ? next : out;
   }
@@ -61,7 +65,7 @@ var __shareSnapshot__ = (function () {
 
   var previous;
   // The last version of each heap object, by id.
-  var heap = new Map();
+  var heap = new SafeMap();
   return function share(next) {
     var callStack = shareArray(previous && previous.callStack, next.callStack, shareFrame);
     var sharedHeap = shareArray(previous && previous.heap, next.heap, function (_old, obj) {

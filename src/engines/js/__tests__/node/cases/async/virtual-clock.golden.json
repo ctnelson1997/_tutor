@@ -1,0 +1,44 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "ok"
+  },
+  {
+   "stream": "stdout",
+   "text": "true"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:ok"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "boolean:true"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  5,
+  6,
+  7,
+  10
+ ],
+ "statementRuns": 6,
+ "functionCalls": 2,
+ "finalGlobals": {
+  "stopwatch": "fn:stopwatch"
+ },
+ "sourceSha256": "3656dd38ba534fc5fd052fc58c7810feff735ad6ef0e72494cd8304141962afc"
+}

@@ -1,0 +1,73 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "true"
+  },
+  {
+   "stream": "stdout",
+   "text": "2 Invalid Date [ 1970-01-01T00:00:00.000Z, Invalid Date ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:2",
+    "str:Invalid Date",
+    {
+     "array": [
+      {
+       "date": "0"
+      },
+      {
+       "date": "NaN"
+      }
+     ],
+     "len": 2
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  5,
+  6,
+  7,
+  8,
+  9
+ ],
+ "statementRuns": 6,
+ "functionCalls": 1,
+ "finalGlobals": {
+  "parse": "fn:parse",
+  "d": {
+   "date": "NaN"
+  },
+  "good": {
+   "date": "0"
+  },
+  "dates": {
+   "array": [
+    {
+     "date": "0"
+    },
+    {
+     "date": "NaN"
+    }
+   ],
+   "len": 2
+  }
+ },
+ "sourceSha256": "5490e164b3f8868fa44bfac93e25165451984f28972b02ea1364376108e5b558"
+}

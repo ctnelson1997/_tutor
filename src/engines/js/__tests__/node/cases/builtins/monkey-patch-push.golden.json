@@ -1,0 +1,89 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "push called with [ 1 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "push called with [ 2, 3 ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 1, 2, 3 ] 2"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:push called with",
+    {
+     "array": [
+      "num:1"
+     ],
+     "len": 1
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:push called with",
+    {
+     "array": [
+      "num:2",
+      "num:3"
+     ],
+     "len": 2
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "num:1",
+      "num:2",
+      "num:3"
+     ],
+     "len": 3
+    },
+    "num:2"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  9,
+  10,
+  11,
+  12,
+  13
+ ],
+ "statementRuns": 14,
+ "functionCalls": 2,
+ "finalGlobals": {
+  "originalPush": "fn:push",
+  "calls": "num:2",
+  "list": {
+   "array": [
+    "num:1",
+    "num:2",
+    "num:3"
+   ],
+   "len": 3
+  }
+ },
+ "sourceSha256": "2462fffc6b75b7a8ba5923de0f4583399ee0c30f49eb22b25ea9bbfdb66512c8"
+}

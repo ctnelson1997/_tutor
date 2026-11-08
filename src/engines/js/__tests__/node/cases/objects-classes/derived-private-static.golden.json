@@ -1,0 +1,96 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Dog { name: 'Rex', breed: 'lab' } 75 1 [ 'ana' ] computed"
+  },
+  {
+   "stream": "stdout",
+   "text": "100000000000000000000n 3 1"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "object": "Dog",
+     "props": {
+      "name": "str:Rex",
+      "breed": "str:lab"
+     }
+    },
+    "num:75",
+    "num:1",
+    {
+     "array": [
+      "str:ana"
+     ],
+     "len": 1
+    },
+    "str:computed"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "bigint:100000000000000000000",
+    "num:3",
+    "num:1"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  4,
+  9,
+  10,
+  17,
+  18,
+  21,
+  22,
+  25,
+  28,
+  31,
+  32,
+  33,
+  34,
+  35,
+  36,
+  37,
+  38
+ ],
+ "statementRuns": 20,
+ "functionCalls": 10,
+ "finalGlobals": {
+  "Animal": "fn:Animal",
+  "Dog": "fn:Dog",
+  "Account": "fn:Account",
+  "rex": {
+   "object": "Dog",
+   "props": {
+    "name": "str:Rex",
+    "breed": "str:lab"
+   }
+  },
+  "acct": {
+   "object": "Account",
+   "props": {
+    "owner": "str:ana"
+   }
+  },
+  "big": "bigint:100000000000000000000",
+  "__count__": "num:3",
+  "withGetter": {
+   "object": "",
+   "props": {
+    "total": "<getter>",
+    "plain": "num:2"
+   }
+  }
+ },
+ "sourceSha256": "c5ee89722386296cfa6762eb01de4e14e075e78335736739404cdbf378cb3ab9"
+}

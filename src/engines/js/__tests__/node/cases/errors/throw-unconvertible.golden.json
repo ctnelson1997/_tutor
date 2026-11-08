@@ -1,0 +1,35 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "start"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:start"
+   ]
+  }
+ ],
+ "uncaught": [
+  {
+   "name": null,
+   "message": "[Object: null prototype] {}",
+   "where": "script",
+   "consoleLines": 1
+  }
+ ],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3
+ ],
+ "statementRuns": 2,
+ "functionCalls": 0,
+ "finalGlobals": {},
+ "sourceSha256": "55caa0010a62b18932cf56d884b8c7bb85a7cb1bdcd6c16e8d5e66cc31cc417b"
+}

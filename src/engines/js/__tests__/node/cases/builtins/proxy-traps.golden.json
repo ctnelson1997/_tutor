@@ -1,0 +1,97 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "get a"
+  },
+  {
+   "stream": "stdout",
+   "text": "1"
+  },
+  {
+   "stream": "stdout",
+   "text": "set c 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "{ a: 1, b: 2, c: 3 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "[ 'a', 'b', 'c' ]"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:get",
+    "str:a"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:1"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:set",
+    "str:c",
+    "num:3"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "<proxy>"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "array": [
+      "str:a",
+      "str:b",
+      "str:c"
+     ],
+     "len": 3
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  5,
+  6,
+  9,
+  10,
+  11,
+  14,
+  15,
+  16,
+  17
+ ],
+ "statementRuns": 11,
+ "functionCalls": 2,
+ "finalGlobals": {
+  "target": {
+   "object": "",
+   "props": {
+    "a": "num:1",
+    "b": "num:2",
+    "c": "num:3"
+   }
+  },
+  "p": "<proxy>"
+ },
+ "sourceSha256": "54575056652f1e9a48a086d331c6288505c8468de0183d90327219121f4b9307"
+}

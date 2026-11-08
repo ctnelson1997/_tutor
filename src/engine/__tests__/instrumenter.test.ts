@@ -81,7 +81,7 @@ function* h() {
     expect(out).toMatch(/catch \(e\) \{\s*__resume__\(__fr__\);/);
     expect(out).toMatch(/finally \{\s*__resume__\(__fr__\);\s*__capture__/);
     expect(out).toContain('__resume__(__fr__, yield __suspend__(__fr__, 1))');
-    expect(out).toContain('__resume__(__fr__, yield __suspend__(__fr__, undefined))');
+    expect(out).toContain('__resume__(__fr__, yield __suspend__(__fr__, void 0))');
     expect(out).toContain('__resume__(__fr__, yield* __suspend__(__fr__, [v]))');
   });
 
@@ -110,8 +110,8 @@ async function outer() {
     break outer;
   }
 }`);
-    // the preamble's declaration, and each loop's guard
-    expect((out.match(/__loopCount/g) || []).length).toBe(3);
+    // each loop's guard
+    expect((out.match(/__loop__\(\)/g) || []).length).toBe(2);
     expect(out).toMatch(/__capture__\(3,/);
     expect(out).toMatch(/outer: for/);
   });
@@ -177,35 +177,42 @@ const Named = class {
     for (const name of ['assigned', 'method', 'cb', 'field', 'Named']) expect(frameOf(out, name), name).toBe(true);
   });
 
-  // ── Eval blocking ──
+  // ── eval and directives (#89) ──
 
-  it('prepends eval blocker', () => {
-    const out = instrument('let x = 1;');
-    expect(out).toContain('var eval = undefined');
+  it('leaves eval alone: it runs, uninstrumented', () => {
+    const out = instrument('let x = eval("1 + 1");');
+    expect(out).not.toMatch(/var eval/);
+    expect(out).toContain('eval("1 + 1")');
   });
 
-  // ── Loop guard ──
+  it("keeps the program's directives first, so a 'use strict' applies to it", () => {
+    const out = instrument("'use strict';\nlet x = 1;");
+    expect(out.startsWith("'use strict';\n__programLines__(")).toBe(true);
+    expect(out).not.toMatch(/__capture__\(1,/);
+    const fn = instrument('function f(a) {\n  "use strict";\n  return a;\n}');
+    expect(fn).toMatch(/function f\(a\) \{\s*"use strict";\s*var __fr__ = __pushFrame__/);
+  });
 
-  it('prepends loop counter', () => {
+  // ── Loop guard (#91) ──
+
+  it('declares nothing before the program: its loop guards are calls of the runtime', () => {
     const out = instrument('let x = 1;');
-    expect(out).toContain('var __loopCount = 0');
-    expect(out).toContain('var __MAX_LOOPS = 10000');
+    expect(out).not.toMatch(/var __loopCount|__MAX_LOOPS/);
   });
 
   it('injects loop guard in for-loop body', () => {
     const out = instrument('for (let i = 0; i < 5; i++) { let x = i; }');
-    expect(out).toContain('__loopCount');
-    expect(out).toContain('__MAX_LOOPS');
+    expect(out).toMatch(/\{\s*__loop__\(\);/);
   });
 
   it('injects loop guard in while-loop body', () => {
     const out = instrument('while (true) { break; }');
-    expect(out).toContain('__loopCount');
+    expect(out).toContain('__loop__()');
   });
 
   it('injects loop guard in do-while loop', () => {
     const out = instrument('do { break; } while (true);');
-    expect(out).toContain('__loopCount');
+    expect(out).toContain('__loop__()');
   });
 
   // ── Function instrumentation ──
@@ -410,7 +417,7 @@ const Named = class {
 
   it('wraps bare return with __popFrame__', () => {
     const out = instrument('function f() { return; }');
-    expect(out).toContain('__popFrame__(undefined');
+    expect(out).toContain('__popFrame__(void 0');
   });
 
   // ── Classes ──
@@ -459,26 +466,26 @@ const Named = class {
   it('instruments for-in loops', () => {
     const out = instrument('let obj = {a:1}; for (let k in obj) { let v = obj[k]; }');
     expect(out).toContain('__pushFrame__');
-    expect(out).toContain('__loopCount');
+    expect(out).toContain('__loop__()');
   });
 
   it('instruments for-of loops', () => {
     const out = instrument('let arr = [1,2]; for (let v of arr) { let x = v; }');
     expect(out).toContain('__pushFrame__');
-    expect(out).toContain('__loopCount');
+    expect(out).toContain('__loop__()');
   });
 
   // ── Empty and minimal programs ──
 
   it('handles empty source code', () => {
     const out = instrument('');
-    // Should produce something (at least the preamble)
-    expect(out).toContain('var __loopCount');
+    // Should produce something (at least the globals reader)
+    expect(out).toContain('__setGlobals__(');
   });
 
   it('handles comments-only code', () => {
     const out = instrument('// just a comment');
-    expect(out).toContain('var __loopCount');
+    expect(out).toContain('__setGlobals__(');
   });
 
   // ── All examples from examples.ts parse and instrument without error ──

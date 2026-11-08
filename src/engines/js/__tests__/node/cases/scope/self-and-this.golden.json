@@ -1,0 +1,48 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "499500 true true"
+  },
+  {
+   "stream": "stdout",
+   "text": "<ref *1> { that: [Circular *1], show: [Function: show] }"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:499500",
+    "boolean:true",
+    "boolean:true"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "<global>"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  6,
+  8,
+  9
+ ],
+ "statementRuns": 1006,
+ "functionCalls": 1,
+ "finalGlobals": {
+  "that": "<global>",
+  "total": "num:499500",
+  "show": "fn:show"
+ },
+ "sourceSha256": "2f0e655ffe4ce24277c61cd4ba437abf4cca0803cff62afe2ce44b6a30acbd3c"
+}

@@ -1,0 +1,41 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "[AggregateError: All promises were rejected] { [errors]: [ 'a', 'b' ] }"
+  },
+  {
+   "stream": "stdout",
+   "text": "2"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "error": "AggregateError: All promises were rejected"
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:2"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4
+ ],
+ "statementRuns": 3,
+ "functionCalls": 1,
+ "finalGlobals": {},
+ "sourceSha256": "673d00db8f6e8612c6c2b5e6aeacbe75ae3edf575292b4814ed5da3037d05ab6"
+}

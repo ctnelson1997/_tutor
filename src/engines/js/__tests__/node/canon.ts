@@ -13,6 +13,7 @@
  *   { error: 'TypeError: msg' }  { date: '<ms>' }  { regexp: '/a/g' }  { promise: true }
  *   '<getter>' '<setter>' '<accessor>' '<circular>' '<deep>' '<uninitialized>'
  */
+import { types } from 'node:util';
 import type { HeapObject, RuntimeValue } from '../../../../types/snapshot';
 
 export type Canon =
@@ -41,6 +42,7 @@ function accessorKind(d: PropertyDescriptor): string {
 export function canon(v: unknown, depth = 0, seen: Set<unknown> = new Set()): Canon {
   const t = typeof v;
   if (v === null) return 'null';
+  if (v === contextGlobal && v !== undefined) return '<global>';
   if (t === 'undefined') return 'undefined';
   if (t === 'number') return Object.is(v, -0) ? 'num:-0' : `num:${v as number}`;
   if (t === 'string') return `str:${v as string}`;
@@ -48,6 +50,8 @@ export function canon(v: unknown, depth = 0, seen: Set<unknown> = new Set()): Ca
   if (t === 'symbol') return `sym:${(v as symbol).description ?? ''}`;
   if (seen.has(v)) return '<circular>';
   if (depth > MAX_DEPTH) return '<deep>';
+  // A proxy isn't looked into: that would run its traps, which may print (#88). JSTutor draws its target.
+  if (types.isProxy(v)) return '<proxy>';
   seen = new Set(seen).add(v);
   if (t === 'function') return `fn:${(v as { name?: string }).name ?? ''}`;
   const o = v as object;
@@ -61,6 +65,13 @@ export function canon(v: unknown, depth = 0, seen: Set<unknown> = new Set()): Ca
       items.push(d && !('value' in d) ? accessorKind(d) : canon(o[i], depth + 1, seen));
     }
     return { array: items, len: o.length };
+  }
+  // A typed array is drawn as an array (#91).
+  if (ArrayBuffer.isView(o) && !(o instanceof DataView)) {
+    const typed = o as unknown as ArrayLike<number | bigint>;
+    const items: Canon[] = [];
+    for (let i = 0; i < typed.length && i < MAX_ITEMS; i++) items.push(canon(typed[i], depth + 1, seen));
+    return { array: items, len: typed.length };
   }
   if (tag === 'Map') {
     return { map: [...(o as Map<unknown, unknown>)].slice(0, MAX_ITEMS).map(([k, x]) => [canon(k, depth + 1, seen), canon(x, depth + 1, seen)] as [Canon, Canon]) };
@@ -109,13 +120,21 @@ function constructorName(o: object): string {
       // A built-in getter (Iterator.prototype's) runs no program code, so it is followed.
       const native = (f: unknown) => typeof f === 'function' && /\{\s*\[native code\]\s*\}$/.test(Function.prototype.toString.call(f));
       const ctor = 'value' in d ? d.value : native(d.get) ? d.get!.call(o) : undefined;
-      const name = typeof ctor === 'function' ? String((ctor as { name: unknown }).name ?? '') : '';
+      // (Its name as data: a static getter computing it isn't called, #88.)
+      const nameDesc = typeof ctor === 'function' ? Object.getOwnPropertyDescriptor(ctor, 'name') : undefined;
+      const name = nameDesc && 'value' in nameDesc ? String(nameDesc.value ?? '') : '';
       return name === 'Object' ? '' : name;
     }
     return '';
   } catch {
     return '?';
   }
+}
+
+/** The program's global object, which canon gives as '<global>' (JSTutor draws it as a card of its own, #87). */
+let contextGlobal: unknown;
+export function setCanonGlobal(global: unknown): void {
+  contextGlobal = global;
 }
 
 /**
@@ -143,6 +162,7 @@ export function shownCanon(v: RuntimeValue | undefined, heap: HeapObject[], dept
       seen = new Set(seen).add(h.id);
       const val = (x: RuntimeValue) => shownCanon(x, heap, depth + 1, seen);
       const props = h.properties ?? [];
+      if (h.objectType === 'object' && h.label === 'globalThis') return '<global>';
       switch (h.objectType) {
         case 'function': return `fn:${h.label ?? ''}`;
         case 'array': {
@@ -187,7 +207,7 @@ export function diffCanon(want: Canon, got: Canon, path: string, out: string[] =
   if (out.length >= max) return out;
   const show = (c: Canon) => JSON.stringify(c).slice(0, 70);
   if (typeof want === 'string' || typeof got === 'string') {
-    if (want === got || want === '<uninitialized>' || want === '<deep>' || got === '<deep>') return out;
+    if (want === got || want === '<uninitialized>' || want === '<deep>' || want === '<proxy>' || got === '<deep>') return out;
     // JSTutor draws an accessor as a placeholder string instead of calling it: that is the design.
     if (typeof want === 'string' && typeof got === 'string' && PLACEHOLDER_TEXT[want]?.test(got)) return out;
     // Functions are compared by kind only: JSTutor labels them by name, and anonymous ones as it can.
