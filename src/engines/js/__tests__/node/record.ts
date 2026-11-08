@@ -14,9 +14,10 @@
 import { Console } from 'node:console';
 import inspector from 'node:inspector';
 import { Writable } from 'node:stream';
+import { inspect } from 'node:util';
 import vm from 'node:vm';
 import * as acorn from 'acorn';
-import { canon } from './canon';
+import { canon, setCanonGlobal } from './canon';
 import { STRUCTURED_CLONE_SOURCE } from './realm';
 import type { GoldenLine, GoldenUncaught, NodeGolden } from './corpus';
 
@@ -35,13 +36,18 @@ const CONSOLE_METHODS = [
 
 type AnyNode = acorn.Node & Record<string, unknown>;
 
-/** The thrown value as the golden records it: an Error by its name and message, anything else by String(). */
+/**
+ * The thrown value as the golden records it: an Error by its name and message,
+ * an object as the console prints it (#94: `{ code: 404 }`, not `[object
+ * Object]`), a primitive by String().
+ */
 function describeThrown(e: unknown): { name: string | null; message: string } {
   if (Object.prototype.toString.call(e) === '[object Error]') {
     const err = e as Error;
     return { name: String(err.name), message: String(err.message) };
   }
   try {
+    if (e !== null && (typeof e === 'object' || typeof e === 'function')) return { name: null, message: inspect(e) };
     return { name: null, message: typeof e === 'symbol' ? e.toString() : String(e) };
   } catch {
     return { name: null, message: Object.prototype.toString.call(e) };
@@ -57,7 +63,11 @@ function syntaxErrorPosition(e: Error): { line: number | null; column: number | 
   return { line: l ? Number(l[1]) : null, column: null };
 }
 
-/** The names a program declares at its top level (var, let, const, function, class), in order. */
+/**
+ * The names a program declares at its top level (var, let, const, function,
+ * class), in order, with the vars declared in its blocks (a loop's body, an
+ * if's branch: #93), and, in sloppy code, the functions declared in them.
+ */
 export function topLevelNames(source: string): string[] {
   const ast = acorn.parse(source, { ecmaVersion: 'latest', sourceType: 'script' }) as unknown as { body: AnyNode[] };
   const names: string[] = [];
@@ -69,9 +79,21 @@ export function topLevelNames(source: string): string[] {
     else if (p.type === 'RestElement') collect(p.argument as AnyNode);
     else if (p.type === 'AssignmentPattern') collect(p.left as AnyNode);
   };
+  const strict = ast.body.length > 0 && (ast.body[0] as AnyNode).directive === 'use strict';
+  const nested = (n: AnyNode | null | undefined): void => {
+    if (!n || typeof n.type !== 'string' || /Function|Class/.test(n.type) && n.type !== 'FunctionDeclaration') return;
+    if (n.type === 'FunctionDeclaration') { if (!strict && n.id) names.push((n.id as AnyNode).name as string); return; }
+    if (n.type === 'VariableDeclaration') { if (n.kind === 'var') for (const d of n.declarations as AnyNode[]) collect(d.id as AnyNode); return; }
+    for (const [k, v] of Object.entries(n)) {
+      if (k === 'loc' || k === 'test' || k === 'expression' || k === 'argument' || k === 'discriminant' || k === 'right') continue;
+      if (Array.isArray(v)) v.forEach(c => nested(c as AnyNode));
+      else if (v && typeof (v as AnyNode).type === 'string') nested(v as AnyNode);
+    }
+  };
   for (const s of ast.body) {
     if (s.type === 'VariableDeclaration') for (const d of s.declarations as AnyNode[]) collect(d.id as AnyNode);
-    if ((s.type === 'FunctionDeclaration' || s.type === 'ClassDeclaration') && s.id) names.push((s.id as AnyNode).name as string);
+    else if ((s.type === 'FunctionDeclaration' || s.type === 'ClassDeclaration') && s.id) names.push((s.id as AnyNode).name as string);
+    else nested(s);
   }
   return [...new Set(names)];
 }
@@ -88,7 +110,8 @@ export function stepStatements(source: string): { start: number; line: number }[
   const skip = new Set(['BlockStatement', 'EmptyStatement', 'FunctionDeclaration', 'ClassDeclaration', 'LabeledStatement', 'TryStatement', 'StaticBlock']);
   const visit = (n: AnyNode | null | undefined, parent: AnyNode | null): void => {
     if (!n || typeof n.type !== 'string') return;
-    const leaf = /Statement$|Declaration$/.test(n.type) && !skip.has(n.type)
+    // (A directive, 'use strict', is no statement JSTutor steps at, #89.)
+    const leaf = /Statement$|Declaration$/.test(n.type) && !skip.has(n.type) && typeof n.directive !== 'string'
       && !(n.type === 'VariableDeclaration' && parent && /^For/.test(parent.type));
     if (leaf) {
       const loc = n.type === 'DoWhileStatement' ? (n.test as AnyNode).loc! : n.loc!;
@@ -162,6 +185,7 @@ export async function recordGolden(source: string): Promise<Omit<NodeGolden, 'so
     },
     clearInterval: (id: number) => { clearInterval(pending.get(id)); pending.delete(id); },
     queueMicrotask: (fn: unknown) => queueMicrotask(() => guarded(fn, [])),
+    fetch,
     TextEncoder,
     TextDecoder,
     URL,
@@ -197,6 +221,9 @@ export async function recordGolden(source: string): Promise<Omit<NodeGolden, 'so
   const ctx = vm.createContext({ ...globals });
   vm.runInContext('globalThis.self = globalThis;', ctx);
   vm.runInContext(STRUCTURED_CLONE_SOURCE, ctx);
+  // A worker's own globals live on its prototype chain: the global object's enumerable properties are the program's (#87).
+  vm.runInContext('for (const k of Object.keys(globalThis)) Object.defineProperty(globalThis, k, { enumerable: false });', ctx);
+  setCanonGlobal(vm.runInContext('globalThis', ctx));
   let endless = false;
   try {
     script.runInContext(ctx, { timeout: ENDLESS_MS });

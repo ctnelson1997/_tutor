@@ -136,6 +136,7 @@
    ],
    "len": 3
   },
+  "i": "num:3",
   "withLet": {
    "array": [
     "fn:",
@@ -152,6 +153,7 @@
    ],
    "len": 3
   },
+  "n": "num:3",
   "mutated": {
    "array": [
     "fn:",

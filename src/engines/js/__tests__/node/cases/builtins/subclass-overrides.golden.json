@@ -1,0 +1,99 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "2"
+  },
+  {
+   "stream": "stdout",
+   "text": "bad field email"
+  },
+  {
+   "stream": "stdout",
+   "text": "day 15"
+  },
+  {
+   "stream": "stdout",
+   "text": "computed name object"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:bad field email"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:day 15"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:computed name",
+    "str:object"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  8,
+  9,
+  10,
+  13,
+  14,
+  15,
+  18,
+  21,
+  22,
+  25,
+  28,
+  29,
+  32,
+  35,
+  36
+ ],
+ "statementRuns": 15,
+ "functionCalls": 4,
+ "finalGlobals": {
+  "LoggingMap": "fn:LoggingMap",
+  "m": {
+   "map": [
+    [
+     "str:a",
+     "num:1"
+    ],
+    [
+     "str:b",
+     "num:2"
+    ]
+   ]
+  },
+  "FieldError": "fn:FieldError",
+  "err": {
+   "error": "FieldError: "
+  },
+  "Day": "fn:Day",
+  "d": {
+   "date": "1579046400000"
+  },
+  "Widget": "fn:computed name",
+  "w": {
+   "object": "",
+   "props": {}
+  }
+ },
+ "sourceSha256": "f5439215da86f22cdf8f840acd288d474ac77d8941e47222af52b424390f7ff7"
+}

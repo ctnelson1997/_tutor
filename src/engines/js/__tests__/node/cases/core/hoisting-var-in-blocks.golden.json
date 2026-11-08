@@ -134,7 +134,8 @@
   "describe": "fn:describe",
   "letVersion": "fn:letVersion",
   "result": "str:BLOCK ONLY",
-  "j": "num:4"
+  "j": "num:4",
+  "squared": "num:9"
  },
  "sourceSha256": "459164fc6e89050ac4341f3cb0e65198af9d9771aba284fb6c492fe5622c2af4"
 }

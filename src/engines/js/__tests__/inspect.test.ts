@@ -91,6 +91,9 @@ const VALUES = [
   '(() => { class Oops extends Error {} return new Oops("x"); })()',
   '({ err: new RangeError("nested") })', '[new Error("in array")]', 'new Error("outer", { cause: new Error("inner") })',
   '(() => { const e = new Error(""); return e; })()',
+  // an error whose stack has no frames is bracketed (#94)
+  '(() => { const e = new Error("no frames"); e.stack = "Error: no frames"; return e; })()',
+  '(() => { const e = new AggregateError(["a", "b"], "All promises were rejected"); e.stack = "AggregateError: All promises were rejected"; return e; })()',
 ];
 
 describe('__inspect__ matches util.inspect', () => {

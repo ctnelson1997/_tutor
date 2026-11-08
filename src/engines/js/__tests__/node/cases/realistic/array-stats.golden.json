@@ -195,6 +195,8 @@
   "min": "num:61",
   "sum": "num:646",
   "maxIndex": "num:5",
+  "i": "num:8",
+  "s": "num:67",
   "average": "num:80.75",
   "aboveAverage": {
    "array": [
@@ -205,6 +207,7 @@
    ],
    "len": 4
   },
+  "j": "num:8",
   "sortedCopy": {
    "array": [
     "num:61",

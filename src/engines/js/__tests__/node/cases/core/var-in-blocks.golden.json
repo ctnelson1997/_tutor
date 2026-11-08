@@ -1,0 +1,41 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "1 hi kept"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:1",
+    "str:hi",
+    "str:kept"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  5,
+  6,
+  9,
+  10,
+  12,
+  14
+ ],
+ "statementRuns": 9,
+ "functionCalls": 1,
+ "finalGlobals": {
+  "i": "num:2",
+  "sq": "num:1",
+  "msg": "str:hi",
+  "f": "fn:f"
+ },
+ "sourceSha256": "8130669c854275fc2c018c02079a4ca5451bedb21aca9f4c055b5a00b9c5c1b8"
+}

@@ -1,0 +1,172 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "...|..# 52"
+  },
+  {
+   "stream": "stdout",
+   "text": "26 5 ["
+  },
+  {
+   "stream": "stdout",
+   "text": "  1, 2, 3, 4,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  5, 6, 7, 8"
+  },
+  {
+   "stream": "stdout",
+   "text": "]"
+  },
+  {
+   "stream": "stdout",
+   "text": "[class Point] Map {"
+  },
+  {
+   "stream": "stdout",
+   "text": "  rows: 2,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  cols: 3,"
+  },
+  {
+   "stream": "stdout",
+   "text": "  cells: [ [ '.', '.', '.' ], [ '.', '.', '#' ] ]"
+  },
+  {
+   "stream": "stdout",
+   "text": "}"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:...|..#",
+    "num:52"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:26",
+    "num:5",
+    {
+     "array": [
+      "num:1",
+      "num:2",
+      "num:3",
+      "num:4",
+      "num:5",
+      "num:6",
+      "num:7",
+      "num:8"
+     ],
+     "len": 8
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "fn:Point",
+    {
+     "object": "Map",
+     "props": {
+      "rows": "num:2",
+      "cols": "num:3",
+      "cells": {
+       "array": [
+        {
+         "array": [
+          "str:.",
+          "str:.",
+          "str:."
+         ],
+         "len": 3
+        },
+        {
+         "array": [
+          "str:.",
+          "str:.",
+          "str:#"
+         ],
+         "len": 3
+        }
+       ],
+       "len": 2
+      }
+     }
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  5,
+  6,
+  8,
+  9,
+  12,
+  16,
+  19,
+  20,
+  21,
+  22,
+  23,
+  24,
+  26
+ ],
+ "statementRuns": 18,
+ "functionCalls": 7,
+ "finalGlobals": {
+  "Map": "fn:Map",
+  "Set": "fn:Set",
+  "Symbol": "fn:Symbol",
+  "grid": {
+   "object": "Map",
+   "props": {
+    "rows": "num:2",
+    "cols": "num:3",
+    "cells": {
+     "array": [
+      {
+       "array": [
+        "str:.",
+        "str:.",
+        "str:."
+       ],
+       "len": 3
+      },
+      {
+       "array": [
+        "str:.",
+        "str:.",
+        "str:#"
+       ],
+       "len": 3
+      }
+     ],
+     "len": 2
+    }
+   }
+  },
+  "String": "str:not the String constructor",
+  "Math": {
+   "object": "",
+   "props": {
+    "add": "fn:add"
+   }
+  },
+  "Point": "fn:Point"
+ },
+ "sourceSha256": "9e4384d862982addc06a71d05aaf07e5bcdc2c31876263f3684e3191acdfd8ca"
+}

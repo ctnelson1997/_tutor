@@ -13,13 +13,18 @@
  *     `toJSON`, nor a `toString` except where Node calls it (`%s`, `%d`, `%j`
  *     on an object with one of its own);
  *   - a Promise's state can't be read synchronously: `Promise { <pending> }`
- *     unless the runtime saw it settle (`__promiseStates__`, #45);
+ *     unless the runtime saw it settle (`hooks.promiseState`, #92);
+ *   - a proxy prints as its target (`hooks.proxyTarget`: the runtime keeps
+ *     each proxy's target, #88);
  *   - an error prints its `name: message` and the stack frames are left out
  *     (the browser's frames point into instrumented code); the layout is the
  *     one Node gives an error with frames, minus the frame lines;
  *   - a Map or Set iterator's remaining items are unknown.
  * Chrome's DevTools print the same values differently (`(3) [1, 2, 3]`,
  * `{a: 1}`).
+ *
+ * Like the rest of the runtime, it uses the built-ins as they were before the
+ * program ran (primordials.ts, #88): `$push(list, x)` for `list.push(x)`.
  *
  * Exposes `__inspect__(value, options)`, `__formatArgs__(args)` and
  * `__makeConsole__(write)`, which returns the console object; `write(stream,
@@ -29,17 +34,21 @@
  * keepNames would add helpers to a function's text that the worker lacks.
  * No backticks or dollar-brace inside.
  */
+import { PRIMORDIALS_SOURCE } from './primordials';
+
 export const CONSOLE_SOURCE = String.raw`
 var __tutorFormat__ = (function () {
   'use strict';
+${PRIMORDIALS_SOURCE}
+  // What the runtime tells the console (#87, #92): a promise's state if it saw
+  // it settle, a proxy's target, and the clock console.time reads.
+  var hooks = { promiseState: null, proxyTarget: null, now: null };
   var getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
   var getOwnPropertyNames = Object.getOwnPropertyNames;
   var getOwnPropertySymbols = Object.getOwnPropertySymbols;
   var getPrototypeOf = Object.getPrototypeOf;
   var objectKeys = Object.keys;
   var isArray = Array.isArray;
-  var SafeMap = Map;
-  var SafeSet = Set;
   var call = Function.prototype.call;
   var uncurry = function (fn) { return call.bind(fn); };
   var hasOwn = uncurry(Object.prototype.hasOwnProperty);
@@ -77,8 +86,11 @@ var __tutorFormat__ = (function () {
   var parseIntFn = parseInt;
   var parseFloatFn = parseFloat;
   // Node's builtInObjects: the capitalized globals, taken before the program declares any.
+  // The global object's own names before the program ran: printing it shows only the program's (a browser worker has own ones, as postMessage, #87).
+  var hostGlobalNames = new SafeSet();
+  $forEach(getOwnPropertyNames(global), function (name) { hostGlobalNames.add(name); });
   var builtInObjects = new SafeSet();
-  getOwnPropertyNames(globalThis).forEach(function (name) { if (/^[A-Z][a-zA-Z0-9]+$/.test(name)) builtInObjects.add(name); });
+  $forEach(getOwnPropertyNames(globalThis), function (name) { if ($test(/^[A-Z][a-zA-Z0-9]+$/, name)) builtInObjects.add(name); });
 
   function brand(check, v) { try { check(v); return true; } catch (e) { return false; } }
   function isMap(v) { return brand(mapSize, v); }
@@ -99,14 +111,14 @@ var __tutorFormat__ = (function () {
         if (!('value' in d) && !isNative(d.get)) return '';
         break;
       }
-      return objectToString(v).slice(8, -1);
+      return $slice(objectToString(v), 8, -1);
     } catch (e) { return ''; }
   }
   function isError(v) { return typeof Error.isError === 'function' ? Error.isError(v) : tagOf(v) === 'Error'; }
   function isPromise(v) { return tagOf(v) === 'Promise'; }
   function isArguments(v) { return tagOf(v) === 'Arguments'; }
   function isNative(fn) {
-    try { return /\{\s*\[native code\]\s*\}$/.test(nativeFunctionToString(fn)); } catch (e) { return false; }
+    try { return $test(/\{\s*\[native code\]\s*\}$/, nativeFunctionToString(fn)); } catch (e) { return false; }
   }
 
   // A property's value without running the program's code: a data property up
@@ -136,27 +148,27 @@ var __tutorFormat__ = (function () {
   // A string as Node quotes it: single quotes, else double, else backticks, escaping what needs it.
   function strEscape(str) {
     var quote = "'";
-    if (str.indexOf("'") !== -1) {
-      if (str.indexOf('"') === -1) quote = '"';
-      else if (str.indexOf('\x60') === -1 && str.indexOf('$' + '{') === -1) quote = '\x60';
+    if ($indexOf(str, "'") !== -1) {
+      if ($indexOf(str, '"') === -1) quote = '"';
+      else if ($indexOf(str, '\x60') === -1 && $indexOf(str, '$' + '{') === -1) quote = '\x60';
     }
     var result = '';
     var last = 0;
     for (var i = 0; i < str.length; i++) {
-      var point = str.charCodeAt(i);
+      var point = $charCodeAt(str, i);
       if ((point === 39 && quote === "'") || point === 92 || point < 32 || (point > 126 && point < 160)) {
-        result += str.slice(last, i) + META[point];
+        result += $slice(str, last, i) + META[point];
         last = i + 1;
       } else if (point >= 0xd800 && point <= 0xdfff) {
         if (point <= 0xdbff && i + 1 < str.length) {
-          var next = str.charCodeAt(i + 1);
+          var next = $charCodeAt(str, i + 1);
           if (next >= 0xdc00 && next <= 0xdfff) { i++; continue; }
         }
-        result += str.slice(last, i) + '\\u' + point.toString(16);
+        result += $slice(str, last, i) + '\\u' + point.toString(16);
         last = i + 1;
       }
     }
-    if (last !== str.length) result += str.slice(last);
+    if (last !== str.length) result += $slice(str, last);
     return quote + result + quote;
   }
 
@@ -178,7 +190,7 @@ var __tutorFormat__ = (function () {
   function stringWidth(str) {
     var width = 0;
     for (var i = 0; i < str.length; i++) {
-      var code = str.codePointAt(i);
+      var code = $codePointAt(str, i);
       if (code > 0xffff) i++;
       if (isFullWidth(code)) width += 2;
       else if (!isZeroWidth(code)) width++;
@@ -194,14 +206,14 @@ var __tutorFormat__ = (function () {
       var trailer = '';
       if (value.length > ctx.maxStringLength) {
         var remaining = value.length - ctx.maxStringLength;
-        value = value.slice(0, ctx.maxStringLength);
+        value = $slice(value, 0, ctx.maxStringLength);
         trailer = '... ' + remaining + ' more character' + (remaining > 1 ? 's' : '');
       }
       if (value.length > 16 && value.length > ctx.breakLength - ctx.indentationLvl - 4) {
-        var pieces = value.split(/(?<=\n)/);
+        var pieces = $split(value, /(?<=\n)/);
         if (pieces.length > 1) {
-          var sep = ' +\n' + ' '.repeat(ctx.indentationLvl + 2);
-          return pieces.map(strEscape).join(sep) + trailer;
+          var sep = ' +\n' + $repeat(' ', ctx.indentationLvl + 2);
+          return $join($map(pieces, strEscape), sep) + trailer;
         }
       }
       return strEscape(value) + trailer;
@@ -215,6 +227,8 @@ var __tutorFormat__ = (function () {
 
   // ── Names and keys ──
   function getConstructorName(obj, ctx, recurseTimes) {
+    // The worker's global object prints as a vm context's does under Node: a plain object of the program's globals.
+    if (obj === global) return 'Object';
     var firstProto;
     var tmp = obj;
     while (obj) {
@@ -246,29 +260,36 @@ var __tutorFormat__ = (function () {
   }
 
   function getKeys(value, showHidden) {
+    if (value === global) {
+      var programKeys = [];
+      var own = objectKeys(value);
+      for (var g = 0; g < own.length; g++) if (!hostGlobalNames.has(own[g])) $push(programKeys, own[g]);
+      return programKeys;
+    }
     var keys;
     var symbols = getOwnPropertySymbols(value);
     if (showHidden) {
       keys = getOwnPropertyNames(value);
-      if (symbols.length !== 0) keys = keys.concat(symbols);
+      if (symbols.length !== 0) keys = $concat(keys, symbols);
     } else {
       keys = objectKeys(value);
-      for (var i = 0; i < symbols.length; i++) if (isEnumerable(value, symbols[i])) keys.push(symbols[i]);
+      for (var i = 0; i < symbols.length; i++) if (isEnumerable(value, symbols[i])) $push(keys, symbols[i]);
     }
     return keys;
   }
 
-  function isIndex(key) { return /^(0|[1-9][0-9]*)$/.test(key) && +key <= 4294967294; }
+  function isIndex(key) { return $test(/^(0|[1-9][0-9]*)$/, key) && +key <= 4294967294; }
   function getOwnNonIndexProperties(value, showHidden) {
     var names = showHidden ? getOwnPropertyNames(value) : objectKeys(value);
     var out = [];
-    for (var i = 0; i < names.length; i++) if (!isIndex(names[i])) out.push(names[i]);
+    for (var i = 0; i < names.length; i++) if (!isIndex(names[i])) $push(out, names[i]);
     var symbols = getOwnPropertySymbols(value);
-    for (var j = 0; j < symbols.length; j++) if (showHidden || isEnumerable(value, symbols[j])) out.push(symbols[j]);
+    for (var j = 0; j < symbols.length; j++) if (showHidden || isEnumerable(value, symbols[j])) $push(out, symbols[j]);
     return out;
   }
 
   function toStringTag(value) {
+    if (value === global) return '';
     var tag = safeGet(value, Symbol.toStringTag);
     if (typeof tag !== 'string') return '';
     // Only list the tag if it isn't an own enumerable property, which is printed anyway.
@@ -286,7 +307,14 @@ var __tutorFormat__ = (function () {
   function formatValue(ctx, value, recurseTimes, typedArray) {
     if (typeof value !== 'object' && typeof value !== 'function') return formatPrimitive(value, ctx);
     if (value === null) return 'null';
-    if (ctx.seen.indexOf(value) !== -1) {
+    // A proxy prints as its target, as Node prints it (showProxy off), running none of its traps.
+    while (hooks.proxyTarget !== null) {
+      var target = hooks.proxyTarget(value);
+      if (target === undefined) break;
+      if (target === null) return '<Revoked Proxy>';
+      value = target;
+    }
+    if ($indexOf(ctx.seen, value) !== -1) {
       var index = 1;
       if (ctx.circular === undefined) {
         ctx.circular = new SafeMap();
@@ -309,7 +337,7 @@ var __tutorFormat__ = (function () {
     var tag = toStringTag(value);
     // A class whose name already says the tag (CountingMap, MapX; not Maps or Map2) isn't tagged again.
     if (tag !== '' && constructor !== null && constructor !== tag) {
-      for (var at = constructor.indexOf(tag); at !== -1; at = constructor.indexOf(tag, at + 1)) {
+      for (var at = $indexOf(constructor, tag); at !== -1; at = $indexOf(constructor, tag, at + 1)) {
         var after = constructor.charAt(at + tag.length);
         if (after === '' || (after >= 'A' && after <= 'Z')) { tag = ''; break; }
       }
@@ -390,10 +418,10 @@ var __tutorFormat__ = (function () {
         if (typedArray === undefined) formatter = formatArrayBuffer;
         else if (keys.length === 0) return aprefix + '{ byteLength: ' + formatNumber(arrayBufferByteLength(value)) + ' }';
         braces[0] = aprefix + '{';
-        keys.unshift('byteLength');
+        $unshift(keys, 'byteLength');
       } else if (isDataView(value)) {
         braces[0] = getPrefix(constructor, tag, 'DataView') + '{';
-        keys.unshift('byteLength', 'byteOffset', 'buffer');
+        $unshift(keys, 'byteLength', 'byteOffset', 'buffer');
       } else if (isPromise(value)) {
         braces[0] = getPrefix(constructor, tag, 'Promise') + '{';
         formatter = formatPromise;
@@ -412,19 +440,19 @@ var __tutorFormat__ = (function () {
       }
     }
     if (recurseTimes > ctx.depth && ctx.depth !== null) {
-      var name = getPrefix(constructor, tag, 'Object').slice(0, -1);
+      var name = $slice(getPrefix(constructor, tag, 'Object'), 0, -1);
       if (constructor !== null) name = '[' + name + ']';
       return name;
     }
     recurseTimes += 1;
-    ctx.seen.push(value);
+    $push(ctx.seen, value);
     ctx.currentDepth = recurseTimes;
     var output;
     try {
       output = formatter(ctx, value, recurseTimes);
-      for (var i = 0; i < keys.length; i++) output.push(formatProperty(ctx, value, recurseTimes, keys[i], extrasType));
+      for (var i = 0; i < keys.length; i++) $push(output, formatProperty(ctx, value, recurseTimes, keys[i], extrasType));
     } catch (err) {
-      ctx.seen.pop();
+      $pop(ctx.seen);
       return '[' + (constructor || 'Object') + ': Inspection interrupted]';
     }
     if (ctx.circular !== undefined) {
@@ -434,18 +462,18 @@ var __tutorFormat__ = (function () {
         base = base === '' ? reference : reference + ' ' + base;
       }
     }
-    ctx.seen.pop();
+    $pop(ctx.seen);
     return reduceToSingleString(ctx, output, base, braces, extrasType, recurseTimes, value);
   }
 
   function getFunctionBase(value, constructor, tag) {
     var stringified = '';
     try { stringified = functionToString(value); } catch (e) { stringified = ''; }
-    if (stringified.slice(0, 5) === 'class' && stringified.slice(-1) === '}') {
-      var slice = stringified.slice(5, -1);
-      var bracketIndex = slice.indexOf('{');
-      if (bracketIndex !== -1 && (slice.slice(0, bracketIndex).indexOf('(') === -1 ||
-          /^\s*(?:[^{]*?\s)?extends\s/.test(slice.replace(/(\/\/.*?\n)|(\/\*(.|\n)*?\*\/)/g, '')))) {
+    if ($slice(stringified, 0, 5) === 'class' && $slice(stringified, -1) === '}') {
+      var slice = $slice(stringified, 5, -1);
+      var bracketIndex = $indexOf(slice, '{');
+      if (bracketIndex !== -1 && ($indexOf($slice(slice, 0, bracketIndex), '(') === -1 ||
+          $test(/^\s*(?:[^{]*?\s)?extends\s/, $replace(slice, /(\/\/.*?\n)|(\/\*(.|\n)*?\*\/)/g, '')))) {
         return getClassBase(value, constructor, tag);
       }
     }
@@ -487,7 +515,7 @@ var __tutorFormat__ = (function () {
     var fn;
     var type;
     if (brand(numberValueOf, value)) { fn = numberValueOf; type = 'Number'; }
-    else if (brand(stringValueOf, value)) { fn = stringValueOf; type = 'String'; keys.splice(0, stringValueOf(value).length); }
+    else if (brand(stringValueOf, value)) { fn = stringValueOf; type = 'String'; $splice(keys, 0, stringValueOf(value).length); }
     else if (brand(booleanValueOf, value)) { fn = booleanValueOf; type = 'Boolean'; }
     else if (bigintValueOf !== null && brand(bigintValueOf, value)) { fn = bigintValueOf; type = 'BigInt'; }
     else { fn = symbolValueOf; type = 'Symbol'; }
@@ -512,44 +540,52 @@ var __tutorFormat__ = (function () {
   function formatError(err, constructor, tag, ctx, keys) {
     var nameValue = safeGet(err, 'name');
     var name = nameValue != null ? StringCtor(nameValue) : 'Error';
-    var stack = errorHeader(err) + '\n' + FRAME;
+    // An error with no stack frames (one V8 made in a callback, as Promise.any's AggregateError) is bracketed, as Node prints it.
+    var stack = errorHeader(err) + (hasStackFrames(err) ? '\n' + FRAME : '');
     // Node leaves out name, message and stack when the stack already shows them.
-    ['name', 'message', 'stack'].forEach(function (key) {
-      var index = keys.indexOf(key);
+    $forEach(['name', 'message', 'stack'], function (key) {
+      var index = $indexOf(keys, key);
       if (index !== -1) {
         var v = safeGet(err, key);
-        if (typeof v !== 'string' || stack.indexOf(v) !== -1) keys.splice(index, 1);
+        if (typeof v !== 'string' || $indexOf(stack, v) !== -1) $splice(keys, index, 1);
       }
     });
-    if ('cause' in err && keys.indexOf('cause') === -1) keys.push('cause');
-    if (isArray(safeGet(err, 'errors')) && keys.indexOf('errors') === -1) keys.push('errors');
+    if ('cause' in err && $indexOf(keys, 'cause') === -1) $push(keys, 'cause');
+    if (isArray(safeGet(err, 'errors')) && $indexOf(keys, 'errors') === -1) $push(keys, 'errors');
     stack = improveStack(stack, constructor, name, tag);
     var message = safeGet(err, 'message');
-    var pos = (message && stack.indexOf(message)) || -1;
+    var pos = (message && $indexOf(stack, message)) || -1;
     if (pos !== -1) pos += message.length;
-    if (stack.indexOf('\n    at', pos) === -1) stack = '[' + stack + ']';
-    if (ctx.indentationLvl !== 0) stack = stack.replace(/\n/g, '\n' + ' '.repeat(ctx.indentationLvl));
+    if ($indexOf(stack, '\n    at', pos) === -1) stack = '[' + stack + ']';
+    if (ctx.indentationLvl !== 0) stack = $replace(stack, /\n/g, '\n' + $repeat(' ', ctx.indentationLvl));
     return stack;
+  }
+
+  // Whether the error's stack names a frame: V8's ("    at "), or another browser's ("f@file:1:2").
+  function hasStackFrames(err) {
+    var stack = safeGet(err, 'stack');
+    if (typeof stack !== 'string') return true;
+    return $indexOf(stack, '\n    at ') !== -1 || $test(/@[^\n]*:\d+:\d+/, stack);
   }
 
   function improveStack(stack, constructor, name, tag) {
     var len = name.length;
-    if (constructor === null || (name.slice(-5) === 'Error' && stack.slice(0, len) === name &&
+    if (constructor === null || ($slice(name, -5) === 'Error' && $slice(stack, 0, len) === name &&
         (stack.length === len || stack[len] === ':' || stack[len] === '\n'))) {
       var fallback = 'Error';
       if (constructor === null) {
-        var start = /^([A-Z][a-z_ A-Z0-9[\]()-]+)(?::|\n\s+at)/.exec(stack) || /^([a-z_A-Z0-9-]*Error)$/.exec(stack);
+        var start = $exec(/^([A-Z][a-z_ A-Z0-9[\]()-]+)(?::|\n\s+at)/, stack) || $exec(/^([a-z_A-Z0-9-]*Error)$/, stack);
         fallback = (start && start[1]) || '';
         len = fallback.length;
         fallback = fallback || 'Error';
       }
-      var prototype = getPrefix(constructor, tag, fallback).slice(0, -1);
+      var prototype = $slice(getPrefix(constructor, tag, fallback), 0, -1);
       if (name !== prototype) {
-        if (prototype.indexOf(name) !== -1) {
+        if ($indexOf(prototype, name) !== -1) {
           if (len === 0) stack = prototype + ': ' + stack;
-          else stack = prototype + stack.slice(len);
+          else stack = prototype + $slice(stack, len);
         } else {
-          stack = prototype + ' [' + name + ']' + stack.slice(len);
+          stack = prototype + ' [' + name + ']' + $slice(stack, len);
         }
       }
     }
@@ -563,9 +599,9 @@ var __tutorFormat__ = (function () {
     var output = [];
     for (var i = 0; i < len; i++) {
       if (!hasOwn(value, i)) return formatSpecialArray(ctx, value, recurseTimes, len, output, i);
-      output.push(formatProperty(ctx, value, recurseTimes, i, kArrayType));
+      $push(output, formatProperty(ctx, value, recurseTimes, i, kArrayType));
     }
-    if (remaining > 0) output.push(remainingText(remaining));
+    if (remaining > 0) $push(output, remainingText(remaining));
     return output;
   }
   function remainingText(remaining) { return '... ' + remaining + ' more item' + (remaining > 1 ? 's' : ''); }
@@ -578,20 +614,20 @@ var __tutorFormat__ = (function () {
       var tmp = +key;
       if (tmp > 4294967294) break;
       if (StringCtor(index) !== key) {
-        if (!/^(0|[1-9][0-9]*)$/.test(key)) break;
+        if (!$test(/^(0|[1-9][0-9]*)$/, key)) break;
         var emptyItems = tmp - index;
-        output.push('<' + emptyItems + ' empty item' + (emptyItems > 1 ? 's' : '') + '>');
+        $push(output, '<' + emptyItems + ' empty item' + (emptyItems > 1 ? 's' : '') + '>');
         index = tmp;
         if (output.length === maxLength) break;
       }
-      output.push(formatProperty(ctx, value, recurseTimes, key, kArrayType));
+      $push(output, formatProperty(ctx, value, recurseTimes, key, kArrayType));
       index++;
     }
     var remaining = value.length - index;
     if (output.length !== maxLength) {
-      if (remaining > 0) output.push('<' + remaining + ' empty item' + (remaining > 1 ? 's' : '') + '>');
+      if (remaining > 0) $push(output, '<' + remaining + ' empty item' + (remaining > 1 ? 's' : '') + '>');
     } else if (remaining > 0) {
-      output.push(remainingText(remaining));
+      $push(output, remainingText(remaining));
     }
     return output;
   }
@@ -603,9 +639,9 @@ var __tutorFormat__ = (function () {
     var output = [];
     for (var i = 0; i < maxLength; ++i) {
       var v = value[i];
-      output.push(typeof v === 'number' ? formatNumber(v) : StringCtor(v) + 'n');
+      $push(output, typeof v === 'number' ? formatNumber(v) : StringCtor(v) + 'n');
     }
-    if (remaining > 0) output.push(remainingText(remaining));
+    if (remaining > 0) $push(output, remainingText(remaining));
     return output;
   }
 
@@ -613,8 +649,8 @@ var __tutorFormat__ = (function () {
     var bytes = new Uint8Array(value);
     var hex = [];
     var n = Math.min(ctx.maxArrayLength, bytes.length);
-    for (var i = 0; i < n; i++) hex.push((bytes[i] < 16 ? '0' : '') + bytes[i].toString(16));
-    var str = hex.join(' ');
+    for (var i = 0; i < n; i++) $push(hex, (bytes[i] < 16 ? '0' : '') + bytes[i].toString(16));
+    var str = $join(hex, ' ');
     var remaining = bytes.length - ctx.maxArrayLength;
     if (remaining > 0) str += ' ... ' + remaining + ' more byte' + (remaining > 1 ? 's' : '');
     return ['[Uint8Contents]: <' + str + '>'];
@@ -629,10 +665,10 @@ var __tutorFormat__ = (function () {
     var i = 0;
     setForEach(value, function (v) {
       if (i >= maxLength) return;
-      output.push(formatValue(ctx, v, recurseTimes));
+      $push(output, formatValue(ctx, v, recurseTimes));
       i++;
     });
-    if (remaining > 0) output.push(remainingText(remaining));
+    if (remaining > 0) $push(output, remainingText(remaining));
     ctx.indentationLvl -= 2;
     return output;
   }
@@ -646,17 +682,16 @@ var __tutorFormat__ = (function () {
     var i = 0;
     mapForEach(value, function (v, k) {
       if (i >= maxLength) return;
-      output.push(formatValue(ctx, k, recurseTimes) + ' => ' + formatValue(ctx, v, recurseTimes));
+      $push(output, formatValue(ctx, k, recurseTimes) + ' => ' + formatValue(ctx, v, recurseTimes));
       i++;
     });
-    if (remaining > 0) output.push(remainingText(remaining));
+    if (remaining > 0) $push(output, remainingText(remaining));
     ctx.indentationLvl -= 2;
     return output;
   }
 
   function formatPromise(ctx, value, recurseTimes) {
-    var states = typeof __promiseStates__ !== 'undefined' ? __promiseStates__ : null;
-    var state = states && states.get(value);
+    var state = hooks.promiseState !== null ? hooks.promiseState(value) : undefined;
     if (!state) return ['<pending>'];
     ctx.indentationLvl += 2;
     var str = formatValue(ctx, state.value, recurseTimes);
@@ -682,12 +717,12 @@ var __tutorFormat__ = (function () {
     }
     if (type === kArrayType) return str;
     if (typeof key === 'symbol') {
-      name = symbolToString(key).replace(/[\x00-\x1f\x27\x5c\x7f-\x9f]/g, function (ch) { return META[ch.charCodeAt(0)]; });
+      name = $replace(symbolToString(key), /[\x00-\x1f\x27\x5c\x7f-\x9f]/g, function (ch) { return META[$charCodeAt(ch, 0)]; });
     } else if (key === '__proto__') {
       name = "['__proto__']";
     } else if (desc.enumerable === false) {
-      name = '[' + key.replace(/[\x00-\x1f\x27\x5c\x7f-\x9f]/g, function (ch) { return META[ch.charCodeAt(0)]; }) + ']';
-    } else if (/^[a-zA-Z_][a-zA-Z_0-9]*$/.test(key)) {
+      name = '[' + $replace(key, /[\x00-\x1f\x27\x5c\x7f-\x9f]/g, function (ch) { return META[$charCodeAt(ch, 0)]; }) + ']';
+    } else if ($test(/^[a-zA-Z_][a-zA-Z_0-9]*$/, key)) {
       name = key;
     } else {
       name = strEscape(key);
@@ -727,7 +762,7 @@ var __tutorFormat__ = (function () {
       for (var col = 0; col < columns; col++) {
         var lineLength = 0;
         for (var j = col; j < output.length; j += columns) if (dataLen[j] > lineLength) lineLength = dataLen[j];
-        maxLineLength.push(lineLength + separatorSpace);
+        $push(maxLineLength, lineLength + separatorSpace);
       }
       var padStart = true;
       if (value !== undefined) {
@@ -743,17 +778,17 @@ var __tutorFormat__ = (function () {
         var m = row;
         for (; m < max - 1; m++) {
           var padding = maxLineLength[m - row] + output[m].length - dataLen[m];
-          str += padStart ? (output[m] + ', ').padStart(padding, ' ') : (output[m] + ', ').padEnd(padding, ' ');
+          str += padStart ? $padStart((output[m] + ', '), padding, ' ') : $padEnd((output[m] + ', '), padding, ' ');
         }
         if (padStart) {
           var lastPadding = maxLineLength[m - row] + output[m].length - dataLen[m] - separatorSpace;
-          str += output[m].padStart(lastPadding, ' ');
+          str += $padStart(output[m], lastPadding, ' ');
         } else {
           str += output[m];
         }
-        tmp.push(str);
+        $push(tmp, str);
       }
-      if (ctx.maxArrayLength < output.length) tmp.push(output[outputLength]);
+      if (ctx.maxArrayLength < output.length) $push(tmp, output[outputLength]);
       output = tmp;
     }
     return output;
@@ -766,7 +801,7 @@ var __tutorFormat__ = (function () {
       totalLength += output[i].length;
       if (totalLength > ctx.breakLength) return false;
     }
-    return base === '' || base.indexOf('\n') === -1;
+    return base === '' || $indexOf(base, '\n') === -1;
   }
 
   function reduceToSingleString(ctx, output, base, braces, extrasType, recurseTimes, value) {
@@ -775,12 +810,12 @@ var __tutorFormat__ = (function () {
     if (ctx.currentDepth - recurseTimes < ctx.compact && entries === output.length) {
       var start = output.length + ctx.indentationLvl + braces[0].length + base.length + 10;
       if (isBelowBreakLength(ctx, output, start, base)) {
-        var joined = output.join(', ');
-        if (joined.indexOf('\n') === -1) return (base ? base + ' ' : '') + braces[0] + ' ' + joined + ' ' + braces[1];
+        var joined = $join(output, ', ');
+        if ($indexOf(joined, '\n') === -1) return (base ? base + ' ' : '') + braces[0] + ' ' + joined + ' ' + braces[1];
       }
     }
-    var indentation = '\n' + ' '.repeat(ctx.indentationLvl);
-    return (base ? base + ' ' : '') + braces[0] + indentation + '  ' + output.join(',' + indentation + '  ') + indentation + braces[1];
+    var indentation = '\n' + $repeat(' ', ctx.indentationLvl);
+    return (base ? base + ' ' : '') + braces[0] + indentation + '  ' + $join(output, ',' + indentation + '  ') + indentation + braces[1];
   }
 
   // ── Entry points ──
@@ -805,7 +840,7 @@ var __tutorFormat__ = (function () {
     } catch (e) {
       text = '[object]';
     }
-    return text.indexOf('') === -1 ? text : text.replace(/\n *at /g, '');
+    return $indexOf(text, '') === -1 ? text : $replace(text, /\n *at /g, '');
   }
 
   // For %s, whether an object is inspected (true) or printed by String() (false): String() when the program gave it a toString or Symbol.toPrimitive of its own.
@@ -829,7 +864,7 @@ var __tutorFormat__ = (function () {
 
   function tryStringify(arg) {
     try { return jsonStringify(arg); } catch (err) {
-      if (err && /circular/i.test(StringCtor(err.message))) return '[Circular]';
+      if (err && $test(/circular/i, StringCtor(err.message))) return '[Circular]';
       throw err;
     }
   }
@@ -845,8 +880,8 @@ var __tutorFormat__ = (function () {
       var tempStr;
       var lastPos = 0;
       for (var i = 0; i < first.length - 1; i++) {
-        if (first.charCodeAt(i) === 37) {
-          var nextChar = first.charCodeAt(++i);
+        if ($charCodeAt(first, i) === 37) {
+          var nextChar = $charCodeAt(first, ++i);
           if (a + 1 !== args.length) {
             switch (nextChar) {
               case 115: {
@@ -891,17 +926,17 @@ var __tutorFormat__ = (function () {
                 tempStr = '';
                 break;
               case 37:
-                str += first.slice(lastPos, i);
+                str += $slice(first, lastPos, i);
                 lastPos = i + 1;
                 continue;
               default:
                 continue;
             }
-            if (lastPos !== i - 1) str += first.slice(lastPos, i - 1);
+            if (lastPos !== i - 1) str += $slice(first, lastPos, i - 1);
             str += tempStr;
             lastPos = i + 1;
           } else if (nextChar === 37) {
-            str += first.slice(lastPos, i);
+            str += $slice(first, lastPos, i);
             lastPos = i + 1;
           }
         }
@@ -909,7 +944,7 @@ var __tutorFormat__ = (function () {
       if (lastPos !== 0) {
         a++;
         join = ' ';
-        if (lastPos < first.length) str += first.slice(lastPos);
+        if (lastPos < first.length) str += $slice(first, lastPos);
       }
     }
     while (a < args.length) {
@@ -927,15 +962,15 @@ var __tutorFormat__ = (function () {
     var out = '│ ';
     for (var i = 0; i < row.length; i++) {
       var cell = row[i];
-      out += cell + ' '.repeat(columnWidths[i] - stringWidth(cell));
+      out += cell + $repeat(' ', columnWidths[i] - stringWidth(cell));
       if (i !== row.length - 1) out += ' │ ';
     }
     return out + ' │';
   }
   function renderTable(head, columns) {
     var rows = [];
-    var columnWidths = head.map(stringWidth);
-    var longestColumn = Math.max.apply(null, columns.map(function (a) { return a.length; }));
+    var columnWidths = $map(head, stringWidth);
+    var longestColumn = Math.max.apply(null, $map(columns, function (a) { return a.length; }));
     for (var i = 0; i < head.length; i++) {
       var column = columns[i];
       for (var j = 0; j < longestColumn; j++) {
@@ -944,26 +979,26 @@ var __tutorFormat__ = (function () {
         columnWidths[i] = Math.max(columnWidths[i] || 0, stringWidth(value));
       }
     }
-    var divider = columnWidths.map(function (w) { return '─'.repeat(w + 2); });
-    var result = '┌' + divider.join('┬') + '┐\n' + renderRow(head, columnWidths) + '\n' + '├' + divider.join('┼') + '┤\n';
+    var divider = $map(columnWidths, function (w) { return $repeat('─', w + 2); });
+    var result = '┌' + $join(divider, '┬') + '┐\n' + renderRow(head, columnWidths) + '\n' + '├' + $join(divider, '┼') + '┤\n';
     for (var r = 0; r < rows.length; r++) result += renderRow(rows[r], columnWidths) + '\n';
-    return result + '└' + divider.join('┴') + '┘';
+    return result + '└' + $join(divider, '┴') + '┘';
   }
   function tableText(tabularData, properties) {
     var _inspect = function (v) {
       var depth = v !== null && typeof v === 'object' && !isArray(v) && objectKeys(v).length > 2 ? -1 : 0;
       return inspect(v, { depth: depth, maxArrayLength: 3, breakLength: Infinity });
     };
-    var getIndexArray = function (length) { var out = []; for (var i = 0; i < length; i++) out.push(_inspect(i)); return out; };
+    var getIndexArray = function (length) { var out = []; for (var i = 0; i < length; i++) $push(out, _inspect(i)); return out; };
     if (isMap(tabularData)) {
       var keys = [];
       var values = [];
-      mapForEach(tabularData, function (v, k) { keys.push(_inspect(k)); values.push(_inspect(v)); });
+      mapForEach(tabularData, function (v, k) { $push(keys, _inspect(k)); $push(values, _inspect(v)); });
       return renderTable(['(iteration index)', 'Key', 'Values'], [getIndexArray(keys.length), keys, values]);
     }
     if (isSet(tabularData)) {
       var setValues = [];
-      setForEach(tabularData, function (v) { setValues.push(_inspect(v)); });
+      setForEach(tabularData, function (v) { $push(setValues, _inspect(v)); });
       return renderTable(['(iteration index)', 'Values'], [getIndexArray(setValues.length), setValues]);
     }
     var map = Object.create(null);
@@ -987,10 +1022,10 @@ var __tutorFormat__ = (function () {
       }
     }
     var head = objectKeys(map);
-    var columns = head.map(function (key) { return map[key]; });
-    if (hasPrimitives) { head.push('Values'); columns.push(valuesKeyArray); }
-    head.unshift('(index)');
-    columns.unshift(indexKeyArray);
+    var columns = $map(head, function (key) { return map[key]; });
+    if (hasPrimitives) { $push(head, 'Values'); $push(columns, valuesKeyArray); }
+    $unshift(head, '(index)');
+    $unshift(columns, indexKeyArray);
     return renderTable(head, columns);
   }
 
@@ -1007,14 +1042,14 @@ var __tutorFormat__ = (function () {
       }
       seconds = ms / 1000;
     }
-    var pad = function (v) { return ('0' + v).slice(-2); };
+    var pad = function (v) { return $slice(('0' + v), -2); };
     if (hours !== 0 || minutes !== 0) {
-      var parts = seconds.toFixed(3).split('.');
+      var parts = $split($toFixed(seconds, 3), '.');
       var res = hours !== 0 ? hours + ':' + pad(minutes) : minutes;
       return res + ':' + pad(parts[0]) + '.' + parts[1] + ' (' + (hours !== 0 ? 'h:m' : '') + 'm:ss.mmm)';
     }
-    if (seconds !== 0) return seconds.toFixed(3) + 's';
-    return NumberCtor(ms.toFixed(3)) + 'ms';
+    if (seconds !== 0) return $toFixed(seconds, 3) + 's';
+    return NumberCtor($toFixed(ms, 3)) + 'ms';
   }
 
   // The console the program sees: each method writes its text through write(stream, text), as Node's Console does.
@@ -1022,9 +1057,10 @@ var __tutorFormat__ = (function () {
     var groupIndent = '';
     var counts = new SafeMap();
     var timers = new SafeMap();
-    var now = typeof performance !== 'undefined' && performance.now ? function () { return performance.now(); } : Date.now;
+    var hostNow = typeof performance !== 'undefined' && performance.now ? uncurryThis(performance.now) : null;
+    var now = function () { return hooks.now !== null ? hooks.now() : hostNow !== null ? hostNow(performance) : Date.now(); };
     var out = function (stream, text) {
-      if (groupIndent.length !== 0) text = groupIndent + text.replace(/\n/g, '\n' + groupIndent);
+      if (groupIndent.length !== 0) text = groupIndent + $replace(text, /\n/g, '\n' + groupIndent);
       write(stream, text);
     };
     var con = {
@@ -1044,7 +1080,7 @@ var __tutorFormat__ = (function () {
       timeLog: function (label) {
         label = label === undefined ? 'default' : StringCtor(label);
         if (!timers.has(label)) return;
-        var data = Array.prototype.slice.call(arguments, 1);
+        var data = $slice(arguments, 1);
         out('stdout', label + ': ' + formatTime(now() - timers.get(label)) + (data.length ? ' ' + formatArgs(data) : ''));
       },
       trace: function () {
@@ -1053,9 +1089,9 @@ var __tutorFormat__ = (function () {
       },
       assert: function (expression) {
         if (!expression) {
-          var args = Array.prototype.slice.call(arguments, 1);
+          var args = $slice(arguments, 1);
           if (args.length !== 0 && typeof args[0] === 'string') args[0] = 'Assertion failed: ' + args[0];
-          else args.unshift('Assertion failed');
+          else $unshift(args, 'Assertion failed');
           out('stderr', formatArgs(args));
         }
       },
@@ -1074,7 +1110,7 @@ var __tutorFormat__ = (function () {
         if (arguments.length > 0) out('stdout', formatArgs(arguments));
         groupIndent += '  ';
       },
-      groupEnd: function () { groupIndent = groupIndent.slice(0, groupIndent.length - 2); },
+      groupEnd: function () { groupIndent = $slice(groupIndent, 0, groupIndent.length - 2); },
       table: function (tabularData, properties) {
         if (tabularData === null || typeof tabularData !== 'object') { out('stdout', formatArgs([tabularData])); return; }
         out('stdout', tableText(tabularData, properties));
@@ -1088,7 +1124,7 @@ var __tutorFormat__ = (function () {
     return con;
   }
 
-  return { inspect: inspect, formatArgs: formatArgs, makeConsole: makeConsole };
+  return { inspect: inspect, formatArgs: formatArgs, makeConsole: makeConsole, hooks: hooks };
 })();
 var __inspect__ = __tutorFormat__.inspect;
 var __formatArgs__ = __tutorFormat__.formatArgs;

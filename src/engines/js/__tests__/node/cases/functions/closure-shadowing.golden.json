@@ -1,0 +1,99 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "5 15 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "9"
+  },
+  {
+   "stream": "stdout",
+   "text": "9"
+  },
+  {
+   "stream": "stdout",
+   "text": "two"
+  },
+  {
+   "stream": "stdout",
+   "text": "outer"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:5",
+    "num:15",
+    "num:2"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:9"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:9"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:two"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:outer"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  4,
+  5,
+  7,
+  8,
+  9,
+  12,
+  16,
+  17,
+  20,
+  21,
+  23,
+  26,
+  29,
+  31,
+  33,
+  34,
+  40,
+  42
+ ],
+ "statementRuns": 22,
+ "functionCalls": 11,
+ "finalGlobals": {
+  "createCart": "fn:createCart",
+  "cart": {
+   "object": "",
+   "props": {
+    "add": "fn:add",
+    "count": "fn:count"
+   }
+  },
+  "solve": "fn:solve",
+  "f": "fn:f",
+  "label": "str:outer"
+ },
+ "sourceSha256": "9cc57413b3aac90846d67b6c3537fc07fd34e1b75851959acb370e2a2c86c576"
+}

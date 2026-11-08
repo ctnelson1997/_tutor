@@ -46,3 +46,52 @@ console.log(moving);`);
     for (const s of loop) expect(s.stdout).toBe(loop[0].stdout);
   });
 });
+
+describe('the time budget, typed arrays and big objects (#91)', () => {
+  it('runs a sieve on a 100,001-element typed array to the step cap in seconds, drawing its first 100 elements', HEAVY, async () => {
+    const started = Date.now();
+    const reply = await runJsTutor(`const N = 100000;
+const isPrime = new Uint8Array(N + 1).fill(1);
+for (let i = 2; i * i <= N; i++) {
+  if (isPrime[i]) for (let j = i * i; j <= N; j += i) isPrime[j] = 0;
+}`, 60_000);
+    if (reply.type !== 'result') throw new Error(reply.message);
+    expect(reply.snapshots).toHaveLength(5000);
+    expect(reply.error?.kind).toBe('limit');
+    expect(Date.now() - started).toBeLessThan(8500);
+    const sieve = reply.snapshots[4999].heap.find(h => h.label === 'Uint8Array');
+    expect(sieve?.objectType).toBe('array');
+    expect(sieve?.properties).toHaveLength(101);
+    expect(sieve?.properties[100]).toEqual({ key: '...', value: { type: 'string', value: '(99901 more)' } });
+    expect(serialize(reply).length).toBeLessThan(5 * MB);
+  });
+
+  it('ends a run whose steps are slow (an object of 100,000 keys) within the budget, with its steps', HEAVY, async () => {
+    const started = Date.now();
+    const reply = await runJsTutor(`const o = {};
+for (let i = 0; i < 100000; i++) o["k" + i] = i;
+let s = 0;
+while (true) s++;`, 60_000);
+    if (reply.type !== 'result') throw new Error(reply.message);
+    expect(reply.snapshots.length).toBeGreaterThan(0);
+    expect(reply.error?.kind).toBe('limit');
+    expect(Date.now() - started).toBeLessThan(9500);
+  });
+
+  it("doesn't stop a loop that takes no step at 10,000 iterations, and stops one that never ends", async () => {
+    const done = await runJsTutor('const big = [...Array(12000).keys()];\nlet last;\nfor (last of big) {}\nconsole.log(last);');
+    if (done.type !== 'result') throw new Error(done.message);
+    expect(done.error).toBeUndefined();
+    expect(done.snapshots[done.snapshots.length - 1].stdout).toEqual(['11999']);
+    const endless = await runJsTutor('let n = 0;\nfor (;;) {}');
+    expect(endless.type === 'result' && endless.error).toEqual({ kind: 'limit', message: 'Infinite loop detected (a loop ran 10000000 times without a step)' });
+  });
+
+  it('stops at 10,000 lines of console output, keeping its steps', async () => {
+    const reply = await runJsTutor('setInterval(console.log, 0, "tick");');
+    if (reply.type !== 'result') throw new Error(reply.message);
+    expect(reply.error).toEqual({ kind: 'limit', message: 'Stopped after 10000 lines of output, the most that can be shown.' });
+    expect(reply.snapshots[reply.snapshots.length - 1].stdout).toHaveLength(10000);
+    expect(serialize(reply).length).toBeLessThan(5 * MB);
+  });
+});

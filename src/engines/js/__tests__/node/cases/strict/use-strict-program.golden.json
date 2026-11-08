@@ -1,0 +1,77 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "undefined"
+  },
+  {
+   "stream": "stdout",
+   "text": "ReferenceError"
+  },
+  {
+   "stream": "stdout",
+   "text": "TypeError Cannot assign to read only property 'a' of object '#<Object>'"
+  },
+  {
+   "stream": "stdout",
+   "text": "1"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "undefined"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:ReferenceError"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:TypeError",
+    "str:Cannot assign to read only property 'a' of object '#<Object>'"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:1"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  4,
+  6,
+  8,
+  9,
+  11,
+  13,
+  15,
+  17,
+  20,
+  21,
+  23
+ ],
+ "statementRuns": 11,
+ "functionCalls": 2,
+ "finalGlobals": {
+  "f": "fn:f",
+  "o": {
+   "object": "",
+   "props": {
+    "a": "num:1"
+   }
+  },
+  "g": "fn:g"
+ },
+ "sourceSha256": "de36bc5e2f5935c4c3d3bb3a8b10f07010738a3eea2d5def66198139ef199556"
+}

@@ -1,0 +1,35 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "start"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:start"
+   ]
+  }
+ ],
+ "uncaught": [
+  {
+   "name": null,
+   "message": "{ code: 404, msg: 'not found' }",
+   "where": "script",
+   "consoleLines": 1
+  }
+ ],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3
+ ],
+ "statementRuns": 2,
+ "functionCalls": 0,
+ "finalGlobals": {},
+ "sourceSha256": "a28dbc4633b0bc2d8fe4a024d913f4503295d678918fe472b7ccbdd43d3d4dcf"
+}

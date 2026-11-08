@@ -1,0 +1,49 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "false number false 1 number"
+  },
+  {
+   "stream": "stdout",
+   "text": "object"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "boolean:false",
+    "str:number",
+    "boolean:false",
+    "num:1",
+    "str:number"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:object"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  6,
+  8
+ ],
+ "statementRuns": 5,
+ "functionCalls": 1,
+ "finalGlobals": {
+  "x": "num:1",
+  "y": "num:2",
+  "whoAmI": "fn:whoAmI"
+ },
+ "sourceSha256": "6c33923f33385be1373c011fd038d877456f75069e26d07645425375336285fe"
+}

@@ -181,7 +181,8 @@
   "name": "str:global",
   "level": "num:0",
   "shadowParam": "fn:shadowParam",
-  "total": "num:0"
+  "total": "num:0",
+  "leaked": "str:if block leaked via var"
  },
  "sourceSha256": "015f142571833a36cf190f429025aa70643a9a43177261a6530a87b559ef64eb"
 }

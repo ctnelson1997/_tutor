@@ -101,6 +101,7 @@
  "statementRuns": 23,
  "functionCalls": 9,
  "finalGlobals": {
+  "helper": "fn:helper",
   "choose": "fn:choose",
   "notRun": "fn:notRun",
   "results": {
@@ -109,7 +110,8 @@
     "str:loop 1"
    ],
    "len": 2
-  }
+  },
+  "label": "fn:label"
  },
  "sourceSha256": "688fcd62cf8067dcc373f86719ee162e7ae8b5f274c0d039ae8943276d87e02f"
 }

@@ -250,31 +250,41 @@ describe('validateKnownFailures', () => {
 // ── The Node worker ──
 
 describe('nodeWorker', () => {
-  const run = (code: string, timeoutMs?: number) => executeInWorker(code, nodeWorker, timeoutMs);
+  // A stand-in for the runtime: the worker script's two calls, runResult and eventLoop.
+  const runtime = (eventLoop: string) => `({ runResult: function (err) { return { type: 'result', snapshots: [], thrown: String(err) }; }, eventLoop: ${eventLoop} })`;
+  const run = (program: string, eventLoop = 'function (done) { done({ type: "result", snapshots: [] }); }', timeoutMs?: number) =>
+    executeInWorker({ runtime: runtime(eventLoop), program }, nodeWorker, timeoutMs) as Promise<unknown>;
 
-  it("gives the program a browser worker's global scope", async () => {
-    const reply = await run(`self.__eventLoop__ = done => done(self.__runResult__());
-    self.__runResult__ = () => ({ type: 'result', snapshots: [], probe: [
-      self === globalThis, typeof setTimeout(() => {}, 0), structuredClone(new Set([1])) instanceof Set,
-      typeof process, typeof require, typeof console.log, Object.keys(globalThis).includes('setTimeout'),
-    ] });`);
-    expect((reply as unknown as { probe: unknown[] }).probe).toEqual([true, 'number', true, 'undefined', 'undefined', 'function', false]);
+  it("gives the program a browser worker's global scope, its script a classic script's", async () => {
+    const reply = await run(`var x = 1; let y = 2; const keys = Object.keys(globalThis);
+      self.probe = [self === globalThis, typeof setTimeout(() => {}, 0), structuredClone(new Set([1])) instanceof Set,
+        typeof process, typeof require, typeof console.log, keys, delete globalThis.x, typeof y];`,
+    'function (done) { done({ type: "result", snapshots: [], probe: self.probe }); }');
+    expect((reply as { probe: unknown[] }).probe).toEqual([true, 'number', true, 'undefined', 'undefined', 'function', ['x'], false, 'number']);
   });
 
-  it("posts the worker's error reply, and is killed at the timeout", async () => {
-    expect(await run('throw new Error("no runtime")')).toEqual({ type: 'error', message: 'no runtime' });
-    expect(await run('while (true) {}', 300)).toEqual({
+  it("posts the worker's error reply, the runtime's reply to an uncaught exception, and is killed at the timeout", async () => {
+    expect(await executeInWorker({ runtime: '(function () { throw new Error("no runtime"); })()', program: '' }, nodeWorker))
+      .toEqual({ type: 'error', message: 'JSTutor could not start: Error: no runtime' });
+    expect(await run('throw new RangeError("boom")')).toEqual({ type: 'result', snapshots: [], thrown: 'RangeError: boom' });
+    expect(await run('while (true) {}', undefined, 300)).toEqual({
       type: 'error', message: 'Execution timed out after 0.3 seconds. Your code may contain an infinite loop.',
     });
   });
 
-  it('fires unhandledrejection, and sends an uncaught exception in a callback to onerror', async () => {
-    const rejection = await run(`const post = self.postMessage; self.postMessage = () => {};
-      addEventListener('unhandledrejection', e => post({ type: 'result', snapshots: [], reason: e.reason.message }));
-      Promise.reject(new Error('boom'));
-      self.__eventLoop__ = () => {};`);
-    expect((rejection as unknown as { reason: string }).reason).toBe('boom');
-    const late = await run(`self.__eventLoop__ = () => {}; setTimeout(() => { throw new TypeError('late'); }, 0);`);
+  it("takes only the worker script's reply, not what the program posts (#87)", async () => {
+    expect(await run('postMessage("hello"); postMessage({ type: "result", snapshots: [] });', 'function (done) { done({ type: "result", snapshots: [], ok: true }); }'))
+      .toEqual({ type: 'result', snapshots: [], ok: true });
+  });
+
+  it('fires unhandledrejection and error events, and sends an uncaught exception no listener prevents to onerror', async () => {
+    const rejection = await run('Promise.reject(new Error("boom"));',
+      'function (done) { addEventListener("unhandledrejection", function (e) { done({ type: "result", snapshots: [], reason: e.reason.message }); }); }');
+    expect((rejection as { reason: string }).reason).toBe('boom');
+    const task = await run('const c = new MessageChannel(); c.port1.onmessage = () => { throw new Error("in a task"); }; c.port2.postMessage(1);',
+      'function (done) { addEventListener("error", function (e) { e.preventDefault(); done({ type: "result", snapshots: [], caught: e.error.message }); }); }');
+    expect((task as { caught: string }).caught).toBe('in a task');
+    const late = await run('setTimeout(() => { throw new TypeError("late"); }, 0);', 'function () {}');
     expect(late).toEqual({ type: 'error', message: 'Uncaught TypeError: late' });
   });
 });

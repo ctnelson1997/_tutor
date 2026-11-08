@@ -12,36 +12,58 @@ import type { WorkerMessage } from '../../types/snapshot';
 export const WORKER_TIMEOUT = 10_000;
 
 /**
- * The worker's script. It runs the program (the runtime followed by the
- * instrumented code) in its own global scope and posts the reply.
- * The differential suite (#42) runs this same script in a Node worker thread.
+ * The worker's script (#87). It loads the runtime (its own closure), then runs
+ * the instrumented program as a classic script of its own, as a browser runs
+ * a worker's script: its top-level declarations are the global scope's, a
+ * top-level 'use strict' applies to it (#89), and it shares nothing with the
+ * runtime but the functions the runtime puts on the global object. What the
+ * worker needs afterwards (postMessage, importScripts, URL, Blob) is taken
+ * before the program runs, and the reply carries the run's nonce, so a
+ * program that calls postMessage or declares a global named like one of them
+ * changes nothing. The differential suite (#42) runs this same script in a
+ * Node worker thread.
  */
 export const WORKER_SOURCE = `
-    self.onmessage = function(e) {
+    self.onmessage = function (e) {
       var data = e.data;
-      if (data.type !== 'run') return;
+      if (!data || data.type !== 'run') return;
+      var scope = self;
+      var apply = Reflect.apply;
+      var post = scope.postMessage;
+      var load = scope.importScripts;
+      var urls = scope.URL;
+      var createURL = urls.createObjectURL;
+      var revokeURL = urls.revokeObjectURL;
+      var ScriptBlob = scope.Blob;
+      var nonce = data.nonce;
+      var reply = function (message) { apply(post, scope, [{ tutorReply: nonce, message: message }]); };
 
+      var runtime;
       try {
-        var indirectEval = eval;
-        indirectEval(data.code);
+        runtime = (0, eval)(data.runtime);
       } catch (err) {
-        // The steps recorded before an uncaught exception (or the step cap) are kept,
-        // and the run ends there, as Node ends it.
-        if (typeof self.__runResult__ === 'function') {
-          self.postMessage(self.__runResult__(err));
-        } else {
-          self.postMessage({ type: 'error', message: err instanceof Error ? err.message : String(err) });
-        }
+        reply({ type: 'error', message: 'JSTutor could not start: ' + String(err) });
         return;
       }
+      var url = apply(createURL, urls, [new ScriptBlob([data.program], { type: 'text/javascript' })]);
+      try {
+        apply(load, scope, [url]);
+      } catch (err) {
+        // The steps recorded before an uncaught exception (or a limit) are kept,
+        // and the run ends there, as Node ends it.
+        reply(runtime.runResult(err));
+        return;
+      } finally {
+        apply(revokeURL, urls, [url]);
+      }
       // The program's timers and promise callbacks run, and take steps, before the reply (#45).
-      self.__eventLoop__(function (message) { self.postMessage(message); });
+      runtime.eventLoop(reply);
     };
   `;
 
 /** The parts of a Web Worker the executor uses. */
 export interface WorkerLike {
-  onmessage: ((e: MessageEvent<WorkerMessage>) => void) | null;
+  onmessage: ((e: MessageEvent<unknown>) => void) | null;
   onerror: ((e: ErrorEvent) => void) | null;
   postMessage(message: unknown): void;
   terminate(): void;
@@ -55,10 +77,26 @@ function createWorker(): WorkerLike {
   return worker;
 }
 
-/** Run a prepared program in a fresh worker; it is terminated once it replies, or after `timeoutMs`. */
-export function executeInWorker(code: string, makeWorker: () => WorkerLike = createWorker, timeoutMs = WORKER_TIMEOUT): Promise<WorkerMessage> {
+/** What the worker runs: the runtime (an expression, its value the runtime's API) and the instrumented program, a script of its own. */
+export interface PreparedProgram {
+  runtime: string;
+  program: string;
+}
+
+/** The worker's reply, as WORKER_SOURCE wraps it: only the one with this run's nonce counts. */
+function replyOf(data: unknown, nonce: string): WorkerMessage | null {
+  const reply = data as { tutorReply?: unknown; message?: WorkerMessage } | null;
+  return reply && typeof reply === 'object' && reply.tutorReply === nonce && reply.message ? reply.message : null;
+}
+
+/**
+ * Run a prepared program in a fresh worker; it is terminated once it replies, or after `timeoutMs`.
+ * Messages the program posts itself are ignored (#87).
+ */
+export function executeInWorker(prepared: PreparedProgram, makeWorker: () => WorkerLike = createWorker, timeoutMs = WORKER_TIMEOUT): Promise<WorkerMessage> {
   return new Promise((resolve) => {
     const worker = makeWorker();
+    const nonce = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 
     const timeout = setTimeout(() => {
       worker.terminate();
@@ -68,10 +106,12 @@ export function executeInWorker(code: string, makeWorker: () => WorkerLike = cre
       });
     }, timeoutMs);
 
-    worker.onmessage = (e: MessageEvent<WorkerMessage>) => {
+    worker.onmessage = (e: MessageEvent<unknown>) => {
+      const reply = replyOf(e.data, nonce);
+      if (!reply) return;
       clearTimeout(timeout);
       worker.terminate();
-      resolve(e.data);
+      resolve(reply);
     };
 
     worker.onerror = (e: ErrorEvent) => {
@@ -83,7 +123,7 @@ export function executeInWorker(code: string, makeWorker: () => WorkerLike = cre
       });
     };
 
-    worker.postMessage({ type: 'run', code });
+    worker.postMessage({ type: 'run', runtime: prepared.runtime, program: prepared.program, nonce });
   });
 }
 
@@ -95,11 +135,11 @@ export interface SyntaxProblem {
 }
 
 /**
- * The program the worker runs: the runtime, then the instrumented source.
+ * What the worker runs: the runtime and the instrumented source.
  * A program that doesn't parse gives its parser's (Acorn's) problem instead,
  * and syntax JSTutor can't show yet its error reply.
  */
-export function prepareProgram(source: string): { code: string } | { reply: WorkerMessage } | { syntax: SyntaxProblem } {
+export function prepareProgram(source: string): PreparedProgram | { reply: WorkerMessage } | { syntax: SyntaxProblem } {
   let instrumentedCode: string;
   try {
     instrumentedCode = instrument(source);
@@ -110,7 +150,7 @@ export function prepareProgram(source: string): { code: string } | { reply: Work
     const loc = (err as { loc?: { line?: number; column?: number } } | null)?.loc;
     return { syntax: { message: message.replace(/ \(\d+:\d+\)$/, ''), line: loc?.line ?? null, column: loc?.column ?? null } };
   }
-  return { code: getRuntimeCode() + '\n' + instrumentedCode };
+  return { runtime: getRuntimeCode(), program: instrumentedCode };
 }
 
 /** Asks the JavaScript engine itself what is wrong with a program that doesn't parse; null if it has nothing to say. */
@@ -195,7 +235,7 @@ export async function executeProgram(source: string, options: ExecuteOptions = {
     return syntaxErrorReply(source, engine ?? program.syntax);
   }
   if ('reply' in program) return program.reply;
-  return executeInWorker(program.code, options.makeWorker, options.timeoutMs);
+  return executeInWorker(program, options.makeWorker, options.timeoutMs);
 }
 
 /**

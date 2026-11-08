@@ -1,0 +1,106 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "Promise { 42 }"
+  },
+  {
+   "stream": "stdout",
+   "text": "Promise { <rejected> 'nope' }"
+  },
+  {
+   "stream": "stdout",
+   "text": "Promise { 'made' }"
+  },
+  {
+   "stream": "stdout",
+   "text": "Promise { <pending> }"
+  },
+  {
+   "stream": "stdout",
+   "text": "done Promise { 'done' }"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    {
+     "promise": true
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "promise": true
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "promise": true
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    {
+     "promise": true
+    }
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:done",
+    {
+     "promise": true
+    }
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  10,
+  12,
+  13,
+  14,
+  15
+ ],
+ "statementRuns": 12,
+ "functionCalls": 5,
+ "finalGlobals": {
+  "p": {
+   "promise": true
+  },
+  "r": {
+   "promise": true
+  },
+  "made": {
+   "promise": true
+  },
+  "g": "fn:g",
+  "q": {
+   "promise": true
+  },
+  "waiting": {
+   "promise": true
+  }
+ },
+ "sourceSha256": "7606934664e8c50f5ca290ae60bd7d286ba0f9125861ea11965cb76cf49824b4"
+}

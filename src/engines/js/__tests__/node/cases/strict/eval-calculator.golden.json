@@ -1,0 +1,46 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "14"
+  },
+  {
+   "stream": "stdout",
+   "text": "42 42"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "num:14"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "num:42",
+    "num:42"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  3,
+  4,
+  5,
+  6
+ ],
+ "statementRuns": 5,
+ "functionCalls": 0,
+ "finalGlobals": {
+  "expression": "str:2 + 3 * 4",
+  "answer": "num:42",
+  "times": "fn:anonymous"
+ },
+ "sourceSha256": "646bb50cc52e4b8e7ac09e80191ef711e0bf24d833771eb1c422d07f3e801bac"
+}

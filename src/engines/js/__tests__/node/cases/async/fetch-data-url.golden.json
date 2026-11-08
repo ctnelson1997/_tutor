@@ -1,0 +1,39 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "sent"
+  },
+  {
+   "stream": "stdout",
+   "text": "got payload"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:sent"
+   ]
+  },
+  {
+   "method": "log",
+   "args": [
+    "str:got",
+    "str:payload"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  2,
+  5
+ ],
+ "statementRuns": 2,
+ "functionCalls": 2,
+ "finalGlobals": {},
+ "sourceSha256": "eb6f194db27b75b7c70e1490ccea2c0cecc885dd9a72d407ccdc59954c3f236d"
+}

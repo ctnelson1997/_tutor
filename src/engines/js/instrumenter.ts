@@ -8,8 +8,10 @@
  *  - __pushFrame__(name, { ...params }) at function entry
  *  - __popFrame__(value, line) at a return or the function's closing brace,
  *    a step showing the returned value
- *  - Loop guards to prevent infinite loops
- *  - Blocks eval() and new Function()
+ *  - __loop__() at the top of each loop body: the loop guard (#91)
+ *
+ * The program keeps its directives first (a 'use strict' applies, #89), and
+ * runs as a script of its own (executor.ts, #87).
  */
 
 import * as acorn from 'acorn';
@@ -28,9 +30,18 @@ let _parentVarNames: string[] | null = null;
 let _functionDepth = 0;
 
 // When inside a nested function, holds the names of variables closed over
-// from enclosing function scope(s). buildCaptureExpression reads this to
-// emit a fourth argument to __capture__.
+// from enclosing function scope(s): the function's frame reads them through
+// a reader made inside it (#90), and nested functions inherit them.
 let _closureVarNames: string[] | null = null;
+
+// Whether the code being instrumented is strict: a sloppy function's block
+// function declarations are also variables of the function (Annex B, #93).
+let _strict = false;
+
+// Block function declarations that are also the enclosing function's
+// variables in sloppy code (Annex B): read with typeof first, as JavaScript
+// doesn't make the variable when another declaration has the name (#93).
+let _guardedNames: Set<string> = new Set();
 
 /**
  * Instrument a user's source code for step-by-step state capture.
@@ -47,21 +58,31 @@ export function instrument(source: string): string {
   // Each function's own text, before instrumentation changes it (#47).
   const originalFunctions = functionTexts(ast, source);
 
-  // Collect scope info: we walk the AST and build a scope tree
-  // For simplicity, we do a two-pass approach:
-  //  1. Collect all variable declarations per scope
-  //  2. Inject capture/frame calls
+  // The program's directives stay first, so a 'use strict' applies to it (#89).
+  const directives = takeDirectives(ast.body);
+  _strict = directives.some(isUseStrict);
+  _guardedNames = new Set();
+  _closureVarNames = null;
+  _functionDepth = 0;
+  _parentVarNames = null;
 
   // Pass: inject instrumentation by transforming the body arrays
   instrumentBlock(ast.body, [], true);
 
-  // Prepend the eval/Function blockers and loop counter
-  const preamble = `var __loopCount = 0; var __MAX_LOOPS = 10000;
-var eval = undefined;
-`;
+  const body = generate(ast);
+  const prologue = directives.map(d => d.expression.raw + ';\n').join('');
+  return prologue + programFacts(body, originalFunctions) + body;
+}
 
-  const body = preamble + generate(ast);
-  return programFacts(body, originalFunctions) + body;
+/** The directive prologue's statements ('use strict'), taken off the front of a body. */
+function takeDirectives(body: AnyNode[]): AnyNode[] {
+  let n = 0;
+  while (n < body.length && typeof body[n].directive === 'string') n++;
+  return body.splice(0, n);
+}
+
+function isUseStrict(directive: AnyNode): boolean {
+  return directive.directive === 'use strict';
 }
 
 // ── What the program could see of its instrumentation (#47) ──
@@ -69,10 +90,10 @@ var eval = undefined;
 /** A function's text as Function.prototype.toString gives it, and what kind of function it is. */
 interface FunctionText { kind: string; text: string; line: number }
 
-/** Walk a tree in source order, with each node's parent. */
-function walkTree(node: AnyNode, visit: (n: AnyNode, parent: AnyNode | null) => void, parent: AnyNode | null = null): void {
+/** Walk a tree in source order, with each node's parent; a visit returning false skips the node's children. */
+function walkTree(node: AnyNode, visit: (n: AnyNode, parent: AnyNode | null) => boolean | void, parent: AnyNode | null = null): void {
   if (!node || typeof node.type !== 'string') return;
-  visit(node, parent);
+  if (visit(node, parent) === false) return;
   for (const [key, value] of Object.entries(node)) {
     if (key === 'loc' || key.startsWith('_')) continue;
     if (Array.isArray(value)) for (const v of value) walkTree(v, visit, node);
@@ -88,10 +109,11 @@ function walkTree(node: AnyNode, visit: (n: AnyNode, parent: AnyNode | null) => 
 function functionTexts(ast: AnyNode, text: string): FunctionText[] {
   const out: FunctionText[] = [];
   walkTree(ast, (node, parent) => {
+    // (The readers the instrumenter passes the runtime aren't the program's functions.)
+    if (node.type === 'CallExpression' && node.callee.type === 'Identifier' && READER_CALLS.has(node.callee.name)) return false;
     if (node.type === 'ClassDeclaration' || node.type === 'ClassExpression') {
       out.push({ kind: 'class', text: text.slice(node.start, node.end), line: node.loc?.start.line ?? 0 });
     } else if (FUNCTION_TYPES.has(node.type)) {
-      if (node.id?.name === '__globals__') return;
       const member = parent && parent.value === node && (parent.type === 'MethodDefinition' || (parent.type === 'Property' && (parent.method || parent.kind !== 'init'))) ? parent : null;
       let start = member ? member.start : node.start;
       if (member?.static) start += /^static\s*/.exec(text.slice(start))?.[0].length ?? 0;
@@ -116,6 +138,8 @@ export function sourceKey(text: string): string {
 }
 
 const STEP_CALLS = new Set(['__capture__', '__condition__', '__popFrame__', '__endScript__']);
+/** The runtime calls whose arguments hold functions the instrumenter made: a frame's closure reader, the globals reader, a class's private fields' readers. */
+const READER_CALLS = new Set(['__pushFrame__', '__setGlobals__', '__privateNames__']);
 
 /**
  * Two lines that go before the instrumented program, telling the runtime
@@ -161,7 +185,10 @@ function programFacts(body: string, originals: FunctionText[]): string {
 
 /**
  * Collect hoisted declarations from a block (var + function declarations).
- * These are safe to reference from the very start of the scope.
+ * These are safe to reference from the very start of the scope. A var
+ * declared in a nested block (a loop's body, an if's branch) belongs to the
+ * function too, and in sloppy code so does a function declared in one
+ * (Annex B), which is read with a guard (#93).
  */
 function collectHoistedNames(body: AnyNode[]): string[] {
   const names: string[] = [];
@@ -172,9 +199,40 @@ function collectHoistedNames(body: AnyNode[]): string[] {
       for (const decl of stmt.declarations) {
         extractPatternNames(decl.id, names);
       }
+    } else {
+      collectNestedVars(stmt, names);
     }
   }
-  return names;
+  const lexical = new Set(collectLexicalNames(body));
+  return names.filter(n => !lexical.has(n) || !_guardedNames.has(n));
+}
+
+/** The vars declared in a statement's nested blocks, and its block functions in sloppy code; not inside functions. */
+function collectNestedVars(stmt: AnyNode, names: string[], nested = false): void {
+  if (!stmt || typeof stmt.type !== 'string' || FUNCTION_TYPES.has(stmt.type) && stmt.type !== 'FunctionDeclaration') return;
+  if (stmt.type === 'FunctionDeclaration') {
+    // A block's function declaration is also the function's variable in sloppy code (Annex B).
+    if (nested && !_strict && stmt.id && !names.includes(stmt.id.name)) {
+      names.push(stmt.id.name);
+      _guardedNames.add(stmt.id.name);
+    }
+    return;
+  }
+  if (stmt.type === 'VariableDeclaration') {
+    if (stmt.kind === 'var') for (const decl of stmt.declarations) extractPatternNames(decl.id, names);
+    return;
+  }
+  const children: AnyNode[] = [];
+  switch (stmt.type) {
+    case 'BlockStatement': case 'StaticBlock': children.push(...stmt.body); break;
+    case 'IfStatement': children.push(stmt.consequent, stmt.alternate); break;
+    case 'ForStatement': children.push(stmt.init, stmt.body); break;
+    case 'ForInStatement': case 'ForOfStatement': children.push(stmt.left, stmt.body); break;
+    case 'WhileStatement': case 'DoWhileStatement': case 'LabeledStatement': case 'WithStatement': children.push(stmt.body); break;
+    case 'TryStatement': children.push(stmt.block, stmt.handler?.body, stmt.finalizer); break;
+    case 'SwitchStatement': for (const c of stmt.cases) children.push(...c.consequent); break;
+  }
+  for (const child of children) if (child) collectNestedVars(child, names, true);
 }
 
 /**
@@ -240,8 +298,8 @@ function buildCaptureExpression(varNames: string[], line: number, columnRange?: 
 /**
  * The variables a capture (or condition) refreshes: `{ a, b }`; inside a block
  * scope, the names that belong to the parent frame, so the runtime can
- * distribute them; inside a closure, the closed-over variables, which the
- * runtime shows separately on the frame.
+ * distribute them. (The closed-over variables come from the function's
+ * closure reader, #90.)
  */
 function buildVarArgs(varNames: string[]): AnyNode[] {
   const args: AnyNode[] = [buildVarsObject(varNames)];
@@ -254,79 +312,94 @@ function buildVarArgs(varNames: string[]): AnyNode[] {
       })),
     });
   }
-  if (_closureVarNames && _closureVarNames.length > 0) {
-    // Ensure the parent names argument exists (null placeholder if no block scope)
-    if (!_parentVarNames) {
-      args.push({ type: 'Literal', value: null, raw: 'null' });
-    }
-    args.push(buildVarsObject(_closureVarNames));
-  }
   return args;
 }
 
-/** `{ a, b }`: each variable by its name. */
+/** `{ a, b }`: each variable by its name (a sloppy block function's guarded: `typeof f === "undefined" ? void 0 : f`). */
 function buildVarsObject(names: string[]): AnyNode {
   return {
     type: 'ObjectExpression',
     properties: names.map((name) => ({
       type: 'Property',
       key: { type: 'Identifier', name },
-      value: { type: 'Identifier', name },
+      value: _guardedNames.has(name) ? guardedRead(name) : { type: 'Identifier', name },
       kind: 'init',
-      shorthand: true,
+      shorthand: !_guardedNames.has(name),
       computed: false,
       method: false,
     })),
   };
 }
 
-function buildPushFrame(name: string, paramNames: string[], isBlockScope = false, closureVarNames?: string[] | null, captureThis = false): AnyNode {
-  const properties = paramNames.map((n) => ({
-    type: 'Property',
-    key: { type: 'Identifier', name: n },
-    value: { type: 'Identifier', name: n },
-    kind: 'init',
-    shorthand: true,
-    computed: false,
-    method: false,
-  }));
+function guardedRead(name: string): AnyNode {
+  return {
+    type: 'ConditionalExpression',
+    test: { type: 'BinaryExpression', operator: '===', left: { type: 'UnaryExpression', operator: 'typeof', prefix: true, argument: { type: 'Identifier', name } }, right: { type: 'Literal', value: 'undefined' } },
+    consequent: voidZero(),
+    alternate: { type: 'Identifier', name },
+  };
+}
 
+/** `void 0`: undefined, whatever the program calls `undefined`. */
+function voidZero(): AnyNode {
+  return { type: 'UnaryExpression', operator: 'void', prefix: true, argument: { type: 'Literal', value: 0, raw: '0' } };
+}
+
+/** The body of a reader: `var r = { __proto__: null }; try { r["a"] = a; } catch (__e__) {} …; return r;`, a name still in its temporal dead zone left out. */
+function readerBody(names: string[], result: string): AnyNode[] {
+  const r = { type: 'Identifier', name: result };
+  const body: AnyNode[] = [{
+    type: 'VariableDeclaration',
+    kind: 'var',
+    declarations: [{
+      type: 'VariableDeclarator',
+      id: r,
+      init: { type: 'ObjectExpression', properties: [{ type: 'Property', key: { type: 'Identifier', name: '__proto__' }, value: { type: 'Literal', value: null, raw: 'null' }, kind: 'init', shorthand: false, computed: false, method: false }] },
+    }],
+  }];
+  for (const name of names) {
+    body.push({
+      type: 'TryStatement',
+      block: { type: 'BlockStatement', body: [{
+        type: 'ExpressionStatement',
+        expression: {
+          type: 'AssignmentExpression',
+          operator: '=',
+          left: { type: 'MemberExpression', object: r, property: { type: 'Literal', value: name }, computed: true, optional: false },
+          right: _guardedNames.has(name) ? guardedRead(name) : { type: 'Identifier', name },
+        },
+      }] },
+      handler: { type: 'CatchClause', param: { type: 'Identifier', name: '__e__' }, body: { type: 'BlockStatement', body: [] } },
+      finalizer: null,
+    });
+  }
+  body.push({ type: 'ReturnStatement', argument: r });
+  return body;
+}
+
+/**
+ * A function's closure reader (#90): `() => { … }` returning each variable it
+ * closes over, made inside the function, where those names are the outer
+ * scope's (the function's own declarations of them are left out of the
+ * list), each read in a try, as one can still be in its temporal dead zone
+ * (a helper declared at the bottom called before a const above it is set).
+ */
+function buildClosureReader(names: string[]): AnyNode {
+  return { type: 'ArrowFunctionExpression', id: null, params: [], expression: false, generator: false, async: false, body: { type: 'BlockStatement', body: readerBody(names, '__c__') } };
+}
+
+/** `__pushFrame__(name, { params }, isBlockScope, closureReader, this)`, the trailing arguments it doesn't need left out. */
+function buildPushFrame(name: string, paramNames: string[], isBlockScope = false, closureVarNames?: string[] | null, captureThis = false): AnyNode {
   const args: AnyNode[] = [
     { type: 'Literal', value: name },
-    { type: 'ObjectExpression', properties },
+    buildVarsObject(paramNames),
   ];
-
-  if (isBlockScope) {
-    args.push({ type: 'Literal', value: true });
-  }
-
-  // Pass closed-over variables as fourth argument
-  if (closureVarNames && closureVarNames.length > 0) {
-    if (!isBlockScope) {
-      args.push({ type: 'Literal', value: false });
-    }
-    const closureProps = closureVarNames.map((n) => ({
-      type: 'Property',
-      key: { type: 'Identifier', name: n },
-      value: { type: 'Identifier', name: n },
-      kind: 'init',
-      shorthand: true,
-      computed: false,
-      method: false,
-    }));
-    args.push({ type: 'ObjectExpression', properties: closureProps });
-  }
-
-  // Pass `this` as fifth argument for non-arrow functions
-  if (captureThis) {
-    // Ensure args 2-4 exist as placeholders
-    while (args.length < 4) {
-      args.push(args.length === 2
-        ? { type: 'Literal', value: false }
-        : { type: 'Literal', value: null, raw: 'null' });
-    }
-    args.push({ type: 'ThisExpression' });
-  }
+  const closure = closureVarNames && closureVarNames.length > 0;
+  if (isBlockScope || closure || captureThis) args.push({ type: 'Literal', value: isBlockScope });
+  // The function's closure reader (#90).
+  if (closure || captureThis) args.push(closure ? buildClosureReader(closureVarNames) : { type: 'Literal', value: null, raw: 'null' });
+  // Its this, for a function that isn't an arrow function.
+  if (captureThis) args.push({ type: 'ThisExpression' });
 
   return {
     type: 'ExpressionStatement',
@@ -391,7 +464,7 @@ function suspended(n: AnyNode): AnyNode {
   suspendAtYieldAndAwait(n);
   const frame = { type: 'Identifier', name: '__fr__' };
   if (n.type === 'AwaitExpression' || n.type === 'YieldExpression') {
-    const operand = runtimeCall('__suspend__', [frame, n.argument ?? { type: 'Identifier', name: 'undefined' }]);
+    const operand = runtimeCall('__suspend__', [frame, n.argument ?? voidZero()]);
     return runtimeCall('__resume__', [frame, { ...n, argument: operand }]);
   }
   const resume = () => ({ type: 'ExpressionStatement', expression: runtimeCall('__resume__', [frame]) });
@@ -407,7 +480,7 @@ function buildPopFrame(endLine?: number): AnyNode {
     expression: {
       type: 'CallExpression',
       callee: { type: 'Identifier', name: '__popFrame__' },
-      arguments: endLine ? [{ type: 'Identifier', name: 'undefined' }, { type: 'Literal', value: endLine }] : [],
+      arguments: endLine ? [voidZero(), { type: 'Literal', value: endLine }] : [],
       optional: false,
     },
   };
@@ -449,7 +522,7 @@ function buildConditionWrapper(
     ...buildVarArgs(varNames),
   ];
   if (blockFrame) {
-    while (args.length < 6) args.push({ type: 'Literal', value: null, raw: 'null' });
+    while (args.length < 5) args.push({ type: 'Literal', value: null, raw: 'null' });
     args.push({
       type: 'ObjectExpression',
       properties: [
@@ -466,44 +539,9 @@ function buildConditionWrapper(
   };
 }
 
+/** `__loop__();`: the loop guard, at the top of each iteration (#91): it counts iterations and checks the time budget. */
 function buildLoopGuard(): AnyNode {
-  // if (++__loopCount > __MAX_LOOPS) throw new Error("Infinite loop detected (exceeded " + __MAX_LOOPS + " iterations)");
-  return {
-    type: 'IfStatement',
-    _isLoopGuard: true,
-    test: {
-      type: 'BinaryExpression',
-      operator: '>',
-      left: {
-        type: 'UpdateExpression',
-        operator: '++',
-        prefix: true,
-        argument: { type: 'Identifier', name: '__loopCount' },
-      },
-      right: { type: 'Identifier', name: '__MAX_LOOPS' },
-    },
-    consequent: {
-      type: 'ThrowStatement',
-      argument: {
-        type: 'NewExpression',
-        callee: { type: 'Identifier', name: 'Error' },
-        arguments: [
-          {
-            type: 'BinaryExpression',
-            operator: '+',
-            left: {
-              type: 'BinaryExpression',
-              operator: '+',
-              left: { type: 'Literal', value: 'Infinite loop detected (exceeded ' },
-              right: { type: 'Identifier', name: '__MAX_LOOPS' },
-            },
-            right: { type: 'Literal', value: ' iterations)' },
-          },
-        ],
-      },
-    },
-    alternate: null,
-  };
+  return { type: 'ExpressionStatement', _isLoopGuard: true, expression: runtimeCall('__loop__', []) };
 }
 
 /**
@@ -653,44 +691,19 @@ function instrumentBlock(
   // top-level name, for that step and to keep the Global frame current while
   // functions and callbacks run.
   if (isTopLevel) {
-    body.push(buildGlobalsReader(visible()));
+    body.unshift(buildGlobalsReader(visible()));
     body.push({ type: 'ExpressionStatement', expression: runtimeCall('__endScript__', [{ type: 'Literal', value: finalLine }]) });
   }
 }
 
 /**
- * `function __globals__() { const g = { __proto__: null }; try { g["a"] = a; } catch (e) {} … return g; }`:
- * each top-level name's value, leaving out those still in their temporal dead zone.
+ * `__setGlobals__(function () { var __g__ = { __proto__: null }; try { __g__["a"] = a; } catch (__e__) {} … return __g__; });`,
+ * the program's first statement: a reader of each top-level name's value,
+ * leaving out those still in their temporal dead zone.
  */
 function buildGlobalsReader(names: string[]): AnyNode {
-  const g = { type: 'Identifier', name: '__g__' };
-  const body: AnyNode[] = [{
-    type: 'VariableDeclaration',
-    kind: 'var',
-    declarations: [{
-      type: 'VariableDeclarator',
-      id: g,
-      init: { type: 'ObjectExpression', properties: [{ type: 'Property', key: { type: 'Identifier', name: '__proto__' }, value: { type: 'Literal', value: null, raw: 'null' }, kind: 'init', shorthand: false, computed: false, method: false }] },
-    }],
-  }];
-  for (const name of names) {
-    body.push({
-      type: 'TryStatement',
-      block: { type: 'BlockStatement', body: [{
-        type: 'ExpressionStatement',
-        expression: {
-          type: 'AssignmentExpression',
-          operator: '=',
-          left: { type: 'MemberExpression', object: g, property: { type: 'Literal', value: name }, computed: true, optional: false },
-          right: { type: 'Identifier', name },
-        },
-      }] },
-      handler: { type: 'CatchClause', param: { type: 'Identifier', name: '__e__' }, body: { type: 'BlockStatement', body: [] } },
-      finalizer: null,
-    });
-  }
-  body.push({ type: 'ReturnStatement', argument: g });
-  return { type: 'FunctionDeclaration', id: { type: 'Identifier', name: '__globals__' }, params: [], body: { type: 'BlockStatement', body }, generator: false, async: false };
+  const reader = { type: 'FunctionExpression', id: null, params: [], body: { type: 'BlockStatement', body: readerBody(names, '__g__') }, generator: false, async: false };
+  return { type: 'ExpressionStatement', expression: runtimeCall('__setGlobals__', [reader]) };
 }
 
 /**
@@ -763,6 +776,36 @@ function keyName(key: AnyNode): string | undefined {
   return undefined;
 }
 
+/**
+ * A computed key's name, where it can be known before the program runs (#93):
+ * `[Symbol.iterator]` for a well-known symbol, a literal's or a constant
+ * concatenation's text (`['computed' + 'Name']`).
+ */
+function computedKeyName(key: AnyNode): string | undefined {
+  if (key.type === 'MemberExpression' && !key.computed && key.object.type === 'Identifier' && key.object.name === 'Symbol' && key.property.type === 'Identifier') {
+    return `[Symbol.${key.property.name}]`;
+  }
+  const text = constantText(key);
+  return text === undefined ? undefined : text;
+}
+
+function constantText(node: AnyNode): string | undefined {
+  if (node.type === 'Literal' && (typeof node.value === 'string' || typeof node.value === 'number')) return String(node.value);
+  if (node.type === 'TemplateLiteral' && node.expressions.length === 0) return node.quasis[0].value.cooked ?? undefined;
+  if (node.type === 'BinaryExpression' && node.operator === '+') {
+    const left = constantText(node.left);
+    const right = constantText(node.right);
+    // (Number + number adds; only a concatenation with a string is text.)
+    if (left !== undefined && right !== undefined && (typeof node.left.value !== 'number' || typeof node.right.value !== 'number')) return left + right;
+  }
+  return undefined;
+}
+
+/** A member's name: its key's, or a computed key's when it can be known. */
+function memberName(member: AnyNode): string | undefined {
+  return member.computed ? computedKeyName(member.key) : keyName(member.key);
+}
+
 /** An anonymous function or class gets the name of what it is assigned to, as in JavaScript. */
 function inferName(node: AnyNode, name: string | undefined): void {
   if (!node || !name) return;
@@ -818,15 +861,20 @@ function instrumentStatement(stmt: AnyNode, scopeVars: string[]): void {
       instrumentStatement(stmt.body, scopeVars);
       break;
 
-    case 'SwitchStatement':
+    case 'SwitchStatement': {
       instrumentExpression(stmt.discriminant, scopeVars);
+      // A let, const or class in any case is the whole switch block's: an outer
+      // variable of the same name isn't visible in any case (#90).
+      const switchLexical = new Set(stmt.cases.flatMap((c: AnyNode) => collectLexicalNames(c.consequent)));
+      const caseVars = scopeVars.filter(n => !switchLexical.has(n));
       for (const c of stmt.cases) {
-        if (c.test) instrumentExpression(c.test, scopeVars);
+        if (c.test) instrumentExpression(c.test, caseVars);
         if (c.consequent && c.consequent.length > 0) {
-          instrumentBlock(c.consequent, scopeVars, false);
+          instrumentBlock(c.consequent, caseVars, false);
         }
       }
       break;
+    }
 
     case 'TryStatement':
       if (stmt.block) {
@@ -929,7 +977,7 @@ function instrumentExpression(expr: AnyNode, scopeVars: string[]): void {
 
   const children = EXPRESSION_CHILDREN[expr.type];
   if (!children) throw new UnsupportedSyntaxError(expr);
-  if (expr.type === 'Property' && !expr.computed) inferName(expr.value, keyName(expr.key));
+  if (expr.type === 'Property') inferName(expr.value, memberName(expr));
   if ((expr.type === 'AssignmentExpression' || expr.type === 'AssignmentPattern') && expr.left.type === 'Identifier') {
     inferName(expr.right, expr.left.name);
   }
@@ -951,22 +999,21 @@ function instrumentFunction(fn: AnyNode, _parentVars: string[]): void {
   const savedParentVarNames = _parentVarNames;
   _parentVarNames = null;
 
+  // A function body's directives stay first (#89), and a 'use strict' makes it strict.
+  const directives = fn.body.type === 'BlockStatement' ? takeDirectives(fn.body.body) : [];
+  const savedStrict = _strict;
+  if (directives.some(isUseStrict)) _strict = true;
+
   // Save and update closure tracking state
   const savedClosureVarNames = _closureVarNames;
   const savedFunctionDepth = _functionDepth;
   _functionDepth++;
 
-  // If inside another function, the outer scope vars are closure variables.
-  // Also inherit any closure vars from the enclosing function (for deep nesting).
-  const outerClosureVars = _functionDepth > 1 ? _parentVars.slice() : null;
-  if (outerClosureVars && savedClosureVarNames) {
-    for (const name of savedClosureVarNames) {
-      if (!outerClosureVars.includes(name)) {
-        outerClosureVars.push(name);
-      }
-    }
-  }
-  _closureVarNames = outerClosureVars;
+  // If inside another function, the outer scope vars are closure variables
+  // (#90): those visible where it is defined and the enclosing function's own
+  // closure variables, but not the names it declares itself, which are its own
+  // variables wherever they are read in it.
+  _closureVarNames = _functionDepth > 1 ? closureNames(_parentVars, savedClosureVarNames, ownBindings(fn.params, fn.body, fn.type === 'FunctionExpression' ? fn.id : null)) : null;
 
   // A function is named as JavaScript names it: its own name, else the variable or class member it is defined as.
   const name = fn.id?.name || fn._inferredName || '<anonymous>';
@@ -1005,6 +1052,9 @@ function instrumentFunction(fn: AnyNode, _parentVars: string[]): void {
   // prepends __pushFrame__ before it).
   instrumentBlock(body, fnScopeVars, false);
 
+  // A derived class's constructor shows its this once super() returns (#93).
+  if (fn._skipThisCapture) markThisAfterSuper(body);
+
   // Wrap return values so the frame pops AFTER the expression evaluates.
   // Do this BEFORE wrapping the body in try/finally — otherwise the recursion
   // into the user-level try would also rewrite our synthetic try.
@@ -1031,11 +1081,66 @@ function instrumentFunction(fn: AnyNode, _parentVars: string[]): void {
   // Derived class constructors must not read \`this\` before super() returns.
   const captureThis = fn.type !== 'ArrowFunctionExpression' && !fn._skipThisCapture;
   body.unshift(declareFrame('__fr__', buildPushFrame(name, paramNames, false, _closureVarNames, captureThis), 'var'));
+  body.unshift(...directives);
 
   // Restore saved state
   _functionDepth = savedFunctionDepth;
   _closureVarNames = savedClosureVarNames;
   _parentVarNames = savedParentVarNames;
+  _strict = savedStrict;
+}
+
+/** Names that can't be read as a variable everywhere (a generator's yield, strict mode's reserved words, a function's own arguments): never closure variables. */
+const NEVER_CLOSURE = new Set(['yield', 'await', 'let', 'static', 'implements', 'interface', 'package', 'private', 'protected', 'public', 'arguments']);
+
+/** A nested function's closure variables (#90): the outer names it doesn't declare itself. */
+function closureNames(parentVars: string[], inherited: string[] | null, own: Set<string>): string[] {
+  const names: string[] = [];
+  for (const name of [...parentVars, ...(inherited ?? [])]) {
+    if (!own.has(name) && !NEVER_CLOSURE.has(name) && !names.includes(name)) names.push(name);
+  }
+  return names;
+}
+
+/**
+ * Every name a function declares itself, at any depth of its body but not in
+ * its nested functions: its parameters, its own name (a function
+ * expression's), its var, let, const, class and function declarations and
+ * its catch parameters (#90).
+ */
+function ownBindings(params: AnyNode[], body: AnyNode, ownName: AnyNode | null): Set<string> {
+  const names: string[] = [];
+  for (const p of params) extractPatternNames(p, names);
+  if (ownName) names.push(ownName.name);
+  const visit = (node: AnyNode): void => {
+    if (!node || typeof node.type !== 'string') return;
+    if (node.type === 'VariableDeclaration') for (const d of node.declarations) extractPatternNames(d.id, names);
+    if (node.type === 'CatchClause' && node.param) extractPatternNames(node.param, names);
+    if ((node.type === 'FunctionDeclaration' || node.type === 'ClassDeclaration') && node.id) names.push(node.id.name);
+    if (FUNCTION_TYPES.has(node.type)) return;
+    for (const [key, value] of Object.entries(node)) {
+      if (key === 'loc' || key.startsWith('_')) continue;
+      if (Array.isArray(value)) value.forEach(visit);
+      else if (value && typeof (value as AnyNode).type === 'string') visit(value);
+    }
+  };
+  visit(body);
+  return new Set(names);
+}
+
+/** `super(…)` → `__thisReady__(__fr__, super(…))`: the frame has its this once the call returns (#93); not in nested functions. */
+function markThisAfterSuper(node: AnyNode): void {
+  for (const key of Object.keys(node)) {
+    if (key === 'loc' || key.startsWith('_')) continue;
+    const child = node[key];
+    const fix = (c: AnyNode): AnyNode => {
+      if (!c || typeof c.type !== 'string' || FUNCTION_TYPES.has(c.type)) return c;
+      markThisAfterSuper(c);
+      return c.type === 'CallExpression' && c.callee.type === 'Super' ? runtimeCall('__thisReady__', [{ type: 'Identifier', name: '__fr__' }, c]) : c;
+    };
+    if (Array.isArray(child)) for (let i = 0; i < child.length; i++) child[i] = fix(child[i]);
+    else if (child && typeof child.type === 'string') node[key] = fix(child);
+  }
 }
 
 /**
@@ -1054,7 +1159,7 @@ function wrapReturnsWithPopFrame(body: AnyNode[]): void {
       const line = stmt.loc?.start?.line ?? 0;
       const retArg = stmt.argument
         ? stmt.argument
-        : { type: 'Identifier', name: 'undefined' };
+        : voidZero();
       stmt.argument = {
         type: 'CallExpression',
         callee: { type: 'Identifier', name: '__popFrame__' },
@@ -1316,6 +1421,10 @@ function instrumentClass(cls: AnyNode, scopeVars: string[]): void {
   const isDerived = !!cls.superClass;
   if (cls.superClass) instrumentExpression(cls.superClass, scopeVars);
   const className: string | undefined = cls.id?.name ?? cls._inferredName;
+  // A class body is strict code.
+  const savedStrict = _strict;
+  _strict = true;
+  const privateFields = (cls.body?.body ?? []).filter((m: AnyNode) => m.type === 'PropertyDefinition' && m.key.type === 'PrivateIdentifier').map((m: AnyNode) => m.key.name as string);
   for (const member of cls.body?.body ?? []) {
     if (member.computed) instrumentExpression(member.key, scopeVars);
     if (member.type === 'MethodDefinition') {
@@ -1325,12 +1434,11 @@ function instrumentClass(cls: AnyNode, scopeVars: string[]): void {
       if (isDerived && member.kind === 'constructor') {
         member.value._skipThisCapture = true;
       }
-      member.value._inferredName = member.kind === 'constructor' ? className
-        : member.computed ? undefined : keyName(member.key);
+      member.value._inferredName = member.kind === 'constructor' ? className : memberName(member);
       instrumentFunction(member.value, scopeVars);
     } else if (member.type === 'PropertyDefinition') {
       if (member.value) {
-        if (!member.computed) inferName(member.value, keyName(member.key));
+        inferName(member.value, memberName(member));
         instrumentExpression(member.value, scopeVars);
       }
     } else if (member.type === 'StaticBlock') {
@@ -1339,6 +1447,34 @@ function instrumentClass(cls: AnyNode, scopeVars: string[]): void {
       throw new UnsupportedSyntaxError(member);
     }
   }
+  _strict = savedStrict;
+  // Its private fields are drawn too (#93): a static block, first, gives the
+  // runtime a reader for each, `(o, absent) => #f in o ? o.#f : absent`.
+  if (privateFields.length > 0) cls.body.body.unshift(privateFieldReaders(privateFields));
+}
+
+/** `static { __privateNames__(this, { "#f": (o, absent) => #f in o ? o.#f : absent, … }); }` */
+function privateFieldReaders(names: string[]): AnyNode {
+  const o = { type: 'Identifier', name: 'o' };
+  const absent = { type: 'Identifier', name: 'absent' };
+  const readers = {
+    type: 'ObjectExpression',
+    properties: names.map(name => ({
+      type: 'Property',
+      key: { type: 'Literal', value: '#' + name },
+      value: {
+        type: 'ArrowFunctionExpression', id: null, params: [o, absent], expression: true, generator: false, async: false,
+        body: {
+          type: 'ConditionalExpression',
+          test: { type: 'BinaryExpression', operator: 'in', left: { type: 'PrivateIdentifier', name }, right: o },
+          consequent: { type: 'MemberExpression', object: o, property: { type: 'PrivateIdentifier', name }, computed: false, optional: false },
+          alternate: absent,
+        },
+      },
+      kind: 'init', shorthand: false, computed: false, method: false,
+    })),
+  };
+  return { type: 'StaticBlock', body: [{ type: 'ExpressionStatement', expression: runtimeCall('__privateNames__', [{ type: 'ThisExpression' }, readers]) }] };
 }
 
 /**
@@ -1352,11 +1488,7 @@ function instrumentStaticBlock(block: AnyNode, scopeVars: string[]): void {
   const savedFunctionDepth = _functionDepth;
   _parentVarNames = null;
   _functionDepth++;
-  const outerClosureVars = _functionDepth > 1 ? scopeVars.slice() : null;
-  if (outerClosureVars && savedClosureVarNames) {
-    for (const name of savedClosureVarNames) if (!outerClosureVars.includes(name)) outerClosureVars.push(name);
-  }
-  _closureVarNames = outerClosureVars;
+  _closureVarNames = _functionDepth > 1 ? closureNames(scopeVars, savedClosureVarNames, ownBindings([], { type: 'BlockStatement', body: block.body }, null)) : null;
 
   instrumentBlock(block.body, [], false);
   const body = block.body.splice(0, block.body.length);

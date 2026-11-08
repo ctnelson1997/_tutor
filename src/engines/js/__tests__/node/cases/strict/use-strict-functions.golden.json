@@ -1,0 +1,45 @@
+{
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "object undefined 2 1 object"
+  }
+ ],
+ "calls": [
+  {
+   "method": "log",
+   "args": [
+    "str:object",
+    "str:undefined",
+    "num:2",
+    "num:1",
+    "str:object"
+   ]
+  }
+ ],
+ "uncaught": [],
+ "endless": false,
+ "pendingTimers": false,
+ "compileError": null,
+ "executedLines": [
+  3,
+  7,
+  10,
+  11,
+  15,
+  16,
+  18,
+  20,
+  22
+ ],
+ "statementRuns": 9,
+ "functionCalls": 5,
+ "finalGlobals": {
+  "sloppy": "fn:sloppy",
+  "strict": "fn:strict",
+  "linked": "fn:linked",
+  "unlinked": "fn:unlinked",
+  "arrow": "fn:arrow"
+ },
+ "sourceSha256": "6e794fdb512a1e0f8fef9a56cda7324c6bc8e40d5c7cc9d581d4310e857e9e8e"
+}
