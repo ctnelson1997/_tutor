@@ -183,7 +183,7 @@ src/
 │   │   ├── runtime.ts          # Worker preamble: __capture__, serialization, heap registry
 │   │   ├── executor.ts         # instrument → worker → snapshots (no store coupling)
 │   │   ├── examples.ts         # Built-in JS example snippets
-│   │   ├── security.ts         # Suspicious code pattern detection
+│   │   ├── security.ts         # Shared-link check: which browser features the program's syntax tree reaches
 │   │   └── __tests__/node/     # Differential corpus: JS programs + Node 24 goldens, known-failures.json
 │   ├── py/                     # Python engine (Pyodide + sys.settrace)
 │   │   ├── index.ts            # LanguageEngine implementation

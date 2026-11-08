@@ -80,6 +80,15 @@ export default function ShareWarningPage() {
             <strong>Only run code from people you trust.</strong>
           </p>
 
+          {/* The check is a heuristic (#95): say so, whatever it found */}
+          {engine?.analyzeCode && (
+            <p className="mb-2">
+              {flags.length > 0
+                ? 'An automatic check of the code found the following, but it can also miss things:'
+                : 'An automatic check of the code found nothing unusual, but it can miss things.'}
+            </p>
+          )}
+
           {/* Static analysis flags */}
           {flags.length > 0 ? (
             flags.map((flag, i) => (
