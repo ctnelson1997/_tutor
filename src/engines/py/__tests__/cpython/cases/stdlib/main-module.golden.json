@@ -1,0 +1,69 @@
+{
+ "stdout": "3 4\nTrue\nmodule None main.py ['main.py']\n['__annotations__', '__builtins__', '__cached__', '__doc__', '__file__', '__loader__', '__name__', '__package__', '__spec__']\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "3 4"
+  },
+  {
+   "stream": "stdout",
+   "text": "True"
+  },
+  {
+   "stream": "stdout",
+   "text": "module None main.py ['main.py']"
+  },
+  {
+   "stream": "stdout",
+   "text": "['__annotations__', '__builtins__', '__cached__', '__doc__', '__file__', '__loader__', '__name__', '__package__', '__spec__']"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"pickle":"<module>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"pickle":"<module>","sys":"<module>"}},
+  {"event":"call","line":6,"stack":["<module>","Point"],"locals":{}},
+  {"event":"line","line":6,"stack":["<module>","Point"],"locals":{}},
+  {"event":"line","line":7,"stack":["<module>","Point"],"locals":{"__module__":"'__main__'","__qualname__":"'Point'"}},
+  {"event":"return","line":7,"stack":["<module>","Point"],"locals":{"__module__":"'__main__'","__qualname__":"'Point'","__init__":"<function>"},"value":"None","classBody":true},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"pickle":"<module>","sys":"<module>","Point":"<type>"}},
+  {"event":"call","line":7,"stack":["<module>","__init__"],"locals":{"self":"<Point>","x":"3","y":"4"}},
+  {"event":"line","line":8,"stack":["<module>","__init__"],"locals":{"self":"<Point>","x":"3","y":"4"}},
+  {"event":"line","line":9,"stack":["<module>","__init__"],"locals":{"self":"<Point>","x":"3","y":"4"}},
+  {"event":"return","line":9,"stack":["<module>","__init__"],"locals":{"self":"<Point>","x":"3","y":"4"},"value":"None"},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"pickle":"<module>","sys":"<module>","Point":"<type>","p":"<Point>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"pickle":"<module>","sys":"<module>","Point":"<type>","p":"<Point>"}},
+  {"event":"line","line":15,"stack":["<module>"],"locals":{"pickle":"<module>","sys":"<module>","Point":"<type>","p":"<Point>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"pickle":"<module>","sys":"<module>","Point":"<type>","p":"<Point>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"pickle":"<module>","sys":"<module>","Point":"<type>","p":"<Point>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"pickle":"<module>","sys":"<module>","Point":"<type>","p":"<Point>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"pickle":"<module>","sys":"<module>","Point":"<type>","p":"<Point>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"pickle":"<module>","sys":"<module>","Point":"<type>","p":"<Point>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"pickle":"<module>","sys":"<module>","Point":"<type>","p":"<Point>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"pickle":"<module>","sys":"<module>","Point":"<type>","p":"<Point>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"pickle":"<module>","sys":"<module>","Point":"<type>","p":"<Point>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"pickle":"<module>","sys":"<module>","Point":"<type>","p":"<Point>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"pickle":"<module>","sys":"<module>","Point":"<type>","p":"<Point>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"pickle":"<module>","sys":"<module>","Point":"<type>","p":"<Point>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"pickle":"<module>","sys":"<module>","Point":"<type>","p":"<Point>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"pickle":"<module>","sys":"<module>","Point":"<type>","p":"<Point>"}},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"pickle":"<module>","sys":"<module>","Point":"<type>","p":"<Point>"}},
+  {"event":"return","line":16,"stack":["<module>"],"locals":{"pickle":"<module>","sys":"<module>","Point":"<type>","p":"<Point>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 31,
+ "finalGlobals": {
+  "pickle": "<module>",
+  "sys": "<module>",
+  "Point": "<type>",
+  "p": "<Point>"
+ },
+ "continuation": [],
+ "sourceSha256": "81e8755e5712dd247f7599c3a1c14b44c5b1bb798209ee5a440fa7a357a6e67b"
+}

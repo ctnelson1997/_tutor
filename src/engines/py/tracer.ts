@@ -22,18 +22,42 @@ import traceback as _traceback
 import builtins as _builtins
 import warnings as _warnings
 import re as _re
+import codecs as _codecs
+import itertools as _itertools
+import operator as _operator
+import weakref as _weakref
 import enum as _enum
+import collections as _collections
+import threading as _threading
+import _thread
+from asyncio import events as _aio_events, base_events as _aio_base_events
+from importlib.machinery import SourceFileLoader as _SourceFileLoader
 
 # The tracer's own builtins and library functions (#34): a program that
 # replaces builtins.len, json.dumps or sys.settrace doesn't change what the
 # tracer calls. (The program runs in a namespace of its own.)
 globals().update({_k: _v for _k, _v in vars(_builtins).items() if not _k.startswith('_')})
 _json_dumps = json.dumps
+# Every part is JSON text from the moment it is made (#78): the tracer keeps
+# none of the program's objects in the reply it builds. The encoder is json's
+# own C one, called directly: JSONEncoder.encode looks isinstance and str up
+# in the builtins, which a program may replace.
+import _json
+
+def _unencodable(o):
+    raise TypeError('not JSON serializable: ' + _type_name(type(o)))
+
+_c_encoder = _json.make_encoder(None, _unencodable, _json.encode_basestring_ascii, None, ':', ',', False, False, True)
+
+def _encode(obj):
+    return ''.join(_c_encoder(obj, 0))
 _isinf = math.isinf
 _isnan = math.isnan
+_log10 = math.log10
 _now = time.time
 _settrace = sys.settrace
 _setprofile = sys.setprofile
+_gc_collect = __import__('gc').collect
 _getframe = sys._getframe
 _real_getlimit = sys.getrecursionlimit
 _real_setlimit = sys.setrecursionlimit
@@ -46,6 +70,10 @@ _type_name = type.__dict__['__name__'].__get__
 _type_bases = type.__dict__['__bases__'].__get__
 _type_mro = type.__dict__['__mro__'].__get__
 _function_code = _types.FunctionType.__dict__['__code__'].__get__
+_function_defaults = _types.FunctionType.__dict__['__defaults__'].__get__
+_function_kwdefaults = _types.FunctionType.__dict__['__kwdefaults__'].__get__
+_function_closure = _types.FunctionType.__dict__['__closure__'].__get__
+_cell_contents = _types.CellType.__dict__['cell_contents'].__get__
 
 # ══════════════════════════════════════
 # PyTutor Tracer
@@ -76,19 +104,78 @@ _WORK_BUDGET = None
 _STEP_WORK = 10
 _OBJECT_WORK = 5
 _VALUE_WORK = 2
-_unwinding = set()    # frames an exception is propagating out of
+_raised_at = {}       # frame -> the instruction an exception last passed through it at (#80)
 
 # The instructions a frame returns (or yields) at. A 'return' event anywhere
 # else is the frame unwinding: an exception leaving it, perhaps after a
-# finally block or an inlined comprehension's cleanup ran (whose line events
-# end _unwinding's mark) and re-raised it.
+# finally block or an inlined comprehension's cleanup ran and re-raised it.
+# So is one at the very instruction an exception passed through the frame
+# at: nothing ran since. A frame that handled the exception and went on
+# (a for loop ending at a StopIteration, contextlib.suppress) returns from
+# another instruction, a real return (#80).
 _RETURN_OPS = frozenset(_dis.opmap[name] for name in ('RETURN_VALUE', 'RETURN_CONST', 'YIELD_VALUE') if name in _dis.opmap)
+_YIELD_VALUE = _dis.opmap['YIELD_VALUE']
+# The instructions a yield from or an await ends a finished sub-iterator at,
+# its StopIteration the interpreter's signal (3.12's; the tests also run the
+# tracer in older CPythons).
+_SEND_OPS = frozenset(_dis.opmap[name] for name in ('SEND', 'END_SEND') if name in _dis.opmap)
+# A coroutine's or async generator's frame suspends at its awaits with a YIELD_VALUE too.
+_CO_AWAITING = 0x80 | 0x100 | 0x200   # CO_COROUTINE, CO_ITERABLE_COROUTINE, CO_ASYNC_GENERATOR
 
 def _returns(frame):
-    return frame not in _unwinding and frame.f_code.co_code[frame.f_lasti] in _RETURN_OPS
+    return _raised_at.get(frame) != frame.f_lasti and frame.f_code.co_code[frame.f_lasti] in _RETURN_OPS
 
 class _TutorStop(BaseException):
     """Ends a run from the tracer. A BaseException, so the program's own 'except Exception' doesn't catch it."""
+
+class _TutorUnsupported(BaseException):
+    """Ends a run at something PyTutor can't run (#86): the run's steps so far, and the message, as an engine error."""
+
+# ── What a browser can't run as CPython does (#86) ──
+#
+# asyncio.run() gets an event loop of its own: CPython's scheduling
+# (BaseEventLoop), with a clock that jumps to the next timer instead of
+# waiting (asyncio.sleep(2) takes no time) and nothing else to wait for.
+# Pyodide's own loop (always running, which asyncio.run() refuses) comes back
+# after the run. Starting a thread stops the run with PyTutor's message
+# (Pyodide has none), and breakpoint() and pdb.set_trace() do nothing: the
+# visualizer is the debugger already.
+
+class _UnixSelectorEventLoop(_aio_base_events.BaseEventLoop):
+    # Named as CPython's on Linux.
+
+    def __init__(self):
+        super().__init__()
+        self._clock = 0.0
+        self._selector = self
+
+    def time(self):
+        return self._clock
+
+    def select(self, timeout):
+        # What a selector would wait for: only time, which passes at once.
+        if timeout:
+            self._clock += timeout
+        return []
+
+    def _process_events(self, event_list):
+        pass
+
+    def _write_to_self(self):
+        pass
+
+class _UnixDefaultEventLoopPolicy(_aio_events.BaseDefaultEventLoopPolicy):
+    _loop_factory = _UnixSelectorEventLoop
+
+for _aio_class in (_UnixSelectorEventLoop, _UnixDefaultEventLoopPolicy):
+    _aio_class.__module__ = 'asyncio.unix_events'
+del _aio_class
+
+def _no_threads(*args, **kwargs):
+    raise _TutorUnsupported("Threads aren't supported in PyTutor yet")
+
+def _no_breakpoint(*args, **kwargs):
+    return None
 
 def _stop(reason):
     global _stop_reason
@@ -147,6 +234,56 @@ def _retrace(frame, event, arg):
     _setprofile(None)
     _settrace(_tracer)
 
+# ── The program's own trace function (#78) ──
+#
+# sys.settrace and sys.gettrace are the program's while it runs: a trace
+# function it sets gets the events CPython would give it, after the tracer has
+# taken its step (a tracing demo, the trace module, doctest restoring what it
+# found), and sys.settrace(None) ends only the program's tracing, never the
+# tracer's.
+_program_trace = None   # the program's global trace function
+_program_local = {}     # frame -> the program's local trace function for it
+
+def _program_settrace(function):
+    global _program_trace
+    _program_trace = function
+    if function is None:
+        _program_local.clear()
+
+def _program_gettrace():
+    return _program_trace
+
+_program_settrace.__name__ = _program_settrace.__qualname__ = 'settrace'
+_program_gettrace.__name__ = _program_gettrace.__qualname__ = 'gettrace'
+
+def _chain(frame, event, arg, result):
+    # Gives an event to the program's trace function, as CPython would, and
+    # returns the tracer's local trace function for the frame if either needs
+    # its events.
+    if frame.f_code.co_filename == _TRACER_FILE:
+        return result
+    try:
+        if event == 'call':
+            local = _program_trace(frame, event, arg) if _program_trace is not None else None
+            if local is not None:
+                _program_local[frame] = local
+        else:
+            local = _program_local.get(frame)
+            if local is not None:
+                local = local(frame, event, arg)
+                if local is None or event == 'return':
+                    _program_local.pop(frame, None)
+                else:
+                    _program_local[frame] = local
+    except BaseException:
+        # As CPython does when a trace function raises: the program's tracing
+        # ends and the exception reaches the program. Raising turns the
+        # tracer off too; _retrace turns it back on.
+        _program_settrace(None)
+        _setprofile(_retrace)
+        raise
+    return _tracer if frame in _program_local else result
+
 # ── What a frame shows (#38) ──
 #
 # Every variable the program has, in the order pythontutor.com shows them:
@@ -159,7 +296,7 @@ def _retrace(frame, event, arg):
 # docstring or annotations; the warnings module's registry).
 _MODULE_BOOKKEEPING = frozenset({'__name__', '__builtins__', '__doc__', '__annotations__', '__package__', '__spec__', '__loader__', '__file__', '__cached__', '__warningregistry__'})
 # A class body's and a class's own (pythontutor.com hides these too).
-_CLASS_BOOKKEEPING = frozenset({'__module__', '__qualname__', '__dict__', '__weakref__', '__doc__', '__annotations__', '__classcell__', '__firstlineno__', '__static_attributes__'})
+_CLASS_BOOKKEEPING = frozenset({'__module__', '__qualname__', '__dict__', '__weakref__', '__doc__', '__annotations__', '__classcell__', '__firstlineno__', '__static_attributes__', '__type_params__'})
 # A method's implicit cell for super() (and 3.12's for type parameters).
 _FUNCTION_BOOKKEEPING = frozenset({'__class__', '__classdict__'})
 
@@ -199,34 +336,82 @@ def _is_source_word(name):
     i = name.find('__', 1)
     return name.startswith('_') and i > 1 and name[i:] in _source_words
 
-# Lines that are continuations of multi-line simple statements.
-# These produce no visible variable changes, so we skip snapshots for them.
-_continuation_lines = set()
+# Lines that are continuations of multi-line simple statements, each with the
+# line its statement starts on: they take no step of their own, nor does the
+# statement's first line when the statement comes back to it (a call on a
+# line of its own after its arguments' lines, #80).
+_continuation_lines = {}
 
 # The program's file name, as CPython names it in tracebacks and warnings.
 _USER_FILE = 'main.py'
 
+def _main_module():
+    # A fresh __main__ module with the names python main.py gives it, in its
+    # order (#77): __name__, __doc__, __package__, __loader__ and __spec__
+    # from ModuleType, then __annotations__ and __builtins__ (the builtins
+    # module), then __file__ and __cached__.
+    module = _types.ModuleType('__main__')
+    ns = module.__dict__
+    ns['__loader__'] = _SourceFileLoader('__main__', _USER_FILE)
+    ns['__annotations__'] = {}
+    ns['__builtins__'] = _builtins
+    ns['__file__'] = _USER_FILE
+    ns['__cached__'] = None
+    return module
+
 # ── Output: captured at the streams (#31) ──
 #
-# While the program runs, sys.stdout and sys.stderr are _TutorStreams, so the
-# real print (end, sep, file), sys.stdout.write, input()'s prompt, warnings,
+# While the program runs, sys.stdout and sys.stderr are TextIOWrappers over
+# _TutorBuffers (#78), so the real print (end, sep, file), sys.stdout.write, input()'s prompt, warnings,
 # traceback.print_exc() and contextlib.redirect_stdout all work as in CPython
 # run unbuffered (python -u). Each step shows stdout's lines, and once stderr
 # has been used, every line with its stream (a line belongs to the stream that
 # wrote its first characters).
 
 _out_lines = ['']       # stdout split on newlines; the last entry is the open line
-_console = []           # every line as [stream, text, input ranges or None], in program order
+# Every line as [stream, text, input ranges or None], in program order: kept
+# from the first write to stderr or read from stdin on (#84), started then
+# from stdout's lines; until then the console is stdout.
+_console = []
+_console_live = False
 _console_open = False   # the last line of _console has no newline yet
 _stderr_used = False
 _stdin_used = False
 _output_count = 0       # writes and echoes so far
 _output_seen = 0        # ... when the last step was taken
 
+def _start_console():
+    # The console from stdout's lines, at the first write to stderr or read from stdin.
+    global _console_live, _console_open
+    _console_live = True
+    _console.extend([['stdout', t, None] for t in _out_lines[:-1]])
+    if _out_lines[-1]:
+        _console.append(['stdout', _out_lines[-1], None])
+    _console_open = bool(_out_lines[-1])
+
 def _console_add(stream, s, echo):
     # Adds s to the console's lines; an echo marks its characters as input.
-    global _console_open, _output_count
-    _output_count += 1
+    global _console_open
+    if not echo:
+        # Many lines at once (one print of a long text, #84): the lines in between are whole.
+        parts = s.split('\\n')
+        first = parts[0]
+        if first:
+            if _console_open:
+                _console[-1][1] += first
+            else:
+                _console.append([stream, first, None])
+                _console_open = True
+        if len(parts) > 1:
+            if not _console_open:
+                _console.append([stream, '', None])
+            _console.extend([[stream, t, None] for t in parts[1:-1]])
+            if parts[-1]:
+                _console.append([stream, parts[-1], None])
+                _console_open = True
+            else:
+                _console_open = False
+        return
     for i, part in enumerate(s.split('\\n')):
         if i > 0:
             if not _console_open:
@@ -252,37 +437,37 @@ def _console_add(stream, s, echo):
                 line[2] = ranges
 
 def _write(stream, s):
-    global _stderr_used
+    global _stderr_used, _output_count
+    _output_count += 1
     if stream == 'stderr':
         _stderr_used = True
+        if not _console_live:
+            _start_console()
     if stream == 'stdout':
         parts = s.split('\\n')
         _out_lines[-1] += parts[0]
         _out_lines.extend(parts[1:])
-    _console_add(stream, s, False)
+    if _console_live:
+        _console_add(stream, s, False)
 
 def _echo(s):
     # What the program read from stdin shows on the console, marked as input,
     # where a terminal shows what was typed: after input()'s prompt (#32). It
     # isn't the program's output, so stdout doesn't hold it.
-    global _stdin_used
+    global _stdin_used, _output_count
     _stdin_used = True
+    _output_count += 1
+    if not _console_live:
+        _start_console()
     _console_add('stdout', s, True)
 
-class _TutorStream(_io.TextIOBase):
-    # sys.stdout or sys.stderr while the program runs: a text stream that records what is written.
+class _TutorBuffer(_io.BufferedIOBase):
+    # The bytes under sys.stdout or sys.stderr while the program runs (#78):
+    # what is written reaches the console at once, as with python -u.
 
-    def __init__(self, stream, errors):
+    def __init__(self, stream):
         self._stream = stream
-        self._errors = errors
-
-    @property
-    def encoding(self):
-        return 'utf-8'
-
-    @property
-    def errors(self):
-        return self._errors
+        self._decode = _codecs.getincrementaldecoder('utf-8')('replace').decode
 
     @property
     def name(self):
@@ -290,7 +475,7 @@ class _TutorStream(_io.TextIOBase):
 
     @property
     def mode(self):
-        return 'w'
+        return 'wb'
 
     def writable(self):
         return True
@@ -298,36 +483,37 @@ class _TutorStream(_io.TextIOBase):
     def isatty(self):
         return False
 
-    def write(self, s):
-        if not isinstance(s, str):
-            raise TypeError('write() argument must be str, not ' + type(s).__name__)
+    def write(self, b):
+        if isinstance(b, str):
+            raise TypeError("a bytes-like object is required, not 'str'")
         if self.closed:
-            raise ValueError('I/O operation on closed file.')
-        if self._errors == 'strict':
-            s.encode('utf-8')  # what CPython's stdout can't encode raises here too
-        _write(self._stream, s)
-        return len(s)
+            raise ValueError('write to closed file')
+        data = bytes(memoryview(b))
+        text = self._decode(data)
+        if text:
+            _write(self._stream, text)
+        return len(data)
 
     def __repr__(self):
-        return "<_io.TextIOWrapper name='<" + self._stream + ">' mode='w' encoding='utf-8'>"
+        return "<_io.BufferedWriter name='<" + self._stream + ">'>"
 
-class _TutorStdin(_io.TextIOBase):
-    # sys.stdin while the program runs: the input typed in the stdin panel
-    # (#32). input() writes its prompt to sys.stdout and reads a line here, as
-    # CPython does when stdin isn't a terminal; at the end, EOFError. What is
-    # read is echoed on the console.
+def _output_stream(stream, errors):
+    # sys.stdout or sys.stderr while the program runs: a real TextIOWrapper,
+    # as CPython's (reconfigure, buffer, line_buffering, write_through), whose
+    # bytes are recorded. stdout is strict, stderr backslashreplace, as CPython's.
+    # (newline: a line ends with chr(10) wherever the tracer runs.)
+    text = _io.TextIOWrapper(_TutorBuffer(stream), encoding='utf-8', errors=errors, newline=chr(10), write_through=True)
+    text.mode = 'w'
+    return text
+
+class _TutorStdinBuffer(_io.BufferedIOBase):
+    # What the stdin panel holds (#32), read by sys.stdin and, as bytes, by
+    # sys.stdin.buffer (#78), from one position. What is read is echoed on the
+    # console.
 
     def __init__(self, text):
         self._text = text
         self._pos = 0
-
-    @property
-    def encoding(self):
-        return 'utf-8'
-
-    @property
-    def errors(self):
-        return 'strict'
 
     @property
     def name(self):
@@ -335,7 +521,7 @@ class _TutorStdin(_io.TextIOBase):
 
     @property
     def mode(self):
-        return 'r'
+        return 'rb'
 
     def readable(self):
         return True
@@ -344,6 +530,7 @@ class _TutorStdin(_io.TextIOBase):
         return False
 
     def _take(self, n):
+        # The next n characters (all of them for None or a negative n), echoed.
         if self.closed:
             raise ValueError('I/O operation on closed file.')
         end = len(self._text) if n is None or n < 0 else min(len(self._text), self._pos + n)
@@ -353,18 +540,90 @@ class _TutorStdin(_io.TextIOBase):
             _echo(s)
         return s
 
-    def read(self, size=-1):
-        return self._take(size)
-
-    def readline(self, size=-1):
+    def _line_length(self, size):
         newline = self._text.find(chr(10), self._pos)
         n = (len(self._text) if newline < 0 else newline + 1) - self._pos
+        return n if size is None or size < 0 else min(n, size)
+
+    def _chars_in(self, size):
+        # How many characters fit in size bytes (at least one, if any are left).
+        if size is None or size < 0:
+            return -1
+        rest = self._text[self._pos:self._pos + size].encode('utf-8', 'surrogatepass')[:size]
+        n = len(rest.decode('utf-8', 'ignore'))
+        return n if n or not size else 1
+
+    def read(self, size=-1):
+        return self._take(self._chars_in(size)).encode('utf-8', 'surrogatepass')
+
+    def read1(self, size=-1):
+        return self.read(size)
+
+    def readline(self, size=-1):
+        n = self._line_length(-1)
         if size is not None and size >= 0:
-            n = min(n, size)
-        return self._take(n)
+            n = min(n, self._chars_in(size) if size else 0)
+        return self._take(n).encode('utf-8', 'surrogatepass')
+
+    def readinto(self, b):
+        data = self.read(len(b))
+        b[:len(data)] = data
+        return len(data)
+
+    def __repr__(self):
+        return "<_io.BufferedReader name='<stdin>'>"
+
+class _TutorStdin(_io.TextIOWrapper):
+    # sys.stdin while the program runs: the input typed in the stdin panel
+    # (#32). input() writes its prompt to sys.stdout and reads a line here, as
+    # CPython does when stdin isn't a terminal; at the end, EOFError. A
+    # TextIOWrapper (#78), whose reads take what they need and no more, so the
+    # console echoes what each read consumed.
+
+    def __init__(self, text):
+        super().__init__(_TutorStdinBuffer(text), encoding='utf-8', errors='strict', newline=chr(10))
+        self.mode = 'r'
+
+    def _check(self):
+        if self.closed:
+            raise ValueError('I/O operation on closed file.')
+
+    def read(self, size=-1):
+        self._check()
+        return self.buffer._take(size)
+
+    def readline(self, size=-1):
+        self._check()
+        return self.buffer._take(self.buffer._line_length(size))
+
+    def readlines(self, hint=-1):
+        lines = []
+        total = 0
+        while hint is None or hint <= 0 or total < hint:
+            line = self.readline()
+            if not line:
+                break
+            lines.append(line)
+            total += len(line)
+        return lines
+
+    def __next__(self):
+        line = self.readline()
+        if not line:
+            raise StopIteration
+        return line
 
     def __repr__(self):
         return "<_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>"
+
+# Named as CPython's (type(sys.stdin).__name__ is 'TextIOWrapper'), and
+# never taken for the program's classes, which are __main__'s.
+_TutorStdin.__name__ = _TutorStdin.__qualname__ = 'TextIOWrapper'
+_TutorBuffer.__name__ = _TutorBuffer.__qualname__ = 'BufferedWriter'
+_TutorStdinBuffer.__name__ = _TutorStdinBuffer.__qualname__ = 'BufferedReader'
+for _stream_class in (_TutorStdin, _TutorBuffer, _TutorStdinBuffer):
+    _stream_class.__module__ = '_io'
+del _stream_class
 
 def _stdout_shown():
     # stdout's lines, without the empty line after a final newline
@@ -375,7 +634,7 @@ def _console_line_parts():
     # stderr or stdin was used. Only the last line can have changed since the
     # last call: the ones before it are finished.
     if not (_stderr_used or _stdin_used):
-        return None
+        return False
     n = len(_console_lines)
     for i in range(n - 1 if n else 0, len(_console)):
         st, t, rs = _console[i]
@@ -388,35 +647,34 @@ def _console_line_parts():
             _console_lines[i] = entry
         else:
             _console_lines.append(entry)
-    return [e[1] for e in _console_lines]
-
-def _lines_part(lines, last):
-    # A list of lines as a part: the previous list's first lines and the ones
-    # added since, when it grew (run.ts builds the whole list).
-    if last is None:
-        return _part({"add": lines})
-    before = last[1]
-    keep = len(before)
-    if keep and (keep > len(lines) or before[keep - 1] != lines[keep - 1]):
-        keep -= 1
-    if keep > len(lines) or before[:keep] != lines[:keep]:
-        return _part({"add": lines})
-    return _part({"base": last[0], "keep": keep, "add": lines[keep:]})
+    return True
 
 def _with_output(snapshot):
     # The output as it is now, on a step: the same parts as the last step's
-    # while nothing was written (#39).
+    # while nothing was written (#39). A list of lines grows at its end, and
+    # only its last line can change, so a new one is the last one's lines
+    # but that one and the lines added since, never compared (#84).
     global _output_seen, _output_parts, _stdout_last, _console_last
     _output_seen = _output_count
     if _output_parts is None or _output_parts[0] != _output_count:
-        lines = _stdout_shown()
-        stdout = _lines_part(lines, _stdout_last)
-        _stdout_last = (stdout, lines)
-        console = _console_line_parts()
-        if console is not None:
-            part = _lines_part(console, _console_last)
-            _console_last = (part, console)
-            console = part
+        n = len(_out_lines) - (1 if _out_lines[-1] == '' else 0)
+        if _stdout_last is None:
+            stdout = _part({"add": _out_lines[:n]})
+        else:
+            part, shown, was_open = _stdout_last
+            keep = shown - 1 if was_open else shown
+            stdout = _part({"base": part, "keep": keep, "add": _out_lines[keep:n]})
+        _stdout_last = (stdout, n, _out_lines[-1] != '')
+        console = None
+        if _console_line_parts():
+            count = len(_console_lines)
+            if _console_last is None:
+                console = _part({"add": [e[1] for e in _console_lines]})
+            else:
+                part, shown = _console_last
+                keep = max(shown - 1, 0)
+                console = _part({"base": part, "keep": keep, "add": [e[1] for e in _console_lines[keep:count]]})
+            _console_last = (console, count)
         _output_parts = (_output_count, stdout, console)
     snapshot["stdout"] = _output_parts[1]
     if _output_parts[2] is not None:
@@ -451,10 +709,158 @@ _COMP_ARGS = {'.listcomp': '<listcomp>', '.setcomp': '<setcomp>', '.dictcomp': '
 _COMP_FRAMES = frozenset(_COMP_ARGS.values())
 _SCOPE_NAMES = frozenset({'super', '__class__', 'locals', 'vars', 'dir', 'eval', 'exec'})
 
+_COMPREHENSIONS = (_ast.ListComp, _ast.SetComp, _ast.DictComp, _ast.GeneratorExp)
+
+def _bound_names(target):
+    return {n.id for n in _ast.walk(target) if isinstance(n, _ast.Name)}
+
+def _comprehension_reads(comp):
+    # The names a comprehension reads from the scope around it: not its own
+    # targets, nor what its outermost iterable reads (evaluated around it).
+    own = set()
+    for sub in _ast.walk(comp):
+        if isinstance(sub, _COMPREHENSIONS):
+            for g in sub.generators:
+                own |= _bound_names(g.target)
+    skip = comp.generators[0].iter
+    reads = set()
+    stack = [comp]
+    while stack:
+        n = stack.pop()
+        if n is skip:
+            continue
+        if isinstance(n, _ast.Name) and isinstance(n.ctx, _ast.Load):
+            reads.add(n.id)
+        stack.extend(_ast.iter_child_nodes(n))
+    return reads - own
+
+def _function_locals(func):
+    # A function's parameters, and every name it binds itself (not in a
+    # nested scope; not its global or nonlocal names).
+    args = func.args
+    params = {a.arg for a in args.posonlyargs + args.args + args.kwonlyargs}
+    for a in (args.vararg, args.kwarg):
+        if a is not None:
+            params.add(a.arg)
+    bound = set()
+    declared = set()
+    stack = list(func.body) if isinstance(func.body, list) else [func.body]
+    while stack:
+        n = stack.pop()
+        if isinstance(n, (_ast.FunctionDef, _ast.AsyncFunctionDef, _ast.ClassDef)):
+            bound.add(n.name)
+            continue
+        if isinstance(n, _ast.Lambda):
+            continue
+        if isinstance(n, _COMPREHENSIONS):
+            stack.append(n.generators[0].iter)
+            continue
+        if isinstance(n, (_ast.Global, _ast.Nonlocal)):
+            declared |= set(n.names)
+        elif isinstance(n, _ast.Name) and not isinstance(n.ctx, _ast.Load):
+            bound.add(n.id)
+        elif isinstance(n, (_ast.Import, _ast.ImportFrom)):
+            bound |= {(a.asname or a.name).split('.')[0] for a in n.names}
+        elif isinstance(n, _ast.ExceptHandler) and n.name:
+            bound.add(n.name)
+        stack.extend(_ast.iter_child_nodes(n))
+    return params, (bound | params) - declared
+
+def _definitely_binds(st):
+    # The names a statement has bound for certain once it has run.
+    if isinstance(st, (_ast.FunctionDef, _ast.AsyncFunctionDef, _ast.ClassDef)):
+        return {st.name}
+    if isinstance(st, _ast.Assign):
+        return set().union(*(_bound_names(t) for t in st.targets))
+    if isinstance(st, (_ast.AnnAssign, _ast.AugAssign)):
+        return _bound_names(st.target) if getattr(st, 'value', None) is not None else set()
+    if isinstance(st, (_ast.Import, _ast.ImportFrom)):
+        return {(a.asname or a.name).split('.')[0] for a in st.names}
+    if isinstance(st, (_ast.With, _ast.AsyncWith)):
+        return set().union(*(_bound_names(i.optional_vars) for i in st.items if i.optional_vars is not None))
+    return set()
+
+class _InlineScan:
+    # Finds the comprehensions that must stay inlined (#85): one that reads a
+    # local of the function around it that may not be bound yet when it runs
+    # (assigned only after it, or in a branch, or deleted). Run as a function
+    # of its own, it would read the variable as a closure's, and an unbound
+    # one would be NameError ("cannot access free variable"), where CPython
+    # 3.12's inlined comprehension raises UnboundLocalError. A local assigned
+    # in a statement before it, at its level or around it, or a parameter, is
+    # bound.
+
+    def __init__(self):
+        self.inlined = set()
+
+    def function(self, func):
+        params, local_names = _function_locals(func)
+        if isinstance(func, _ast.Lambda):
+            self.expressions(func.body, set(params), local_names)
+        else:
+            self.block(func.body, set(params), local_names)
+
+    def block(self, stmts, definite, local_names):
+        definite = set(definite)
+        for st in stmts:
+            self.statement(st, definite, local_names)
+            definite |= _definitely_binds(st)
+            if isinstance(st, _ast.Delete):
+                definite -= set().union(*(_bound_names(t) for t in st.targets))
+
+    def statement(self, st, definite, local_names):
+        if isinstance(st, (_ast.FunctionDef, _ast.AsyncFunctionDef)):
+            self.expressions(st.decorator_list + st.args.defaults + [d for d in st.args.kw_defaults if d is not None], definite, local_names)
+            self.function(st)
+            return
+        if isinstance(st, _ast.ClassDef):
+            # A class body's names aren't a comprehension's to read.
+            self.expressions(st.decorator_list + st.bases + [k.value for k in st.keywords], definite, local_names)
+            self.block(st.body, set(), None)
+            return
+        for field, value in _ast.iter_fields(st):
+            if field not in ('body', 'orelse', 'finalbody', 'handlers', 'cases'):
+                self.expressions(value, definite, local_names)
+        if isinstance(st, (_ast.For, _ast.AsyncFor)):
+            self.block(st.body, definite | _bound_names(st.target), local_names)
+            self.block(st.orelse, definite, local_names)
+        elif isinstance(st, (_ast.While, _ast.If)):
+            self.block(st.body, definite, local_names)
+            self.block(st.orelse, definite, local_names)
+        elif isinstance(st, (_ast.With, _ast.AsyncWith)):
+            self.block(st.body, definite | _definitely_binds(st), local_names)
+        elif isinstance(st, (_ast.Try, getattr(_ast, 'TryStar', _ast.Try))):
+            self.block(st.body, definite, local_names)
+            for h in st.handlers:
+                self.block(h.body, definite | ({h.name} if h.name else set()), local_names)
+            self.block(st.orelse, definite, local_names)
+            self.block(st.finalbody, definite, local_names)
+        elif isinstance(st, _ast.Match):
+            for case in st.cases:
+                self.block(case.body, definite | _bound_names(case.pattern), local_names)
+
+    def expressions(self, value, definite, local_names):
+        stack = list(value) if isinstance(value, list) else [value]
+        while stack:
+            n = stack.pop()
+            if not isinstance(n, _ast.AST):
+                continue
+            if isinstance(n, _ast.Lambda):
+                self.expressions(n.args.defaults + [d for d in n.args.kw_defaults if d is not None], definite, local_names)
+                self.function(n)
+                continue
+            if isinstance(n, _COMPREHENSIONS) and local_names is not None:
+                if (_comprehension_reads(n) & local_names) - definite:
+                    self.inlined.add(id(n))
+            stack.extend(_ast.iter_child_nodes(n))
+
 class _CompWrapper(_ast.NodeTransformer):
+    def __init__(self, inlined=frozenset()):
+        self._inlined = inlined
+
     def _wrap(self, node, arg):
         self.generic_visit(node)
-        if any(g.is_async for g in node.generators):
+        if any(g.is_async for g in node.generators) or id(node) in self._inlined:
             return node
         for sub in _ast.walk(node):
             if isinstance(sub, (_ast.NamedExpr, _ast.Await, _ast.Yield, _ast.YieldFrom)):
@@ -493,7 +899,9 @@ def _compile_program(source_code):
         with _warnings.catch_warnings():
             _warnings.simplefilter('ignore')
             tree = _ast.parse(source_code, _USER_FILE)
-            return _name_comprehensions(compile(_CompWrapper().visit(tree), _USER_FILE, 'exec', dont_inherit=True))
+            scan = _InlineScan()
+            scan.block(tree.body, set(), None)
+            return _name_comprehensions(compile(_CompWrapper(scan.inlined).visit(tree), _USER_FILE, 'exec', dont_inherit=True))
     except SyntaxError:
         return plain
 
@@ -521,9 +929,11 @@ def _frame_locals(frame):
 def _scan_continuation_lines(source_code):
     """Find continuation lines of multi-line simple statements (no visible effect)."""
     global _continuation_lines
-    _continuation_lines = set()
+    _continuation_lines = {}
     try:
-        tree = _ast.parse(source_code)
+        with _warnings.catch_warnings():
+            _warnings.simplefilter('ignore')
+            tree = _ast.parse(source_code)
     except SyntaxError:
         return
 
@@ -544,7 +954,7 @@ def _scan_continuation_lines(source_code):
             if end > node.lineno:
                 for ln in range(node.lineno + 1, end + 1):
                     if ln not in _start_lines:
-                        _continuation_lines.add(ln)
+                        _continuation_lines.setdefault(ln, node.lineno)
 
 # ── Heap serialization ──
 #
@@ -561,28 +971,52 @@ _FUNCTION_TYPES = (_types.FunctionType, _types.BuiltinFunctionType, _types.Metho
 _METHOD_WRAPPERS = (staticmethod, classmethod, property)
 # Ints JavaScript holds exactly: their text is the same in both languages.
 _EXACT_INT = 2 ** 53
+_NoneType = type(None)
+# The values drawn inline, as the snapshot's primitives: exactly these types
+# (#78). An instance of a subclass (an IntEnum member, a str subclass) is an
+# object of its own, as the reference trace has it.
+_PRIMITIVE_TYPES = frozenset({int, float, str, bool, complex, _NoneType})
+_is_primitive_type = _PRIMITIVE_TYPES.__contains__
+_compress = _itertools.compress
+_islice = _itertools.islice
+_MISSING = object()
+
+def _is_primitive(v):
+    return type(v) in _PRIMITIVE_TYPES
 
 def _get_heap_id(obj):
+    # A heap object's id, by its address and type. The tracer holds no object
+    # between steps (#78), so an address can be another object's later: one
+    # of another type gets a new id, one of the same type keeps it, as
+    # CPython's id() does.
     global _heap_counter
-    obj_id = id(obj)
-    if obj_id in _heap_map:
-        return _heap_map[obj_id]
+    k = id(obj)
+    tid = id(type(obj))
+    entry = _heap_map.get(k)
+    if entry is not None and entry[1] == tid:
+        return entry[0]
     _heap_counter += 1
     heap_id = str(_heap_counter)
-    _heap_map[obj_id] = heap_id
+    _heap_map[k] = (heap_id, tid)
     return heap_id
 
 def _digits(v):
+    # How many digits an int has, from its logarithm (#84: 10 ** (n - 1) for
+    # an int of millions of digits took seconds); only an int within a
+    # millionth of a power of ten is compared with that power.
     v = abs(v)
-    n = int(v.bit_length() * 0.30102999566398) + 1
-    while n > 1 and 10 ** (n - 1) > v:
-        n -= 1
-    return n
+    if v < 10:
+        return 1
+    f = _log10(v)
+    n = int(f)
+    if f - n < 1e-6 or n + 1 - f < 1e-6:
+        p = round(f)
+        return p + 1 if v >= 10 ** p else p
+    return n + 1
 
 def _int_value(val):
     # An int as Python writes it (#37): a JSON number while JavaScript holds it
     # exactly, else its digits as text (a JSON number would lose them).
-    val = int.__int__(val)
     if -_EXACT_INT <= val <= _EXACT_INT:
         return {"type": "number", "value": val}
     try:
@@ -592,14 +1026,11 @@ def _int_value(val):
         text = '<int with %d digits>' % _digits(val)
     return {"type": "number", "value": text, "display": text}
 
-def _serialize_value(val):
-    # A value as the snapshot shows it: a primitive inline, a heap object as a
-    # reference to it.
-    global _work
-    _work += _VALUE_WORK
-    # Values carry the text Python writes for them (display, #37): None, True,
-    # False, a float's repr (5.0, -0.0, 1e+16, inf), an int past what JavaScript
-    # holds exactly, a complex number's repr.
+def _primitive_value(val):
+    # A value of exactly int, float, str, bool, complex or None as the
+    # snapshot shows it, with the text Python writes for it (display, #37):
+    # None, True, False, a float's repr (5.0, -0.0, 1e+16, inf), an int past
+    # what JavaScript holds exactly, a complex number's repr.
     if val is None:
         return {"type": "null", "value": None, "display": "None"}
     if val is True:
@@ -607,23 +1038,31 @@ def _serialize_value(val):
     if val is False:
         return {"type": "boolean", "value": False, "display": "False"}
     t = type(val)
-    if issubclass(t, int):
+    if t is int:
         return _int_value(val)
-    if issubclass(t, float):
-        f = float.__float__(val)
-        text = float.__repr__(f)
-        if _isinf(f):
-            return {"type": "number", "value": "Infinity" if f > 0 else "-Infinity", "display": text}
-        if _isnan(f):
+    if t is float:
+        text = float.__repr__(val)
+        if _isinf(val):
+            return {"type": "number", "value": "Infinity" if val > 0 else "-Infinity", "display": text}
+        if _isnan(val):
             return {"type": "number", "value": "NaN", "display": text}
-        return {"type": "number", "value": f, "display": text}
-    if issubclass(t, str):
-        return {"type": "string", "value": str.__str__(val)}
-    if issubclass(t, complex):
-        text = complex.__repr__(val)
-        return {"type": "number", "value": text, "display": text}
+        return {"type": "number", "value": val, "display": text}
+    if t is str:
+        return {"type": "string", "value": val}
+    text = complex.__repr__(val)
+    return {"type": "number", "value": text, "display": text}
 
-    # Heap objects: list, dict, tuple, set, function, class instances
+def _serialize_value(val):
+    # A value as the snapshot shows it: a primitive inline, with the object it
+    # is (objectId, #83: its heap id, for reference mode), a heap object as a
+    # reference to it.
+    global _work
+    _work += _VALUE_WORK
+    if type(val) in _PRIMITIVE_TYPES:
+        value = _primitive_value(val)
+        value["objectId"] = _get_heap_id(val)
+        return value
+    # Heap objects: lists, dicts, tuples, sets, functions, instances, ...
     return {"type": "ref", "heapId": _get_heap_id(val)}
 
 def _safe_repr(v, depth=2):
@@ -650,12 +1089,9 @@ def _safe_repr(v, depth=2):
     return '<' + _type_name(t) + ' object>'
 
 def _key_text(k):
-    if issubclass(type(k), str):
-        return str.__str__(k)
+    if type(k) is str:
+        return k
     return _safe_repr(k)
-
-def _is_primitive(v):
-    return v is None or issubclass(type(v), (bool, int, float, str, complex))
 
 def _safe_name(obj):
     # A function's or class's name, read through the data descriptor of its type.
@@ -675,30 +1111,40 @@ def _object_dict(obj):
         return None
     return d if type(d) is dict else None
 
-def _slot_descriptors(t):
-    # (name, member descriptor, class) for the __slots__ of the Python classes
-    # in t's MRO, found once per class.
-    found = _slots_of.get(t)
-    if found is None:
-        found = []
-        for cls in _type_mro(t):
-            cls_dict = _type_dict(cls)
-            slots = cls_dict.get('__slots__')
-            if slots is None:
+def _per_type(cache, t, compute):
+    # What compute(t) gives, found once per type for this run. The cache holds
+    # the type only weakly (#78): a class the program drops can die.
+    k = id(t)
+    found = cache.get(k)
+    if found is not None and found[1]() is t:
+        return found[0]
+    value = compute(t)
+    cache[k] = (value, _weakref.ref(t))
+    return value
+
+def _find_slot_descriptors(t):
+    found = []
+    for cls in _type_mro(t):
+        cls_dict = _type_dict(cls)
+        slots = cls_dict.get('__slots__')
+        if slots is None:
+            continue
+        if type(slots) is str:
+            slots = (slots,)
+        for name in slots:
+            if type(name) is not str or name in ('__dict__', '__weakref__'):
                 continue
-            if type(slots) is str:
-                slots = (slots,)
-            for name in slots:
-                if type(name) is not str or name in ('__dict__', '__weakref__'):
-                    continue
-                stored = name
-                if name.startswith('__') and not name.endswith('__'):
-                    stored = '_' + _type_name(cls).lstrip('_') + name
-                descr = cls_dict.get(stored)
-                if type(descr) is _MemberDescriptor:
-                    found.append((name, descr, cls))
-        _slots_of[t] = found
+            stored = name
+            if name.startswith('__') and not name.endswith('__'):
+                stored = '_' + _type_name(cls).lstrip('_') + name
+            descr = cls_dict.get(stored)
+            if type(descr) is _MemberDescriptor:
+                found.append((name, descr, cls))
     return found
+
+def _slot_descriptors(t):
+    # (name, member descriptor, class) for the __slots__ of the Python classes in t's MRO.
+    return _per_type(_slots_of, t, _find_slot_descriptors)
 
 def _slot_values(obj):
     # (name, value) for obj's slots, read through their member descriptors
@@ -761,135 +1207,476 @@ def _instance_attribute_shown(name):
     return not name.startswith('_') or _is_source_word(name)
 
 _INDEX_KEYS = [str(i) for i in range(max(_MAX_SEQ_PROPS, _MAX_DICT_PROPS))]
+
+# Library types drawn by what they hold (#81).
+_deque = _collections.deque
+_OrderedDict = _collections.OrderedDict
+_defaultdict = _collections.defaultdict
+_GENERATOR_TYPES = (_types.GeneratorType, _types.CoroutineType, _types.AsyncGeneratorType)
+_GENERATOR_FRAME = {
+    _types.GeneratorType: _types.GeneratorType.__dict__['gi_frame'].__get__,
+    _types.CoroutineType: _types.CoroutineType.__dict__['cr_frame'].__get__,
+    _types.AsyncGeneratorType: _types.AsyncGeneratorType.__dict__['ag_frame'].__get__,
+}
+_GENERATOR_CODE = {
+    _types.GeneratorType: _types.GeneratorType.__dict__['gi_code'].__get__,
+    _types.CoroutineType: _types.CoroutineType.__dict__['cr_code'].__get__,
+    _types.AsyncGeneratorType: _types.AsyncGeneratorType.__dict__['ag_code'].__get__,
+}
+_DICT_VIEWS = {}
+for _view_dict in ({}, _OrderedDict()):
+    _DICT_VIEWS[type(_view_dict.keys())] = 'keys'
+    _DICT_VIEWS[type(_view_dict.values())] = 'values'
+    _DICT_VIEWS[type(_view_dict.items())] = 'items'
+del _view_dict
+# Iterators over a sequence, whose __reduce__ (theirs, in C) says what they
+# iterate over and where they are, without moving them.
+_SEQUENCE_ITERATORS = frozenset(type(i) for i in (
+    iter([]), iter(()), iter(range(1)), iter(range(2 ** 70)), iter('a'), iter('\u00e9'), reversed([]), reversed(range(1)),
+))
+_exception_args = BaseException.__dict__['args'].__get__
+_method_function = _types.MethodType.__dict__['__func__'].__get__
+_method_self = _types.MethodType.__dict__['__self__'].__get__
+_builtin_self = _types.BuiltinMethodType.__dict__['__self__'].__get__
+_type_module = type.__dict__['__module__'].__get__
+_type_qualname = type.__dict__['__qualname__'].__get__
+_function_qualname = _types.FunctionType.__dict__['__qualname__'].__get__
+# Library values drawn by their own type's repr, which reads only what they
+# hold: an exact instance of one of these (a subclass could change what the
+# repr reads).
+_VALUE_TYPES = frozenset({
+    ('builtins', 'range'), ('builtins', 'bytes'), ('builtins', 'bytearray'),
+    ('fractions', 'Fraction'), ('decimal', 'Decimal'),
+    ('datetime', 'date'), ('datetime', 'datetime'), ('datetime', 'time'), ('datetime', 'timedelta'), ('datetime', 'timezone'),
+    ('re', 'Pattern'), ('re', 'Match'),
+    ('_io', 'TextIOWrapper'), ('_io', 'BufferedReader'), ('_io', 'BufferedWriter'), ('_io', 'FileIO'),
+})
+_CONTAINER_TYPES = (list, tuple, dict, set, frozenset, _deque)
+
 # How each type's objects are drawn, in the order they are tried.
 _KIND_TYPES = (
-    ("list", list), ("tuple", tuple), ("dict", dict), ("set", (set, frozenset)),
+    ("list", list), ("deque", _deque), ("tuple", tuple), ("dict", dict), ("set", (set, frozenset)),
     ("function", _FUNCTION_TYPES), ("method", _METHOD_WRAPPERS), ("class", type),
-    ("module", _types.ModuleType), ("enum", _Enum),
+    ("module", _types.ModuleType), ("enum", _Enum), ("exception", BaseException),
+    ("generator", _GENERATOR_TYPES),
+    ("primitive", (int, float, str, complex)),
 )
-_kinds = {}           # type -> its kind, for this run
-_slots_of = {}        # type -> its slots' descriptors, for this run
+_kinds = {}           # id(type) -> (its kind, a weak reference to it), for this run
+# The kinds of the types most objects have, without a lookup through _kinds.
+_BUILTIN_KINDS = {list: "list", tuple: "tuple", dict: "dict", set: "set", frozenset: "set", _types.FunctionType: "function"}
+_is = _operator.is_
+_slots_of = {}        # id(type) -> (its slots' descriptors, a weak reference to it), for this run
+
+def _find_kind(t):
+    if t in _DICT_VIEWS:
+        return "dictview"
+    if t in _SEQUENCE_ITERATORS:
+        return "seqiter"
+    if (_type_module(t), _type_qualname(t)) in _VALUE_TYPES:
+        return "value"
+    if _type_module(t) == 'functools' and _type_qualname(t) == '_lru_cache_wrapper':
+        return "cached"
+    for kind, types in _KIND_TYPES:
+        if issubclass(t, types):
+            return kind
+    if not _is_program_class(t) and not _slot_descriptors(t) and any('__next__' in _type_dict(c) for c in _type_mro(t)):
+        # A library's iterator (zip, map, enumerate, ...): it can't be read without moving it.
+        return "iterator"
+    return "instance"
 
 def _kind(t):
     # How a type's objects are drawn, found once per type.
-    kind = _kinds.get(t)
-    if kind is None:
-        for kind, types in _KIND_TYPES:
-            if issubclass(t, types):
-                break
-        else:
-            kind = "instance"
-        _kinds[t] = kind
-    return kind
+    return _per_type(_kinds, t, _find_kind)
 
-def _heap_contents(obj, t):
-    # What a heap object shows: (object type, label, keys, values, key
-    # objects), the key objects a list of a dict's keys that are drawn as
-    # arrows (None in other objects and for primitive keys).
-    kind = _kind(t)
-    if kind == "instance":
-        # An instance: its __dict__ and its __slots__, as stored.
-        keys, values = [], []
-        d = _object_dict(obj)
-        if d is not None:
-            for k, v in dict.items(d):
-                if len(keys) >= _MAX_DICT_PROPS:
-                    break
-                if type(k) is str and _instance_attribute_shown(k):
-                    keys.append(k)
-                    values.append(v)
+def _primitive_base(obj):
+    # The value a subclass of int, float, str or complex holds, as its base type's own.
+    t = type(obj)
+    if issubclass(t, int):
+        return int.__int__(obj)
+    if issubclass(t, float):
+        return float.__float__(obj)
+    if issubclass(t, str):
+        return str.__str__(obj)
+    return complex.__complex__(obj)
+
+def _attributes(obj, seq):
+    # Appends an object's __dict__ keys, then values, to seq; how many.
+    d = _object_dict(obj)
+    if d is None:
+        return 0
+    seq += list(dict.keys(d))
+    seq += list(dict.values(d))
+    return dict.__len__(d)
+
+def _function_label(f, skip=0):
+    # A function by the name it was defined with, a method by its class too
+    # (its qualified name, without the functions it was defined in), and its
+    # parameters, as pythontutor.com shows them (#82): fee(self, amount=…)
+    # as fee(self, amount). A bound method's first (self) is left out (skip).
+    try:
+        name = _function_qualname(f)
+    except Exception:
+        return _safe_name(f)
+    if type(name) is not str:
+        return _safe_name(f)
+    return name.rsplit('<locals>.', 1)[-1] + _signature(_function_code(f), skip)
+
+_CO_VARARGS = 0x04
+_CO_VARKEYWORDS = 0x08
+
+def _signature(code, skip=0):
+    n = code.co_argcount
+    k = code.co_kwonlyargcount
+    names = list(code.co_varnames[:n])
+    if code.co_posonlyargcount:
+        names.insert(code.co_posonlyargcount, '/')
+    i = n + k
+    if code.co_flags & _CO_VARARGS:
+        names.append('*' + code.co_varnames[i])
+        i += 1
+    elif k:
+        names.append('*')
+    names += code.co_varnames[n:n + k]
+    if code.co_flags & _CO_VARKEYWORDS:
+        names.append('**' + code.co_varnames[i])
+    return '(' + ', '.join(names[skip:]) + ')'
+
+def _function_state(f, seq):
+    # What a program's function holds besides its code (#82): its default
+    # values, keyed name= (a mutable default lives on, between calls, here),
+    # and the variables it closes over (its cells, keyed by name: each
+    # counter's count). Appends the values to seq; returns their keys.
+    code = _function_code(f)
+    keys = []
+    if code.co_filename != _USER_FILE:
+        return keys
+    defaults = _function_defaults(f)
+    if type(defaults) is tuple and defaults:
+        params = code.co_varnames[:code.co_argcount]
+        for name, v in zip(params[len(params) - len(defaults):], defaults):
+            keys.append(name + '=')
+            seq.append(v)
+    kwdefaults = _function_kwdefaults(f)
+    if type(kwdefaults) is dict:
+        for name in code.co_varnames[code.co_argcount:code.co_argcount + code.co_kwonlyargcount]:
+            if name in kwdefaults:
+                keys.append(name + '=')
+                seq.append(dict.__getitem__(kwdefaults, name))
+    closure = _function_closure(f)
+    if type(closure) is tuple:
+        for name, cell in zip(code.co_freevars, closure):
+            if name in _FUNCTION_BOOKKEEPING:
+                continue
+            try:
+                v = _cell_contents(cell)
+            except ValueError:
+                continue  # an empty cell: a variable not assigned yet
+            keys.append(name)
+            seq.append(v)
+    return keys
+
+def _heap_read(obj, t, kind):
+    # What a heap object's drawing depends on, read through the types' own
+    # methods: the values it may show (seq), in a layout its kind fixes, and
+    # anything else (meta). Another step that reads the same objects (by id
+    # and type) and meta draws it as before, without building it again (#78).
+    # (The exact built-in types first, the most common, with the fewest calls, #84.)
+    if t is dict:
+        n = dict.__len__(obj)
+        if n <= _MAX_DICT_PROPS:
+            return [*obj, *obj.values(), None], (n, n, 0)
+    elif t is list:
+        seq = obj[:_MAX_SEQ_PROPS]
+        return seq, (list.__len__(obj), len(seq), 0)
+    elif t is tuple:
+        seq = list(obj[:_MAX_SEQ_PROPS])
+        return seq, (tuple.__len__(obj), len(seq), 0)
+    if kind == "list" or kind == "tuple" or kind == "deque":
+        if kind == "list":
+            seq = list.__getitem__(obj, slice(0, _MAX_SEQ_PROPS))
+            n = list.__len__(obj)
+        elif kind == "tuple":
+            seq = list(tuple.__getitem__(obj, slice(0, _MAX_SEQ_PROPS)))
+            n = tuple.__len__(obj)
+        else:
+            seq = list(_islice(_deque.__iter__(obj), _MAX_SEQ_PROPS))
+            n = _deque.__len__(obj)
+        # A subclass's attributes after the items (#81).
+        shown = len(seq)
+        return seq, (n, shown, _attributes(obj, seq) if t not in _CONTAINER_TYPES else 0)
+    if kind == "dict":
+        # An OrderedDict in its own order (move_to_end), read by its own C views.
+        source = _OrderedDict if issubclass(t, _OrderedDict) else dict
+        seq = list(_islice(source.keys(obj), _MAX_DICT_PROPS))
+        shown = len(seq)
+        seq += list(_islice(source.values(obj), _MAX_DICT_PROPS))
+        factory = _defaultdict.__dict__['default_factory'].__get__(obj) if issubclass(t, _defaultdict) else None
+        seq.append(factory)
+        return seq, (dict.__len__(obj), shown, _attributes(obj, seq) if t not in _CONTAINER_TYPES else 0)
+    if kind == "set":
+        if issubclass(t, set):
+            seq = list(_islice(set.__iter__(obj), _MAX_SEQ_PROPS))
+            n = set.__len__(obj)
+        else:
+            seq = list(_islice(frozenset.__iter__(obj), _MAX_SEQ_PROPS))
+            n = frozenset.__len__(obj)
+        shown = len(seq)
+        return seq, (n, shown, _attributes(obj, seq) if t not in _CONTAINER_TYPES else 0)
+    if kind == "instance" or kind == "enum" or kind == "primitive" or kind == "exception":
+        # Its __dict__'s keys, then values, then its slots' names and values;
+        # first a subclass of a primitive type's value, an exception's args.
+        seq = [_primitive_base(obj)] if kind == "primitive" else [_exception_args(obj)] if kind == "exception" else []
+        n = _attributes(obj, seq)
         if _slot_descriptors(t):
             for name, v in _slot_values(obj):
-                if len(keys) >= _MAX_DICT_PROPS:
-                    break
-                if _instance_attribute_shown(name):
-                    keys.append(name)
-                    values.append(v)
-        return "object", _type_name(t), keys, values, None
-    if kind == "list":
-        values = list.__getitem__(obj, slice(0, _MAX_SEQ_PROPS))
-        return "list", "", _INDEX_KEYS[:len(values)], values, None
-    if kind == "tuple":
-        values = list(tuple.__getitem__(obj, slice(0, _MAX_SEQ_PROPS)))
-        return "tuple", "", _INDEX_KEYS[:len(values)], values, None
-    if kind == "dict":
-        keys, values, key_objects = [], [], []
-        drawn = False
-        for k, v in dict.items(obj):
-            if len(keys) >= _MAX_DICT_PROPS:
-                break
-            keys.append(_key_text(k))
-            values.append(v)
-            if _is_primitive(k):
-                key_objects.append(None)
-            else:
-                # An object key is drawn as a value: an arrow to it.
-                key_objects.append(k)
-                drawn = True
-        return "dict", "", keys, values, key_objects if drawn else None
-    if kind == "set":
-        items = set.__iter__(obj) if issubclass(t, set) else frozenset.__iter__(obj)
-        values = []
-        for item in items:
-            if len(values) >= _MAX_SEQ_PROPS:
-                break
-            values.append(item)
-        return "set", "", _INDEX_KEYS[:len(values)], values, None
+                seq.append(name)
+                seq.append(v)
+        return seq, n
+    if kind == "class":
+        ns = _type_dict(obj)
+        keys = list(ns.keys())
+        bases = list(_type_bases(obj))
+        return keys + list(ns.values()) + bases + [_type_name(obj)], (len(keys), len(bases))
     if kind == "function":
-        return "function", _safe_name(obj), [], [], None
+        if t is _types.MethodType:
+            # A bound method: its function and the object it is bound to.
+            f = _method_function(obj)
+            return [_function_label(f, 1) if type(f) is _types.FunctionType else _safe_name(f), _method_self(obj)], "bound"
+        if t is _types.BuiltinMethodType:
+            return [_safe_name(obj), _builtin_self(obj)], "bound"
+        if t is _types.FunctionType:
+            seq = [_function_label(obj)]
+            return seq, tuple(_function_state(obj, seq))
+        return [_safe_name(obj)], None
     if kind == "method":
-        # A staticmethod, classmethod or property in a class: drawn as its function.
         f = _wrapped_function(obj)
-        decorator = 'staticmethod' if issubclass(t, staticmethod) else 'classmethod' if issubclass(t, classmethod) else 'property'
-        return "function", '@' + decorator + ' ' + (_safe_name(f) if f is not None else ''), [], [], None
+        signature = _signature(_function_code(f)) if type(f) is _types.FunctionType and not issubclass(t, property) else ''
+        return [f, (_safe_name(f) if f is not None else '') + signature], None
+    if kind == "generator":
+        # A generator (coroutine, async generator): its function, and while it
+        # is suspended, its variables (a program's; a library's aren't shown).
+        code = _GENERATOR_CODE[t](obj)
+        frame = _GENERATOR_FRAME[t](obj)
+        seq = [code.co_name]
+        n = 0
+        if frame is not None and code.co_filename == _USER_FILE:
+            local_vars = _frame_locals(frame)
+            names = [k for k in dict.keys(local_vars) if type(k) is str and not k.startswith('.') and k not in _FUNCTION_BOOKKEEPING]
+            n = len(names)
+            seq += names
+            seq += [dict.__getitem__(local_vars, k) for k in names]
+        return seq, (frame is None, n)
+    if kind == "dictview":
+        # A dict's keys(), values() or items(), read through the view's own iterator.
+        which = _DICT_VIEWS[t]
+        items = list(_islice(t.__iter__(obj), _MAX_DICT_PROPS))
+        n = t.__len__(obj)
+        if which == 'items':
+            return [kv[0] for kv in items] + [kv[1] for kv in items], (which, n, len(items))
+        return items, (which, n, len(items))
+    if kind == "seqiter":
+        # What a list (tuple, range, str) iterator iterates over, and the next index.
+        reduced = t.__reduce__(obj)
+        if type(reduced) is tuple and len(reduced) == 3 and type(reduced[1]) is tuple and len(reduced[1]) == 1:
+            return [_type_name(t), reduced[1][0], reduced[2]], True
+        return [_type_name(t)], False
+    if kind == "value":
+        text = next(_type_dict(c)['__repr__'] for c in _type_mro(t) if '__repr__' in _type_dict(c))(obj)
+        return [text if type(text) is str else _type_name(t)], None
+    if kind == "cached":
+        # An @lru_cache (@cache) function: the function it caches, and how many results it holds.
+        d = _object_dict(obj) or {}
+        wrapped = d.get('__wrapped__')
+        info = t.__dict__['cache_info'](obj)
+        return [_function_label(wrapped) if type(wrapped) is _types.FunctionType else _safe_name(obj), tuple.__getitem__(info, 3), tuple.__getitem__(info, 2)], None
+    # A module or a library's iterator: its name.
+    return [_safe_name(obj) if kind == "module" else _type_name(t)], None
+
+def _more(key, count, n):
+    # The last property of an object drawn in part: how many more it holds (#81).
+    return (key, None, {"type": "empty", "value": None, "display": '\u2026 %d more (%d in all)' % (count, n)})
+
+def _length_label(label, n, shown):
+    # The length in an object's label, when not every item is drawn.
+    if n <= shown:
+        return label
+    return (label + ', ' if label else '') + 'len %d' % n
+
+def _subclass_label(t, base):
+    # A subclass of a container drawn as its base, by its own name (#81).
+    return '' if t is base else _type_name(t)
+
+def _attribute_spec(seq, start, n, spec, prefix=''):
+    for i in range(start, start + n):
+        if len(spec) >= _MAX_DICT_PROPS:
+            break
+        k = seq[i]
+        if type(k) is str and _instance_attribute_shown(k):
+            spec.append((prefix + k, n + i, None))
+
+def _element_key(v):
+    # A set element's key: what tells it from the others, not a position (#81).
+    if _is_primitive(v):
+        return _safe_repr(v)
+    return '#' + _get_heap_id(v)
+
+def _heap_build(obj, t, kind, seq, meta):
+    # How a heap object is drawn, from what _heap_read read: its object type,
+    # label and properties, each property (key text, index of its value in
+    # seq, index of its key in seq when the key is drawn as a value), or for a
+    # "more" marker (key text, None, its value).
+    if kind == "list" or kind == "tuple" or kind == "deque":
+        n, shown, attrs = meta
+        spec = []
+        label = _subclass_label(t, list if kind == "list" else tuple if kind == "tuple" else _deque)
+        fields = next((_type_dict(c)['_fields'] for c in _type_mro(t) if '_fields' in _type_dict(c)), None) if kind == "tuple" and t is not tuple else None
+        if type(fields) is tuple and len(fields) == n and all(type(f) is str for f in fields):
+            # A named tuple: its fields' names.
+            spec = [(fields[i], i, None) for i in range(shown)]
+        else:
+            spec = [(_INDEX_KEYS[i], i, None) for i in range(shown)]
+        if n > shown:
+            spec.append(_more('\u2026', n - shown, n))
+        # A subclass's own attributes, after its items, as .name.
+        _attribute_spec(seq, shown, attrs, spec, '.')
+        return ("list" if kind == "list" else kind), _length_label(label, n, shown), spec
+    if kind == "dict":
+        n, shown, attrs = meta
+        spec = []
+        for i in range(shown):
+            k = seq[i]
+            # An object key is drawn as a value: an arrow to it.
+            spec.append((_key_text(k), shown + i, None if _is_primitive(k) else i))
+        if n > shown:
+            spec.append(_more('\u2026', n - shown, n))
+        label = _subclass_label(t, dict)
+        factory = seq[2 * shown]
+        if issubclass(t, _defaultdict):
+            label += '(' + (_safe_name(factory) or _type_name(type(factory))) + ')' if factory is not None else '(None)'
+        _attribute_spec(seq, 2 * shown + 1, attrs, spec, '.')
+        return "dict", _length_label(label, n, shown), spec
+    if kind == "set":
+        n, shown, attrs = meta
+        spec = [(_element_key(seq[i]), i, None) for i in range(shown)]
+        if n > shown:
+            spec.append(_more('\u2026', n - shown, n))
+        _attribute_spec(seq, shown, attrs, spec, '.')
+        return "set", _length_label(_subclass_label(t, set), n, shown), spec
+    if kind == "instance" or kind == "primitive" or kind == "exception":
+        # An instance: its __dict__ and its __slots__, as stored; a subclass of
+        # a primitive type with its value, an exception with its args.
+        start = 0 if kind == "instance" else 1
+        spec = [] if kind == "instance" else [("value" if kind == "primitive" else "args", 0, None)]
+        n = meta
+        _attribute_spec(seq, start, n, spec)
+        for j in range(start + 2 * n, len(seq), 2):
+            if len(spec) >= _MAX_DICT_PROPS:
+                break
+            if _instance_attribute_shown(seq[j]):
+                spec.append((seq[j], j + 1, None))
+        return "object", _type_name(t), spec
     if kind == "class":
         # A class (#38): one the program defined with its bases, the methods it
         # wrote and its class attributes; a library's by its name only.
-        label = _type_name(obj)
-        keys, values = [], []
+        nk, nb = meta
+        label = seq[-1]
+        spec = []
         if _is_program_class(obj):
-            bases = [b for b in _type_bases(obj) if b is not object]
+            bases = [b for b in seq[2 * nk:2 * nk + nb] if b is not object]
             if bases:
                 label += '(' + ', '.join(_type_name(b) for b in bases) + ')'
-            for k, v in _type_dict(obj).items():
-                if len(keys) >= _MAX_DICT_PROPS:
+            for i in range(nk):
+                if len(spec) >= _MAX_DICT_PROPS:
                     break
-                if type(k) is str and _class_attribute_shown(k, v):
-                    keys.append(k)
-                    values.append(v)
-        return "class", label, keys, values, None
+                k = seq[i]
+                if type(k) is str and _class_attribute_shown(k, seq[nk + i]):
+                    spec.append((k, nk + i, None))
+        return "class", label, spec
+    if kind == "function":
+        if meta == "bound":
+            # A bound method, named through its function, and the object it is
+            # bound to when that is the program's (#81): not a module, nor a
+            # library's hidden instance (random.randint's).
+            bound = seq[1]
+            bt = type(bound)
+            shown = bound is not None and not issubclass(bt, _types.ModuleType) and (_is_program_class(bt) or bt in _CONTAINER_TYPES)
+            return "function", seq[0], [("__self__", 1, None)] if shown else []
+        # A program's function with its defaults and closure variables (#82).
+        return "function", seq[0], [(meta[i], 1 + i, None) for i in range(len(meta))] if meta else []
+    if kind == "method":
+        # A staticmethod, classmethod or property in a class: drawn as its function.
+        decorator = 'staticmethod' if issubclass(t, staticmethod) else 'classmethod' if issubclass(t, classmethod) else 'property'
+        return "function", '@' + decorator + ' ' + seq[1], []
     if kind == "module":
         # A module is one object, by its name, never drawn in full (#38).
-        return "module", _safe_name(obj), [], [], None
+        return "module", seq[0], []
+    if kind == "generator":
+        finished, n = meta
+        name = _COMP_DISPLAY_NAMES.get(seq[0], seq[0])
+        if finished:
+            name += ' (finished)'
+        return "generator", name, [(seq[1 + i], 1 + n + i, None) for i in range(n)]
+    if kind == "dictview":
+        which, n, shown = meta
+        if which == 'items':
+            spec = [(_key_text(seq[i]), shown + i, None if _is_primitive(seq[i]) else i) for i in range(shown)]
+            object_type = "dict"
+        else:
+            spec = [(_INDEX_KEYS[i], i, None) for i in range(shown)]
+            object_type = "list"
+        if n > shown:
+            spec.append(_more('\u2026', n - shown, n))
+        return object_type, 'dict_' + which, spec
+    if kind == "seqiter":
+        if meta:
+            return "iterator", seq[0], [("over", 1, None), ("next index", 2, None)]
+        return "iterator", seq[0] + ' (exhausted)', []
+    if kind == "iterator":
+        return "iterator", seq[0], []
+    if kind == "value":
+        return "value", seq[0][:_LABEL_LIMIT], []
+    if kind == "cached":
+        return "function", ('@cache ' if seq[2] is None else '@lru_cache ') + seq[0], [("cached results", 1, None)]
     # An Enum member, as Python names it, with its value.
-    d = _object_dict(obj) or {}
-    member = d.get('_name_')
-    label = _type_name(t) + ('.' + member if type(member) is str else '')
-    if '_value_' in d:
-        return "object", label, ["value"], [d['_value_']], None
-    return "object", label, [], [], None
+    n = meta
+    label = _type_name(t)
+    spec = []
+    for i in range(n):
+        k = seq[i]
+        if type(k) is str and k == '_name_' and type(seq[n + i]) is str:
+            label += '.' + seq[n + i]
+        elif type(k) is str and k == '_value_':
+            spec.append(("value", n + i, None))
+    return "object", label, spec
 
-# ── Recording steps (#39) ──
+# ── Recording steps (#39, #78) ──
 #
 # A step shows every frame and every object they reach, but costs what
 # changed since the step before: each frame, variable, heap object and
 # property is a part (_part), made once and used again by every later step
-# that shows it unchanged, which identity checks find (a variable bound to the
-# same object, a list holding the same objects). The reply is the parts and
-# the steps referring to them by index; run.ts rebuilds the steps with those
-# parts shared, so the worker's postMessage (a structured clone) carries each
-# once. What a cache entry holds stays alive (a value replaced since the last
-# step), so an id in it is never another object's.
+# that shows it unchanged. The reply is the parts and the steps referring to
+# them by index; run.ts rebuilds the steps with those parts shared, so the
+# worker's postMessage (a structured clone) carries each once.
+#
+# The tracer holds none of the program's objects between steps that CPython
+# doesn't hold anyway (#78), so objects die where the program releases them
+# (a __del__ runs, with its steps; a weak reference empties; an abandoned
+# generator's finally runs) and sys.getrefcount counts what python main.py
+# counts. Parts are JSON text. A function frame's variables are held until
+# the frame's next event, as long as CPython's own tracing holds them (each
+# event refreshes the frame's f_locals); a heap object is remembered by the
+# ids and types of what it showed, and only the numbers and strings among
+# them are held, so an id is never another number's.
 
-_parts = []           # every frame, variable, heap object, property and output list, by index
+_parts = []           # every frame, variable, heap object, property and output list, by index, as JSON text
 _heap_cache = {}      # id(obj) -> what the last step drew of it, for the objects it drew
 _output_parts = None  # (_output_count, stdout part, console part) of the last step
-_stdout_last = None   # (part, lines) of the last stdout list
-_console_last = None  # (part, line parts) of the last console list
+_stdout_last = None   # (part, how many lines, whether the last was open) of the last stdout list
+_console_last = None  # (part, how many lines) of the last console list
 _console_lines = []   # (key, part) of each console line
 
 def _part(obj):
-    _parts.append(obj)
+    _parts.append(_encode(obj))
     return len(_parts) - 1
 
 def _enqueue(v, visited, pending):
@@ -898,87 +1685,163 @@ def _enqueue(v, visited, pending):
         visited.add(k)
         pending.append(v)
 
-def _draw_frame(frame_info, local_vars, live, return_value, has_return, visited, pending):
-    # A frame as a part. A frame below the top shows the variables it had at
-    # its last line (a copy): the same part while that copy is the same.
-    if not live and frame_info.get("drawn_from") is local_vars:
+def _draw_frame(frame_info, top, return_value, has_return, visited, pending, return_name=None):
+    # A frame as a part, its variables read from the frame as it is (#80).
+    kind = frame_info["kind"]
+    if kind == "function" and not top and not frame_info["stale"] and not frame_info["cells"] and "part" in frame_info:
+        # A function frame below the top that hasn't run since it was drawn
+        # shows the same variables: only a closure, through a cell, could
+        # change them.
         for v in frame_info["heap_values"]:
             _enqueue(v, visited, pending)
         return frame_info["part"]
+    frame_info["stale"] = False
+    local_vars = _frame_locals(frame_info["frame"])
     old = frame_info.get("variable_parts") or {}
+    # A function frame's values are held until the frame's next event, as
+    # CPython's tracing holds them; the module's and a class body's aren't:
+    # their variables are compared by what they show.
+    holds = kind == "function"
     cache = {}
     parts = []
+    closure_parts = []
     heap_values = []
+    # The variables a closure reads from the function around it are its
+    # closure variables (#82), apart from its own; a comprehension's (a frame
+    # PyTutor gives it) aren't shown, they are the frame below's.
+    free = frame_info["free"]
     for name in _shown_names(frame_info, local_vars):
+        is_free = name in free
+        if is_free and frame_info["comprehension"]:
+            continue
         val = dict.__getitem__(local_vars, name)
         hit = old.get(name)
-        if hit is not None and hit[0] is val:
-            p = hit[1]
+        if holds:
+            if hit is not None and hit[0] is val:
+                p = hit[1]
+            else:
+                p = _part({"name": name, "value": _serialize_value(val)})
+            cache[name] = (val, p)
         else:
-            p = _part({"name": name, "value": _serialize_value(val)})
-        cache[name] = (val, p)
-        parts.append(p)
+            value = _serialize_value(val)
+            # (A string by its object, length and hash, not its text encoded again each step, #84.)
+            key = value["heapId"] if value["type"] == "ref" else (id(val), str.__len__(val), str.__hash__(val)) if type(val) is str else _encode(value)
+            if hit is not None and hit[0] == key:
+                p = hit[1]
+            else:
+                p = _part({"name": name, "value": value})
+            cache[name] = (key, p)
+        (closure_parts if is_free else parts).append(p)
         if not _is_primitive(val):
             heap_values.append(val)
-    frame_info["variable_parts"] = cache
     if has_return:
-        parts.append(_part({"name": "return \\u21b5", "value": _serialize_value(return_value)}))
+        parts.append(_part({"name": return_name, "value": _serialize_value(return_value)}))
         if not _is_primitive(return_value):
             heap_values.append(return_value)
-    if parts != frame_info.get("parts"):
+    frame_info["variable_parts"] = cache
+    frame_info["heap_values"] = heap_values if holds else None
+    if parts != frame_info.get("parts") or closure_parts != frame_info.get("closure_parts"):
         frame_info["parts"] = parts
-        frame_info["part"] = _part({"name": frame_info["name"], "variables": parts})
-    frame_info["drawn_from"] = None if has_return else local_vars
-    frame_info["heap_values"] = heap_values
+        frame_info["closure_parts"] = closure_parts
+        frame = {"name": frame_info["name"], "variables": parts}
+        if closure_parts:
+            frame["closureVars"] = closure_parts
+        frame_info["part"] = _part(frame)
     for v in heap_values:
         _enqueue(v, visited, pending)
     return frame_info["part"]
 
+def _drop_stale(frame_info):
+    # CPython's tracing read the frame's variables again for an event the
+    # tracer takes no step at (an exception passing through): the tracer stops
+    # holding what the frame has dropped since its last step.
+    old = frame_info.get("variable_parts")
+    if old and frame_info["kind"] == "function":
+        local_vars = _frame_locals(frame_info["frame"])
+        frame_info["variable_parts"] = {n: e for n, e in old.items() if local_vars.get(n, _MISSING) is e[0]}
+        frame_info["heap_values"] = None
+        frame_info["stale"] = True
+
+def _new_entry(obj, t, kind, seq, meta, ids, tids, types, old):
+    # A heap object drawn again: the properties that show the same objects as
+    # the last step's are its parts, the others new.
+    object_type, label, spec = _heap_build(obj, t, kind, seq, meta)
+    old_props = old[7] if old is not None and old[0] == id(t) else {}
+    props = []
+    sigs = {}
+    children = []
+    for key_text, vi, ki in spec:
+        if vi is None:
+            # A "more" marker (#81): ki is its value.
+            sig = (key_text, ki["display"])
+            p = old_props.get(sig)
+            if p is None:
+                p = _part({"key": key_text, "value": ki})
+            sigs[sig] = p
+            props.append(p)
+            continue
+        sig = (key_text, ids[vi], tids[vi]) if ki is None else (key_text, ids[vi], tids[vi], ids[ki], tids[ki])
+        p = old_props.get(sig)
+        if p is None:
+            prop = {"key": key_text, "value": _serialize_value(seq[vi])}
+            if ki is not None:
+                prop["keyValue"] = _serialize_value(seq[ki])
+            p = _part(prop)
+        sigs[sig] = p
+        props.append(p)
+        if not _is_primitive_type(types[vi]):
+            children.append(vi)
+        if ki is not None:
+            children.append(ki)
+    if old is not None and old[8] == props and old[9] == object_type and old[10] == label:
+        part = old[5]
+    else:
+        heap_object = {"id": _get_heap_id(obj), "objectType": object_type, "properties": props}
+        if label:
+            heap_object["label"] = label
+        part = _part(heap_object)
+    # The numbers and strings it shows are held until the next step, so their
+    # ids stay theirs: an entry that shows the same ids shows the same values.
+    # One that shows nothing else holds them all and is compared by identity
+    # (its ids None).
+    if _PRIMITIVE_TYPES.issuperset(types):
+        return (id(t), meta, None, tids, seq, part, children, sigs, props, object_type, label)
+    held = list(_compress(seq, map(_is_primitive_type, types)))
+    return (id(t), meta, ids, tids, held, part, children, sigs, props, object_type, label)
+
 def _draw_heap_object(obj, visited, pending, cache):
-    # A heap object as a part: the last step's while it shows the same
-    # objects; else its properties that did, with the ones that changed.
+    # A heap object as a part: the last step's while it shows the same objects
+    # (by id and type, its numbers and strings held) and the same meta. One
+    # that shows only numbers and strings (a grid's row, a dict of counts) is
+    # compared by identity with what it held, in one pass (#84).
     t = type(obj)
-    object_type, label, keys, values, key_objects = _heap_contents(obj, t)
-    ids = list(map(id, values))
-    key_ids = None if key_objects is None else list(map(id, key_objects))
+    kind = _BUILTIN_KINDS.get(t) or _kind(t)
+    seq, meta = _heap_read(obj, t, kind)
     obj_id = id(obj)
     entry = _heap_cache.get(obj_id)
-    if entry is not None and entry[0] is t and entry[1] == object_type and entry[2] == label and entry[3] == keys and entry[5] == ids and entry[7] == key_ids:
-        # values and key_objects as this step read them, so they stay alive
-        entry = (t, object_type, label, keys, values, ids, key_objects, key_ids, entry[8], entry[9], entry[10])
-    else:
-        old_props = None
-        if entry is not None and entry[0] is t:
-            old_props = entry
-        props = []
-        children = []
-        for i in range(len(keys)):
-            v = values[i]
-            ko = None if key_objects is None else key_objects[i]
-            if (old_props is not None and i < len(old_props[3]) and old_props[3][i] == keys[i] and old_props[5][i] == ids[i]
-                    and (old_props[7][i] if old_props[7] is not None else None) == (None if ko is None else key_ids[i])):
-                props.append(old_props[8][i])
-            else:
-                prop = {"key": keys[i], "value": _serialize_value(v)}
-                if ko is not None:
-                    prop["keyValue"] = _serialize_value(ko)
-                props.append(_part(prop))
-            if not _is_primitive(v):
-                children.append(v)
-            if ko is not None:
-                children.append(ko)
-        if entry is not None and entry[8] == props and entry[1] == object_type and entry[2] == label:
-            part = entry[9]
+    if entry is not None and entry[0] == id(t) and entry[1] == meta:
+        if entry[2] is None:
+            held = entry[4]
+            if len(held) == len(seq) and all(map(_is, seq, held)):
+                cache[obj_id] = entry
+                return entry[5]
+            types = list(map(type, seq))
         else:
-            heap_object = {"id": _get_heap_id(obj), "objectType": object_type, "properties": props}
-            if label:
-                heap_object["label"] = label
-            part = _part(heap_object)
-        entry = (t, object_type, label, keys, values, ids, key_objects, key_ids, props, part, children)
+            types = list(map(type, seq))
+            ids = list(map(id, seq))
+            tids = list(map(id, types))
+            if entry[2] == ids and entry[3] == tids:
+                cache[obj_id] = entry
+                for i in entry[6]:
+                    _enqueue(seq[i], visited, pending)
+                return entry[5]
+    else:
+        types = list(map(type, seq))
+    entry = _new_entry(obj, t, kind, seq, meta, list(map(id, seq)), list(map(id, types)), types, entry)
     cache[obj_id] = entry
-    for c in entry[10]:
-        _enqueue(c, visited, pending)
-    return entry[9]
+    for i in entry[6]:
+        _enqueue(seq[i], visited, pending)
+    return entry[5]
 
 def _check_budgets():
     # The run stops with its steps before the worker's kill: at the time
@@ -988,7 +1851,7 @@ def _check_budgets():
     if _now() - _start_time > _TIME_BUDGET:
         _stop("time")
 
-def _capture_snapshot(line, current_locals, return_value=None, has_return=False, column_range=None, condition=None):
+def _capture_snapshot(line, return_value=None, has_return=False, column_range=None, condition=None, return_name=None, exception=None):
     """Capture a full execution snapshot at the given line."""
     global _step_counter, _heap_cache, _work
 
@@ -999,14 +1862,14 @@ def _capture_snapshot(line, current_locals, return_value=None, has_return=False,
     visited = set()
     pending = []
 
-    # Every frame, the innermost with its live variables (and its return value).
+    # Every frame, the innermost with its return value when it returns.
     top = len(_call_stack) - 1
     stack = []
     for i, frame_info in enumerate(_call_stack):
         if i == top:
-            stack.append(_draw_frame(frame_info, current_locals, True, return_value, has_return, visited, pending))
+            stack.append(_draw_frame(frame_info, True, return_value, has_return, visited, pending, return_name or _RETURN_NAME))
         else:
-            stack.append(_draw_frame(frame_info, frame_info.get("locals", {}), frame_info["kind"] == "module", None, False, visited, pending))
+            stack.append(_draw_frame(frame_info, False, None, False, visited, pending))
     _work += _STEP_WORK + len(stack)
 
     # The heap objects the frames reach, each once, from the queue.
@@ -1034,11 +1897,69 @@ def _capture_snapshot(line, current_locals, return_value=None, has_return=False,
         snapshot["columnRange"] = {"startCol": column_range[0], "endCol": column_range[1]}
     if condition:
         snapshot["condition"] = condition
+    if exception is not None:
+        snapshot["exception"] = exception
 
     _snapshots.append(snapshot)
     _step_counter += 1
 
 # ── Trace function ──
+
+def _frame_name(code):
+    # A frame as pythontutor.com names it (#85): the module's the Global frame,
+    # a method's by its class too (Dog.__init__ and Animal.__init__ apart), a
+    # nested function's by its own name, a comprehension's in words.
+    name = code.co_name
+    if name == '<module>':
+        return 'Global frame'
+    if name in _COMP_DISPLAY_NAMES:
+        return _COMP_DISPLAY_NAMES[name]
+    qualname = code.co_qualname
+    return qualname.rsplit('<locals>.', 1)[-1] if type(qualname) is str else name
+
+# The value a frame hands back as it leaves: what it returns, or yields (#80).
+_RETURN_NAME = 'return \\u21b5'
+_YIELD_NAME = 'yield \\u21b5'
+
+def _raised_here(frame, tb):
+    # Whether an exception event's frame is where the program's code first
+    # saw the exception: no other frame of the program's in its traceback
+    # (it was raised here, or in a library function called from here). A for
+    # loop ending at an iterator's StopIteration gets the iterator's
+    # traceback, without the loop's own frame.
+    while tb is not None:
+        if tb.tb_frame is not frame and tb.tb_frame.f_code.co_filename == _USER_FILE:
+            return False
+        tb = tb.tb_next
+    return True
+
+_LABEL_LIMIT = 200
+
+def _exception_label(e):
+    # An exception as a traceback's last line names it ('ValueError: bad
+    # value'), without running the program's code: its own __str__ isn't
+    # called, nor a library's on arguments that aren't plain values.
+    t = type(e)
+    name = _type_name(t)
+    try:
+        args = BaseException.__dict__['args'].__get__(e)
+    except Exception:
+        args = ()
+    str_owner = next((c for c in _type_mro(t) if '__str__' in _type_dict(c)), BaseException)
+    text = None
+    if all(_is_primitive(a) for a in args) and not _is_program_class(str_owner):
+        try:
+            text = str(e)
+        except Exception:
+            text = None
+    if text is None:
+        if len(args) == 1:
+            text = args[0] if type(args[0]) is str else _safe_repr(args[0])
+        else:
+            text = _safe_repr(tuple(args)) if args else ''
+    if len(text) > _LABEL_LIMIT:
+        text = text[:_LABEL_LIMIT] + '\u2026'
+    return name + ': ' + text if text else name
 
 # Display names of the comprehensions' frames: theirs (see _CompWrapper), and
 # a generator expression's, which CPython calls <genexpr>.
@@ -1064,12 +1985,15 @@ def _tracer(frame, event, arg):
     if frame in _refused:
         return None
     try:
-        return _trace_event(frame, event, arg)
+        result = _trace_event(frame, event, arg)
     except _TutorStop:
         raise
     except BaseException:
         # The tracer failed, not the program: its steps so far, and an engine error.
         _internal_failure()
+    if _program_trace is not None or _program_local:
+        return _chain(frame, event, arg, result)
+    return result
 
 def _trace_event(frame, event, arg):
     global _events
@@ -1090,69 +2014,101 @@ def _trace_event(frame, event, arg):
         _stop("time")
 
     if event == 'call':
-        if fname == '<module>':
-            # The module's variables are its globals, read as they are at each step.
-            _call_stack.append({"name": "<module>", "locals": frame.f_globals, "kind": "module"})
-        else:
-            display_name = _COMP_DISPLAY_NAMES.get(fname, fname)
-            # Capture function parameters from f_locals at call time
-            params = dict(_frame_locals(frame))
-            frame_info = {"name": display_name, "locals": params, "kind": _frame_kind(code)}
-            if frame_info["kind"] == "class":
-                # What the class's namespace started with, before its body ran.
-                frame_info["base"] = dict(params)
-            _call_stack.append(frame_info)
-            # A comprehension's frame first shows with its first iteration's variables.
-            if not _is_comprehension(code):
-                _capture_snapshot(frame.f_lineno, params)
+        if _call_stack:
+            # The caller ran since its last step (x = 5; y = f(x) on one line):
+            # its variables are read again (#80).
+            _call_stack[-1]["stale"] = True
+        # Each frame is drawn from the frame itself, its variables read as they
+        # are at each step (#78, #80): the module's are its globals.
+        frame_info = {"name": _frame_name(code), "kind": _frame_kind(code), "frame": frame,
+                      "cells": bool(code.co_cellvars or code.co_freevars), "stale": False,
+                      "free": frozenset(code.co_freevars), "comprehension": _is_comprehension(code)}
+        if frame_info["kind"] == "class":
+            # What the class's namespace started with, before its body ran.
+            frame_info["base"] = dict(_frame_locals(frame))
+        _call_stack.append(frame_info)
+        # A function's entry is a step, with its parameters; a comprehension's
+        # frame first shows with its first iteration's variables.
+        if fname != '<module>' and not _is_comprehension(code):
+            _capture_snapshot(frame.f_lineno)
         return _tracer
 
     elif event == 'exception':
         # An exception is passing through this frame. If the frame doesn't
         # handle it, its 'return' event is the frame unwinding, not a return.
-        _unwinding.add(frame)
+        _raised_at[frame] = frame.f_lasti
+        if _call_stack and _call_stack[-1]["frame"] is frame:
+            exc = arg[1]
+            # (Not a finished sub-iterator's StopIteration, which ends a yield
+            # from or an await, at SEND or END_SEND: the interpreter's, not raised, #86.)
+            if _raised_here(frame, arg[2]) and code.co_code[frame.f_lasti] not in _SEND_OPS and not issubclass(type(exc), (SystemExit, _TutorUnsupported)):
+                # Where the program's code raised it (or called what did): a
+                # step, with the exception (#80), as pythontutor.com takes one.
+                _capture_snapshot(frame.f_lineno, exception=_exception_label(exc))
+            else:
+                _drop_stale(_call_stack[-1])
         return _tracer
 
     elif event == 'line':
-        _unwinding.discard(frame)  # the frame handled the exception and goes on
+        _raised_at.pop(frame, None)  # the frame handled the exception and goes on
         line = frame.f_lineno
+        frame_info = _call_stack[-1] if _call_stack and _call_stack[-1]["frame"] is frame else None
         if _is_comprehension(code):
-            # The first line event comes before the first iteration: nothing to
-            # show yet. Then one per iteration, on whichever of the
-            # comprehension's lines it is (they aren't a statement's
-            # continuation lines here).
-            if _call_stack and not _call_stack[-1].get("started"):
-                _call_stack[-1]["started"] = True
-                return _tracer
+            # Nothing to show before the first iteration binds a variable (a
+            # comprehension's lines before it, #80); then one step per
+            # iteration, on whichever of its lines it is (they aren't a
+            # statement's continuation lines here).
+            if frame_info is not None and not frame_info.get("started"):
+                # Its own variables, not the ones it reads from the frame around it.
+                local_vars = _frame_locals(frame)
+                if not any(name in local_vars for name in code.co_varnames[code.co_argcount:] + code.co_cellvars):
+                    return _tracer
+                frame_info["started"] = True
         elif line in _continuation_lines and fname not in _EXPRESSION_FRAMES:
             # Skip continuation lines of multi-line statements (no visible
             # changes), in the frame the statement runs in: a lambda's or
             # generator expression's frame written inside it has only those lines.
+            if frame_info is not None:
+                frame_info["continued"] = _continuation_lines[line]
             return _tracer
+        elif frame_info is not None and frame_info.get("continued") is not None:
+            # Back at its statement's first line from the statement's other
+            # lines (the call after its arguments' lines): the same step.
+            back = frame_info["continued"] == line
+            frame_info["continued"] = None
+            if back:
+                return _tracer
 
         if _call_stack:
-            # Update stored locals for the current frame (the module's are its live globals)
-            local_vars = _frame_locals(frame)
-            _call_stack[-1]["locals"] = local_vars if fname == '<module>' else dict(local_vars)
-            _capture_snapshot(line, local_vars)
+            _capture_snapshot(line)
         return _tracer
 
     elif event == 'return':
         if not _returns(frame):
             # Leaving because of an exception: no "return ↵ None" step. The
             # last step stays where the exception was raised.
-            _unwinding.discard(frame)
+            _raised_at.pop(frame, None)
             if _call_stack:
                 _call_stack.pop()
             return _tracer
+        _raised_at.pop(frame, None)
 
         if _call_stack:
-            local_vars = _frame_locals(frame)
             if fname == '<module>':
                 # Capture final state so stdout from the last line is visible
-                _capture_snapshot(frame.f_lineno, local_vars)
+                _capture_snapshot(frame.f_lineno)
+            elif _call_stack[-1]["kind"] == "class":
+                # A class body's return value is Python's own (None, or the
+                # cell super() uses): the step shows the body done (#80).
+                _capture_snapshot(frame.f_lineno)
+            elif code.co_code[frame.f_lasti] == _YIELD_VALUE:
+                if code.co_flags & _CO_AWAITING:
+                    # A coroutine pausing at an await: what it hands its event loop isn't a value of the program's.
+                    _capture_snapshot(frame.f_lineno)
+                else:
+                    _capture_snapshot(frame.f_lineno, return_value=arg, has_return=True, return_name=_YIELD_NAME)
             else:
-                _capture_snapshot(frame.f_lineno, local_vars, return_value=arg, has_return=True)
+                _capture_snapshot(frame.f_lineno, return_value=arg, has_return=True)
             _call_stack.pop()
         return _tracer
 
@@ -1180,43 +2136,80 @@ def _user_line(e):
 # never the program's.
 _TRACER_FILE = _getframe().f_code.co_filename
 
-def _program_stack(te, e, seen):
-    # A TracebackException's frames as python main.py has them, for e and the
-    # exceptions chained to it: without the tracer's frames or a frame refused
-    # for the recursion limit (it never ran), and with PyTutor's comprehension
-    # frames folded into the frame around them, where CPython 3.12 runs a
-    # comprehension inlined (that frame's line and carets are the
-    # comprehension's).
-    if te is None or e is None or id(e) in seen:
+_walk_tb_full = _traceback._walk_tb_with_full_positions
+_walk_stack = _traceback.walk_stack
+
+def _program_walk_tb(tb):
+    # A traceback's frames as python main.py has them (#40, #85), for the
+    # uncaught exception's and for every traceback the program prints
+    # (traceback.print_exc(), format_exc(), logging.exception()): without the
+    # tracer's frames or a frame refused for the recursion limit (it never
+    # ran), and with PyTutor's comprehension frames folded into the frame
+    # around them, where CPython 3.12 runs a comprehension inlined (that
+    # frame's line and carets are the comprehension's).
+    held = None
+    for f, positions in _walk_tb_full(tb):
+        code = f.f_code
+        if code.co_filename == _TRACER_FILE or f in _refused:
+            continue
+        if code.co_filename == _USER_FILE and _is_comprehension(code):
+            if held is not None and held[0].f_code.co_filename == _USER_FILE:
+                held = (held[0], positions)
+            continue
+        if held is not None:
+            yield held
+        held = (f, positions)
+    if held is not None:
+        yield held
+
+def _program_walk_stack(f):
+    # The frames from f out, as python main.py has them (#85, for
+    # traceback.print_stack(), extract_stack()): a comprehension's folded
+    # into the frame around it, and none below the program's module frame
+    # (the tracer's and Pyodide's).
+    if f is None:
+        yield from _walk_stack(f)
         return
-    seen.add(id(e))
-    frames = [f for f, _ in _traceback.walk_tb(e.__traceback__)]
-    if len(frames) == len(te.stack):
-        kept = []
-        for summary, f in zip(te.stack, frames):
-            code = f.f_code
-            if code.co_filename == _TRACER_FILE or f in _refused:
-                continue
-            if code.co_filename == _USER_FILE and _is_comprehension(code):
-                if kept and kept[-1].filename == _USER_FILE:
-                    outer = kept[-1]
-                    kept[-1] = _traceback.FrameSummary(
-                        outer.filename, summary.lineno, outer.name, lookup_line=False,
-                        end_lineno=summary.end_lineno, colno=summary.colno, end_colno=summary.end_colno)
-                continue
-            kept.append(summary)
-        te.stack = _traceback.StackSummary.from_list(kept)
-    _program_stack(te.__cause__, e.__cause__, seen)
-    _program_stack(te.__context__, e.__context__, seen)
-    for sub_te, sub_e in zip(te.exceptions or (), getattr(e, 'exceptions', None) or ()):
-        _program_stack(sub_te, sub_e, seen)
+    line = None
+    while f is not None:
+        code = f.f_code
+        if code.co_filename == _TRACER_FILE:
+            return
+        if code.co_filename == _USER_FILE and _is_comprehension(code):
+            if line is None:
+                line = f.f_lineno
+        else:
+            yield f, f.f_lineno if line is None else line
+            line = None
+        f = f.f_back
+
+def _program_getframe(depth=0, /):
+    # sys._getframe while the program runs (#85): a comprehension's frame is
+    # part of the frame around it, as CPython 3.12 runs it inlined, and the
+    # program's module frame is the outermost, as python main.py has it.
+    f = _getframe(1)
+    while True:
+        if f is None or f.f_code.co_filename == _TRACER_FILE:
+            raise ValueError('call stack is not deep enough')
+        code = f.f_code
+        if not (code.co_filename == _USER_FILE and _is_comprehension(code)):
+            if depth <= 0:
+                return f
+            depth -= 1
+        f = f.f_back
+
+_program_getframe.__name__ = _program_getframe.__qualname__ = '_getframe'
 
 def _traceback_text(e):
     """What python main.py prints for an uncaught exception: CPython's own
     traceback (chained exceptions, carets, repeated lines folded), of the
     program's frames."""
-    te = _traceback.TracebackException(type(e), e, e.__traceback__, compact=True)
-    _program_stack(te, e, set())
+    saved = _traceback._walk_tb_with_full_positions
+    _traceback._walk_tb_with_full_positions = _program_walk_tb
+    try:
+        te = _traceback.TracebackException(type(e), e, e.__traceback__, compact=True)
+    finally:
+        _traceback._walk_tb_with_full_positions = saved
     return ''.join(te.format()).rstrip(chr(10))
 
 def _compile_error(e, source_code):
@@ -1241,20 +2234,23 @@ def _compile_error(e, source_code):
 
 def run_traced(source_code, stdin_text=''):
     global _snapshots, _call_stack, _heap_map, _heap_counter, _step_counter, _continuation_lines, _module_order, _source_words
-    global _stop_reason, _start_time, _events, _unwinding, _work
-    global _out_lines, _console, _console_open, _stderr_used, _stdin_used, _output_count, _output_seen
+    global _stop_reason, _start_time, _events, _raised_at, _work
+    global _out_lines, _console, _console_live, _console_open, _stderr_used, _stdin_used, _output_count, _output_seen
     global _parts, _heap_cache, _output_parts, _stdout_last, _console_last, _console_lines, _kinds, _slots_of
-    global _limit, _base, _refused
+    global _limit, _base, _refused, _program_trace, _program_local
     _stop_reason = None
     _start_time = _now()
     _events = 0
     _work = 0
-    _unwinding = set()
+    _raised_at = {}
     _refused = set()
     _limit = _DEFAULT_LIMIT
+    _program_trace = None
+    _program_local = {}
     _snapshots = []
     _out_lines = ['']
     _console = []
+    _console_live = False
     _console_open = False
     _stderr_used = False
     _stdin_used = False
@@ -1272,18 +2268,29 @@ def run_traced(source_code, stdin_text=''):
     _heap_map = {}
     _heap_counter = 0
     _step_counter = 0
-    _continuation_lines = set()
+    _continuation_lines = {}
     _module_order = {}
     _source_words = frozenset(_re.findall(r'[A-Za-z_][A-Za-z0-9_]*', source_code))
 
     # Pre-scan source for multi-line statements
     _scan_continuation_lines(source_code)
 
-    # The program's module namespace, as CPython has main.py's: its names
-    # only, the builtins found through the builtins module (exec adds
-    # __builtins__), so a program that replaces builtins.len calls its own len
-    # and a variable named list or max is the program's (#34).
-    namespace = {'__name__': '__main__'}
+    # The program's module, as python main.py has it (#77): a module named
+    # __main__ in sys.modules (where unittest.main(), doctest.testmod() and
+    # pickle look), its names only, the builtins module as __builtins__ (so a
+    # program that replaces builtins.len calls its own len, and a variable
+    # named list or max is the program's, #34), __file__, sys.argv, and the
+    # source as main.py in the working directory.
+    main_module = _main_module()
+    namespace = main_module.__dict__
+    if sys.platform == 'emscripten':
+        # In Pyodide's file system, a fresh one each run (#35); never a real
+        # one (the behavior-comparison tests run the tracer in CPython).
+        try:
+            with open(_USER_FILE, 'w', encoding='utf-8') as f:
+                f.write(source_code)
+        except OSError:
+            pass
 
     # The source, for tracebacks, warnings and traceback.print_exc(), as CPython has main.py's.
     _linecache.cache[_USER_FILE] = (len(source_code), None, source_code.splitlines(True), _USER_FILE)
@@ -1295,9 +2302,18 @@ def run_traced(source_code, stdin_text=''):
         stdin_text += chr(10)
     saved_streams = (sys.stdin, sys.stdout, sys.stderr, sys.__stdin__, sys.__stdout__, sys.__stderr__)
     sys.stdin = sys.__stdin__ = _TutorStdin(stdin_text)
-    sys.stdout = sys.__stdout__ = _TutorStream('stdout', 'strict')
-    sys.stderr = sys.__stderr__ = _TutorStream('stderr', 'backslashreplace')
-    saved_limit_functions = (sys.getrecursionlimit, sys.setrecursionlimit)
+    sys.stdout = sys.__stdout__ = _output_stream('stdout', 'strict')
+    sys.stderr = sys.__stderr__ = _output_stream('stderr', 'backslashreplace')
+    saved_sys_functions = (sys.getrecursionlimit, sys.setrecursionlimit, sys.settrace, sys.gettrace, sys._getframe,
+                           _traceback._walk_tb_with_full_positions, _traceback.walk_stack, sys.breakpointhook,
+                           _threading._start_new_thread, _thread.start_new_thread)
+    saved_loop = (_aio_events._get_running_loop(), _aio_events.get_event_loop_policy())
+    pdb = saved_pdb = None
+    saved_main = (sys.modules.get('__main__'), sys.argv, sys.path)
+    sys.modules['__main__'] = main_module
+    sys.argv = [_USER_FILE]
+    # The working directory (main.py's) first, once: a restored interpreter lists it twice.
+    sys.path = list(dict.fromkeys(sys.path))
     try:
         try:
             code = _compile_program(source_code)
@@ -1312,12 +2328,38 @@ def run_traced(source_code, stdin_text=''):
         _base = _depth(_getframe())
         sys.getrecursionlimit = _getrecursionlimit
         sys.setrecursionlimit = _setrecursionlimit
+        sys.settrace = _program_settrace
+        sys.gettrace = _program_gettrace
+        sys._getframe = _program_getframe
+        _traceback._walk_tb_with_full_positions = _program_walk_tb
+        _traceback.walk_stack = _program_walk_stack
+        sys.breakpointhook = _no_breakpoint
+        _threading._start_new_thread = _thread.start_new_thread = _no_threads
+        _aio_events._set_running_loop(None)
+        _aio_events.set_event_loop_policy(_UnixDefaultEventLoopPolicy())
+        pdb = sys.modules.get('pdb')
+        if pdb is None and 'pdb' in source_code:
+            import pdb
+        if pdb is not None:
+            saved_pdb = (pdb.set_trace, pdb.Pdb.set_trace)
+            pdb.set_trace = pdb.Pdb.set_trace = _no_breakpoint
         _real_setlimit(_limit + _base + _HEADROOM)
+        # The tracer's own garbage (its setup's) isn't the program's to collect.
+        _gc_collect()
         _settrace(_tracer)
         try:
             exec(code, namespace)
+            _settrace(None)
+            _finish_output()
         except _TutorStop:
             pass
+        except _TutorUnsupported as e:
+            _settrace(None)
+            error = {"kind": "error", "message": str(e)}
+            line = _user_line(e)
+            if line is not None:
+                error["line"] = line
+            _finish_output()
         except SystemExit as e:
             # sys.exit() ends the program; as CPython ends, a code that isn't
             # None or an int is printed to stderr.
@@ -1339,7 +2381,14 @@ def run_traced(source_code, stdin_text=''):
             _setprofile(None)
     finally:
         sys.stdin, sys.stdout, sys.stderr, sys.__stdin__, sys.__stdout__, sys.__stderr__ = saved_streams
-        sys.getrecursionlimit, sys.setrecursionlimit = saved_limit_functions
+        (sys.getrecursionlimit, sys.setrecursionlimit, sys.settrace, sys.gettrace, sys._getframe,
+         _traceback._walk_tb_with_full_positions, _traceback.walk_stack, sys.breakpointhook,
+         _threading._start_new_thread, _thread.start_new_thread) = saved_sys_functions
+        _aio_events.set_event_loop_policy(saved_loop[1])
+        _aio_events._set_running_loop(saved_loop[0])
+        if saved_pdb is not None:
+            pdb.set_trace, pdb.Pdb.set_trace = saved_pdb
+        sys.modules['__main__'], sys.argv, sys.path = saved_main
         _real_setlimit(_DEFAULT_LIMIT)
 
     if _stop_reason == "steps":
@@ -1353,10 +2402,14 @@ def run_traced(source_code, stdin_text=''):
         if _snapshots:
             error["line"] = _snapshots[-1]["line"]
     # Each part once, the steps referring to them by index (run.ts decodes it).
-    result = {"type": "result", "parts": _parts, "snapshots": _snapshots}
+    result = '{"type":"result","parts":[' + ','.join(_parts) + '],"snapshots":' + _encode(_snapshots)
     if error is not None:
-        result["error"] = error
+        result += ',"error":' + _encode(error)
+    # Nothing of the program's is kept after the run.
     _heap_cache = {}
-    return _json_dumps(result, separators=(',', ':'))
+    _call_stack = []
+    _program_local = {}
+    _parts = []
+    return result + '}'
 `;
 }

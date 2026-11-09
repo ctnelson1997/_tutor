@@ -1,0 +1,91 @@
+{
+ "stdout": "**********************************************************************\nFile \"main.py\", line 6, in __main__.square\nFailed example:\n    square(-2)\nExpected:\n    5\nGot:\n    4\n**********************************************************************\n1 items had failures:\n   1 of   2 in __main__.square\n***Test Failed*** 1 failures.\nTestResults(failed=1, attempted=2)\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "**********************************************************************"
+  },
+  {
+   "stream": "stdout",
+   "text": "File \"main.py\", line 6, in __main__.square"
+  },
+  {
+   "stream": "stdout",
+   "text": "Failed example:"
+  },
+  {
+   "stream": "stdout",
+   "text": "    square(-2)"
+  },
+  {
+   "stream": "stdout",
+   "text": "Expected:"
+  },
+  {
+   "stream": "stdout",
+   "text": "    5"
+  },
+  {
+   "stream": "stdout",
+   "text": "Got:"
+  },
+  {
+   "stream": "stdout",
+   "text": "    4"
+  },
+  {
+   "stream": "stdout",
+   "text": "**********************************************************************"
+  },
+  {
+   "stream": "stdout",
+   "text": "1 items had failures:"
+  },
+  {
+   "stream": "stdout",
+   "text": "   1 of   2 in __main__.square"
+  },
+  {
+   "stream": "stdout",
+   "text": "***Test Failed*** 1 failures."
+  },
+  {
+   "stream": "stdout",
+   "text": "TestResults(failed=1, attempted=2)"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":1,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"square":"<function>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"square":"<function>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"square":"<function>","doctest":"<module>"}},
+  {"event":"call","line":1,"stack":["<module>","square"],"locals":{"n":"3"}},
+  {"event":"line","line":9,"stack":["<module>","square"],"locals":{"n":"3"}},
+  {"event":"return","line":9,"stack":["<module>","square"],"locals":{"n":"3"},"value":"9"},
+  {"event":"call","line":1,"stack":["<module>","square"],"locals":{"n":"-2"}},
+  {"event":"line","line":9,"stack":["<module>","square"],"locals":{"n":"-2"}},
+  {"event":"return","line":9,"stack":["<module>","square"],"locals":{"n":"-2"},"value":"4"},
+  {"event":"return","line":14,"stack":["<module>"],"locals":{"square":"<function>","doctest":"<module>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 12,
+ "finalGlobals": {
+  "square": "<function>",
+  "doctest": "<module>"
+ },
+ "continuation": [
+  3,
+  4,
+  5,
+  6,
+  7,
+  8
+ ],
+ "sourceSha256": "20ab8b5fedec245f01675672f902278d49d19aa792bdaca0d8d1ba077392b4fe"
+}

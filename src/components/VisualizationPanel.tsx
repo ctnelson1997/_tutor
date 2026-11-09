@@ -5,11 +5,19 @@ import ConsolePanel from './ConsolePanel';
 import PointerArrows from './PointerArrows';
 import { useStore } from '../store/useStore';
 
-/** The current step's label: what started it when nothing on the stack called it, such as a timer's callback (#45). */
+/**
+ * The current step's label: what started it when nothing on the stack called
+ * it, such as a timer's callback (#45), or the exception it raises (#80).
+ */
 function StepLabel() {
   const label = useStore((s) => s.snapshots[s.currentStep]?.label);
-  if (!label) return null;
-  return <span className="step-label" title="This step starts a callback the event loop ran">{label}</span>;
+  const exception = useStore((s) => s.snapshots[s.currentStep]?.exception);
+  return (
+    <>
+      {label && <span className="step-label" title="This step starts a callback the event loop ran">{label}</span>}
+      {exception && <span className="step-label step-exception" title="This step raises an exception">raises {exception}</span>}
+    </>
+  );
 }
 
 export default function VisualizationPanel() {

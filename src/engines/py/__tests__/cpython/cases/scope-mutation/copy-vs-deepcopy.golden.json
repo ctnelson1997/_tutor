@@ -53,7 +53,7 @@
   {"event":"call","line":19,"stack":["<module>","Box"],"locals":{}},
   {"event":"line","line":19,"stack":["<module>","Box"],"locals":{}},
   {"event":"line","line":20,"stack":["<module>","Box"],"locals":{"__module__":"'__main__'","__qualname__":"'Box'"}},
-  {"event":"return","line":20,"stack":["<module>","Box"],"locals":{"__module__":"'__main__'","__qualname__":"'Box'","__init__":"<function>"},"value":"None"},
+  {"event":"return","line":20,"stack":["<module>","Box"],"locals":{"__module__":"'__main__'","__qualname__":"'Box'","__init__":"<function>"},"value":"None","classBody":true},
   {"event":"line","line":23,"stack":["<module>"],"locals":{"copy":"<module>","original":"<list>","shallow":"<list>","deep":"<list>","shared":"<list>","pair":"<list>","pair_copy":"<list>","Box":"<type>"}},
   {"event":"call","line":20,"stack":["<module>","__init__"],"locals":{"self":"<Box>","items":"<list>"}},
   {"event":"line","line":21,"stack":["<module>","__init__"],"locals":{"self":"<Box>","items":"<list>"}},

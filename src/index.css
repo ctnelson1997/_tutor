@@ -255,6 +255,13 @@ html, body, #root {
   text-transform: none;
 }
 
+/* The exception a step raises (Python, #80). */
+.step-exception {
+  background-color: rgba(220, 53, 69, 0.12);
+  color: #b02a37;
+  white-space: pre-wrap;
+}
+
 /* Sub-line highlight for specific expressions (e.g. for-loop parts) */
 .cm-current-step-highlight {
   background-color: rgba(34, 139, 34, 0.22);

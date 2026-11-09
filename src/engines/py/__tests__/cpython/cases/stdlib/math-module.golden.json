@@ -74,7 +74,7 @@
   {"event":"line","line":17,"stack":["<module>"],"locals":{"math":"<module>","pi":"3.141592653589793","sqrt":"<builtin_function_or_method>","area":"28.274333882308138","nan":"nan"}},
   {"event":"line","line":18,"stack":["<module>"],"locals":{"math":"<module>","pi":"3.141592653589793","sqrt":"<builtin_function_or_method>","area":"28.274333882308138","nan":"nan"}},
   {"event":"line","line":19,"stack":["<module>"],"locals":{"math":"<module>","pi":"3.141592653589793","sqrt":"<builtin_function_or_method>","area":"28.274333882308138","nan":"nan"}},
-  {"event":"exception","line":19,"stack":["<module>"],"locals":{"math":"<module>","pi":"3.141592653589793","sqrt":"<builtin_function_or_method>","area":"28.274333882308138","nan":"nan"},"exc":"ValueError"},
+  {"event":"exception","line":19,"stack":["<module>"],"locals":{"math":"<module>","pi":"3.141592653589793","sqrt":"<builtin_function_or_method>","area":"28.274333882308138","nan":"nan"},"exc":"ValueError","raised":true},
   {"event":"line","line":20,"stack":["<module>"],"locals":{"math":"<module>","pi":"3.141592653589793","sqrt":"<builtin_function_or_method>","area":"28.274333882308138","nan":"nan"}},
   {"event":"line","line":21,"stack":["<module>"],"locals":{"math":"<module>","pi":"3.141592653589793","sqrt":"<builtin_function_or_method>","area":"28.274333882308138","nan":"nan","e":"<ValueError>"}},
   {"event":"return","line":21,"stack":["<module>"],"locals":{"math":"<module>","pi":"3.141592653589793","sqrt":"<builtin_function_or_method>","area":"28.274333882308138","nan":"nan"},"value":"None"}

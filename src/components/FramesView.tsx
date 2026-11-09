@@ -58,7 +58,8 @@ function VariableTable({ frame, frameIndex, changedKeys, step }: { frame: StackF
         <table className="w-100">
           <tbody>
             {displayVars.map((v) => {
-              const isReturn = v.name === 'return \u21b5';
+              // What the frame hands back as it leaves: a return value, or a generator's yielded value (Python, #80).
+              const isReturn = v.name === 'return \u21b5' || v.name === 'yield \u21b5';
               const isChanged = changedKeys.has(`var:${frameIndex}:${v.name}`);
               return (
                 <tr key={v.name} style={isReturn ? { borderTop: '1px dashed #0d6efd' } : undefined}>

@@ -25,6 +25,22 @@ export const INTERNAL_ERROR = 'Internal PyTutor error (please report it)';
 export interface PyodideApi {
   runPython(code: string): unknown;
   globals: { get(name: string): unknown };
+  /** What file descriptor 0 reads (open(0), os.read(0, n)), as Pyodide has it. */
+  setStdin?(options: { read: (buffer: Uint8Array) => number }): void;
+}
+
+/** A stdin that reads `text` (UTF-8), then reports end of file. */
+export function stdinOf(text: string): { read: (buffer: Uint8Array) => number } {
+  const bytes = new TextEncoder().encode(text);
+  let pos = 0;
+  return {
+    read: buffer => {
+      const n = Math.min(buffer.length, bytes.length - pos);
+      buffer.set(bytes.subarray(pos, pos + n));
+      pos += n;
+      return n;
+    },
+  };
 }
 
 /** A Python function as Pyodide hands it to JavaScript. */
@@ -92,7 +108,12 @@ export function decodeReply(text: string): WorkerMessage {
     return built.get(i) as T;
   };
   // Variables, properties and console lines are parts as they are.
-  const frame = (i: number) => once(i, (p: { name: string; variables: number[] }): StackFrame => ({ name: p.name, variables: p.variables.map(v => parts[v] as Variable) }));
+  // A closure's frame has its closure variables apart (#82).
+  const frame = (i: number) => once(i, (p: { name: string; variables: number[]; closureVars?: number[] }): StackFrame => {
+    const f: StackFrame = { name: p.name, variables: p.variables.map(v => parts[v] as Variable) };
+    if (p.closureVars) f.closureVars = p.closureVars.map(v => parts[v] as Variable);
+    return f;
+  });
   const heapObject = (i: number) => once(i, (p: Omit<HeapObject, 'properties'> & { properties: number[] }): HeapObject => ({ ...p, properties: p.properties.map(q => parts[q] as Property) }));
   // A list of lines from the list it grew from: built in order, never by recursion (a run may print thousands of times).
   const lines = <T>(i: number, item: (x: unknown) => T): T[] => {
@@ -127,6 +148,10 @@ export function runProgram(pyodide: PyodideApi, source: string, options: RunOpti
       pyodide.runPython(`_TIME_BUDGET = ${Number.isFinite(budget) ? budget : "float('inf')"}`);
     }
     if (options.workBudget !== undefined) pyodide.runPython(`_WORK_BUDGET = ${options.workBudget}`);
+    // File descriptor 0 reads the stdin panel's text too (#86: open(0).read(), a
+    // competitive-programming idiom), as python main.py's reads its stdin;
+    // sys.stdin and input() read it through the tracer, from a position of their own.
+    pyodide.setStdin?.(stdinOf(options.stdin ?? ''));
 
     // The source goes to run_traced as a str (data), never into Python code:
     // a program ending in a quote or a backslash runs as written.

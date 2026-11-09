@@ -87,7 +87,9 @@ describe('pyEngine.heapTypeConfig', () => {
     for (const [key, config] of Object.entries(pyEngine.heapTypeConfig!)) {
       const typed = config as HeapTypeDisplay;
       expect(typeof typed.label, `${key}.label`).toBe('string');
-      expect(typed.label.length, `${key}.label non-empty`).toBeGreaterThan(0);
+      // A library value (range(0, 10), #81) is drawn by its label alone.
+      if (key === 'value') expect(typed.label).toBe('');
+      else expect(typed.label.length, `${key}.label non-empty`).toBeGreaterThan(0);
       expect(typeof typed.variant, `${key}.variant`).toBe('string');
       expect(typed.variant.length, `${key}.variant non-empty`).toBeGreaterThan(0);
     }

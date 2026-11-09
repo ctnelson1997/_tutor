@@ -37,7 +37,7 @@
   {"event":"call","line":2,"stack":["<module>","Node"],"locals":{}},
   {"event":"line","line":2,"stack":["<module>","Node"],"locals":{}},
   {"event":"line","line":3,"stack":["<module>","Node"],"locals":{"__module__":"'__main__'","__qualname__":"'Node'"}},
-  {"event":"return","line":3,"stack":["<module>","Node"],"locals":{"__module__":"'__main__'","__qualname__":"'Node'","__init__":"<function>"},"value":"None"},
+  {"event":"return","line":3,"stack":["<module>","Node"],"locals":{"__module__":"'__main__'","__qualname__":"'Node'","__init__":"<function>"},"value":"None","classBody":true},
   {"event":"line","line":9,"stack":["<module>"],"locals":{"Node":"<type>"}},
   {"event":"call","line":3,"stack":["<module>","__init__"],"locals":{"self":"<Node>","name":"'a'"}},
   {"event":"line","line":4,"stack":["<module>","__init__"],"locals":{"self":"<Node>","name":"'a'"}},

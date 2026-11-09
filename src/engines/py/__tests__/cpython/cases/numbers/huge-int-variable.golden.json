@@ -44,7 +44,7 @@
   {"event":"line","line":6,"stack":["<module>"],"locals":{"x":"<int with 5001 digits>","small":"10000000000"}},
   {"event":"line","line":7,"stack":["<module>"],"locals":{"x":"<int with 5001 digits>","small":"10000000000"}},
   {"event":"line","line":8,"stack":["<module>"],"locals":{"x":"<int with 5001 digits>","small":"10000000000"}},
-  {"event":"exception","line":8,"stack":["<module>"],"locals":{"x":"<int with 5001 digits>","small":"10000000000"},"exc":"ValueError"},
+  {"event":"exception","line":8,"stack":["<module>"],"locals":{"x":"<int with 5001 digits>","small":"10000000000"},"exc":"ValueError","raised":true},
   {"event":"line","line":9,"stack":["<module>"],"locals":{"x":"<int with 5001 digits>","small":"10000000000"}},
   {"event":"line","line":10,"stack":["<module>"],"locals":{"x":"<int with 5001 digits>","small":"10000000000","err":"<ValueError>"}},
   {"event":"line","line":11,"stack":["<module>"],"locals":{"x":"<int with 5001 digits>","small":"10000000000"}},

@@ -92,7 +92,7 @@
   {"event":"line","line":20,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>","nested_key":"<dict>"}},
   {"event":"line","line":21,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>","nested_key":"<dict>"}},
   {"event":"line","line":22,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>","nested_key":"<dict>"}},
-  {"event":"exception","line":22,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>","nested_key":"<dict>"},"exc":"TypeError"},
+  {"event":"exception","line":22,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>","nested_key":"<dict>"},"exc":"TypeError","raised":true},
   {"event":"line","line":23,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>","nested_key":"<dict>"}},
   {"event":"line","line":24,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>","nested_key":"<dict>","e":"<TypeError>"}},
   {"event":"line","line":25,"stack":["<module>"],"locals":{"grid":"<dict>","r":"1","c":"2","corner":"3","mixed":"<dict>","codes":"<dict>","nested_key":"<dict>"}},

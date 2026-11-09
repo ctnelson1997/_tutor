@@ -36,7 +36,7 @@
   {"event":"line","line":16,"stack":["<module>","Ticket"],"locals":{"__module__":"'__main__'","__qualname__":"'Ticket'","next_id":"1","issued":"<list>","__init__":"<function>","__repr__":"<function>"}},
   {"event":"line","line":15,"stack":["<module>","Ticket"],"locals":{"__module__":"'__main__'","__qualname__":"'Ticket'","next_id":"1","issued":"<list>","__init__":"<function>","__repr__":"<function>"}},
   {"event":"line","line":16,"stack":["<module>","Ticket"],"locals":{"__module__":"'__main__'","__qualname__":"'Ticket'","next_id":"1","issued":"<list>","__init__":"<function>","__repr__":"<function>"}},
-  {"event":"return","line":16,"stack":["<module>","Ticket"],"locals":{"__module__":"'__main__'","__qualname__":"'Ticket'","next_id":"1","issued":"<list>","__init__":"<function>","__repr__":"<function>","count":"<classmethod>"},"value":"None"},
+  {"event":"return","line":16,"stack":["<module>","Ticket"],"locals":{"__module__":"'__main__'","__qualname__":"'Ticket'","next_id":"1","issued":"<list>","__init__":"<function>","__repr__":"<function>","count":"<classmethod>"},"value":"None","classBody":true},
   {"event":"line","line":19,"stack":["<module>"],"locals":{"Ticket":"<type>"}},
   {"event":"call","line":6,"stack":["<module>","__init__"],"locals":{"self":"<Ticket>","event":"'concert'"}},
   {"event":"line","line":7,"stack":["<module>","__init__"],"locals":{"self":"<Ticket>","event":"'concert'"}},

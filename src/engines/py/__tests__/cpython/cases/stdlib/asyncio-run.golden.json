@@ -1,0 +1,101 @@
+{
+ "stdout": "b done after 1\na done after 2\nc done after 3\n['b', 'c'] a\nitem\ntimed out\nfinished\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "b done after 1"
+  },
+  {
+   "stream": "stdout",
+   "text": "a done after 2"
+  },
+  {
+   "stream": "stdout",
+   "text": "c done after 3"
+  },
+  {
+   "stream": "stdout",
+   "text": "['b', 'c'] a"
+  },
+  {
+   "stream": "stdout",
+   "text": "item"
+  },
+  {
+   "stream": "stdout",
+   "text": "timed out"
+  },
+  {
+   "stream": "stdout",
+   "text": "finished"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"asyncio":"<module>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"asyncio":"<module>","worker":"<function>"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"asyncio":"<module>","worker":"<function>","main":"<function>"}},
+  {"event":"call","line":11,"stack":["<module>","main"],"locals":{}},
+  {"event":"line","line":12,"stack":["<module>","main"],"locals":{}},
+  {"event":"line","line":13,"stack":["<module>","main"],"locals":{"task":"<Task>"}},
+  {"event":"return","line":13,"stack":["<module>","main"],"locals":{"task":"<Task>"},"value":"<_GatheringFuture>","awaiting":true,"yield":true},
+  {"event":"call","line":5,"stack":["<module>","worker"],"locals":{"name":"'a'","delay":"2"}},
+  {"event":"line","line":6,"stack":["<module>","worker"],"locals":{"name":"'a'","delay":"2"}},
+  {"event":"return","line":6,"stack":["<module>","worker"],"locals":{"name":"'a'","delay":"2"},"value":"<Future>","awaiting":true,"yield":true},
+  {"event":"call","line":5,"stack":["<module>","worker"],"locals":{"name":"'b'","delay":"1"}},
+  {"event":"line","line":6,"stack":["<module>","worker"],"locals":{"name":"'b'","delay":"1"}},
+  {"event":"return","line":6,"stack":["<module>","worker"],"locals":{"name":"'b'","delay":"1"},"value":"<Future>","awaiting":true,"yield":true},
+  {"event":"call","line":5,"stack":["<module>","worker"],"locals":{"name":"'c'","delay":"3"}},
+  {"event":"line","line":6,"stack":["<module>","worker"],"locals":{"name":"'c'","delay":"3"}},
+  {"event":"return","line":6,"stack":["<module>","worker"],"locals":{"name":"'c'","delay":"3"},"value":"<Future>","awaiting":true,"yield":true},
+  {"event":"call","line":6,"stack":["<module>","worker"],"locals":{"name":"'b'","delay":"1"}},
+  {"event":"exception","line":6,"stack":["<module>","worker"],"locals":{"name":"'b'","delay":"1"},"exc":"StopIteration"},
+  {"event":"line","line":7,"stack":["<module>","worker"],"locals":{"name":"'b'","delay":"1"}},
+  {"event":"line","line":8,"stack":["<module>","worker"],"locals":{"name":"'b'","delay":"1"}},
+  {"event":"return","line":8,"stack":["<module>","worker"],"locals":{"name":"'b'","delay":"1"},"value":"'b'","awaiting":true},
+  {"event":"call","line":6,"stack":["<module>","worker"],"locals":{"name":"'a'","delay":"2"}},
+  {"event":"exception","line":6,"stack":["<module>","worker"],"locals":{"name":"'a'","delay":"2"},"exc":"StopIteration"},
+  {"event":"line","line":7,"stack":["<module>","worker"],"locals":{"name":"'a'","delay":"2"}},
+  {"event":"line","line":8,"stack":["<module>","worker"],"locals":{"name":"'a'","delay":"2"}},
+  {"event":"return","line":8,"stack":["<module>","worker"],"locals":{"name":"'a'","delay":"2"},"value":"'a'","awaiting":true},
+  {"event":"call","line":6,"stack":["<module>","worker"],"locals":{"name":"'c'","delay":"3"}},
+  {"event":"exception","line":6,"stack":["<module>","worker"],"locals":{"name":"'c'","delay":"3"},"exc":"StopIteration"},
+  {"event":"line","line":7,"stack":["<module>","worker"],"locals":{"name":"'c'","delay":"3"}},
+  {"event":"line","line":8,"stack":["<module>","worker"],"locals":{"name":"'c'","delay":"3"}},
+  {"event":"return","line":8,"stack":["<module>","worker"],"locals":{"name":"'c'","delay":"3"},"value":"'c'","awaiting":true},
+  {"event":"call","line":13,"stack":["<module>","main"],"locals":{"task":"<Task>"}},
+  {"event":"exception","line":13,"stack":["<module>","main"],"locals":{"task":"<Task>"},"exc":"StopIteration"},
+  {"event":"line","line":14,"stack":["<module>","main"],"locals":{"task":"<Task>","results":"<list>"}},
+  {"event":"exception","line":14,"stack":["<module>","main"],"locals":{"task":"<Task>","results":"<list>"},"exc":"StopIteration"},
+  {"event":"line","line":15,"stack":["<module>","main"],"locals":{"task":"<Task>","results":"<list>"}},
+  {"event":"line","line":16,"stack":["<module>","main"],"locals":{"task":"<Task>","results":"<list>","queue":"<Queue>"}},
+  {"event":"exception","line":16,"stack":["<module>","main"],"locals":{"task":"<Task>","results":"<list>","queue":"<Queue>"},"exc":"StopIteration"},
+  {"event":"line","line":17,"stack":["<module>","main"],"locals":{"task":"<Task>","results":"<list>","queue":"<Queue>"}},
+  {"event":"exception","line":17,"stack":["<module>","main"],"locals":{"task":"<Task>","results":"<list>","queue":"<Queue>"},"exc":"StopIteration"},
+  {"event":"line","line":18,"stack":["<module>","main"],"locals":{"task":"<Task>","results":"<list>","queue":"<Queue>"}},
+  {"event":"line","line":19,"stack":["<module>","main"],"locals":{"task":"<Task>","results":"<list>","queue":"<Queue>"}},
+  {"event":"return","line":19,"stack":["<module>","main"],"locals":{"task":"<Task>","results":"<list>","queue":"<Queue>"},"value":"<Future>","awaiting":true,"yield":true},
+  {"event":"call","line":19,"stack":["<module>","main"],"locals":{"task":"<Task>","results":"<list>","queue":"<Queue>"}},
+  {"event":"exception","line":19,"stack":["<module>","main"],"locals":{"task":"<Task>","results":"<list>","queue":"<Queue>"},"exc":"TimeoutError","raised":true},
+  {"event":"line","line":20,"stack":["<module>","main"],"locals":{"task":"<Task>","results":"<list>","queue":"<Queue>"}},
+  {"event":"line","line":21,"stack":["<module>","main"],"locals":{"task":"<Task>","results":"<list>","queue":"<Queue>"}},
+  {"event":"line","line":22,"stack":["<module>","main"],"locals":{"task":"<Task>","results":"<list>","queue":"<Queue>"}},
+  {"event":"return","line":22,"stack":["<module>","main"],"locals":{"task":"<Task>","results":"<list>","queue":"<Queue>"},"value":"'finished'","awaiting":true},
+  {"event":"return","line":25,"stack":["<module>"],"locals":{"asyncio":"<module>","worker":"<function>","main":"<function>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 44,
+ "finalGlobals": {
+  "asyncio": "<module>",
+  "worker": "<function>",
+  "main": "<function>"
+ },
+ "continuation": [],
+ "sourceSha256": "54d29697a2916263f82c490db4ba94e4ef5c8667b96629ec3a0eb257898cfe85"
+}

@@ -1,0 +1,159 @@
+{
+ "stdout": "ZeroDivisionError: division by zero\n['reciprocals']\n1\nValueError: call stack is not deep enough\nUnboundLocalError: cannot access local variable 'y' where it is not associated with a value\nrex 0\n",
+ "stderr": "Traceback (most recent call last):\n  File \"main.py\", line 10, in reciprocals\n    return [1 / x for x in data]\n            ~~^~~\nZeroDivisionError: division by zero\nERROR:root:reciprocals failed\nTraceback (most recent call last):\n  File \"main.py\", line 10, in reciprocals\n    return [1 / x for x in data]\n            ~~^~~\nZeroDivisionError: division by zero\n",
+ "console": [
+  {
+   "stream": "stderr",
+   "text": "Traceback (most recent call last):"
+  },
+  {
+   "stream": "stderr",
+   "text": "  File \"main.py\", line 10, in reciprocals"
+  },
+  {
+   "stream": "stderr",
+   "text": "    return [1 / x for x in data]"
+  },
+  {
+   "stream": "stderr",
+   "text": "            ~~^~~"
+  },
+  {
+   "stream": "stderr",
+   "text": "ZeroDivisionError: division by zero"
+  },
+  {
+   "stream": "stdout",
+   "text": "ZeroDivisionError: division by zero"
+  },
+  {
+   "stream": "stderr",
+   "text": "ERROR:root:reciprocals failed"
+  },
+  {
+   "stream": "stderr",
+   "text": "Traceback (most recent call last):"
+  },
+  {
+   "stream": "stderr",
+   "text": "  File \"main.py\", line 10, in reciprocals"
+  },
+  {
+   "stream": "stderr",
+   "text": "    return [1 / x for x in data]"
+  },
+  {
+   "stream": "stderr",
+   "text": "            ~~^~~"
+  },
+  {
+   "stream": "stderr",
+   "text": "ZeroDivisionError: division by zero"
+  },
+  {
+   "stream": "stdout",
+   "text": "['reciprocals']"
+  },
+  {
+   "stream": "stdout",
+   "text": "1"
+  },
+  {
+   "stream": "stdout",
+   "text": "ValueError: call stack is not deep enough"
+  },
+  {
+   "stream": "stdout",
+   "text": "UnboundLocalError: cannot access local variable 'y' where it is not associated with a value"
+  },
+  {
+   "stream": "stdout",
+   "text": "rex 0"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"logging":"<module>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"logging":"<module>","sys":"<module>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"logging":"<module>","sys":"<module>","traceback":"<module>"}},
+  {"event":"line","line":18,"stack":["<module>"],"locals":{"logging":"<module>","sys":"<module>","traceback":"<module>","reciprocals":"<function>"}},
+  {"event":"call","line":8,"stack":["<module>","reciprocals"],"locals":{"data":"<list>"}},
+  {"event":"line","line":9,"stack":["<module>","reciprocals"],"locals":{"data":"<list>"}},
+  {"event":"line","line":10,"stack":["<module>","reciprocals"],"locals":{"data":"<list>"}},
+  {"event":"line","line":10,"stack":["<module>","reciprocals"],"locals":{"data":"<list>","x":"1"}},
+  {"event":"exception","line":10,"stack":["<module>","reciprocals"],"locals":{"data":"<list>","x":"0"},"exc":"ZeroDivisionError","raised":true},
+  {"event":"line","line":10,"stack":["<module>","reciprocals"],"locals":{"data":"<list>","x":"0"}},
+  {"event":"line","line":11,"stack":["<module>","reciprocals"],"locals":{"data":"<list>"}},
+  {"event":"line","line":12,"stack":["<module>","reciprocals"],"locals":{"data":"<list>"}},
+  {"event":"line","line":13,"stack":["<module>","reciprocals"],"locals":{"data":"<list>"}},
+  {"event":"line","line":14,"stack":["<module>","reciprocals"],"locals":{"data":"<list>"}},
+  {"event":"line","line":15,"stack":["<module>","reciprocals"],"locals":{"data":"<list>"}},
+  {"event":"line","line":15,"stack":["<module>","reciprocals"],"locals":{"data":"<list>","_":"0"}},
+  {"event":"return","line":15,"stack":["<module>","reciprocals"],"locals":{"data":"<list>"},"value":"<list>"},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"logging":"<module>","sys":"<module>","traceback":"<module>","reciprocals":"<function>"}},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"logging":"<module>","sys":"<module>","traceback":"<module>","reciprocals":"<function>"}},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"logging":"<module>","sys":"<module>","traceback":"<module>","reciprocals":"<function>"}},
+  {"event":"exception","line":21,"stack":["<module>"],"locals":{"logging":"<module>","sys":"<module>","traceback":"<module>","reciprocals":"<function>"},"exc":"ValueError","raised":true},
+  {"event":"line","line":22,"stack":["<module>"],"locals":{"logging":"<module>","sys":"<module>","traceback":"<module>","reciprocals":"<function>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"logging":"<module>","sys":"<module>","traceback":"<module>","reciprocals":"<function>","e":"<ValueError>"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"logging":"<module>","sys":"<module>","traceback":"<module>","reciprocals":"<function>"}},
+  {"event":"line","line":32,"stack":["<module>"],"locals":{"logging":"<module>","sys":"<module>","traceback":"<module>","reciprocals":"<function>","late":"<function>"}},
+  {"event":"line","line":33,"stack":["<module>"],"locals":{"logging":"<module>","sys":"<module>","traceback":"<module>","reciprocals":"<function>","late":"<function>"}},
+  {"event":"call","line":26,"stack":["<module>","late"],"locals":{}},
+  {"event":"line","line":27,"stack":["<module>","late"],"locals":{}},
+  {"event":"exception","line":27,"stack":["<module>","late"],"locals":{"_":"0"},"exc":"UnboundLocalError","raised":true},
+  {"event":"line","line":27,"stack":["<module>","late"],"locals":{"_":"0"}},
+  {"event":"return","line":27,"stack":["<module>","late"],"locals":{},"value":"None","unwinding":true},
+  {"event":"exception","line":33,"stack":["<module>"],"locals":{"logging":"<module>","sys":"<module>","traceback":"<module>","reciprocals":"<function>","late":"<function>"},"exc":"UnboundLocalError"},
+  {"event":"line","line":34,"stack":["<module>"],"locals":{"logging":"<module>","sys":"<module>","traceback":"<module>","reciprocals":"<function>","late":"<function>"}},
+  {"event":"line","line":35,"stack":["<module>"],"locals":{"logging":"<module>","sys":"<module>","traceback":"<module>","reciprocals":"<function>","late":"<function>","e":"<UnboundLocalError>"}},
+  {"event":"line","line":38,"stack":["<module>"],"locals":{"logging":"<module>","sys":"<module>","traceback":"<module>","reciprocals":"<function>","late":"<function>"}},
+  {"event":"call","line":38,"stack":["<module>","<generic parameters of Stack>"],"locals":{}},
+  {"event":"line","line":38,"stack":["<module>","<generic parameters of Stack>"],"locals":{}},
+  {"event":"call","line":38,"stack":["<module>","<generic parameters of Stack>","Stack"],"locals":{}},
+  {"event":"line","line":38,"stack":["<module>","<generic parameters of Stack>","Stack"],"locals":{}},
+  {"event":"line","line":39,"stack":["<module>","<generic parameters of Stack>","Stack"],"locals":{"__module__":"'__main__'","__qualname__":"'Stack'","__type_params__":"<tuple>"}},
+  {"event":"return","line":39,"stack":["<module>","<generic parameters of Stack>","Stack"],"locals":{"__module__":"'__main__'","__qualname__":"'Stack'","__type_params__":"<tuple>","__init__":"<function>"},"value":"None","classBody":true},
+  {"event":"return","line":38,"stack":["<module>","<generic parameters of Stack>"],"locals":{".generic_base":"<_GenericAlias>",".type_params":"<tuple>","T":"<TypeVar>"},"value":"<type>"},
+  {"event":"line","line":43,"stack":["<module>"],"locals":{"logging":"<module>","sys":"<module>","traceback":"<module>","reciprocals":"<function>","late":"<function>","Stack":"<type>"}},
+  {"event":"call","line":43,"stack":["<module>","Animal"],"locals":{}},
+  {"event":"line","line":43,"stack":["<module>","Animal"],"locals":{}},
+  {"event":"line","line":44,"stack":["<module>","Animal"],"locals":{"__module__":"'__main__'","__qualname__":"'Animal'"}},
+  {"event":"return","line":44,"stack":["<module>","Animal"],"locals":{"__module__":"'__main__'","__qualname__":"'Animal'","__init__":"<function>"},"value":"None","classBody":true},
+  {"event":"line","line":48,"stack":["<module>"],"locals":{"logging":"<module>","sys":"<module>","traceback":"<module>","reciprocals":"<function>","late":"<function>","Stack":"<type>","Animal":"<type>"}},
+  {"event":"call","line":48,"stack":["<module>","Dog"],"locals":{}},
+  {"event":"line","line":48,"stack":["<module>","Dog"],"locals":{}},
+  {"event":"line","line":49,"stack":["<module>","Dog"],"locals":{"__module__":"'__main__'","__qualname__":"'Dog'"}},
+  {"event":"return","line":49,"stack":["<module>","Dog"],"locals":{"__module__":"'__main__'","__qualname__":"'Dog'","__init__":"<function>","__classcell__":"<cell>"},"value":"<cell>","classBody":true},
+  {"event":"line","line":53,"stack":["<module>"],"locals":{"logging":"<module>","sys":"<module>","traceback":"<module>","reciprocals":"<function>","late":"<function>","Stack":"<type>","Animal":"<type>","Dog":"<type>"}},
+  {"event":"call","line":49,"stack":["<module>","__init__"],"locals":{"self":"<Dog>","name":"'rex'","__class__":"<type>"}},
+  {"event":"line","line":50,"stack":["<module>","__init__"],"locals":{"self":"<Dog>","name":"'rex'","__class__":"<type>"}},
+  {"event":"call","line":44,"stack":["<module>","__init__*2"],"locals":{"self":"<Dog>","name":"'rex'"}},
+  {"event":"line","line":45,"stack":["<module>","__init__*2"],"locals":{"self":"<Dog>","name":"'rex'"}},
+  {"event":"return","line":45,"stack":["<module>","__init__*2"],"locals":{"self":"<Dog>","name":"'rex'"},"value":"None"},
+  {"event":"return","line":50,"stack":["<module>","__init__"],"locals":{"self":"<Dog>","name":"'rex'","__class__":"<type>"},"value":"None"},
+  {"event":"call","line":39,"stack":["<module>","__init__"],"locals":{"self":"<Stack>","T":"<TypeVar>"}},
+  {"event":"line","line":40,"stack":["<module>","__init__"],"locals":{"self":"<Stack>","T":"<TypeVar>"}},
+  {"event":"return","line":40,"stack":["<module>","__init__"],"locals":{"self":"<Stack>","T":"<TypeVar>"},"value":"None"},
+  {"event":"return","line":53,"stack":["<module>"],"locals":{"logging":"<module>","sys":"<module>","traceback":"<module>","reciprocals":"<function>","late":"<function>","Stack":"<type>","Animal":"<type>","Dog":"<type>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 61,
+ "finalGlobals": {
+  "logging": "<module>",
+  "sys": "<module>",
+  "traceback": "<module>",
+  "reciprocals": "<function>",
+  "late": "<function>",
+  "Stack": "<type>",
+  "Animal": "<type>",
+  "Dog": "<type>"
+ },
+ "continuation": [],
+ "sourceSha256": "bf593b951c7c0fd7882ebb619d1bafb761357f24bbd7f92747889eb0fdbdd5f6"
+}

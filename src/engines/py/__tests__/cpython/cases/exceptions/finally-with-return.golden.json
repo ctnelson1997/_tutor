@@ -54,7 +54,7 @@
   {"event":"call","line":15,"stack":["<module>","swallow"],"locals":{}},
   {"event":"line","line":16,"stack":["<module>","swallow"],"locals":{}},
   {"event":"line","line":17,"stack":["<module>","swallow"],"locals":{}},
-  {"event":"exception","line":17,"stack":["<module>","swallow"],"locals":{},"exc":"ZeroDivisionError"},
+  {"event":"exception","line":17,"stack":["<module>","swallow"],"locals":{},"exc":"ZeroDivisionError","raised":true},
   {"event":"line","line":19,"stack":["<module>","swallow"],"locals":{}},
   {"event":"return","line":19,"stack":["<module>","swallow"],"locals":{},"value":"'swallowed'"},
   {"event":"line","line":37,"stack":["<module>"],"locals":{"tidy":"<function>","override":"<function>","swallow":"<function>","loop_with_finally":"<function>"}},

@@ -58,6 +58,38 @@ describe('snapshot payload', () => {
     }
   });
 
+  it("draws an int of millions of digits by its size at once, and goes on (#84)", HEAVY, () => {
+    const t0 = performance.now();
+    const reply = runProgram(py, 'x = 2 ** (10 ** 7)\nfor i in range(3):\n    x = x + 1\nprint(x % 10)');
+    const all = steps(reply);
+    expect(reply.type === 'result' && reply.error).toBeFalsy();
+    expect(all.at(-1)!.stdout).toEqual(['9']);
+    const x = all.at(-1)!.callStack[0].variables.find(v => v.name === 'x')!.value;
+    expect(x.type !== 'ref' && x.display).toBe('<int with 3010300 digits>');
+    // It took 4.8 s to draw one such int before #84, and the loop past the worker's kill.
+    expect(performance.now() - t0).toBeLessThan(4000);
+  });
+
+  it('runs a 100 x 100 grid filled cell by cell to the step cap within the time budget (#84)', HEAVY, () => {
+    const reply = runProgram(py, 'grid = [[0] * 100 for _ in range(100)]\nfor r in range(100):\n    for c in range(100):\n        grid[r][c] = r * c');
+    expect(steps(reply)).toHaveLength(5000);
+    expect(reply.type === 'result' ? reply.error?.message : '').toMatch(/5000 steps/);
+  });
+
+  it('prints a million lines at once, and keeps every one (#84)', HEAVY, () => {
+    const reply = runProgram(py, 'print(chr(10).join(map(str, range(10 ** 6))))\nprint("end")');
+    const all = steps(reply);
+    expect(reply.type === 'result' && reply.error).toBeFalsy();
+    const out = all.at(-1)!.stdout;
+    expect([out.length, out[999_999], out[1_000_000]]).toEqual([1_000_001, '999999', 'end']);
+  });
+
+  it('ends a run over 10,000 linked dicts within the time budget, with its steps (#84)', HEAVY, () => {
+    const reply = runProgram(py, 'head = None\nfor i in range(10000):\n    head = {"value": i, "next": head}');
+    // 58 steps before #84; how many now depends on the machine.
+    expect(steps(reply).length).toBeGreaterThan(300);
+  });
+
   it('shares an object that never changes, and a waiting frame, across every step', () => {
     const all = steps(runProgram(py, [
       'fixed = [1, 2, 3]',
