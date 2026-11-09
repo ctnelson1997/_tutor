@@ -12,6 +12,14 @@ export interface PrimitiveValue {
    * it the UI renders `value` by `type`.
    */
   display?: string;
+  /**
+   * The object the value is (Python, #83): its heap id, from CPython's id(),
+   * so reference mode draws one card per object as CPython has them (two
+   * equal 1000s computed apart are two objects; a variable rebound to an
+   * equal value points at another card) and keeps each card's id from step
+   * to step.
+   */
+  objectId?: string;
 }
 
 // ── Heap references ──
@@ -122,6 +130,13 @@ export interface ExecutionSnapshot {
    * deeper calls ran without steps (3,001 frames deep)`).
    */
   label?: string;
+  /**
+   * The exception this step raises, as a traceback's last line names it
+   * (`ValueError: invalid literal for int() with base 10: 'abc'`): Python's
+   * step where the program's code raised it, caught or not (#80), as
+   * pythontutor.com takes one.
+   */
+  exception?: string;
 }
 
 // ── Execution result from the worker ──

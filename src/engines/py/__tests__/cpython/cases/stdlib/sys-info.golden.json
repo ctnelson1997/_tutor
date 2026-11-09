@@ -1,10 +1,10 @@
 {
- "stdout": "['']\n(3, 12) True\n1000\nTrue\n1.7976931348623157e+308 2.220446049250313e-16\ndict True\nwritten with sys.stdout.write\n30\nint digits limit: 4300\n1267650600228229401496703205376 31\n",
+ "stdout": "['main.py']\n(3, 12) True\n1000\nTrue\n1.7976931348623157e+308 2.220446049250313e-16\ndict True\nwritten with sys.stdout.write\n30\nint digits limit: 4300\n1267650600228229401496703205376 31\n",
  "stderr": "to stderr\n",
  "console": [
   {
    "stream": "stdout",
-   "text": "['']"
+   "text": "['main.py']"
   },
   {
    "stream": "stdout",

@@ -63,7 +63,7 @@
   {"event":"line","line":9,"stack":["<module>","report","average_scores"],"locals":{"texts":"<list>","total":"70","t":"'8O'"}},
   {"event":"call","line":2,"stack":["<module>","report","average_scores","parse_score"],"locals":{"text":"'8O'"}},
   {"event":"line","line":3,"stack":["<module>","report","average_scores","parse_score"],"locals":{"text":"'8O'"}},
-  {"event":"exception","line":3,"stack":["<module>","report","average_scores","parse_score"],"locals":{"text":"'8O'"},"exc":"ValueError"},
+  {"event":"exception","line":3,"stack":["<module>","report","average_scores","parse_score"],"locals":{"text":"'8O'"},"exc":"ValueError","raised":true},
   {"event":"return","line":3,"stack":["<module>","report","average_scores","parse_score"],"locals":{"text":"'8O'"},"value":"None","unwinding":true},
   {"event":"exception","line":9,"stack":["<module>","report","average_scores"],"locals":{"texts":"<list>","total":"70","t":"'8O'"},"exc":"ValueError"},
   {"event":"return","line":9,"stack":["<module>","report","average_scores"],"locals":{"texts":"<list>","total":"70","t":"'8O'"},"value":"None","unwinding":true},

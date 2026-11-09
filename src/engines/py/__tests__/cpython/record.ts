@@ -61,11 +61,39 @@ _limit = sys.getrecursionlimit()
 _base = 0
 _real_getlimit = sys.getrecursionlimit
 _real_setlimit = sys.setrecursionlimit
+_real_settrace = sys.settrace
 _refused = set()
-_unwinding = set()   # frames an exception is passing through: their 'return' event is the frame unwinding
-# A 'return' event at any other instruction is the frame unwinding too, after
-# a finally block or an inlined comprehension's cleanup re-raised.
-_RETURN_OPS = frozenset(dis.opmap[n] for n in ('RETURN_VALUE', 'RETURN_CONST', 'YIELD_VALUE'))
+_RECORDER_FILE = sys._getframe().f_code.co_filename
+
+# Whether a 'return' event is a frame unwinding (an exception leaving it) or
+# yielding, CPython says itself: sys.monitoring's PY_UNWIND and PY_YIELD
+# events come right after the legacy 'return' event of the same frame (#80,
+# #61: the reference trace doesn't share PyTutor's rule for it). Only the
+# frame's id is kept, never the frame.
+_mon = sys.monitoring
+_MON_TOOL = _mon.OPTIMIZER_ID
+_last_return = [None, None]   # the id of the frame of the last 'return' event, and the event
+
+def _mark_last_return(flag):
+    if _last_return[0] == id(_real_getframe(2)):
+        _last_return[1][flag] = True
+    _last_return[0] = None
+
+def _on_unwind(code, offset, exc):
+    if code.co_filename == 'main.py':
+        _mark_last_return('unwinding')
+
+def _on_yield(code, offset, value):
+    if code.co_filename == 'main.py':
+        _mark_last_return('yield')
+
+def _raised_here(frame, tb):
+    # Where the program first saw the exception: no other frame of main.py in its traceback.
+    while tb is not None:
+        if tb.tb_frame is not frame and tb.tb_frame.f_code.co_filename == 'main.py':
+            return False
+        tb = tb.tb_next
+    return True
 
 def _getrecursionlimit():
     return _limit
@@ -86,7 +114,7 @@ def _depth(frame):
 def _retrace(frame, event, arg):
     # CPython turns tracing off when the trace function raises: back on at the next event.
     sys.setprofile(None)
-    sys.settrace(_trace)
+    _real_settrace(_trace)
 
 def _readable_locals(frame):
     # A class body whose code has fast locals (an inlined comprehension's,
@@ -100,11 +128,19 @@ def _readable_locals(frame):
     return dict(frame.f_locals)
 
 def _digits(v):
+    # From the logarithm: an int of millions of digits would take seconds to
+    # compare with powers of ten, and the reference trace counts its digits at
+    # every event; only one near a power of ten is compared with it.
+    import math
     v = abs(v)
-    n = int(v.bit_length() * 0.30102999566398) + 1
-    while n > 1 and 10 ** (n - 1) > v:
-        n -= 1
-    return n
+    if v < 10:
+        return 1
+    f = math.log10(v)
+    n = int(f)
+    if f - n < 1e-6 or n + 1 - f < 1e-6:
+        p = round(f)
+        return p + 1 if v >= 10 ** p else p
+    return n + 1
 
 def _r(v):
     t = type(v)
@@ -132,7 +168,43 @@ def _user_stack(frame):
             runs.append([n, 1])
     return [n if c == 1 else '%s*%d' % (n, c) for n, c in runs]
 
+# A trace function the program sets (sys.settrace) gets the events CPython
+# gives it, after the recorder's own, so the reference trace goes on.
+_program_trace = None
+_program_local = {}
+
+def _program_settrace(function):
+    global _program_trace
+    _program_trace = function
+    if function is None:
+        _program_local.clear()
+
+def _program_gettrace():
+    return _program_trace
+
+def _forward(frame, event, arg, result):
+    if frame.f_code.co_filename == _RECORDER_FILE:
+        return result
+    if event == 'call':
+        if _program_trace is not None:
+            local = _program_trace(frame, event, arg)
+            if local is not None:
+                _program_local[frame] = local
+    elif frame in _program_local:
+        local = _program_local[frame](frame, event, arg)
+        if local is None or event == 'return':
+            del _program_local[frame]
+        else:
+            _program_local[frame] = local
+    return _trace if frame in _program_local else result
+
 def _trace(frame, event, arg):
+    result = _record(frame, event, arg)
+    if _program_trace is not None or _program_local:
+        return _forward(frame, event, arg, result)
+    return result
+
+def _record(frame, event, arg):
     global _truncated, _count
     if event == 'call' and _depth(frame) - _base > _limit:
         _refused.add(frame)
@@ -155,14 +227,19 @@ def _trace(frame, event, arg):
         ev['locals'] = {'!error': repr(ex)}
     if event == 'return':
         ev['value'] = _r(arg)
-        if frame in _unwinding or frame.f_code.co_code[frame.f_lasti] not in _RETURN_OPS:
-            ev['unwinding'] = True
-        _unwinding.discard(frame)
+        code = frame.f_code
+        if code.co_name != '<module>' and not (code.co_flags & 1):
+            ev['classBody'] = True   # a class body, whose return value is Python's own
+        if code.co_flags & 0x380:
+            ev['awaiting'] = True    # a coroutine or async generator (a yield is an await's suspension)
+        _last_return[0] = id(frame)
+        _last_return[1] = ev
     elif event == 'exception':
         ev['exc'] = arg[0].__name__
-        _unwinding.add(frame)
-    elif event == 'line':
-        _unwinding.discard(frame)
+        # Raised by the program's code: not a finished sub-iterator's
+        # StopIteration ending a yield from or an await (SEND, END_SEND).
+        if _raised_here(frame, arg[2]) and dis.opname[frame.f_code.co_code[frame.f_lasti]] not in ('SEND', 'END_SEND'):
+            ev['raised'] = True
     _events.append(ev)
     return _trace
 
@@ -170,7 +247,74 @@ _endless = False
 _exc = None
 _compile_error = None
 _tb = None
-_g = {'__name__': '__main__'}
+# The program's module as python main.py has it: __main__ in sys.modules,
+# with the names CPython gives it, the builtins module as __builtins__,
+# sys.argv, and the source as main.py in the working directory.
+import importlib.machinery
+_main = types.ModuleType('__main__')
+_g = _main.__dict__
+_g['__loader__'] = importlib.machinery.SourceFileLoader('__main__', 'main.py')
+_g['__annotations__'] = {}
+_g['__builtins__'] = builtins
+_g['__file__'] = 'main.py'
+_g['__cached__'] = None
+sys.modules['__main__'] = _main
+sys.argv = ['main.py']
+# The program's module frame is the outermost, as python main.py has it: the
+# recorder's and Pyodide's frames below it are neither in a stack the program
+# prints (traceback.print_stack()) nor reachable through sys._getframe.
+_real_walk_stack = traceback.walk_stack
+_real_getframe = sys._getframe
+
+def _walk_program_stack(f):
+    if f is None:
+        yield from _real_walk_stack(f)
+        return
+    while f is not None and f.f_code.co_filename != _RECORDER_FILE:
+        yield f, f.f_lineno
+        f = f.f_back
+
+def _getframe(depth=0, /):
+    f = _real_getframe(1)
+    for _ in range(max(depth, 0)):
+        f = f.f_back
+        if f is None or f.f_code.co_filename == _RECORDER_FILE:
+            raise ValueError('call stack is not deep enough')
+    return f
+
+traceback.walk_stack = _walk_program_stack
+sys._getframe = _getframe
+# asyncio.run() as CPython runs it (Pyodide's own loop is always running,
+# which asyncio.run() refuses): CPython's scheduling (BaseEventLoop), with a
+# clock that moves to the next timer instead of waiting.
+import asyncio.base_events, asyncio.events
+
+class _VirtualClockLoop(asyncio.base_events.BaseEventLoop):
+    def __init__(self):
+        super().__init__()
+        self._now = 0.0
+        self._selector = self
+
+    def time(self):
+        return self._now
+
+    def select(self, timeout):
+        self._now += timeout or 0
+        return []
+
+    def _process_events(self, event_list):
+        pass
+
+    def _write_to_self(self):
+        pass
+
+class _VirtualClockPolicy(asyncio.events.BaseDefaultEventLoopPolicy):
+    _loop_factory = _VirtualClockLoop
+
+asyncio.events._set_running_loop(None)
+asyncio.events.set_event_loop_policy(_VirtualClockPolicy())
+with open('main.py', 'w', encoding='utf-8') as _f:
+    _f.write(__src)
 linecache.cache['main.py'] = (len(__src), None, __src.splitlines(True), 'main.py')
 try:
     _code = compile(__src, 'main.py', 'exec')
@@ -183,12 +327,21 @@ except SyntaxError as ex:
     _compile_error = {'class': type(ex).__name__, 'msg': ex.msg, 'line': ex.lineno, 'offset': ex.offset,
                       'text': ''.join(traceback.format_exception_only(type(ex), ex))}
 if _compile_error is None:
-    _base = _depth(sys._getframe())
+    _base = _depth(_real_getframe())
     sys.getrecursionlimit = _getrecursionlimit
     sys.setrecursionlimit = _setrecursionlimit
     _real_setlimit(_limit + _base + (_HEADROOM if __traced else 0))
+    # The recorder's own garbage isn't the program's to collect: python main.py has little.
+    import gc
+    gc.collect()
     if __traced:
-        sys.settrace(_trace)
+        sys.settrace = _program_settrace
+        sys.gettrace = _program_gettrace
+        _mon.use_tool_id(_MON_TOOL, 'reference trace')
+        _mon.register_callback(_MON_TOOL, _mon.events.PY_UNWIND, _on_unwind)
+        _mon.register_callback(_MON_TOOL, _mon.events.PY_YIELD, _on_yield)
+        _mon.set_events(_MON_TOOL, _mon.events.PY_UNWIND | _mon.events.PY_YIELD)
+        _real_settrace(_trace)
     try:
         exec(_code, _g)
     except SystemExit as ex:
@@ -198,12 +351,15 @@ if _compile_error is None:
     except _Endless:
         _endless = True
     except BaseException as ex:
-        sys.settrace(None)
+        _real_settrace(None)
         _exc = {'class': type(ex).__name__, 'message': str(ex)}
         _tb = ''.join(l for l in traceback.format_exception(type(ex), ex, ex.__traceback__) if 'File "<exec>"' not in l)
     finally:
-        sys.settrace(None)
+        _real_settrace(None)
         sys.setprofile(None)
+        if __traced:
+            _mon.set_events(_MON_TOOL, 0)
+            _mon.free_tool_id(_MON_TOOL)
 _final = {}
 for _k, _v in list(_g.items()):
     if not _k.startswith('__'):
@@ -216,7 +372,11 @@ _continuation = []
 try:
     _starts = set()
     _spans = []
-    for _n in _ast.walk(_ast.parse(__src)):
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore')
+        _tree = _ast.parse(__src)
+    for _n in _ast.walk(_tree):
         if isinstance(_n, _ast.stmt):
             _starts.add(_n.lineno)
             if not isinstance(_n, (_ast.FunctionDef, _ast.AsyncFunctionDef, _ast.ClassDef, _ast.If, _ast.For, _ast.While, _ast.With, _ast.Try, _ast.Match)):

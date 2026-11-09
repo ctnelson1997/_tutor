@@ -37,16 +37,5 @@ export function textSink(): { write: (bytes: Uint8Array) => number; text: () => 
   };
 }
 
-/** A stdin that reads `text` (UTF-8), then reports end of file. */
-export function stdinOf(text: string): { read: (buffer: Uint8Array) => number } {
-  const bytes = new TextEncoder().encode(text);
-  let pos = 0;
-  return {
-    read: buffer => {
-      const n = Math.min(buffer.length, bytes.length - pos);
-      buffer.set(bytes.subarray(pos, pos + n));
-      pos += n;
-      return n;
-    },
-  };
-}
+/** A stdin that reads `text` (UTF-8), then reports end of file: the worker's own (run.ts). */
+export { stdinOf } from '../../run';

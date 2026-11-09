@@ -38,7 +38,7 @@ const shown = (v: RuntimeValue | undefined) => (v === undefined ? undefined : v.
 describe('comprehension frames', () => {
   it('gives a module-level list comprehension a frame with its variable, one step per iteration, and its list as return value', () => {
     const steps = run('x = "outer"\nsquares = [x * x for x in range(3)]\nprint(x, squares)\n');
-    const comp = steps.filter(s => names(s).join('>') === '<module>>list comprehension');
+    const comp = steps.filter(s => names(s).join('>') === 'Global frame>list comprehension');
     expect(comp.map(s => shown(vars(top(s)).x))).toEqual([0, 1, 2, undefined]);
     const returned = vars(top(comp[comp.length - 1]))['return ↵'];
     expect(returned?.type).toBe('ref');
@@ -54,14 +54,15 @@ describe('comprehension frames', () => {
     const frames = new Set(steps.flatMap(s => names(s).slice(1)));
     expect(frames).toEqual(new Set(['set comprehension', 'dict comprehension', 'generator expression']));
     expect(steps.every(s => names(s).filter(n => n === 'generator expression').length <= 1)).toBe(true);
-    // Each element the generator yields is its return value at that step; exhausted, it returns None.
-    const yielded = steps.filter(s => top(s).name === 'generator expression').map(s => shown(vars(top(s))['return ↵'])).filter(v => v !== undefined);
+    // Each element the generator yields is its yielded value at that step (#80); exhausted, it returns None.
+    const handedBack = (s: ExecutionSnapshot) => shown(vars(top(s))['yield ↵'] ?? vars(top(s))['return ↵']);
+    const yielded = steps.filter(s => top(s).name === 'generator expression').map(handedBack).filter(v => v !== undefined);
     expect(yielded).toEqual([2, 4, null]);
   });
 
   it("shows a call made inside a comprehension in the callee's own frame, with its return value", () => {
     const steps = run('def sq(n):\n    return n * n\n\nvals = [sq(i) for i in range(2)]\n');
-    const inside = steps.filter(s => names(s).join('>') === '<module>>list comprehension>sq');
+    const inside = steps.filter(s => names(s).join('>') === 'Global frame>list comprehension>sq');
     expect(inside.length).toBeGreaterThan(0);
     expect(inside.map(s => shown(vars(top(s)).n))).toContain(1);
     expect(inside.map(s => shown(vars(top(s))['return ↵'])).filter(v => v !== undefined)).toEqual([0, 1]);
@@ -115,7 +116,8 @@ describe('a frame an exception leaves (#33)', () => {
 
   it("still shows a generator's yields and return", () => {
     const steps = run('def gen():\n    yield 1\n    return 2\n\ng = gen()\nprint(next(g))\ntry:\n    next(g)\nexcept StopIteration as e:\n    print(e.value)\n');
+    const yields = steps.filter(s => top(s).name === 'gen').map(s => shown(vars(top(s))['yield ↵'])).filter(v => v !== undefined);
     const returns = steps.filter(s => top(s).name === 'gen').map(s => shown(vars(top(s))['return ↵'])).filter(v => v !== undefined);
-    expect(returns).toEqual([1, 2]);
+    expect([yields, returns]).toEqual([[1], [2]]);
   });
 });

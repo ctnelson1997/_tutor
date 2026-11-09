@@ -90,7 +90,7 @@
   {"event":"line","line":10,"stack":["<module>"],"locals":{"reduce":"<builtin_function_or_method>","partial":"<type>","operator":"<module>","nums":"<list>"}},
   {"event":"line","line":11,"stack":["<module>"],"locals":{"reduce":"<builtin_function_or_method>","partial":"<type>","operator":"<module>","nums":"<list>"}},
   {"event":"line","line":12,"stack":["<module>"],"locals":{"reduce":"<builtin_function_or_method>","partial":"<type>","operator":"<module>","nums":"<list>"}},
-  {"event":"exception","line":12,"stack":["<module>"],"locals":{"reduce":"<builtin_function_or_method>","partial":"<type>","operator":"<module>","nums":"<list>"},"exc":"TypeError"},
+  {"event":"exception","line":12,"stack":["<module>"],"locals":{"reduce":"<builtin_function_or_method>","partial":"<type>","operator":"<module>","nums":"<list>"},"exc":"TypeError","raised":true},
   {"event":"line","line":13,"stack":["<module>"],"locals":{"reduce":"<builtin_function_or_method>","partial":"<type>","operator":"<module>","nums":"<list>"}},
   {"event":"line","line":14,"stack":["<module>"],"locals":{"reduce":"<builtin_function_or_method>","partial":"<type>","operator":"<module>","nums":"<list>","e":"<TypeError>"}},
   {"event":"line","line":16,"stack":["<module>"],"locals":{"reduce":"<builtin_function_or_method>","partial":"<type>","operator":"<module>","nums":"<list>"}},

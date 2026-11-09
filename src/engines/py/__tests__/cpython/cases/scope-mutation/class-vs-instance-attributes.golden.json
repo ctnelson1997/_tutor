@@ -40,7 +40,7 @@
   {"event":"line","line":4,"stack":["<module>","Dog"],"locals":{"__module__":"'__main__'","__qualname__":"'Dog'","tricks":"<list>"}},
   {"event":"line","line":5,"stack":["<module>","Dog"],"locals":{"__module__":"'__main__'","__qualname__":"'Dog'","tricks":"<list>","species":"'canine'"}},
   {"event":"line","line":7,"stack":["<module>","Dog"],"locals":{"__module__":"'__main__'","__qualname__":"'Dog'","tricks":"<list>","species":"'canine'","__init__":"<function>"}},
-  {"event":"return","line":7,"stack":["<module>","Dog"],"locals":{"__module__":"'__main__'","__qualname__":"'Dog'","tricks":"<list>","species":"'canine'","__init__":"<function>","add_trick":"<function>"},"value":"None"},
+  {"event":"return","line":7,"stack":["<module>","Dog"],"locals":{"__module__":"'__main__'","__qualname__":"'Dog'","tricks":"<list>","species":"'canine'","__init__":"<function>","add_trick":"<function>"},"value":"None","classBody":true},
   {"event":"line","line":10,"stack":["<module>"],"locals":{"Dog":"<type>"}},
   {"event":"call","line":5,"stack":["<module>","__init__"],"locals":{"self":"<Dog>","name":"'Rex'"}},
   {"event":"line","line":6,"stack":["<module>","__init__"],"locals":{"self":"<Dog>","name":"'Rex'"}},

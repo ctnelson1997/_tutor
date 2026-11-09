@@ -54,7 +54,7 @@
   {"event":"line","line":16,"stack":["<module>","Account"],"locals":{"__module__":"'__main__'","__qualname__":"'Account'","reads":"0","__init__":"<function>","balance":"<property>"}},
   {"event":"line","line":15,"stack":["<module>","Account"],"locals":{"__module__":"'__main__'","__qualname__":"'Account'","reads":"0","__init__":"<function>","balance":"<property>"}},
   {"event":"line","line":16,"stack":["<module>","Account"],"locals":{"__module__":"'__main__'","__qualname__":"'Account'","reads":"0","__init__":"<function>","balance":"<property>"}},
-  {"event":"return","line":16,"stack":["<module>","Account"],"locals":{"__module__":"'__main__'","__qualname__":"'Account'","reads":"0","__init__":"<function>","balance":"<property>","summary":"<property>"},"value":"None"},
+  {"event":"return","line":16,"stack":["<module>","Account"],"locals":{"__module__":"'__main__'","__qualname__":"'Account'","reads":"0","__init__":"<function>","balance":"<property>","summary":"<property>"},"value":"None","classBody":true},
   {"event":"line","line":19,"stack":["<module>"],"locals":{"Account":"<type>"}},
   {"event":"call","line":5,"stack":["<module>","__init__"],"locals":{"self":"<Account>","owner":"'Ann'","cents":"12345"}},
   {"event":"line","line":6,"stack":["<module>","__init__"],"locals":{"self":"<Account>","owner":"'Ann'","cents":"12345"}},

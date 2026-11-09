@@ -71,10 +71,22 @@ export interface GoldenEvent {
   locals: Record<string, string>;
   /** A return event's value, as a reference repr. */
   value?: string;
-  /** A return event that is the frame unwinding (an exception passing through it): no value is returned. */
+  /**
+   * A return event that is the frame unwinding (an exception leaving it): no
+   * value is returned. CPython's own word for it, sys.monitoring's PY_UNWIND
+   * (#80).
+   */
   unwinding?: true;
+  /** A return event that is a yield (sys.monitoring's PY_YIELD): PyTutor shows `yield ↵`. */
+  yield?: true;
+  /** A class body's return event: its value is Python's own, and PyTutor shows none. */
+  classBody?: true;
+  /** A coroutine's or async generator's return event: at a yield, an await's suspension, with no value of the program's. */
+  awaiting?: true;
   /** An exception event's exception class. */
   exc?: string;
+  /** An exception event where the program first saw the exception (no other frame of main.py in its traceback): PyTutor takes a step there. */
+  raised?: true;
 }
 
 /** What CPython did with a case. */

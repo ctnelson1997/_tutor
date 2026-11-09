@@ -1,0 +1,180 @@
+{
+ "stdout": "released a\nafter a\nreleased b\nafter b\n2\n3\n5\n3\nreleased t\nNone\n1\ngenerator closed\nafter the generator\ncollected n1\ncollected n2\ndone\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "released a"
+  },
+  {
+   "stream": "stdout",
+   "text": "after a"
+  },
+  {
+   "stream": "stdout",
+   "text": "released b"
+  },
+  {
+   "stream": "stdout",
+   "text": "after b"
+  },
+  {
+   "stream": "stdout",
+   "text": "2"
+  },
+  {
+   "stream": "stdout",
+   "text": "3"
+  },
+  {
+   "stream": "stdout",
+   "text": "5"
+  },
+  {
+   "stream": "stdout",
+   "text": "3"
+  },
+  {
+   "stream": "stdout",
+   "text": "released t"
+  },
+  {
+   "stream": "stdout",
+   "text": "None"
+  },
+  {
+   "stream": "stdout",
+   "text": "1"
+  },
+  {
+   "stream": "stdout",
+   "text": "generator closed"
+  },
+  {
+   "stream": "stdout",
+   "text": "after the generator"
+  },
+  {
+   "stream": "stdout",
+   "text": "collected n1"
+  },
+  {
+   "stream": "stdout",
+   "text": "collected n2"
+  },
+  {
+   "stream": "stdout",
+   "text": "done"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":4,"stack":["<module>"],"locals":{"gc":"<module>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>"}},
+  {"event":"call","line":8,"stack":["<module>","Resource"],"locals":{}},
+  {"event":"line","line":8,"stack":["<module>","Resource"],"locals":{}},
+  {"event":"line","line":9,"stack":["<module>","Resource"],"locals":{"__module__":"'__main__'","__qualname__":"'Resource'"}},
+  {"event":"line","line":12,"stack":["<module>","Resource"],"locals":{"__module__":"'__main__'","__qualname__":"'Resource'","__init__":"<function>"}},
+  {"event":"return","line":12,"stack":["<module>","Resource"],"locals":{"__module__":"'__main__'","__qualname__":"'Resource'","__init__":"<function>","__del__":"<function>"},"value":"None","classBody":true},
+  {"event":"line","line":16,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>"}},
+  {"event":"call","line":9,"stack":["<module>","__init__"],"locals":{"self":"<Resource>","name":"'a'"}},
+  {"event":"line","line":10,"stack":["<module>","__init__"],"locals":{"self":"<Resource>","name":"'a'"}},
+  {"event":"return","line":10,"stack":["<module>","__init__"],"locals":{"self":"<Resource>","name":"'a'"},"value":"None"},
+  {"event":"line","line":17,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"<Resource>"}},
+  {"event":"call","line":12,"stack":["<module>","__del__"],"locals":{"self":"<Resource>"}},
+  {"event":"line","line":13,"stack":["<module>","__del__"],"locals":{"self":"<Resource>"}},
+  {"event":"return","line":13,"stack":["<module>","__del__"],"locals":{"self":"<Resource>"},"value":"None"},
+  {"event":"line","line":19,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"None"}},
+  {"event":"call","line":9,"stack":["<module>","__init__"],"locals":{"self":"<Resource>","name":"'b'"}},
+  {"event":"line","line":10,"stack":["<module>","__init__"],"locals":{"self":"<Resource>","name":"'b'"}},
+  {"event":"return","line":10,"stack":["<module>","__init__"],"locals":{"self":"<Resource>","name":"'b'"},"value":"None"},
+  {"event":"line","line":20,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"None","items":"<list>"}},
+  {"event":"call","line":12,"stack":["<module>","__del__"],"locals":{"self":"<Resource>"}},
+  {"event":"line","line":13,"stack":["<module>","__del__"],"locals":{"self":"<Resource>"}},
+  {"event":"return","line":13,"stack":["<module>","__del__"],"locals":{"self":"<Resource>"},"value":"None"},
+  {"event":"line","line":21,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"None","items":"<list>"}},
+  {"event":"line","line":23,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"None","items":"<list>"}},
+  {"event":"line","line":24,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"None","items":"<list>","nums":"<list>"}},
+  {"event":"line","line":25,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"None","items":"<list>","nums":"<list>"}},
+  {"event":"line","line":26,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"None","items":"<list>","nums":"<list>","alias":"<list>"}},
+  {"event":"line","line":27,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"None","items":"<list>","nums":"<list>","alias":"<list>"}},
+  {"event":"line","line":28,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"None","items":"<list>","nums":"<list>","alias":"<list>","pair":"<list>"}},
+  {"event":"line","line":29,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"None","items":"<list>","nums":"<list>","alias":"<list>","pair":"<list>"}},
+  {"event":"line","line":30,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"None","items":"<list>","nums":"<list>","alias":"<list>"}},
+  {"event":"line","line":32,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"None","items":"<list>","nums":"<list>","alias":"<list>"}},
+  {"event":"call","line":9,"stack":["<module>","__init__"],"locals":{"self":"<Resource>","name":"'t'"}},
+  {"event":"line","line":10,"stack":["<module>","__init__"],"locals":{"self":"<Resource>","name":"'t'"}},
+  {"event":"return","line":10,"stack":["<module>","__init__"],"locals":{"self":"<Resource>","name":"'t'"},"value":"None"},
+  {"event":"line","line":33,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"None","items":"<list>","nums":"<list>","alias":"<list>","t":"<Resource>"}},
+  {"event":"line","line":34,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"None","items":"<list>","nums":"<list>","alias":"<list>","t":"<Resource>","ref":"<ReferenceType>"}},
+  {"event":"call","line":12,"stack":["<module>","__del__"],"locals":{"self":"<Resource>"}},
+  {"event":"line","line":13,"stack":["<module>","__del__"],"locals":{"self":"<Resource>"}},
+  {"event":"return","line":13,"stack":["<module>","__del__"],"locals":{"self":"<Resource>"},"value":"None"},
+  {"event":"line","line":35,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"None","items":"<list>","nums":"<list>","alias":"<list>","ref":"<ReferenceType>"}},
+  {"event":"line","line":38,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"None","items":"<list>","nums":"<list>","alias":"<list>","ref":"<ReferenceType>"}},
+  {"event":"line","line":46,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"None","items":"<list>","nums":"<list>","alias":"<list>","ref":"<ReferenceType>","numbers":"<function>"}},
+  {"event":"line","line":47,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"None","items":"<list>","nums":"<list>","alias":"<list>","ref":"<ReferenceType>","numbers":"<function>","g":"<generator>"}},
+  {"event":"call","line":38,"stack":["<module>","numbers"],"locals":{}},
+  {"event":"line","line":39,"stack":["<module>","numbers"],"locals":{}},
+  {"event":"line","line":40,"stack":["<module>","numbers"],"locals":{}},
+  {"event":"return","line":40,"stack":["<module>","numbers"],"locals":{},"value":"1","yield":true},
+  {"event":"line","line":48,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"None","items":"<list>","nums":"<list>","alias":"<list>","ref":"<ReferenceType>","numbers":"<function>","g":"<generator>"}},
+  {"event":"call","line":40,"stack":["<module>","numbers"],"locals":{}},
+  {"event":"exception","line":40,"stack":["<module>","numbers"],"locals":{},"exc":"GeneratorExit","raised":true},
+  {"event":"line","line":43,"stack":["<module>","numbers"],"locals":{}},
+  {"event":"return","line":43,"stack":["<module>","numbers"],"locals":{},"value":"None","unwinding":true},
+  {"event":"line","line":49,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"None","items":"<list>","nums":"<list>","alias":"<list>","ref":"<ReferenceType>","numbers":"<function>","g":"None"}},
+  {"event":"line","line":52,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"None","items":"<list>","nums":"<list>","alias":"<list>","ref":"<ReferenceType>","numbers":"<function>","g":"None"}},
+  {"event":"call","line":52,"stack":["<module>","Node"],"locals":{}},
+  {"event":"line","line":52,"stack":["<module>","Node"],"locals":{}},
+  {"event":"line","line":53,"stack":["<module>","Node"],"locals":{"__module__":"'__main__'","__qualname__":"'Node'"}},
+  {"event":"line","line":57,"stack":["<module>","Node"],"locals":{"__module__":"'__main__'","__qualname__":"'Node'","__init__":"<function>"}},
+  {"event":"return","line":57,"stack":["<module>","Node"],"locals":{"__module__":"'__main__'","__qualname__":"'Node'","__init__":"<function>","__del__":"<function>"},"value":"None","classBody":true},
+  {"event":"line","line":61,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"None","items":"<list>","nums":"<list>","alias":"<list>","ref":"<ReferenceType>","numbers":"<function>","g":"None","Node":"<type>"}},
+  {"event":"call","line":53,"stack":["<module>","__init__"],"locals":{"self":"<Node>","name":"'n1'"}},
+  {"event":"line","line":54,"stack":["<module>","__init__"],"locals":{"self":"<Node>","name":"'n1'"}},
+  {"event":"line","line":55,"stack":["<module>","__init__"],"locals":{"self":"<Node>","name":"'n1'"}},
+  {"event":"return","line":55,"stack":["<module>","__init__"],"locals":{"self":"<Node>","name":"'n1'"},"value":"None"},
+  {"event":"line","line":62,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"None","items":"<list>","nums":"<list>","alias":"<list>","ref":"<ReferenceType>","numbers":"<function>","g":"None","Node":"<type>","n1":"<Node>"}},
+  {"event":"call","line":53,"stack":["<module>","__init__"],"locals":{"self":"<Node>","name":"'n2'"}},
+  {"event":"line","line":54,"stack":["<module>","__init__"],"locals":{"self":"<Node>","name":"'n2'"}},
+  {"event":"line","line":55,"stack":["<module>","__init__"],"locals":{"self":"<Node>","name":"'n2'"}},
+  {"event":"return","line":55,"stack":["<module>","__init__"],"locals":{"self":"<Node>","name":"'n2'"},"value":"None"},
+  {"event":"line","line":63,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"None","items":"<list>","nums":"<list>","alias":"<list>","ref":"<ReferenceType>","numbers":"<function>","g":"None","Node":"<type>","n1":"<Node>","n2":"<Node>"}},
+  {"event":"line","line":64,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"None","items":"<list>","nums":"<list>","alias":"<list>","ref":"<ReferenceType>","numbers":"<function>","g":"None","Node":"<type>","n1":"<Node>","n2":"<Node>"}},
+  {"event":"line","line":65,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"None","items":"<list>","nums":"<list>","alias":"<list>","ref":"<ReferenceType>","numbers":"<function>","g":"None","Node":"<type>","n1":"<Node>","n2":"<Node>"}},
+  {"event":"line","line":66,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"None","items":"<list>","nums":"<list>","alias":"<list>","ref":"<ReferenceType>","numbers":"<function>","g":"None","Node":"<type>"}},
+  {"event":"call","line":57,"stack":["<module>","__del__"],"locals":{"self":"<Node>"}},
+  {"event":"line","line":58,"stack":["<module>","__del__"],"locals":{"self":"<Node>"}},
+  {"event":"return","line":58,"stack":["<module>","__del__"],"locals":{"self":"<Node>"},"value":"None"},
+  {"event":"call","line":57,"stack":["<module>","__del__"],"locals":{"self":"<Node>"}},
+  {"event":"line","line":58,"stack":["<module>","__del__"],"locals":{"self":"<Node>"}},
+  {"event":"return","line":58,"stack":["<module>","__del__"],"locals":{"self":"<Node>"},"value":"None"},
+  {"event":"line","line":67,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"None","items":"<list>","nums":"<list>","alias":"<list>","ref":"<ReferenceType>","numbers":"<function>","g":"None","Node":"<type>"}},
+  {"event":"return","line":67,"stack":["<module>"],"locals":{"gc":"<module>","sys":"<module>","weakref":"<module>","Resource":"<type>","r":"None","items":"<list>","nums":"<list>","alias":"<list>","ref":"<ReferenceType>","numbers":"<function>","g":"None","Node":"<type>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 85,
+ "finalGlobals": {
+  "gc": "<module>",
+  "sys": "<module>",
+  "weakref": "<module>",
+  "Resource": "<type>",
+  "r": "None",
+  "items": "<list>",
+  "nums": "<list>",
+  "alias": "<list>",
+  "ref": "<ReferenceType>",
+  "numbers": "<function>",
+  "g": "None",
+  "Node": "<type>"
+ },
+ "continuation": [],
+ "sourceSha256": "a5935a89f8123b451cbb5c15b0cc6096b4a23d10fbf538048c552a09060fcc62"
+}

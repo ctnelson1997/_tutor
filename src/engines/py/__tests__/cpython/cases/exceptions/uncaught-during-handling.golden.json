@@ -27,10 +27,10 @@
   {"event":"call","line":2,"stack":["<module>","lookup"],"locals":{"table":"<dict>","key":"'pear'"}},
   {"event":"line","line":3,"stack":["<module>","lookup"],"locals":{"table":"<dict>","key":"'pear'"}},
   {"event":"line","line":4,"stack":["<module>","lookup"],"locals":{"table":"<dict>","key":"'pear'"}},
-  {"event":"exception","line":4,"stack":["<module>","lookup"],"locals":{"table":"<dict>","key":"'pear'"},"exc":"KeyError"},
+  {"event":"exception","line":4,"stack":["<module>","lookup"],"locals":{"table":"<dict>","key":"'pear'"},"exc":"KeyError","raised":true},
   {"event":"line","line":5,"stack":["<module>","lookup"],"locals":{"table":"<dict>","key":"'pear'"}},
   {"event":"line","line":6,"stack":["<module>","lookup"],"locals":{"table":"<dict>","key":"'pear'"}},
-  {"event":"exception","line":6,"stack":["<module>","lookup"],"locals":{"table":"<dict>","key":"'pear'"},"exc":"TypeError"},
+  {"event":"exception","line":6,"stack":["<module>","lookup"],"locals":{"table":"<dict>","key":"'pear'"},"exc":"TypeError","raised":true},
   {"event":"return","line":6,"stack":["<module>","lookup"],"locals":{"table":"<dict>","key":"'pear'"},"value":"None","unwinding":true},
   {"event":"exception","line":10,"stack":["<module>"],"locals":{"lookup":"<function>","prices":"<dict>"},"exc":"TypeError"},
   {"event":"return","line":10,"stack":["<module>"],"locals":{"lookup":"<function>","prices":"<dict>"},"value":"None","unwinding":true}

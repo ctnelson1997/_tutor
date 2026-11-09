@@ -85,7 +85,7 @@
   {"event":"line","line":13,"stack":["<module>"],"locals":{"gradebook":"<dict>","skipped":"<list>","line":"'ben, eighty'","parts":"<list>","name":"'Ana'","score":"85"}},
   {"event":"line","line":14,"stack":["<module>"],"locals":{"gradebook":"<dict>","skipped":"<list>","line":"'ben, eighty'","parts":"<list>","name":"'Ben'","score":"85"}},
   {"event":"line","line":15,"stack":["<module>"],"locals":{"gradebook":"<dict>","skipped":"<list>","line":"'ben, eighty'","parts":"<list>","name":"'Ben'","score":"85"}},
-  {"event":"exception","line":15,"stack":["<module>"],"locals":{"gradebook":"<dict>","skipped":"<list>","line":"'ben, eighty'","parts":"<list>","name":"'Ben'","score":"85"},"exc":"ValueError"},
+  {"event":"exception","line":15,"stack":["<module>"],"locals":{"gradebook":"<dict>","skipped":"<list>","line":"'ben, eighty'","parts":"<list>","name":"'Ben'","score":"85"},"exc":"ValueError","raised":true},
   {"event":"line","line":16,"stack":["<module>"],"locals":{"gradebook":"<dict>","skipped":"<list>","line":"'ben, eighty'","parts":"<list>","name":"'Ben'","score":"85"}},
   {"event":"line","line":17,"stack":["<module>"],"locals":{"gradebook":"<dict>","skipped":"<list>","line":"'ben, eighty'","parts":"<list>","name":"'Ben'","score":"85"}},
   {"event":"line","line":18,"stack":["<module>"],"locals":{"gradebook":"<dict>","skipped":"<list>","line":"'ben, eighty'","parts":"<list>","name":"'Ben'","score":"85"}},

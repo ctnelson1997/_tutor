@@ -27,6 +27,13 @@ export const pyEngine: LanguageEngine = {
     class: { label: 'Class', variant: 'primary', empty: 'no attributes' },
     // A module, by its name, never drawn in full (#38).
     module: { label: 'Module', variant: 'secondary', empty: null },
+    // #81: a deque's items; a generator's variables while it is suspended;
+    // a library iterator by its type, with what it iterates over when that
+    // can be read; a library value (range, Fraction, date, bytes) by its repr.
+    deque: { label: 'Deque', variant: 'info' },
+    generator: { label: 'Generator', variant: 'secondary', empty: 'no variables' },
+    iterator: { label: 'Iterator', variant: 'secondary', empty: null },
+    value: { label: '', variant: 'secondary', empty: null },
     int: { label: 'int', variant: 'primary' },
     float: { label: 'float', variant: 'primary' },
     complex: { label: 'complex', variant: 'primary' },

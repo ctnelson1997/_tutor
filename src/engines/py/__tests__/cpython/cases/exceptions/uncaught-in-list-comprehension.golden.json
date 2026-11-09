@@ -57,7 +57,7 @@
   {"event":"line","line":3,"stack":["<module>","summary","rates"],"locals":{"distances":"<list>","times":"<list>","d":"10","t":"2"}},
   {"event":"line","line":3,"stack":["<module>","summary","rates"],"locals":{"distances":"<list>","times":"<list>","d":"30","t":"3"}},
   {"event":"line","line":3,"stack":["<module>","summary","rates"],"locals":{"distances":"<list>","times":"<list>","d":"8","t":"4"}},
-  {"event":"exception","line":3,"stack":["<module>","summary","rates"],"locals":{"distances":"<list>","times":"<list>","d":"5","t":"0"},"exc":"ZeroDivisionError"},
+  {"event":"exception","line":3,"stack":["<module>","summary","rates"],"locals":{"distances":"<list>","times":"<list>","d":"5","t":"0"},"exc":"ZeroDivisionError","raised":true},
   {"event":"line","line":3,"stack":["<module>","summary","rates"],"locals":{"distances":"<list>","times":"<list>","d":"5","t":"0"}},
   {"event":"return","line":3,"stack":["<module>","summary","rates"],"locals":{"distances":"<list>","times":"<list>"},"value":"None","unwinding":true},
   {"event":"exception","line":8,"stack":["<module>","summary"],"locals":{"trips":"<list>","dist":"<list>","time":"<list>"},"exc":"ZeroDivisionError"},

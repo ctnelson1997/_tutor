@@ -20,7 +20,7 @@
   {"event":"line","line":4,"stack":["<module>"],"locals":{"json":"<module>"}},
   {"event":"line","line":5,"stack":["<module>"],"locals":{"json":"<module>","good":"<list>"}},
   {"event":"line","line":6,"stack":["<module>"],"locals":{"json":"<module>","good":"<list>"}},
-  {"event":"exception","line":6,"stack":["<module>"],"locals":{"json":"<module>","good":"<list>"},"exc":"JSONDecodeError"},
+  {"event":"exception","line":6,"stack":["<module>"],"locals":{"json":"<module>","good":"<list>"},"exc":"JSONDecodeError","raised":true},
   {"event":"return","line":6,"stack":["<module>"],"locals":{"json":"<module>","good":"<list>"},"value":"None","unwinding":true}
  ],
  "truncated": false,

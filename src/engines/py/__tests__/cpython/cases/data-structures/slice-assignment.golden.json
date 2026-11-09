@@ -69,7 +69,7 @@
   {"event":"line","line":11,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
   {"event":"line","line":12,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
   {"event":"line","line":13,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
-  {"event":"exception","line":13,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"},"exc":"ValueError"},
+  {"event":"exception","line":13,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"},"exc":"ValueError","raised":true},
   {"event":"line","line":14,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},
   {"event":"line","line":15,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>","e":"<ValueError>"}},
   {"event":"line","line":16,"stack":["<module>"],"locals":{"data":"<list>","alias":"<list>"}},

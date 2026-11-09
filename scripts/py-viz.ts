@@ -41,7 +41,7 @@ function show(v: RuntimeValue): string {
 function stepLine(s: ExecutionSnapshot): string {
   const top = s.callStack[s.callStack.length - 1];
   const vars = (top?.variables ?? []).map(v => `${v.name}=${show(v.value)}`).join(' ');
-  const extra = [s.condition ? `[${s.condition.expression} → ${s.condition.result}]` : '', s.columnRange ? `cols ${s.columnRange.startCol}-${s.columnRange.endCol}` : ''].filter(Boolean).join(' ');
+  const extra = [s.condition ? `[${s.condition.expression} → ${s.condition.result}]` : '', s.columnRange ? `cols ${s.columnRange.startCol}-${s.columnRange.endCol}` : '', s.exception ? `raises ${s.exception}` : ''].filter(Boolean).join(' ');
   return `${String(s.step).padStart(4)} ${String(s.line).padStart(3)} ${s.callStack.map(f => f.name).join(' > ')}  ${vars}${extra ? '  ' + extra : ''}`;
 }
 
@@ -82,7 +82,8 @@ async function main(): Promise<void> {
   const [from, to] = range ? range.split('-').map(Number) : [0, Infinity];
 
   console.log(`--- CPython: ${golden.exception ? `uncaught ${golden.exception.class}: ${golden.exception.message}` : golden.compileError ? `${golden.compileError.class}: ${golden.compileError.msg} (line ${golden.compileError.line})` : golden.endless ? 'endless' : 'ends normally'}`);
-  console.log(golden.stdout.replace(/\n$/, '').split('\n').map(l => `  | ${l}`).join('\n'));
+  // The console, stderr's lines marked `!`.
+  console.log(golden.console.map(l => `  ${l.stream === 'stderr' ? '!' : '|'} ${l.text}`).join('\n'));
   if (!final) {
     console.log('--- CPython events');
     // As referenceEvents numbers them, with runs of frames kept as name*n.
@@ -102,7 +103,7 @@ async function main(): Promise<void> {
   if (reply.error) console.log(`  ends with ${reply.error.kind}: ${reply.error.message}${reply.error.line ? ` (line ${reply.error.line})` : ''}`);
   if (outcome.lostStdout) console.log(`  lost to the browser's console: ${JSON.stringify(outcome.lostStdout)}`);
   const last = reply.snapshots[reply.snapshots.length - 1];
-  if (last) console.log(last.stdout.map(l => `  | ${l}`).join('\n'));
+  if (last) console.log((last.console ?? last.stdout.map(text => ({ text, stream: 'stdout' }))).map(l => `  ${l.stream === 'stderr' ? '!' : '|'} ${l.text}`).join('\n'));
   if (final) {
     if (last) printFinal(last);
     return;

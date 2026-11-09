@@ -80,7 +80,7 @@
   {"event":"line","line":13,"stack":["<module>"],"locals":{"evens":"<set>","primes":"<set>","seen":"<set>","n":"1"}},
   {"event":"line","line":14,"stack":["<module>"],"locals":{"evens":"<set>","primes":"<set>","seen":"<set>","n":"1"}},
   {"event":"line","line":15,"stack":["<module>"],"locals":{"evens":"<set>","primes":"<set>","seen":"<set>","n":"1"}},
-  {"event":"exception","line":15,"stack":["<module>"],"locals":{"evens":"<set>","primes":"<set>","seen":"<set>","n":"1"},"exc":"KeyError"},
+  {"event":"exception","line":15,"stack":["<module>"],"locals":{"evens":"<set>","primes":"<set>","seen":"<set>","n":"1"},"exc":"KeyError","raised":true},
   {"event":"line","line":16,"stack":["<module>"],"locals":{"evens":"<set>","primes":"<set>","seen":"<set>","n":"1"}},
   {"event":"line","line":17,"stack":["<module>"],"locals":{"evens":"<set>","primes":"<set>","seen":"<set>","n":"1","e":"<KeyError>"}},
   {"event":"line","line":18,"stack":["<module>"],"locals":{"evens":"<set>","primes":"<set>","seen":"<set>","n":"1"}},

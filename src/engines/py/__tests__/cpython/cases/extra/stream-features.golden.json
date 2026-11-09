@@ -1,0 +1,64 @@
+{
+ "stdout": "written as bytes\nTextIOWrapper True\nTextIOWrapper True\nFalse True utf-8\nb'hello\\n' hello\n42\n['a', 'b', 'c']\n",
+ "stderr": "",
+ "console": [
+  {
+   "stream": "stdout",
+   "text": "written as bytes"
+  },
+  {
+   "stream": "stdout",
+   "text": "TextIOWrapper True"
+  },
+  {
+   "stream": "stdout",
+   "text": "TextIOWrapper True"
+  },
+  {
+   "stream": "stdout",
+   "text": "False True utf-8"
+  },
+  {
+   "stream": "stdout",
+   "text": "b'hello\\n' hello"
+  },
+  {
+   "stream": "stdout",
+   "text": "42"
+  },
+  {
+   "stream": "stdout",
+   "text": "['a', 'b', 'c']"
+  }
+ ],
+ "exception": null,
+ "traceback": null,
+ "compileError": null,
+ "endless": false,
+ "events": [
+  {"event":"call","line":0,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":2,"stack":["<module>"],"locals":{}},
+  {"event":"line","line":3,"stack":["<module>"],"locals":{"io":"<module>"}},
+  {"event":"line","line":5,"stack":["<module>"],"locals":{"io":"<module>","sys":"<module>"}},
+  {"event":"line","line":6,"stack":["<module>"],"locals":{"io":"<module>","sys":"<module>"}},
+  {"event":"line","line":7,"stack":["<module>"],"locals":{"io":"<module>","sys":"<module>"}},
+  {"event":"line","line":8,"stack":["<module>"],"locals":{"io":"<module>","sys":"<module>"}},
+  {"event":"line","line":9,"stack":["<module>"],"locals":{"io":"<module>","sys":"<module>"}},
+  {"event":"line","line":10,"stack":["<module>"],"locals":{"io":"<module>","sys":"<module>"}},
+  {"event":"line","line":11,"stack":["<module>"],"locals":{"io":"<module>","sys":"<module>","read_line":"<builtin_function_or_method>"}},
+  {"event":"line","line":12,"stack":["<module>"],"locals":{"io":"<module>","sys":"<module>","read_line":"<builtin_function_or_method>","first":"<bytes>"}},
+  {"event":"line","line":13,"stack":["<module>"],"locals":{"io":"<module>","sys":"<module>","read_line":"<builtin_function_or_method>","first":"<bytes>"}},
+  {"event":"line","line":14,"stack":["<module>"],"locals":{"io":"<module>","sys":"<module>","read_line":"<builtin_function_or_method>","first":"<bytes>"}},
+  {"event":"return","line":14,"stack":["<module>"],"locals":{"io":"<module>","sys":"<module>","read_line":"<builtin_function_or_method>","first":"<bytes>"},"value":"None"}
+ ],
+ "truncated": false,
+ "stepEvents": 14,
+ "finalGlobals": {
+  "io": "<module>",
+  "sys": "<module>",
+  "read_line": "<builtin_function_or_method>",
+  "first": "<bytes>"
+ },
+ "continuation": [],
+ "sourceSha256": "95760aa1a6a7ce4c020a61be256942cce3730d0d9abc1e618dcb37be3acfe5ed"
+}
