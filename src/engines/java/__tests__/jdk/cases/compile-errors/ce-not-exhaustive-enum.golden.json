@@ -1,0 +1,8 @@
+{
+  "stdout": "",
+  "stderr": "Main.java:5: error: the switch expression does not cover all possible input values\n        int n = switch (c) { case RED -> 1; case GREEN -> 2; };\n                ^\n1 error\nerror: compilation failed\n",
+  "exitCode": 1,
+  "exception": null,
+  "compileError": "Main.java:5: error: the switch expression does not cover all possible input values\n        int n = switch (c) { case RED -> 1; case GREEN -> 2; };\n                ^\n1 error",
+  "sourceSha256": "e3b652d15ee13bff36f56c9e8bfe50c4df7572557565496ccf1efc286614c816"
+}

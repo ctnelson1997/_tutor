@@ -1,0 +1,8 @@
+{
+  "stdout": "",
+  "stderr": "Main.java:3: error: method f(int) is already defined in class Main\n    static int f(int b) { return b * 2; }\n               ^\n1 error\nerror: compilation failed\n",
+  "exitCode": 1,
+  "exception": null,
+  "compileError": "Main.java:3: error: method f(int) is already defined in class Main\n    static int f(int b) { return b * 2; }\n               ^\n1 error",
+  "sourceSha256": "2977df89cfbc977a07d013f10095c902e180feb8951ba4ae1edc171598d02a31"
+}

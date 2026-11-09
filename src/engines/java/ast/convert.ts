@@ -189,7 +189,7 @@ class Converter {
   }
 
   private qualifiedName(ids: CstToken[], range: A.Range): A.QualifiedName {
-    return { kind: 'QualifiedName', parts: ids.map(t => t.image), range };
+    return { kind: 'QualifiedName', parts: ids.map(t => t.image), partRanges: ids.map(t => rangeOf(t)), range };
   }
 
   private importDeclaration(n: CstNode): A.ImportDecl {
@@ -429,6 +429,7 @@ class Converter {
       modifiers: this.modifiers(nodes(n, 'constructorModifier')),
       typeParams: [],
       name: tok(node(node(n, 'simpleTypeName')!, 'typeIdentifier')!, 'Identifier')!.image,
+      nameRange: rangeOf(tok(node(node(n, 'simpleTypeName')!, 'typeIdentifier')!, 'Identifier')!),
       params: [],
       throws: [],
       compact: true,
@@ -561,6 +562,7 @@ class Converter {
       resultAnnotations: this.annotations(nodes(header, 'annotation')),
       result: voidTok ? { kind: 'VoidType', range: rangeOf(voidTok) } : this.unannType(node(result, 'unannType')!),
       name: tok(declarator, 'Identifier')!.image,
+      nameRange: rangeOf(tok(declarator, 'Identifier')!),
       receiver: this.receiver(node(declarator, 'receiverParameter')),
       params: this.formalParameters(node(declarator, 'formalParameterList')),
       dims: this.dimCount(node(declarator, 'dims')),
@@ -628,6 +630,7 @@ class Converter {
       modifiers: this.modifiers(nodes(n, 'constructorModifier')),
       typeParams: this.typeParameters(node(declarator, 'typeParameters')),
       name: tok(node(node(declarator, 'simpleTypeName')!, 'typeIdentifier')!, 'Identifier')!.image,
+      nameRange: rangeOf(tok(node(node(declarator, 'simpleTypeName')!, 'typeIdentifier')!, 'Identifier')!),
       receiver: this.receiver(node(declarator, 'receiverParameter')),
       params: this.formalParameters(node(declarator, 'formalParameterList')),
       throws: throws ? this.throwsList(throws) : [],

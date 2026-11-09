@@ -58,6 +58,8 @@ export interface ImportDecl extends Node {
 export interface QualifiedName extends Node {
   kind: 'QualifiedName';
   parts: string[];
+  /** Each part's range, where an import's error points (#72). */
+  partRanges: Range[];
 }
 
 // ── Modifiers and annotations ──
@@ -216,6 +218,8 @@ export interface MethodDecl extends Node {
   resultAnnotations: Annotation[];
   result: TypeNode;
   name: string;
+  /** The method's name, where javac points at it (#72). */
+  nameRange: Range;
   receiver?: ReceiverParam;
   params: Param[];
   /** Legacy dimensions after the parameter list: `int f()[]`. */
@@ -250,6 +254,8 @@ export interface ConstructorDecl extends Node {
   modifiers: ModifierItem[];
   typeParams: TypeParam[];
   name: string;
+  /** The constructor's name, where javac points at it (#72). */
+  nameRange: Range;
   receiver?: ReceiverParam;
   params: Param[];
   throws: ClassType[];

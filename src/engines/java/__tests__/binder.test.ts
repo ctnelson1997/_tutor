@@ -255,6 +255,42 @@ describe('what javac rejects', () => {
     expect(errors('Object o = "s"; while (!(o instanceof Integer i)) { for (;;) break; switch (1) { case 1: break; } o = 1; } int twice = i * 2;')).toEqual([]);
   });
 
+  it("keeps #72's checks to what javac rejects: valid programs bind with no error", () => {
+    const errors = (source: string) => bind(source).diagnostics.filter(d => d.kind === 'error').map(d => d.message.split('\n')[0]);
+    // A pattern's name again in an else branch, where the first isn't in scope.
+    expect(errors('class M { static void f(Object o) { if (o instanceof String s) {} else if (o instanceof Integer s) {} } public static void main(String[] a) {} }')).toEqual([]);
+    // Every enum constant, or a default, covers a switch expression; a sealed interface's patterns do too.
+    expect(errors(`class M {
+  enum C { R, G }
+  sealed interface S permits A, B {}
+  record A() implements S {}
+  record B() implements S {}
+  static int f(C c, S s, Object o, char ch) {
+    int x = switch (c) { case R -> 1; case G -> 2; };
+    int y = switch (s) { case A a -> 1; case B b -> 2; };
+    int z = switch (o) { case String t -> 1; case Object other -> 2; };
+    switch (ch) { case 'A': case 66: break; }
+    return x + y + z;
+  }
+  public static void main(String[] a) {}
+}`)).toEqual([]);
+    // Overloads, a public override, static hiding static, an interface's static method beside a class's instance method.
+    expect(errors(`class M {
+  static class P { public String toString() { return "p"; } static void s() {} void f(int x) {} void f(long x) {} }
+  static class Q extends P { static void s() {} }
+  interface I { static void m() {} }
+  static class R implements I { void m() {} }
+  public static void main(String[] a) {}
+}`)).toEqual([]);
+    // Real JDK classes, those JavaTutor lacks too, and packages it has none of.
+    expect(errors(`import java.util.Map.Entry;
+import java.util.function.*;
+import java.text.DecimalFormat;
+import javax.swing.JFrame;
+import java.util.concurrent.atomic.AtomicInteger;
+class M { public static void main(String[] a) {} }`)).toEqual([]);
+  });
+
   it("rejects a type argument outside its bound: sorting objects that aren't Comparable (#62)", () => {
     const program = (cls: string, call: string) => firstLine(`import java.util.*;
 class S${cls} { public int compareTo(S o) { return 0; } }

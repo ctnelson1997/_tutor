@@ -1,0 +1,8 @@
+{
+  "stdout": "",
+  "stderr": "Main.java:4: error: incompatible types: int cannot be converted to String\n        switch (s) { case 1: break; }\n                          ^\n1 error\nerror: compilation failed\n",
+  "exitCode": 1,
+  "exception": null,
+  "compileError": "Main.java:4: error: incompatible types: int cannot be converted to String\n        switch (s) { case 1: break; }\n                          ^\n1 error",
+  "sourceSha256": "a6b0af796a034f84eaa735e7223f8388d8a53547fd75e88321a966fbb6b2c08b"
+}

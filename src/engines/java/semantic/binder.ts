@@ -20,7 +20,7 @@ import type * as A from '../ast/ast';
 import { parseAst } from '../ast/convert';
 import { libraryStubs } from './stubs';
 import { checkFlow } from './flow';
-import { JDK_METHODS, JDK_OVERLOADS } from './jdkMembers';
+import { JDK_METHODS, JDK_OVERLOADS, JDK_PACKAGES, JDK_CLASSES } from './jdkMembers';
 import { ClassSymbol, FieldSymbol, MethodSymbol, LocalSymbol, type ClassKind, type ConstValue, type LocalKind, type ParamSymbol } from './symbols';
 import {
   type JType, type ClassT, type ArrayT, type PrimitiveT, type TypeVarT, type Builtins,
@@ -294,15 +294,28 @@ class Declarer {
         const isStatic = sym.isInterface || m.modifiers.includes('static');
         const isFinal = sym.isInterface || m.modifiers.includes('final');
         const base = this.resolveType(m.type, ctx);
+        if (isStatic && !sym.isInterface) this.checkStaticTypeVar(sym, base, m.type.range);
         for (const d of m.declarators) {
           let t = base;
           for (let i = 0; i < d.dims; i++) t = arrayOf(t);
+          // Two fields of one name: javac's error, and the first one stays (#72).
+          if (!this.isLibrary && sym.fields.has(d.name)) {
+            this.error(`variable ${d.name} is already defined in ${kindWord(sym)} ${sym.name}`, d.range);
+            continue;
+          }
           sym.fields.set(d.name, new FieldSymbol(d.name, sym, t, isStatic, isFinal, d));
         }
       } else if (m.kind === 'MethodDecl') {
-        sym.addMethod(this.method(sym, m, ctx));
+        const method = this.method(sym, m, ctx);
+        if (!this.isLibrary && !this.checkMethodDecl(sym, method, m)) continue;
+        sym.addMethod(method);
       } else if (m.kind === 'ConstructorDecl') {
-        sym.constructors.push(this.constructor_(sym, m, ctx));
+        const ctor = this.constructor_(sym, m, ctx);
+        if (!this.isLibrary && sym.constructors.some(c => sameParams(c, ctor))) {
+          this.error(`constructor ${sym.name}(${ctor.params.map(p => typeName(p.type)).join(',')}) is already defined in ${kindWord(sym)} ${sym.name}`, m.nameRange);
+          continue;
+        }
+        sym.constructors.push(ctor);
       }
     }
     // A class without a constructor gets the default one (an enum's is private).
@@ -319,6 +332,46 @@ class Declarer {
       sym.fields.set('this$0', sym.outerField);
     }
     for (const m of sym.memberTypes.values()) this.resolveMembers(m, where);
+  }
+
+  /**
+   * javac's checks of a method's declaration (#72): another method with its
+   * signature, a body where there must be none (abstract) or none where
+   * there must be one, a static method using the class's type variables.
+   * False when it is a duplicate, which isn't declared.
+   */
+  private checkMethodDecl(sym: ClassSymbol, method: MethodSymbol, m: A.MethodDecl): boolean {
+    if ((sym.methods.get(method.name) ?? []).some(x => sameParams(x, method))) {
+      this.error(`method ${method.name}(${method.params.map(p => typeName(p.type)).join(',')}) is already defined in ${kindWord(sym)} ${sym.name}`, m.nameRange);
+      return false;
+    }
+    const mods = method.modifiers;
+    if (sym.isInterface) {
+      if (m.body && !mods.has('default') && !mods.has('static') && !mods.has('private')) this.error('interface abstract methods cannot have body', m.nameRange);
+    } else if (!m.body && !mods.has('abstract') && !mods.has('native')) {
+      this.error('missing method body, or declare abstract', m.nameRange);
+    } else if (m.body && mods.has('abstract')) {
+      this.error('abstract methods cannot have a body', m.nameRange);
+    }
+    if (mods.has('static') && sym.typeParams.length > 0) {
+      this.checkStaticTypeVar(sym, method.returnType, m.result.range);
+      m.params.forEach((p, i) => this.checkStaticTypeVar(sym, method.params[i].type, p.type.range));
+    }
+    return true;
+  }
+
+  /** A static member's type that names one of its class's type variables: javac's error (#72). */
+  private checkStaticTypeVar(sym: ClassSymbol, t: JType, range: A.Range): void {
+    if (this.isLibrary) return;
+    const find = (x: JType): TypeVarT | undefined => {
+      if (x.tag === 'typevar') return sym.typeParams.find(v => v.id === x.id);
+      if (x.tag === 'array') return find(x.component);
+      if (x.tag === 'class') for (const a of x.args) { const f = find(a); if (f) return f; }
+      if (x.tag === 'wildcard' && x.bound) return find(x.bound);
+      return undefined;
+    };
+    const v = find(t);
+    if (v) this.error(`non-static type variable ${v.name} cannot be referenced from a static context`, range);
   }
 
   /** An enum's implicit `values()` and `valueOf(String)` (JLS §8.9.3). */
@@ -660,6 +713,7 @@ class Binder {
     for (const c of all) this.checkImplemented(c);
     for (const c of all) program.classes.push(this.bindClass(c));
     program.classes.push(...this.extraClasses);
+    for (const bc of program.classes) this.checkCyclicConstructors(bc);
     this.checkEffectivelyFinal();
     // javac's flow checks (#23): reachability, definite assignment, final variables, checked exceptions.
     const byName = (n: string) => this.lib.byName(n)!;
@@ -676,6 +730,7 @@ class Binder {
   }
 
   private addImport(i: A.ImportDecl): void {
+    if (!i.isStatic) this.checkImport(i);
     const parts = i.name.parts;
     if (i.isStatic) {
       // `import static java.lang.Math.*;` or `import static java.lang.Math.max;`
@@ -692,6 +747,34 @@ class Binder {
   }
 
   private readonly staticImports: { cls: ClassSymbol; member?: string }[] = [];
+
+  /**
+   * javac's checks of an import (#72): a package the JDK doesn't have is
+   * "package … does not exist", and a class a checked package doesn't have
+   * (JDK_CLASSES: java.util, java.io, …) is "cannot find symbol", so a typo
+   * (`java.util.Scaner`, `java.util.scanner`) isn't silently dropped. A real
+   * class JavaTutor lacks is fine here; using it says it isn't supported.
+   */
+  private checkImport(i: A.ImportDecl): void {
+    const names = i.name.parts;
+    const ranges = i.name.partRanges;
+    const packages = ` ${JDK_PACKAGES} `;
+    let k = i.onDemand ? names.length : names.length - 1;
+    while (k > 0 && !packages.includes(` ${names.slice(0, k).join('.')} `)) k--;
+    // The `.` before a name, where javac points.
+    const dotBefore = (r: A.Range): A.Range => ({ start: r.start - 1, end: r.start, line: r.line, column: r.column - 1, endLine: r.line, endColumn: r.column - 1 });
+    if (k === 0) {
+      const pkg = names.slice(0, i.onDemand ? names.length : names.length - 1).join('.');
+      this.error(`package ${pkg} does not exist`, i.onDemand ? i.range : dotBefore(ranges[ranges.length - 1]));
+      return;
+    }
+    if (k === names.length) return;
+    const pkg = names.slice(0, k).join('.');
+    const known = JDK_CLASSES[pkg];
+    if (known !== undefined && !` ${known} `.includes(` ${names[k]} `)) {
+      this.error(`cannot find symbol\n  symbol:   class ${names[k]}\n  location: package ${pkg}`, dotBefore(ranges[k]));
+    }
+  }
 
   /** A library class by qualified name: java.util.Map.Entry. */
   private libraryClass(parts: string[]): ClassSymbol | undefined {
@@ -968,10 +1051,38 @@ class Binder {
   }
 
   /**
+   * Constructors that call each other with this(…) in a cycle: javac's
+   * "recursive constructor invocation" (#72), at the this(…) of the cycle's
+   * last constructor in the source, where javac 21 reports it.
+   */
+  private checkCyclicConstructors(bc: B.BClass): void {
+    const calls = new Map<MethodSymbol, { callee: MethodSymbol; range: A.Range }>();
+    for (const c of bc.constructors) {
+      const call = c.explicitCall;
+      if (call?.target === 'this' && call.ctor) calls.set(c.symbol, { callee: call.ctor, range: call.range });
+    }
+    const reported = new Set<MethodSymbol>();
+    for (const c of [...bc.constructors].reverse()) {
+      const cycle = new Set([c.symbol]);
+      let next = calls.get(c.symbol)?.callee;
+      while (next && !cycle.has(next)) {
+        cycle.add(next);
+        next = calls.get(next)?.callee;
+      }
+      if (next !== c.symbol || [...cycle].some(x => reported.has(x))) continue;
+      this.error('recursive constructor invocation', calls.get(c.symbol)!.range);
+      for (const x of cycle) reported.add(x);
+    }
+  }
+
+  /**
    * A method that overrides another (same name, same parameter types as seen
-   * from its class) must return a compatible type (JLS §8.4.8.3): the same
-   * primitive or void, or a subtype of the overridden method's reference
-   * type. Else javac's "cannot override" error.
+   * from its class) must be an instance method overriding an instance
+   * method, not override a final one, not give weaker access (#72), and
+   * return a compatible type (JLS §8.4.8.3): the same primitive or void, or a
+   * subtype of the overridden method's reference type. Else javac's "cannot
+   * override" error ("cannot implement" for an interface's method), at the
+   * method's name.
    */
   private checkOverrides(cls: ClassSymbol): void {
     const self = this.thisType(cls);
@@ -986,20 +1097,34 @@ class Binder {
       }
     };
     visit(cls);
+    // public 3, protected 2, package 1, private 0; an interface's members are public.
+    const access = (m: MethodSymbol) => (m.modifiers.has('public') || (m.owner.isInterface && !m.modifiers.has('private')) ? 3
+      : m.modifiers.has('protected') ? 2 : m.modifiers.has('private') ? 0 : 1);
+    const accessName = ['private', 'package', 'protected', 'public'];
     for (const list of cls.methods.values()) {
       for (const m of list) {
-        if (m.isStatic) continue;
+        if (m.synthetic) continue;
         for (const s of supertypes) {
-          const over = (s.methods.get(m.name) ?? []).find(x => !x.isStatic && !x.modifiers.has('private') && x.arity === m.arity
+          // An interface's static methods aren't inherited, nor are private methods.
+          const over = (s.methods.get(m.name) ?? []).find(x => !x.modifiers.has('private') && !(x.isStatic && s.isInterface) && x.arity === m.arity
             && x.params.every((p, i) => sameType(erasure(seen(x, p.type)), erasure(m.params[i].type))));
           if (!over) continue;
           const want = seen(over, over.returnType);
           const got = m.returnType;
-          const ok = want.tag === 'void' || want.tag === 'primitive' || got.tag === 'void' || got.tag === 'primitive'
+          const returnOk = want.tag === 'void' || want.tag === 'primitive' || got.tag === 'void' || got.tag === 'primitive'
             ? sameType(got, want)
             : isLoose(want) || isLoose(got) || isSubtype(got, want, this.b) || isSubtype(erasure(got), erasure(want), this.b);
-          if (!ok) {
-            this.error(`${m.signature} in ${cls.name} cannot override ${over.signature} in ${s.name}\n  return type ${typeName(got)} is not compatible with ${typeName(want)}`, m.decl?.range ?? cls.decl!.range);
+          const reason = m.isStatic && !over.isStatic ? 'overriding method is static'
+            : !m.isStatic && over.isStatic ? 'overridden method is static'
+            : m.isStatic ? undefined // hiding a static method
+            : over.modifiers.has('final') ? 'overridden method is final'
+            : access(m) < access(over) ? `attempting to assign weaker access privileges; was ${accessName[access(over)]}`
+            : !returnOk ? `return type ${typeName(got)} is not compatible with ${typeName(want)}`
+            : undefined;
+          if (reason) {
+            const verb = s.isInterface && !cls.isInterface ? 'implement' : 'override';
+            const at = m.decl?.kind === 'MethodDecl' ? m.decl.nameRange : m.decl?.range ?? cls.decl!.range;
+            this.error(`${m.signature} in ${cls.name} cannot ${verb} ${over.signature} in ${s.name}\n  ${reason}`, at);
             return;
           }
           break;
@@ -1061,13 +1186,35 @@ class Binder {
     if (kind !== 'local') local.hasInit = true;
     if (name !== '_') {
       // A lambda's parameters and locals can't shadow the enclosing method's; a local or anonymous class's can.
-      let taken = false;
-      for (let s: Scope | undefined = this.scope; s && !taken; s = s.boundary?.kind === 'class' ? undefined : s.parent) taken = s.vars.has(name);
-      if (taken && kind !== 'pattern') this.error(`variable ${name} is already defined in method ${this.ctx.method?.name ?? 'initializer'}`, range);
+      let taken: LocalSymbol | undefined;
+      for (let s: Scope | undefined = this.scope; s && !taken; s = s.boundary?.kind === 'class' ? undefined : s.parent) taken = s.vars.get(name);
+      // A pattern variable can't take a local's name (#72); two patterns' variables are told apart by flow, which these scopes don't model.
+      if (taken && (kind !== 'pattern' || taken.kind !== 'pattern')) {
+        // javac points at the name, which ends a pattern (`String s`).
+        const at = kind !== 'pattern' ? range
+          : { start: range.end - name.length, end: range.end, line: range.endLine, column: range.endColumn - name.length + 1, endLine: range.endLine, endColumn: range.endColumn };
+        this.error(`variable ${name} is already defined in ${this.placeName()}`, at);
+      }
       this.scope.vars.set(name, local);
     }
     this.ctx.locals.push(local);
     return local;
+  }
+
+  /** The `(` before a parenthesized expression, where javac points at a switch's selector (#72); the expression's own range if none. */
+  private openParenBefore(r: A.Range): A.Range {
+    const open = this.source.lastIndexOf('(', r.start);
+    if (open < 0 || /\n/.test(this.source.slice(open, r.start)) || this.source.slice(open + 1, r.start).trim() !== '') return r;
+    const column = r.column - (r.start - open);
+    return { start: open, end: open + 1, line: r.line, column, endLine: r.line, endColumn: column };
+  }
+
+  /** Where code is, as javac names it in "already defined in …": `method main(String[])`, `constructor Main(int)`. */
+  private placeName(): string {
+    const m = this.ctx.method;
+    if (!m) return 'initializer';
+    const params = m.params.map(p => typeName(p.type)).join(',');
+    return m.isConstructor ? `constructor ${m.owner.name}(${params})` : `method ${m.name}(${params})`;
   }
 
   private inScope<T>(f: () => T): T {
@@ -1154,6 +1301,7 @@ class Binder {
       if (s.type.kind === 'VarType') {
         if (!d.init) this.error("cannot infer type for local variable " + d.name + "\n  (cannot use 'var' on variable without initializer)", d.range);
         if (d.init?.kind === 'ArrayInit') this.error(`cannot infer type for local variable ${d.name}\n  (array initializer needs an explicit target-type)`, d.range);
+        if (d.init?.kind === 'Literal' && d.init.type === 'null') this.error(`cannot infer type for local variable ${d.name}\n  (variable initializer is 'null')`, d.range);
         if (d.init?.kind === 'Lambda' || d.init?.kind === 'MethodRef') {
           this.error(`cannot infer type for local variable ${d.name}\n  (${d.init.kind === 'Lambda' ? 'lambda expression' : 'method reference'} needs an explicit target-type)`, d.range);
           return { local: this.declareLocal(d.name, ERROR, 'local', isFinal, d.range), range: d.range };
@@ -1280,8 +1428,16 @@ class Binder {
       } else if (st.tag === 'class' && st.symbol.kind === 'enum') selectorKind = 'enum';
       else if (isLoose(st) && !patterns) selectorKind = 'number';
       else selectorKind = 'pattern';
+      // javac's checks of a switch (#72): the selector's type, labels of its type, no label twice, and (below) exhaustiveness.
+      const badSelector = st.tag === 'primitive' && ['long', 'float', 'double', 'boolean'].includes(st.name);
+      if (badSelector) this.error(`selector type ${typeName(st)} is not allowed`, this.openParenBefore(selectorNode.range));
+      const seen = new Set<string>();
+      let defaults = 0;
       const caseOf = (label: A.SwitchLabel): { labels: B.BCaseLabel[]; guard?: B.BExpr } => {
         const out: B.BCaseLabel[] = [];
+        if (label.isDefault || label.nullDefault) {
+          if (defaults++ > 0) this.error('duplicate default label', label.range);
+        }
         if (label.isDefault) out.push({ kind: 'default' });
         if (label.isNull) out.push({ kind: 'null' });
         if (label.nullDefault) out.push({ kind: 'default' });
@@ -1291,13 +1447,23 @@ class Binder {
             const name = c.parts[c.parts.length - 1].name;
             const enumCls = (st as ClassT).symbol;
             if (enumCls.fields.get(name)?.enumOrdinal === undefined) this.error(`an enum switch case label must be the unqualified name of an enumeration constant`, c.range);
+            else if (seen.has(`enum:${name}`)) this.error('duplicate case label', label.range);
+            seen.add(`enum:${name}`);
             out.push({ kind: 'enum', name });
             continue;
           }
           const bound = this.expr(c, selectorKind === 'number' && unboxed ? unboxed : undefined);
           const value = constantOf(bound);
           if (value === undefined) this.error('constant expression required', c.range);
-          else out.push({ kind: 'constant', value });
+          else {
+            if (!badSelector && !isLoose(st) && !isLoose(bound.type) && !assignable(bound.type, st, this.b, typeof value === 'boolean' ? undefined : value)) {
+              this.error(`incompatible types: ${typeName(bound.type)} cannot be converted to ${typeName(st)}`, c.range);
+            } else if (seen.has(`${typeof value}:${value}`)) {
+              this.error('duplicate case label', label.range);
+            }
+            seen.add(`${typeof value}:${value}`);
+            out.push({ kind: 'constant', value });
+          }
         }
         for (const p of label.patterns) {
           if (p.kind === 'RecordPattern') {
@@ -1338,6 +1504,15 @@ class Binder {
           const { labels: ls, guard } = caseOf(g.label);
           cases.push({ labels: ls, guard, body: g.statements.map(st2 => this.stmt(st2)), range: g.range });
         }
+      }
+      // A switch expression, or a switch with patterns or an Object-like selector, must cover every value (JLS §14.11.1.1).
+      const enhanced = patterns || selectorKind === 'pattern';
+      if ((isExpression || enhanced) && !badSelector && !isLoose(st) && !labels.some(l => l.isDefault || l.nullDefault)) {
+        const enumNames = st.tag === 'class' && st.symbol.kind === 'enum' ? [...st.symbol.fields.values()].filter(f => f.enumOrdinal !== undefined).map(f => f.name) : undefined;
+        const unconditional = cases.some(c => !c.guard && c.labels.some(l => l.kind === 'pattern' && isSubtype(erasure(st), erasure(l.type), this.b)));
+        const sealed = st.tag === 'class' && (st.symbol.modifiers.has('sealed') || ((st.symbol.decl as A.ClassDecl | undefined)?.permits?.length ?? 0) > 0);
+        const covered = unconditional || sealed || (enumNames !== undefined && enumNames.every(n => seen.has(`enum:${n}`)));
+        if (!covered) this.error(`the switch ${isExpression ? 'expression' : 'statement'} does not cover all possible input values`, range);
       }
       // A switch expression's type: its values', as for ?: (yields are typed when bound).
       let type: JType = VOID;
@@ -2962,6 +3137,16 @@ interface CallOptions {
   typeArgs?: JType[];
   /** `new C<>(…)` without a target type: infer C's type arguments from the constructor's arguments. */
   diamond?: boolean;
+}
+
+/** How javac names a class's kind in messages: `class Main`, `enum Color`, `interface Shape`. */
+function kindWord(sym: ClassSymbol): string {
+  return sym.kind === 'annotation' ? '@interface' : sym.kind;
+}
+
+/** Whether two methods (or constructors) have the same parameter types: one would be "already defined". */
+function sameParams(a: MethodSymbol, b: MethodSymbol): boolean {
+  return a.arity === b.arity && a.params.every((p, i) => sameType(p.type, b.params[i].type));
 }
 
 /** A parameter's erased type by simple name, as reflection names it: `int`, `List`, `Object[]`. */

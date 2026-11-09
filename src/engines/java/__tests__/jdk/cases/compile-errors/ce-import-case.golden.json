@@ -1,0 +1,8 @@
+{
+  "stdout": "",
+  "stderr": "Main.java:1: error: cannot find symbol\nimport java.util.scanner;\n                ^\n  symbol:   class scanner\n  location: package java.util\n1 error\nerror: compilation failed\n",
+  "exitCode": 1,
+  "exception": null,
+  "compileError": "Main.java:1: error: cannot find symbol\nimport java.util.scanner;\n                ^\n  symbol:   class scanner\n  location: package java.util\n1 error",
+  "sourceSha256": "71a73cf3d4655dabfc68620982df217413a25c5f3afc04183a28cbc7ccbaf1d6"
+}

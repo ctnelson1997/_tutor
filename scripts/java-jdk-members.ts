@@ -1,8 +1,9 @@
 /**
  * Regenerate src/engines/java/semantic/jdkMembers.ts: the names of the public
  * methods (inherited ones included) of every library class the binder's stubs
- * declare, and each method's overloads by their erased parameter types (#71),
- * read from real JDK 21 by reflection.
+ * declare, and each method's overloads by their erased parameter types (#71);
+ * every package the JDK exports, and the public classes of the packages
+ * courses import from (#72); read from real JDK 21 by reflection.
  *
  *   npx tsx scripts/java-jdk-members.ts
  *
@@ -37,12 +38,36 @@ const visit = (sym: ClassSymbol, binary: string) => {
 };
 for (const [pkg, classes] of library().packages) for (const sym of classes.values()) if (!sym.outer) visit(sym, `${pkg}.${sym.name}`);
 
+/** Packages whose classes an import is checked against (#72): an import of a class not in them is javac's "cannot find symbol". */
+const CHECKED_PACKAGES = ['java.lang', 'java.util', 'java.util.function', 'java.util.stream', 'java.util.regex', 'java.io', 'java.math', 'java.text', 'java.time', 'java.nio.file'];
+
 const program = `
 import java.lang.reflect.Method;
+import java.lang.module.ModuleReference;
+import java.lang.module.ModuleFinder;
 import java.util.TreeSet;
 
 public class Members {
-  public static void main(String[] args) {
+  public static void main(String[] args) throws Exception {
+    // Every package the JDK's modules export, and the public top-level classes of the checked ones.
+    TreeSet<String> packages = new TreeSet<>();
+    TreeSet<String> checked = new TreeSet<>(java.util.List.of(${CHECKED_PACKAGES.map(p => `"${p}"`).join(', ')}));
+    java.util.Map<String, TreeSet<String>> classes = new java.util.TreeMap<>();
+    for (ModuleReference ref : ModuleFinder.ofSystem().findAll()) {
+      for (var e : ref.descriptor().exports()) if (!e.isQualified()) packages.add(e.source());
+      try (var reader = ref.open()) {
+        for (String r : (Iterable<String>) reader.list()::iterator) {
+          if (!r.endsWith(".class") || r.contains("$") || r.endsWith("module-info.class")) continue;
+          String cls = r.substring(0, r.length() - 6).replace('/', '.');
+          String pkg = cls.substring(0, cls.lastIndexOf('.'));
+          if (!checked.contains(pkg)) continue;
+          Class<?> c = Class.forName(cls, false, ClassLoader.getSystemClassLoader());
+          if (java.lang.reflect.Modifier.isPublic(c.getModifiers())) classes.computeIfAbsent(pkg, k -> new TreeSet<>()).add(c.getSimpleName());
+        }
+      }
+    }
+    System.out.println("#packages\\t" + String.join(" ", packages));
+    for (var e : classes.entrySet()) System.out.println("#classes\\t" + e.getKey() + "\\t" + String.join(" ", e.getValue()));
     for (String name : args) {
       Class<?> c;
       try {
@@ -81,7 +106,10 @@ try {
     process.exit(1);
   }
   if (run.stderr.trim()) console.warn(run.stderr.trim());
-  const entries = run.stdout.trim().split(/\r?\n/).map(line => line.split('\t'));
+  const lines = run.stdout.trim().split(/\r?\n/).map(line => line.split('\t'));
+  const packageList = lines.find(l => l[0] === '#packages')![1];
+  const classLists = lines.filter(l => l[0] === '#classes').map(([, pkg, names]) => `  '${pkg}': '${names}',`).join('\n');
+  const entries = lines.filter(l => !l[0].startsWith('#'));
   const body = entries.map(([name, methods]) => `  '${name}': '${methods}',`).join('\n');
   const signatures = entries.map(([name, , overloads]) => `  '${name}': '${overloads}',`).join('\n');
   writeFileSync(OUT, `/**
@@ -101,6 +129,14 @@ ${body}
  */
 export const JDK_OVERLOADS: Record<string, string> = {
 ${signatures}
+};
+
+/** Every package the JDK exports (#72): an import from any other is javac's "package … does not exist". */
+export const JDK_PACKAGES = '${packageList}';
+
+/** The public classes of the packages courses import from (#72): an import of another class from one is javac's "cannot find symbol". */
+export const JDK_CLASSES: Record<string, string> = {
+${classLists}
 };
 `);
   console.log(`${entries.length} classes written to ${OUT}`);

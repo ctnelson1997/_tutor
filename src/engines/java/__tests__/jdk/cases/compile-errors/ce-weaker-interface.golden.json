@@ -1,0 +1,8 @@
+{
+  "stdout": "",
+  "stderr": "Main.java:3: error: area() in Sq cannot implement area() in Shape\n    static class Sq implements Shape { double area() { return 1; } }\n                                              ^\n  attempting to assign weaker access privileges; was public\n1 error\nerror: compilation failed\n",
+  "exitCode": 1,
+  "exception": null,
+  "compileError": "Main.java:3: error: area() in Sq cannot implement area() in Shape\n    static class Sq implements Shape { double area() { return 1; } }\n                                              ^\n  attempting to assign weaker access privileges; was public\n1 error",
+  "sourceSha256": "0a304f1b246177d822f52b7fd269f946d0e2bc9409a434eac54a38e41002d759"
+}

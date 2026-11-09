@@ -318,7 +318,7 @@ function essentialTokens(images: string[]): string[] {
   return out;
 }
 
-const withoutRanges = (unit: A.CompilationUnit) => JSON.stringify(unit, (k, v) => (k === 'range' || k === 'nameRange' ? undefined : v));
+const withoutRanges = (unit: A.CompilationUnit) => JSON.stringify(unit, (k, v) => (k === 'range' || k === 'nameRange' || k === 'partRanges' ? undefined : v));
 
 function unsupportedIn(x: unknown, found: string[] = []): string[] {
   if (x && typeof x === 'object') {

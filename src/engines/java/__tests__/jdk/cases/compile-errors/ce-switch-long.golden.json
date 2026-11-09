@@ -1,0 +1,8 @@
+{
+  "stdout": "",
+  "stderr": "Main.java:4: error: selector type long is not allowed\n        switch (n) { case 1: System.out.println(\"one\"); }\n               ^\n1 error\nerror: compilation failed\n",
+  "exitCode": 1,
+  "exception": null,
+  "compileError": "Main.java:4: error: selector type long is not allowed\n        switch (n) { case 1: System.out.println(\"one\"); }\n               ^\n1 error",
+  "sourceSha256": "f54898e91812d2ac4e611b2972ce331e40eb9aeb508113142a15be9284432134"
+}

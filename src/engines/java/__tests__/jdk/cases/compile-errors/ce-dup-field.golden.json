@@ -1,0 +1,8 @@
+{
+  "stdout": "",
+  "stderr": "Main.java:3: error: variable value is already defined in class Main\n    static String value;\n                  ^\n1 error\nerror: compilation failed\n",
+  "exitCode": 1,
+  "exception": null,
+  "compileError": "Main.java:3: error: variable value is already defined in class Main\n    static String value;\n                  ^\n1 error",
+  "sourceSha256": "63af4462453104153a0791ea20d56fe1eac216b596265b8b031eac82a1029096"
+}

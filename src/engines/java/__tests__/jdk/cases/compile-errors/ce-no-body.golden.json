@@ -1,0 +1,8 @@
+{
+  "stdout": "",
+  "stderr": "Main.java:2: error: missing method body, or declare abstract\n    void run();\n         ^\n1 error\nerror: compilation failed\n",
+  "exitCode": 1,
+  "exception": null,
+  "compileError": "Main.java:2: error: missing method body, or declare abstract\n    void run();\n         ^\n1 error",
+  "sourceSha256": "e8620bf68b5efcb28cc299a83a44d17950195cfd1676ff586973f9da6667eaa1"
+}

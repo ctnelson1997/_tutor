@@ -1,0 +1,8 @@
+{
+  "stdout": "",
+  "stderr": "Main.java:4: error: duplicate default label\n        switch (n) { default: break; case 2: break; default: break; }\n                                                    ^\n1 error\nerror: compilation failed\n",
+  "exitCode": 1,
+  "exception": null,
+  "compileError": "Main.java:4: error: duplicate default label\n        switch (n) { default: break; case 2: break; default: break; }\n                                                    ^\n1 error",
+  "sourceSha256": "be4f5c6f3c488e22348f069ba41f33702fb124eb9d1747c466e83cad47fd2126"
+}

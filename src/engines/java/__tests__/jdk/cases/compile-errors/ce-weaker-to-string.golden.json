@@ -1,0 +1,8 @@
+{
+  "stdout": "",
+  "stderr": "Main.java:2: error: toString() in P cannot override toString() in Object\n    static class P { String toString() { return \"p\"; } }\n                            ^\n  attempting to assign weaker access privileges; was public\n1 error\nerror: compilation failed\n",
+  "exitCode": 1,
+  "exception": null,
+  "compileError": "Main.java:2: error: toString() in P cannot override toString() in Object\n    static class P { String toString() { return \"p\"; } }\n                            ^\n  attempting to assign weaker access privileges; was public\n1 error",
+  "sourceSha256": "1caf6f9efa5f223cd3e9595a3ccf22d07fa5aca23e688cb91579e9d5e25c6ad1"
+}
