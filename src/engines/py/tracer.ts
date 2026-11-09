@@ -774,14 +774,11 @@ def _int_value(val):
         text = '<int with %d digits>' % _digits(val)
     return {"type": "number", "value": text, "display": text}
 
-def _serialize_value(val):
-    # A value as the snapshot shows it: a primitive inline, a heap object as a
-    # reference to it.
-    global _work
-    _work += _VALUE_WORK
-    # Values carry the text Python writes for them (display, #37): None, True,
-    # False, a float's repr (5.0, -0.0, 1e+16, inf), an int past what JavaScript
-    # holds exactly, a complex number's repr.
+def _primitive_value(val):
+    # A value of exactly int, float, str, bool, complex or None as the
+    # snapshot shows it, with the text Python writes for it (display, #37):
+    # None, True, False, a float's repr (5.0, -0.0, 1e+16, inf), an int past
+    # what JavaScript holds exactly, a complex number's repr.
     if val is None:
         return {"type": "null", "value": None, "display": "None"}
     if val is True:
@@ -800,9 +797,19 @@ def _serialize_value(val):
         return {"type": "number", "value": val, "display": text}
     if t is str:
         return {"type": "string", "value": val}
-    if t is complex:
-        text = complex.__repr__(val)
-        return {"type": "number", "value": text, "display": text}
+    text = complex.__repr__(val)
+    return {"type": "number", "value": text, "display": text}
+
+def _serialize_value(val):
+    # A value as the snapshot shows it: a primitive inline, with the object it
+    # is (objectId, #83: its heap id, for reference mode), a heap object as a
+    # reference to it.
+    global _work
+    _work += _VALUE_WORK
+    if type(val) in _PRIMITIVE_TYPES:
+        value = _primitive_value(val)
+        value["objectId"] = _get_heap_id(val)
+        return value
     # Heap objects: lists, dicts, tuples, sets, functions, instances, ...
     return {"type": "ref", "heapId": _get_heap_id(val)}
 

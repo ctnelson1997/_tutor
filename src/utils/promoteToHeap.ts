@@ -35,12 +35,16 @@ function formatLabel(prim: PrimitiveValue): string {
  * object" semantics — variables hold references to objects on the heap, even for
  * simple values like integers and strings.
  *
- * Values are deduplicated: if two variables hold the same primitive (e.g. both are
- * the integer 5), they point to the same heap object. This reflects Python's
- * interning behavior for small integers and string literals.
+ * Values are the objects CPython has (#83): a primitive the tracer gave its
+ * identity (`objectId`, its heap id from id()) is drawn as that object, one
+ * card per object, keeping its id from step to step, so two equal values are
+ * one card only when they are one object (a small int, an interned string)
+ * and a variable rebound to an equal value points at another card. A value
+ * without one (an older exported file) is drawn one card per value as Python
+ * writes it.
  */
 export function promoteToHeap(snapshot: ExecutionSnapshot): ExecutionSnapshot {
-  // Map from serialized primitive → heap ID (for deduplication)
+  // Map from object (or, without one, serialized primitive) → heap ID
   const valueToId = new Map<string, string>();
   const newHeapObjects: HeapObject[] = [];
   let nextId = 90000; // high range to avoid collisions with engine-assigned IDs
@@ -50,12 +54,12 @@ export function promoteToHeap(snapshot: ExecutionSnapshot): ExecutionSnapshot {
     if (value.type === 'ref' || value.type === 'empty') return value;
 
     const prim = value as PrimitiveValue;
-    // One object per value as Python writes it: 5 and 5.0 are two objects.
-    const key = `${prim.type}:${prim.display ?? prim.value}`;
+    // The object it is; without one, one object per value as Python writes it: 5 and 5.0 are two objects.
+    const key = prim.objectId !== undefined ? `object:${prim.objectId}` : `${prim.type}:${prim.display ?? prim.value}`;
     let id = valueToId.get(key);
 
     if (!id) {
-      id = String(nextId++);
+      id = prim.objectId ?? String(nextId++);
       valueToId.set(key, id);
       newHeapObjects.push({
         id,

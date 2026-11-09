@@ -4,8 +4,8 @@ function sameValue(a: RuntimeValue | undefined, b: RuntimeValue | undefined): bo
   if (a === b) return true;
   if (!a || !b || a.type !== b.type) return false;
   if (a.type === 'ref') return b.type === 'ref' && a.heapId === b.heapId;
-  // (Object.is: a NaN is the same as a NaN, -0 isn't 0.)
-  return b.type !== 'ref' && Object.is(a.value, b.value) && a.display === b.display;
+  // (Object.is: a NaN is the same as a NaN, -0 isn't 0. An equal value that is another object isn't the same, #83.)
+  return b.type !== 'ref' && Object.is(a.value, b.value) && a.display === b.display && a.objectId === b.objectId;
 }
 
 /**

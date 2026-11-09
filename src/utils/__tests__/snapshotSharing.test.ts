@@ -65,6 +65,13 @@ describe('shareSnapshots', () => {
     expect(c.heap[1]).toBe(a.heap[0]);
   });
 
+  it('treats an equal value that is another object as a change (#83)', () => {
+    const at = (objectId: string): ExecutionSnapshot => ({ step: 0, line: 1, callStack: [{ name: '<module>', variables: [{ name: 'x', value: { type: 'number', value: 1000, objectId } }] }], heap: [], stdout: [] });
+    const [first, second, third] = shareSnapshots([at('7'), at('7'), at('8')]);
+    expect(second.callStack[0]).toBe(first.callStack[0]);
+    expect(third.callStack[0]).not.toBe(first.callStack[0]);
+  });
+
   it('treats a different display text, label or ref as a change', () => {
     const withDisplay = (display: string): ExecutionSnapshot => ({
       ...snap(0, 1, []),

@@ -136,7 +136,7 @@ describe('classes', () => {
     }
     const fav = drawn(all.at(-1)!, 'Color.GREEN');
     expect(fav.objectType).toBe('object');
-    expect(fav.properties).toEqual([{ key: 'value', value: { type: 'number', value: 2 } }]);
+    expect(fav.properties).toEqual([{ key: 'value', value: { type: 'number', value: 2, objectId: expect.any(String) } }]);
   });
 });
 

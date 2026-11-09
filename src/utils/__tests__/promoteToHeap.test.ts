@@ -61,6 +61,17 @@ describe('promoteToHeap (Python reference mode)', () => {
     expect(list.properties[0].value).toEqual(byName.five);
   });
 
+  it('draws each object CPython has as one card, by its identity, keeping its id (#83)', () => {
+    const big = (objectId: string): PrimitiveValue => ({ type: 'number', value: 1000, objectId });
+    const { object, byName } = promoted({ a: big('7'), b: big('8'), c: big('7'), d: { type: 'number', value: 1000 } });
+    // Two equal 1000s computed apart are two objects; the same object is one card, whose id is the object's.
+    expect([object('a').id, object('b').id, object('c').id]).toEqual(['7', '8', '7']);
+    expect(byName.a).toEqual(byName.c);
+    expect(object('a').label).toBe('1000');
+    // A value without its identity (an older exported file) is one card per value as written.
+    expect(object('d').id).toBe('90000');
+  });
+
   it('leaves a "… n more" marker alone: it is no value (#81)', () => {
     const snapshot = snapshotOf({});
     const more: PrimitiveValue = { type: 'empty', value: null, display: '… 50 more (150 in all)' };
