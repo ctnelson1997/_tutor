@@ -53,6 +53,12 @@ export interface StdlibContext {
    * and thenComparing(Function) can be told apart when the program runs.
    */
   functionShape?(value: JavaValue): { name: string; arity: number } | undefined;
+  /**
+   * Whether an array whose elements are of `elementType` can hold `value`
+   * (#67): the class of a value it can't (what ArrayStoreException names,
+   * `java.lang.Integer`), else undefined.
+   */
+  storeCheck?(value: JavaValue, elementType: string): string | undefined;
 }
 
 /**

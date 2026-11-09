@@ -368,6 +368,7 @@ export class Evaluator {
       binaryName: className => this.binaryName(className),
       stringify: value => this.stringify(value),
       functionShape: value => this.functionShape(value),
+      storeCheck: (value, elementType) => this.unstorable(value, elementType),
     };
   }
 
@@ -1850,7 +1851,46 @@ export class Evaluator {
 
   private elementRef(array: JavaValue, index: JavaValue, e: B.BArrayElement): Reference {
     const component = e.array.type.tag === 'array' ? runtimeTypeName(e.array.type.component) : undefined;
-    return arrayElementReference(this.heap, array, javaValueToNumber(index), this.text(e.array), this.line(e), component);
+    const ref = arrayElementReference(this.heap, array, javaValueToNumber(index), this.text(e.array), this.line(e), component);
+    // Arrays are covariant: a String[] seen as an Object[] still holds only strings (#67).
+    const set = ref.set;
+    ref.set = value => {
+      // After the null and bounds checks, which set() makes with its own messages, as the JVM orders them.
+      const arr = array.kind === 'arrayRef' ? this.heap.get(array.heapId) : undefined;
+      const i = javaValueToNumber(index);
+      if (arr && isJavaArray(arr) && Number.isInteger(i) && i >= 0 && i < arr.elements.length) {
+        const refused = this.unstorable(value, arr.elementType);
+        if (refused !== undefined) throw new JavaRuntimeError('ArrayStoreException', refused, this.line(e));
+      }
+      return set(value);
+    };
+    return ref;
+  }
+
+  /**
+   * The class Java's ArrayStoreException names when an array of this
+   * element type can't hold the value (#67), else undefined. Checked where
+   * JavaTutor knows both types for certain: an element type of the
+   * program's classes, String, a box or an array, or a value that is a
+   * string, a box or an array; anything else is let through.
+   */
+  private unstorable(value: JavaValue, elementType: string): string | undefined {
+    if (value.kind === 'null' || elementType === 'Object' || elementType in BOXES) return undefined;
+    if (value.kind === 'objectRef' && (this.lambdaOf(value) || isBuiltinObject(this.heap.get(value.heapId)))) return undefined;
+    const certain = this.byName.has(elementType) || elementType === 'String' || Object.values(BOXES).includes(elementType)
+      || elementType.endsWith('[]') || value.kind !== 'objectRef';
+    if (!certain) return undefined;
+    switch (value.kind) {
+      case 'string': return isStringType(elementType) ? undefined : 'java.lang.String';
+      case 'primitive': return isBoxedInstanceOf(value.javaType, elementType) ? undefined : `java.lang.${BOXES[value.javaType]}`;
+      case 'arrayRef': {
+        const arr = this.heap.get(value.heapId);
+        if (!arr || !isJavaArray(arr)) return undefined;
+        const fits = elementType.endsWith('[]') ? this.arrayElementAssignable(arr.elementType, elementType.slice(0, -2)) : ['Cloneable', 'Serializable'].includes(elementType);
+        return fits ? undefined : arrayClassName(arr.elementType, name => this.javaClassName(name));
+      }
+      case 'objectRef': return this.isSubclass(value.className, elementType) ? undefined : this.javaClassName(value.className);
+    }
   }
 
   private arrayLength(array: JavaValue, e: B.BArrayLength): JavaValue {

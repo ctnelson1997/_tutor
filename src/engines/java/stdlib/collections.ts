@@ -483,7 +483,14 @@ function listGet(c: Coll, i: number): JavaValue {
 }
 
 function listSet(c: Coll, i: number, v: JavaValue): void {
-  if (c.cls !== 'SubList') { data(c)[i] = v; return; }
+  if (c.cls !== 'SubList') {
+    // Arrays.asList writes through to its array, which holds only its element type (#67).
+    const array = backingArray(c.ref, c.ctx)!;
+    const refused = c.ctx.storeCheck?.(v, array.elementType);
+    if (refused !== undefined) throw new StdlibError(`ArrayStoreException: ${refused}`);
+    array.elements[i] = v;
+    return;
+  }
   checkSubList(c);
   listSet(parentOf(c), fieldInt(c.obj, '__offset__') + i, v);
 }

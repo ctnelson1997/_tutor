@@ -38,6 +38,7 @@ export const EXCEPTION_SUPER: Record<string, string> = {
   IndexOutOfBoundsException: 'RuntimeException',
   ArrayIndexOutOfBoundsException: 'IndexOutOfBoundsException',
   StringIndexOutOfBoundsException: 'IndexOutOfBoundsException',
+  ArrayStoreException: 'RuntimeException',
   ArithmeticException: 'RuntimeException',
   ClassCastException: 'RuntimeException',
   UnsupportedOperationException: 'RuntimeException',

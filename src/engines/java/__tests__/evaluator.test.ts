@@ -360,3 +360,30 @@ public class Main {
     expect(result.stdout).toBe("1 4\nclass Main$S cannot be cast to class java.lang.Comparable (Main$S is in unnamed module of loader 'app'; java.lang.Comparable is in module java.base of loader 'bootstrap')");
   });
 });
+
+describe('arrays are covariant, and check their stores (#67)', () => {
+  it("throws ArrayStoreException naming the value's class, after the null and bounds checks", () => {
+    const result = run(`public class Main {
+  static class Animal {}
+  static class Dog extends Animal {}
+  static class Cat extends Animal {}
+  public static void main(String[] args) {
+    String[] words = new String[2];
+    Object[] objs = words;
+    objs[0] = "fine";
+    try { objs[1] = 42; } catch (ArrayStoreException e) { System.out.println(e); }
+    Animal[] pets = new Dog[1];
+    try { pets[0] = new Cat(); } catch (ArrayStoreException e) { System.out.println(e.getMessage()); }
+    pets[0] = new Dog();
+    Object[][] grid = new Integer[2][2];
+    try { grid[0] = new String[1]; } catch (ArrayStoreException e) { System.out.println(e.getMessage()); }
+    try { objs[5] = 1; } catch (ArrayIndexOutOfBoundsException e) { System.out.println(e.getMessage()); }
+    Object[] any = new Object[1];
+    any[0] = new int[0];
+    System.out.println(words[0] + " " + words[1] + " " + (pets[0] instanceof Dog));
+  }
+}`);
+    expect(result.error).toBeUndefined();
+    expect(result.stdout).toBe('java.lang.ArrayStoreException: java.lang.Integer\nMain$Cat\n[Ljava.lang.String;\nIndex 5 out of bounds for length 2\nfine null true');
+  });
+});

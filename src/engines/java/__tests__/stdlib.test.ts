@@ -200,6 +200,33 @@ describe('callStaticMethod — Arrays / Objects / Collections', () => {
     const copy = callStaticMethod('Arrays', 'copyOf', [a, javaInt(5)], ctx)!;
     expect(javaValueToString(callStaticMethod('Arrays', 'toString', [copy], ctx)!, ctx.heap)).toBe('[1, 2, 3, 0, 0]');
   });
+  it("System.arraycopy and the Arrays range methods check as the JDK does, never growing an array (#67, JDK 21's messages)", () => {
+    const ctx = makeCtx();
+    const ints = (...n: number[]) => arrRef(ctx, n.map(javaInt), 'int');
+    const length = (a: JavaValue) => (ctx.heap.get((a as { heapId: string }).heapId) as { elements: unknown[] }).elements.length;
+    const copy = (src: JavaValue, sp: number, dest: JavaValue, dp: number, n: number) => () => callStaticMethod('System', 'arraycopy', [src, javaInt(sp), dest, javaInt(dp), javaInt(n)], ctx);
+    const big = ints(0, 0, 0, 0, 0, 0);
+    expect(copy(ints(10, 20, 30), 0, big, 0, 4)).toThrow('ArrayIndexOutOfBoundsException: arraycopy: last source index 4 out of bounds for int[3]');
+    const small = ints(0, 0, 0);
+    expect(copy(ints(1, 2, 3, 4, 5), 0, small, 0, 5)).toThrow('ArrayIndexOutOfBoundsException: arraycopy: last destination index 5 out of bounds for int[3]');
+    expect(length(small)).toBe(3);
+    expect(copy(ints(1, 2, 3), 0, small, -1, 2)).toThrow('arraycopy: destination index -1 out of bounds for int[3]');
+    expect(copy(ints(1, 2, 3), -2, small, 0, 1)).toThrow('arraycopy: source index -2 out of bounds for int[3]');
+    expect(copy(ints(1, 2, 3), 0, small, 0, -1)).toThrow('arraycopy: length -1 is negative');
+    expect(copy(javaNull(), 0, small, 0, 1)).toThrow(/^NullPointerException$/);
+    expect(copy(javaString('x'), 0, small, 0, 1)).toThrow('ArrayStoreException: arraycopy: source type java.lang.String is not an array');
+    expect(copy(ints(1), 0, arrRef(ctx, [javaInt(0)], 'long'), 0, 1)).toThrow('arraycopy: type mismatch: can not copy int[] into long[]');
+    expect(copy(arrRef(ctx, [javaNull()]), 0, small, 0, 1)).toThrow('arraycopy: type mismatch: can not copy object array[] into int[]');
+    const fill = (a: JavaValue, from: number, to: number) => () => callStaticMethod('Arrays', 'fill', [a, javaInt(from), javaInt(to), javaInt(7)], ctx);
+    expect(fill(ints(0, 0, 0, 0, 0), 0, 8)).toThrow('ArrayIndexOutOfBoundsException: Array index out of range: 8');
+    expect(fill(ints(0, 0, 0, 0, 0), 3, 1)).toThrow('IllegalArgumentException: fromIndex(3) > toIndex(1)');
+    expect(fill(ints(0, 0, 0, 0, 0), -1, 2)).toThrow('ArrayIndexOutOfBoundsException: Array index out of range: -1');
+    expect(() => callStaticMethod('Arrays', 'sort', [ints(5, 4, 3, 2, 1), javaInt(2), javaInt(9)], ctx)).toThrow('Array index out of range: 9');
+    expect(() => callStaticMethod('Arrays', 'copyOfRange', [ints(1, 2, 3, 4, 5), javaInt(4), javaInt(2)], ctx)).toThrow('IllegalArgumentException: 4 > 2');
+    expect(() => callStaticMethod('Arrays', 'copyOfRange', [ints(1, 2, 3), javaInt(4), javaInt(6)], ctx)).toThrow('arraycopy: length -1 is negative');
+    expect(() => callStaticMethod('Arrays', 'copyOf', [ints(1, 2), javaInt(-1)], ctx)).toThrow('NegativeArraySizeException: -1');
+    expect(javaValueToString(callStaticMethod('Arrays', 'toString', [callStaticMethod('Arrays', 'copyOfRange', [ints(1, 2, 3), javaInt(1), javaInt(6)], ctx)!], ctx)!, ctx.heap)).toBe('[2, 3, 0, 0, 0]');
+  });
   it('Objects.equals / hash / requireNonNull', () => {
     const ctx = makeCtx();
     expect(bool(callStaticMethod('Objects', 'equals', [javaInt(1), javaInt(1)], ctx))).toBe(true);
