@@ -38,7 +38,7 @@ const shown = (v: RuntimeValue | undefined) => (v === undefined ? undefined : v.
 describe('comprehension frames', () => {
   it('gives a module-level list comprehension a frame with its variable, one step per iteration, and its list as return value', () => {
     const steps = run('x = "outer"\nsquares = [x * x for x in range(3)]\nprint(x, squares)\n');
-    const comp = steps.filter(s => names(s).join('>') === '<module>>list comprehension');
+    const comp = steps.filter(s => names(s).join('>') === 'Global frame>list comprehension');
     expect(comp.map(s => shown(vars(top(s)).x))).toEqual([0, 1, 2, undefined]);
     const returned = vars(top(comp[comp.length - 1]))['return ↵'];
     expect(returned?.type).toBe('ref');
@@ -62,7 +62,7 @@ describe('comprehension frames', () => {
 
   it("shows a call made inside a comprehension in the callee's own frame, with its return value", () => {
     const steps = run('def sq(n):\n    return n * n\n\nvals = [sq(i) for i in range(2)]\n');
-    const inside = steps.filter(s => names(s).join('>') === '<module>>list comprehension>sq');
+    const inside = steps.filter(s => names(s).join('>') === 'Global frame>list comprehension>sq');
     expect(inside.length).toBeGreaterThan(0);
     expect(inside.map(s => shown(vars(top(s)).n))).toContain(1);
     expect(inside.map(s => shown(vars(top(s))['return ↵'])).filter(v => v !== undefined)).toEqual([0, 1]);

@@ -515,7 +515,7 @@ describe.skipIf(!PYTHON_AVAILABLE)('Python tracer: runs that end early', () => {
     });
     const last = r.snapshots!.at(-1)!;
     expect(last.line).toBe(2);
-    expect(last.callStack.map(f => f.name)).toEqual(['<module>', 'divide']);
+    expect(last.callStack.map(f => f.name)).toEqual(['Global frame', 'divide']);
   });
 
   it("doesn't show a 'return None' step for a frame an exception leaves", () => {

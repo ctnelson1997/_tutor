@@ -75,7 +75,7 @@ _MON_TOOL = _mon.OPTIMIZER_ID
 _last_return = [None, None]   # the id of the frame of the last 'return' event, and the event
 
 def _mark_last_return(flag):
-    if _last_return[0] == id(sys._getframe(2)):
+    if _last_return[0] == id(_real_getframe(2)):
         _last_return[1][flag] = True
     _last_return[0] = None
 
@@ -258,6 +258,30 @@ _g['__file__'] = 'main.py'
 _g['__cached__'] = None
 sys.modules['__main__'] = _main
 sys.argv = ['main.py']
+# The program's module frame is the outermost, as python main.py has it: the
+# recorder's and Pyodide's frames below it are neither in a stack the program
+# prints (traceback.print_stack()) nor reachable through sys._getframe.
+_real_walk_stack = traceback.walk_stack
+_real_getframe = sys._getframe
+
+def _walk_program_stack(f):
+    if f is None:
+        yield from _real_walk_stack(f)
+        return
+    while f is not None and f.f_code.co_filename != _RECORDER_FILE:
+        yield f, f.f_lineno
+        f = f.f_back
+
+def _getframe(depth=0, /):
+    f = _real_getframe(1)
+    for _ in range(max(depth, 0)):
+        f = f.f_back
+        if f is None or f.f_code.co_filename == _RECORDER_FILE:
+            raise ValueError('call stack is not deep enough')
+    return f
+
+traceback.walk_stack = _walk_program_stack
+sys._getframe = _getframe
 with open('main.py', 'w', encoding='utf-8') as _f:
     _f.write(__src)
 linecache.cache['main.py'] = (len(__src), None, __src.splitlines(True), 'main.py')
@@ -272,7 +296,7 @@ except SyntaxError as ex:
     _compile_error = {'class': type(ex).__name__, 'msg': ex.msg, 'line': ex.lineno, 'offset': ex.offset,
                       'text': ''.join(traceback.format_exception_only(type(ex), ex))}
 if _compile_error is None:
-    _base = _depth(sys._getframe())
+    _base = _depth(_real_getframe())
     sys.getrecursionlimit = _getrecursionlimit
     sys.setrecursionlimit = _setrecursionlimit
     _real_setlimit(_limit + _base + (_HEADROOM if __traced else 0))

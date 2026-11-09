@@ -381,15 +381,26 @@ function checkTraceback(golden: PyGolden, reply: WorkerMessage): string[] {
 // ── Steps against the reference trace ──
 
 /** A class body's bookkeeping, which PyTutor hides. */
-const HIDDEN_CLASS_NAMES = new Set(['__classcell__', '__class__', '__module__', '__qualname__', '__doc__', '__firstlineno__', '__static_attributes__', '__annotations__']);
+const HIDDEN_CLASS_NAMES = new Set(['__classcell__', '__class__', '__module__', '__qualname__', '__doc__', '__firstlineno__', '__static_attributes__', '__annotations__', '__type_params__']);
 /**
  * PyTutor's frame for a list, set or dict comprehension, its own as before
  * 3.12 (#33), where CPython 3.12 runs the comprehension inlined in the frame
  * around it.
  */
 const INLINED_COMPREHENSION = /^(list|set|dict) comprehension$/;
-/** CPython's names for the frames PyTutor names in words. */
-const CPYTHON_FRAME_NAMES: Record<string, string> = { 'generator expression': '<genexpr>' };
+/** CPython's names for the frames PyTutor names in words (the module's is the Global frame, #85). */
+const CPYTHON_FRAME_NAMES: Record<string, string> = { 'generator expression': '<genexpr>', 'Global frame': '<module>' };
+
+/** A PyTutor frame's name as CPython's code names it: a method's (`Dog.__init__`, #85) without its class. */
+export function cpythonFrameName(name: string): string {
+  if (name in CPYTHON_FRAME_NAMES) return CPYTHON_FRAME_NAMES[name];
+  if (name.startsWith('<')) return name;
+  const dot = name.lastIndexOf('.');
+  return dot < 0 ? name : name.slice(dot + 1);
+}
+
+/** The module's frame, as PyTutor names it (or as tests built before #85 do). */
+const isGlobalFrame = (name: string) => name === 'Global frame' || name === '<module>';
 /** The names a frame hands its value back under as it leaves: what it returns, or yields (#80). */
 const RETURN_NAMES = new Set(['return ↵', 'yield ↵']);
 
@@ -474,7 +485,7 @@ function compareSteps(c: PyCase, golden: PyGolden, reply: WorkerMessage): StepCo
     // A comprehension returning its collection: CPython's inlined comprehension has no event for it.
     if (inComprehension && top.variables.some(v => v.name === 'return ↵')) return;
     // A comprehension's iterations are CPython's events in the frame around it.
-    const names = s.callStack.filter(f => !INLINED_COMPREHENSION.test(f.name)).map(f => CPYTHON_FRAME_NAMES[f.name] ?? f.name);
+    const names = s.callStack.filter(f => !INLINED_COMPREHENSION.test(f.name)).map(f => cpythonFrameName(f.name));
     // A step showing `return ↵` is a return event, one showing `yield ↵` a
     // yield; a step with an exception is where it was raised (#80); any other
     // is a call or line event (or the module's return, the last step, a class
@@ -535,7 +546,7 @@ function compareSteps(c: PyCase, golden: PyGolden, reply: WorkerMessage): StepCo
     for (const [name, v] of shown) {
       if (RETURN_NAMES.has(name) || name in (e.locals ?? {})) continue;
       // The recorder leaves the module's dunder names out.
-      if (top.name === '<module>' && /^__\w+__$/.test(name)) continue;
+      if (isGlobalFrame(top.name) && /^__\w+__$/.test(name)) continue;
       const h = v.type === 'ref' ? s.heap.find(x => x.id === v.heapId) : null;
       if (h && /module/.test(h.objectType)) continue;
       if (importedNames.has(name)) continue;
@@ -543,14 +554,14 @@ function compareSteps(c: PyCase, golden: PyGolden, reply: WorkerMessage): StepCo
     }
     // The order: a function's and a class body's as CPython's frame has them,
     // the module's as they first appeared.
-    const expected = top.name === '<module>' && e.stack.length === 1 ? moduleOrder.slice(0, moduleSeen[found]) : Object.keys(e.locals ?? {});
+    const expected = isGlobalFrame(top.name) && e.stack.length === 1 ? moduleOrder.slice(0, moduleSeen[found]) : Object.keys(e.locals ?? {});
     // (A closure's own variables only: its closure variables are apart, #82.)
     const own = new Set((top.variables ?? []).map(v => v.name));
     const both = new Set(expected.filter(name => own.has(name)));
     const shownOrder = [...own].filter(name => both.has(name));
     const expectedOrder = expected.filter(name => both.has(name));
     if (shownOrder.join() !== expectedOrder.join() && misordered.length < 3) misordered.push(`step ${i} ${top.name}: ${shownOrder.join(', ')} (CPython: ${expectedOrder.join(', ')})`);
-    if (handsBackValue(e) && e.value !== undefined && top.name !== '<module>') {
+    if (handsBackValue(e) && e.value !== undefined && !isGlobalFrame(top.name)) {
       const as = e.yield ? 'yield ↵' : 'return ↵';
       const rv = shown.get(as);
       if (!rv) returnDiffs.push(`step ${i} ${top.name}: no ${as} (${e.yield ? 'yields' : 'returns'} ${e.value})`);

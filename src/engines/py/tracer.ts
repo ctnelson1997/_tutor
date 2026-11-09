@@ -240,7 +240,7 @@ def _chain(frame, event, arg, result):
 # docstring or annotations; the warnings module's registry).
 _MODULE_BOOKKEEPING = frozenset({'__name__', '__builtins__', '__doc__', '__annotations__', '__package__', '__spec__', '__loader__', '__file__', '__cached__', '__warningregistry__'})
 # A class body's and a class's own (pythontutor.com hides these too).
-_CLASS_BOOKKEEPING = frozenset({'__module__', '__qualname__', '__dict__', '__weakref__', '__doc__', '__annotations__', '__classcell__', '__firstlineno__', '__static_attributes__'})
+_CLASS_BOOKKEEPING = frozenset({'__module__', '__qualname__', '__dict__', '__weakref__', '__doc__', '__annotations__', '__classcell__', '__firstlineno__', '__static_attributes__', '__type_params__'})
 # A method's implicit cell for super() (and 3.12's for type parameters).
 _FUNCTION_BOOKKEEPING = frozenset({'__class__', '__classdict__'})
 
@@ -653,10 +653,158 @@ _COMP_ARGS = {'.listcomp': '<listcomp>', '.setcomp': '<setcomp>', '.dictcomp': '
 _COMP_FRAMES = frozenset(_COMP_ARGS.values())
 _SCOPE_NAMES = frozenset({'super', '__class__', 'locals', 'vars', 'dir', 'eval', 'exec'})
 
+_COMPREHENSIONS = (_ast.ListComp, _ast.SetComp, _ast.DictComp, _ast.GeneratorExp)
+
+def _bound_names(target):
+    return {n.id for n in _ast.walk(target) if isinstance(n, _ast.Name)}
+
+def _comprehension_reads(comp):
+    # The names a comprehension reads from the scope around it: not its own
+    # targets, nor what its outermost iterable reads (evaluated around it).
+    own = set()
+    for sub in _ast.walk(comp):
+        if isinstance(sub, _COMPREHENSIONS):
+            for g in sub.generators:
+                own |= _bound_names(g.target)
+    skip = comp.generators[0].iter
+    reads = set()
+    stack = [comp]
+    while stack:
+        n = stack.pop()
+        if n is skip:
+            continue
+        if isinstance(n, _ast.Name) and isinstance(n.ctx, _ast.Load):
+            reads.add(n.id)
+        stack.extend(_ast.iter_child_nodes(n))
+    return reads - own
+
+def _function_locals(func):
+    # A function's parameters, and every name it binds itself (not in a
+    # nested scope; not its global or nonlocal names).
+    args = func.args
+    params = {a.arg for a in args.posonlyargs + args.args + args.kwonlyargs}
+    for a in (args.vararg, args.kwarg):
+        if a is not None:
+            params.add(a.arg)
+    bound = set()
+    declared = set()
+    stack = list(func.body) if isinstance(func.body, list) else [func.body]
+    while stack:
+        n = stack.pop()
+        if isinstance(n, (_ast.FunctionDef, _ast.AsyncFunctionDef, _ast.ClassDef)):
+            bound.add(n.name)
+            continue
+        if isinstance(n, _ast.Lambda):
+            continue
+        if isinstance(n, _COMPREHENSIONS):
+            stack.append(n.generators[0].iter)
+            continue
+        if isinstance(n, (_ast.Global, _ast.Nonlocal)):
+            declared |= set(n.names)
+        elif isinstance(n, _ast.Name) and not isinstance(n.ctx, _ast.Load):
+            bound.add(n.id)
+        elif isinstance(n, (_ast.Import, _ast.ImportFrom)):
+            bound |= {(a.asname or a.name).split('.')[0] for a in n.names}
+        elif isinstance(n, _ast.ExceptHandler) and n.name:
+            bound.add(n.name)
+        stack.extend(_ast.iter_child_nodes(n))
+    return params, (bound | params) - declared
+
+def _definitely_binds(st):
+    # The names a statement has bound for certain once it has run.
+    if isinstance(st, (_ast.FunctionDef, _ast.AsyncFunctionDef, _ast.ClassDef)):
+        return {st.name}
+    if isinstance(st, _ast.Assign):
+        return set().union(*(_bound_names(t) for t in st.targets))
+    if isinstance(st, (_ast.AnnAssign, _ast.AugAssign)):
+        return _bound_names(st.target) if getattr(st, 'value', None) is not None else set()
+    if isinstance(st, (_ast.Import, _ast.ImportFrom)):
+        return {(a.asname or a.name).split('.')[0] for a in st.names}
+    if isinstance(st, (_ast.With, _ast.AsyncWith)):
+        return set().union(*(_bound_names(i.optional_vars) for i in st.items if i.optional_vars is not None))
+    return set()
+
+class _InlineScan:
+    # Finds the comprehensions that must stay inlined (#85): one that reads a
+    # local of the function around it that may not be bound yet when it runs
+    # (assigned only after it, or in a branch, or deleted). Run as a function
+    # of its own, it would read the variable as a closure's, and an unbound
+    # one would be NameError ("cannot access free variable"), where CPython
+    # 3.12's inlined comprehension raises UnboundLocalError. A local assigned
+    # in a statement before it, at its level or around it, or a parameter, is
+    # bound.
+
+    def __init__(self):
+        self.inlined = set()
+
+    def function(self, func):
+        params, local_names = _function_locals(func)
+        if isinstance(func, _ast.Lambda):
+            self.expressions(func.body, set(params), local_names)
+        else:
+            self.block(func.body, set(params), local_names)
+
+    def block(self, stmts, definite, local_names):
+        definite = set(definite)
+        for st in stmts:
+            self.statement(st, definite, local_names)
+            definite |= _definitely_binds(st)
+            if isinstance(st, _ast.Delete):
+                definite -= set().union(*(_bound_names(t) for t in st.targets))
+
+    def statement(self, st, definite, local_names):
+        if isinstance(st, (_ast.FunctionDef, _ast.AsyncFunctionDef)):
+            self.expressions(st.decorator_list + st.args.defaults + [d for d in st.args.kw_defaults if d is not None], definite, local_names)
+            self.function(st)
+            return
+        if isinstance(st, _ast.ClassDef):
+            # A class body's names aren't a comprehension's to read.
+            self.expressions(st.decorator_list + st.bases + [k.value for k in st.keywords], definite, local_names)
+            self.block(st.body, set(), None)
+            return
+        for field, value in _ast.iter_fields(st):
+            if field not in ('body', 'orelse', 'finalbody', 'handlers', 'cases'):
+                self.expressions(value, definite, local_names)
+        if isinstance(st, (_ast.For, _ast.AsyncFor)):
+            self.block(st.body, definite | _bound_names(st.target), local_names)
+            self.block(st.orelse, definite, local_names)
+        elif isinstance(st, (_ast.While, _ast.If)):
+            self.block(st.body, definite, local_names)
+            self.block(st.orelse, definite, local_names)
+        elif isinstance(st, (_ast.With, _ast.AsyncWith)):
+            self.block(st.body, definite | _definitely_binds(st), local_names)
+        elif isinstance(st, (_ast.Try, getattr(_ast, 'TryStar', _ast.Try))):
+            self.block(st.body, definite, local_names)
+            for h in st.handlers:
+                self.block(h.body, definite | ({h.name} if h.name else set()), local_names)
+            self.block(st.orelse, definite, local_names)
+            self.block(st.finalbody, definite, local_names)
+        elif isinstance(st, _ast.Match):
+            for case in st.cases:
+                self.block(case.body, definite | _bound_names(case.pattern), local_names)
+
+    def expressions(self, value, definite, local_names):
+        stack = list(value) if isinstance(value, list) else [value]
+        while stack:
+            n = stack.pop()
+            if not isinstance(n, _ast.AST):
+                continue
+            if isinstance(n, _ast.Lambda):
+                self.expressions(n.args.defaults + [d for d in n.args.kw_defaults if d is not None], definite, local_names)
+                self.function(n)
+                continue
+            if isinstance(n, _COMPREHENSIONS) and local_names is not None:
+                if (_comprehension_reads(n) & local_names) - definite:
+                    self.inlined.add(id(n))
+            stack.extend(_ast.iter_child_nodes(n))
+
 class _CompWrapper(_ast.NodeTransformer):
+    def __init__(self, inlined=frozenset()):
+        self._inlined = inlined
+
     def _wrap(self, node, arg):
         self.generic_visit(node)
-        if any(g.is_async for g in node.generators):
+        if any(g.is_async for g in node.generators) or id(node) in self._inlined:
             return node
         for sub in _ast.walk(node):
             if isinstance(sub, (_ast.NamedExpr, _ast.Await, _ast.Yield, _ast.YieldFrom)):
@@ -695,7 +843,9 @@ def _compile_program(source_code):
         with _warnings.catch_warnings():
             _warnings.simplefilter('ignore')
             tree = _ast.parse(source_code, _USER_FILE)
-            return _name_comprehensions(compile(_CompWrapper().visit(tree), _USER_FILE, 'exec', dont_inherit=True))
+            scan = _InlineScan()
+            scan.block(tree.body, set(), None)
+            return _name_comprehensions(compile(_CompWrapper(scan.inlined).visit(tree), _USER_FILE, 'exec', dont_inherit=True))
     except SyntaxError:
         return plain
 
@@ -1699,6 +1849,18 @@ def _capture_snapshot(line, return_value=None, has_return=False, column_range=No
 
 # ── Trace function ──
 
+def _frame_name(code):
+    # A frame as pythontutor.com names it (#85): the module's the Global frame,
+    # a method's by its class too (Dog.__init__ and Animal.__init__ apart), a
+    # nested function's by its own name, a comprehension's in words.
+    name = code.co_name
+    if name == '<module>':
+        return 'Global frame'
+    if name in _COMP_DISPLAY_NAMES:
+        return _COMP_DISPLAY_NAMES[name]
+    qualname = code.co_qualname
+    return qualname.rsplit('<locals>.', 1)[-1] if type(qualname) is str else name
+
 # The value a frame hands back as it leaves: what it returns, or yields (#80).
 _RETURN_NAME = 'return \\u21b5'
 _YIELD_NAME = 'yield \\u21b5'
@@ -1802,7 +1964,7 @@ def _trace_event(frame, event, arg):
             _call_stack[-1]["stale"] = True
         # Each frame is drawn from the frame itself, its variables read as they
         # are at each step (#78, #80): the module's are its globals.
-        frame_info = {"name": _COMP_DISPLAY_NAMES.get(fname, fname), "kind": _frame_kind(code), "frame": frame,
+        frame_info = {"name": _frame_name(code), "kind": _frame_kind(code), "frame": frame,
                       "cells": bool(code.co_cellvars or code.co_freevars), "stale": False,
                       "free": frozenset(code.co_freevars), "comprehension": _is_comprehension(code)}
         if frame_info["kind"] == "class":
@@ -1916,43 +2078,80 @@ def _user_line(e):
 # never the program's.
 _TRACER_FILE = _getframe().f_code.co_filename
 
-def _program_stack(te, e, seen):
-    # A TracebackException's frames as python main.py has them, for e and the
-    # exceptions chained to it: without the tracer's frames or a frame refused
-    # for the recursion limit (it never ran), and with PyTutor's comprehension
-    # frames folded into the frame around them, where CPython 3.12 runs a
-    # comprehension inlined (that frame's line and carets are the
-    # comprehension's).
-    if te is None or e is None or id(e) in seen:
+_walk_tb_full = _traceback._walk_tb_with_full_positions
+_walk_stack = _traceback.walk_stack
+
+def _program_walk_tb(tb):
+    # A traceback's frames as python main.py has them (#40, #85), for the
+    # uncaught exception's and for every traceback the program prints
+    # (traceback.print_exc(), format_exc(), logging.exception()): without the
+    # tracer's frames or a frame refused for the recursion limit (it never
+    # ran), and with PyTutor's comprehension frames folded into the frame
+    # around them, where CPython 3.12 runs a comprehension inlined (that
+    # frame's line and carets are the comprehension's).
+    held = None
+    for f, positions in _walk_tb_full(tb):
+        code = f.f_code
+        if code.co_filename == _TRACER_FILE or f in _refused:
+            continue
+        if code.co_filename == _USER_FILE and _is_comprehension(code):
+            if held is not None and held[0].f_code.co_filename == _USER_FILE:
+                held = (held[0], positions)
+            continue
+        if held is not None:
+            yield held
+        held = (f, positions)
+    if held is not None:
+        yield held
+
+def _program_walk_stack(f):
+    # The frames from f out, as python main.py has them (#85, for
+    # traceback.print_stack(), extract_stack()): a comprehension's folded
+    # into the frame around it, and none below the program's module frame
+    # (the tracer's and Pyodide's).
+    if f is None:
+        yield from _walk_stack(f)
         return
-    seen.add(id(e))
-    frames = [f for f, _ in _traceback.walk_tb(e.__traceback__)]
-    if len(frames) == len(te.stack):
-        kept = []
-        for summary, f in zip(te.stack, frames):
-            code = f.f_code
-            if code.co_filename == _TRACER_FILE or f in _refused:
-                continue
-            if code.co_filename == _USER_FILE and _is_comprehension(code):
-                if kept and kept[-1].filename == _USER_FILE:
-                    outer = kept[-1]
-                    kept[-1] = _traceback.FrameSummary(
-                        outer.filename, summary.lineno, outer.name, lookup_line=False,
-                        end_lineno=summary.end_lineno, colno=summary.colno, end_colno=summary.end_colno)
-                continue
-            kept.append(summary)
-        te.stack = _traceback.StackSummary.from_list(kept)
-    _program_stack(te.__cause__, e.__cause__, seen)
-    _program_stack(te.__context__, e.__context__, seen)
-    for sub_te, sub_e in zip(te.exceptions or (), getattr(e, 'exceptions', None) or ()):
-        _program_stack(sub_te, sub_e, seen)
+    line = None
+    while f is not None:
+        code = f.f_code
+        if code.co_filename == _TRACER_FILE:
+            return
+        if code.co_filename == _USER_FILE and _is_comprehension(code):
+            if line is None:
+                line = f.f_lineno
+        else:
+            yield f, f.f_lineno if line is None else line
+            line = None
+        f = f.f_back
+
+def _program_getframe(depth=0, /):
+    # sys._getframe while the program runs (#85): a comprehension's frame is
+    # part of the frame around it, as CPython 3.12 runs it inlined, and the
+    # program's module frame is the outermost, as python main.py has it.
+    f = _getframe(1)
+    while True:
+        if f is None or f.f_code.co_filename == _TRACER_FILE:
+            raise ValueError('call stack is not deep enough')
+        code = f.f_code
+        if not (code.co_filename == _USER_FILE and _is_comprehension(code)):
+            if depth <= 0:
+                return f
+            depth -= 1
+        f = f.f_back
+
+_program_getframe.__name__ = _program_getframe.__qualname__ = '_getframe'
 
 def _traceback_text(e):
     """What python main.py prints for an uncaught exception: CPython's own
     traceback (chained exceptions, carets, repeated lines folded), of the
     program's frames."""
-    te = _traceback.TracebackException(type(e), e, e.__traceback__, compact=True)
-    _program_stack(te, e, set())
+    saved = _traceback._walk_tb_with_full_positions
+    _traceback._walk_tb_with_full_positions = _program_walk_tb
+    try:
+        te = _traceback.TracebackException(type(e), e, e.__traceback__, compact=True)
+    finally:
+        _traceback._walk_tb_with_full_positions = saved
     return ''.join(te.format()).rstrip(chr(10))
 
 def _compile_error(e, source_code):
@@ -2047,7 +2246,8 @@ def run_traced(source_code, stdin_text=''):
     sys.stdin = sys.__stdin__ = _TutorStdin(stdin_text)
     sys.stdout = sys.__stdout__ = _output_stream('stdout', 'strict')
     sys.stderr = sys.__stderr__ = _output_stream('stderr', 'backslashreplace')
-    saved_sys_functions = (sys.getrecursionlimit, sys.setrecursionlimit, sys.settrace, sys.gettrace)
+    saved_sys_functions = (sys.getrecursionlimit, sys.setrecursionlimit, sys.settrace, sys.gettrace, sys._getframe,
+                           _traceback._walk_tb_with_full_positions, _traceback.walk_stack)
     saved_main = (sys.modules.get('__main__'), sys.argv, sys.path)
     sys.modules['__main__'] = main_module
     sys.argv = [_USER_FILE]
@@ -2069,6 +2269,9 @@ def run_traced(source_code, stdin_text=''):
         sys.setrecursionlimit = _setrecursionlimit
         sys.settrace = _program_settrace
         sys.gettrace = _program_gettrace
+        sys._getframe = _program_getframe
+        _traceback._walk_tb_with_full_positions = _program_walk_tb
+        _traceback.walk_stack = _program_walk_stack
         _real_setlimit(_limit + _base + _HEADROOM)
         # The tracer's own garbage (its setup's) isn't the program's to collect.
         _gc_collect()
@@ -2100,7 +2303,8 @@ def run_traced(source_code, stdin_text=''):
             _setprofile(None)
     finally:
         sys.stdin, sys.stdout, sys.stderr, sys.__stdin__, sys.__stdout__, sys.__stderr__ = saved_streams
-        sys.getrecursionlimit, sys.setrecursionlimit, sys.settrace, sys.gettrace = saved_sys_functions
+        (sys.getrecursionlimit, sys.setrecursionlimit, sys.settrace, sys.gettrace, sys._getframe,
+         _traceback._walk_tb_with_full_positions, _traceback.walk_stack) = saved_sys_functions
         sys.modules['__main__'], sys.argv, sys.path = saved_main
         _real_setlimit(_DEFAULT_LIMIT)
 

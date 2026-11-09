@@ -353,7 +353,7 @@ describe('getTracerCode', () => {
   // ── Call stack management ──
 
   it('pushes a frame on every call event, the module frame included', () => {
-    expect(code).toContain('frame_info = {"name": _COMP_DISPLAY_NAMES.get(fname, fname), "kind": _frame_kind(code), "frame": frame,');
+    expect(code).toContain('frame_info = {"name": _frame_name(code), "kind": _frame_kind(code), "frame": frame,');
     expect(code).toContain('_call_stack.append(frame_info)');
   });
 

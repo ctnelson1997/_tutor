@@ -12,6 +12,7 @@ import {
   RunnerPool,
   capExpected,
   checkCase,
+  cpythonFrameName,
   compareValue,
   exceptionText,
   unrepr,
@@ -454,6 +455,19 @@ describe('checkCase', () => {
     expect(checkCase(ec, eg, outcome(result(run("ValueError: invalid literal for int() with base 10: 'x'")))).checks.steps).toEqual([]);
     expect(checkCase(ec, eg, outcome(result(run()))).checks.steps.join()).toMatch(/1 exception\(s\) raised with no step showing them, first: ValueError at line 2/);
     expect(checkCase(ec, eg, outcome(result(run('KeyError: x')))).checks.steps.join()).toMatch(/match no CPython event/);
+  });
+
+  it("matches the Global frame with CPython's <module>, and a method's frame by its name without its class (#85)", () => {
+    expect([cpythonFrameName('Global frame'), cpythonFrameName('Dog.__init__'), cpythonFrameName('<lambda>'), cpythonFrameName('generator expression'), cpythonFrameName('inc')])
+      .toEqual(['<module>', '__init__', '<lambda>', '<genexpr>', 'inc']);
+    const mc = pyCase('class Dog:\n    def __init__(self):\n        pass\nDog()\n');
+    const mg = golden({ events: [ev('line', 1, ['<module>']), ev('line', 4, ['<module>']), ev('call', 2, ['<module>', '__init__'], { self: '<Dog>' }), ev('line', 3, ['<module>', '__init__'], { self: '<Dog>' })] });
+    const obj = [{ id: '1', objectType: 'object', label: 'Dog', properties: [] }];
+    const run = [
+      snap(0, 1, [frame('Global frame')]), snap(1, 4, [frame('Global frame')]),
+      snap(2, 2, [frame('Global frame'), frame('Dog.__init__', { self: ref('1') })], [], obj), snap(3, 3, [frame('Global frame'), frame('Dog.__init__', { self: ref('1') })], [], obj),
+    ];
+    expect(checkCase(mc, mg, outcome(result(run))).checks.steps).toEqual([]);
   });
 
   it("doesn't count coming back to a statement's first line from its other lines, a step of its own (#80)", () => {

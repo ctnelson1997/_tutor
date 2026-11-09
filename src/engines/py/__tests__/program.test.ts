@@ -55,7 +55,7 @@ describe('the program is the __main__ module (#77)', () => {
     // unittest.main() ends with sys.exit(True): quietly, as python main.py does.
     expect(reply.error).toBeUndefined();
     // The test methods take steps.
-    expect(reply.snapshots.some(s => s.callStack.some(f => f.name === 'test_wrong'))).toBe(true);
+    expect(reply.snapshots.some(s => s.callStack.some(f => f.name === 'TestAdd.test_wrong'))).toBe(true);
   });
 
   it('doctest.testmod() finds the examples in its docstrings', () => {
@@ -140,6 +140,86 @@ function plainOutput(source: string): string {
   return out.replace(/\n$/, '');
 }
 
+describe("PyTutor's comprehension frames are invisible to the program (#85, extra/comprehension-transparency)", () => {
+  it('folds them into the frame around them in the tracebacks the program prints, carets under the failing expression', () => {
+    const text = consoleText(runFull([
+      'import traceback',
+      'def f(data):',
+      '    try:',
+      '        return [1 / x for x in data]',
+      '    except ZeroDivisionError:',
+      '        traceback.print_exc()',
+      'f([0])',
+    ].join('\n')).snapshots);
+    expect(text).toBe([
+      '! Traceback (most recent call last):',
+      '!   File "main.py", line 4, in f',
+      '!     return [1 / x for x in data]',
+      '!             ~~^~~',
+      '! ZeroDivisionError: division by zero',
+    ].join('\n'));
+  });
+
+  it("leaves them out of sys._getframe and of a stack the program prints, and nothing below the program's module frame", () => {
+    const text = consoleText(runFull([
+      'import sys, traceback',
+      'def f():',
+      '    return [sys._getframe(i).f_code.co_name for i in range(2)]',
+      'print(f())',
+      'print([s.name for s in traceback.extract_stack()])',
+      'try:',
+      '    sys._getframe(1)',
+      'except ValueError as e:',
+      '    print(e)',
+    ].join('\n')).snapshots);
+    expect(text).toBe("['f', '<module>']\n['<module>']\ncall stack is not deep enough");
+  });
+
+  it('keeps a comprehension inlined when it reads a local not bound yet: UnboundLocalError, as CPython 3.12 raises', () => {
+    const source = [
+      'def late():',
+      '    r = [y for _ in range(2)]',
+      '    y = 1',
+      '    return r',
+      'def maybe(flag):',
+      '    if flag:',
+      '        y = 2',
+      '    return [y for _ in range(1)]',
+      'def bound(k):',
+      '    total = 1',
+      '    return [x * k * total for x in range(2)]',
+      'for call in (late, lambda: maybe(False)):',
+      '    try:',
+      '        call()',
+      '    except UnboundLocalError as e:',
+      '        print(type(e).__name__)',
+      'print(bound(3))',
+    ].join('\n');
+    const steps = runFull(source).snapshots;
+    expect(consoleText(steps)).toBe('UnboundLocalError\nUnboundLocalError\n[0, 3]');
+    // A comprehension that reads only bound locals keeps its frame.
+    expect(steps.some(s => s.callStack.at(-1)!.name === 'list comprehension' && s.callStack.at(-2)!.name === 'bound')).toBe(true);
+    expect(steps.some(s => s.callStack.at(-1)!.name === 'list comprehension' && s.callStack.at(-2)!.name === 'late')).toBe(false);
+  });
+
+  it("names the module's frame the Global frame and a method's by its class; hides a generic class's type parameters", () => {
+    const steps = runFull([
+      'class Animal:',
+      '    def __init__(self, name):',
+      '        self.name = name',
+      'class Dog(Animal):',
+      '    def __init__(self, name):',
+      '        super().__init__(name)',
+      'class Box[T]:',
+      '    size = 1',
+      'Dog("rex")',
+    ].join('\n')).snapshots;
+    expect(steps.some(s => s.callStack.map(f => f.name).join(' > ') === 'Global frame > Dog.__init__ > Animal.__init__')).toBe(true);
+    const body = steps.filter(s => s.callStack.at(-1)!.name === 'Box').at(-1)!;
+    expect(body.callStack.at(-1)!.variables.map(v => v.name)).toEqual(['size']);
+  });
+});
+
 describe("tracing changes nothing the program does (#78)", () => {
   const lifetimes = readFileSync(new URL('./cpython/cases/extra/object-lifetimes.py', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
 
@@ -151,9 +231,9 @@ describe("tracing changes nothing the program does (#78)", () => {
 
   it('runs __del__ and an abandoned generator\'s finally block with their steps', () => {
     const steps = runFull(lifetimes).snapshots;
-    const del = steps.filter(s => s.callStack.at(-1)!.name === '__del__');
+    const del = steps.filter(s => s.callStack.at(-1)!.name === 'Resource.__del__');
     expect(del.length).toBeGreaterThan(6);
-    expect(del[0].callStack.map(f => f.name)).toEqual(['<module>', '__del__']);
+    expect(del[0].callStack.map(f => f.name)).toEqual(['Global frame', 'Resource.__del__']);
     const finallyLine = lifetimes.split('\n').indexOf('        print("generator closed")') + 1;
     expect(steps.some(s => s.callStack.at(-1)!.name === 'numbers' && s.line === finallyLine)).toBe(true);
   });

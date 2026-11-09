@@ -275,7 +275,7 @@ describe('steps where CPython has events (#80, extra/steps-and-labels)', () => {
     const showReturns = all.filter(s => s.callStack.at(-1)!.name === 'show' && returnOf(s));
     expect(showReturns.map(s => returnOf(s)!.value.type)).toEqual(['null']);
     // The program's last step is the module's, not one inside __next__.
-    expect(frameNames(all.at(-1)!)).toEqual(['<module>']);
+    expect(frameNames(all.at(-1)!)).toEqual(['Global frame']);
   });
 
   it('gives a function a return step after contextlib.suppress swallowed an exception', () => {
@@ -287,7 +287,7 @@ describe('steps where CPython has events (#80, extra/steps-and-labels)', () => {
     const all = steps(['def parse(s):', '    return int(s)', 'try:', '    parse("abc")', 'except ValueError as e:', '    print("bad")'].join('\n'));
     const raising = all.filter(s => s.exception);
     expect(raising.map(s => [s.line, frameNames(s).join(' > '), s.exception])).toEqual([
-      [2, '<module> > parse', "ValueError: invalid literal for int() with base 10: 'abc'"],
+      [2, 'Global frame > parse', "ValueError: invalid literal for int() with base 10: 'abc'"],
     ]);
     // The next step is the handler, in the caller.
     expect(all[all.indexOf(raising[0]) + 1].line).toBe(5);
