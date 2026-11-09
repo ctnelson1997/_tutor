@@ -28,6 +28,7 @@ import {
   isPrimitive, isNumeric, isIntegral, isReference, isLoose, unboxedType, primitiveOf, typeName,
   erasure, sameType, substitute, typeArgMap, asSuper, readType, isSubtype, invocable, assignable,
   castable, unaryPromote, binaryPromote, widensTo, BOX_OF,
+  extendsInterface,
 } from './types';
 import type * as B from './bound';
 import { integerLiteralValue, floatingLiteralValue, stringLiteralValue, charLiteralValue, textBlockValue } from '../literals';
@@ -513,15 +514,38 @@ class Declarer {
       }
       if (!sym) return undefined;
     }
-    let argsAt = sym === undefined ? undefined : t.parts[i - 1];
-    for (; i < t.parts.length; i++) {
-      const member: ClassSymbol | undefined = this.memberType(sym!, t.parts[i].name);
-      if (!member) return undefined;
-      sym = member;
-      argsAt = t.parts[i];
+    const argsOf = (part: A.NamePart & { typeArgs?: A.TypeNode[] }) => part.typeArgs?.map(a => this.resolveType(a, ctx, extraVars)) ?? [];
+    let type = classType(sym!, argsOf(t.parts[i - 1]));
+    // An inner class named in its generic class's code (Cursor in Ring<T>) is seen through Ring<T> (#76).
+    if (t.parts.length === 1) {
+      const outer = this.enclosingGeneric(sym!, ctx);
+      if (outer) type = { ...type, outer };
     }
-    const args = argsAt?.typeArgs?.map(a => this.resolveType(a, ctx, extraVars)) ?? [];
-    return classType(sym!, args);
+    for (; i < t.parts.length; i++) {
+      const member: ClassSymbol | undefined = this.memberType(type.symbol, t.parts[i].name);
+      if (!member) return undefined;
+      const next = classType(member, argsOf(t.parts[i]));
+      // An inner class named through a parameterized class (Ring<String>.Cursor) keeps its type arguments (#76).
+      type = member.isInner && (type.args.length || type.outer) ? { ...next, outer: type } : next;
+    }
+    return type;
+  }
+
+  /**
+   * The generic class an inner class's code sees it through, where that
+   * class's type variables are in scope: `Ring<T>` for `Cursor` named in
+   * Ring<T>'s code (#76). Its members' T then stands for the type arguments
+   * of the object they are reached through.
+   */
+  private enclosingGeneric(sym: ClassSymbol, ctx: TypeContext): ClassT | undefined {
+    if (!sym.isInner || !sym.outer) return undefined;
+    const outer = sym.outer;
+    const params = outer.typeParams;
+    const inScope = params.length > 0 && params.every(p => this.typeVar(p.name, ctx) === p);
+    const further = this.enclosingGeneric(outer, ctx);
+    if (!inScope && !further) return undefined;
+    const type = classType(outer, inScope ? params : []);
+    return further ? { ...type, outer: further } : type;
   }
 
   private typeVar(name: string, ctx: TypeContext): TypeVarT | undefined {
@@ -711,6 +735,7 @@ class Binder {
     classes.forEach(collect);
     for (const c of all) this.checkOverrides(c);
     for (const c of all) this.checkImplemented(c);
+    for (const c of all) this.checkDefaultConflicts(c);
     for (const c of all) program.classes.push(this.bindClass(c));
     program.classes.push(...this.extraClasses);
     for (const bc of program.classes) this.checkCyclicConstructors(bc);
@@ -1011,8 +1036,10 @@ class Binder {
    * A class that isn't abstract must implement every abstract method it
    * inherits or declares (JLS §8.1.1.1), else javac's "is not abstract and
    * does not override abstract method" error. An implementation is a
-   * non-abstract method of the class or a superclass, or a default method,
-   * with the abstract method's parameter types as seen from the class.
+   * non-abstract method of the class or a superclass, or a default method of
+   * an interface that extends the abstract method's (one that overrides it:
+   * an unrelated interface's default doesn't, #76), with the abstract
+   * method's parameter types as seen from the class.
    */
   private checkImplemented(cls: ClassSymbol): void {
     if (cls.isAbstract || cls.kind === 'interface' || cls.kind === 'annotation') return;
@@ -1040,14 +1067,81 @@ class Binder {
           const wanted = paramsSeen(m);
           if (wanted.some(t => t.tag === 'dynamic')) continue; // a stub's $any parameter
           const implemented = supertypes.some(c => (c.methods.get(m.name) ?? []).some(x =>
-            x !== m && !x.isAbstract && !x.isStatic && (!c.isInterface || x.modifiers.has('default')) && sameParams(paramsSeen(x), wanted)));
+            x !== m && !x.isAbstract && !x.isStatic && (!c.isInterface || (x.modifiers.has('default') && owner.isInterface && extendsInterface(c, owner)))
+            && sameParams(paramsSeen(x), wanted)));
           if (implemented) continue;
           const what = cls.isAnonymous ? `<anonymous ${cls.binaryName}>` : cls.name;
-          this.error(`${what} is not abstract and does not override abstract method ${m.name}(${wanted.map(typeName).join(',')}) in ${owner.name}`, cls.decl!.range);
+          this.error(`${what} is not abstract and does not override abstract method ${m.name}(${wanted.map(typeName).join(',')}) in ${owner.name}`, this.keywordRange(cls));
           return;
         }
       }
     }
+  }
+
+  /**
+   * A method a class or interface inherits from two unrelated interfaces,
+   * one of them a default, with nothing overriding both (JLS §8.4.8.4,
+   * §9.4.1.3): javac's "types A and B are incompatible;" with why, unrelated
+   * defaults or an abstract method and a default (#76). Only methods the
+   * class and its superclasses don't declare count; a concrete class left
+   * with an abstract method gets checkImplemented's error instead.
+   */
+  private checkDefaultConflicts(cls: ClassSymbol): void {
+    if (cls.kind === 'annotation') return;
+    const interfaces: ClassSymbol[] = [];
+    const chain: ClassSymbol[] = [];
+    for (let c: ClassSymbol | undefined = cls; c && !c.isLibrary; c = c.superclass?.symbol) {
+      chain.push(c);
+      for (const i of c.interfaces) if (!interfaces.includes(i.symbol)) interfaces.push(i.symbol);
+    }
+    for (let i = 0; i < interfaces.length; i++) {
+      for (const s of interfaces[i].interfaces) if (!interfaces.includes(s.symbol)) interfaces.push(s.symbol);
+    }
+    const self = this.thisType(cls);
+    const paramsSeen = (m: MethodSymbol) => {
+      const view = asSuper(self, m.owner);
+      const map = view ? typeArgMap(view) : new Map<number, JType>();
+      return m.params.map(p => erasure(substitute(p.type, map)));
+    };
+    const sameParams = (a: JType[], b: JType[]) => a.length === b.length && a.every((t, i) => sameType(t, b[i]));
+    const checked = new Set<string>();
+    for (const iface of interfaces) {
+      if (iface.isLibrary) continue;
+      for (const list of iface.methods.values()) {
+        for (const m of list) {
+          if (m.isStatic || m.modifiers.has('private')) continue;
+          const params = paramsSeen(m);
+          const signature = `${m.name}(${params.map(typeName).join(',')})`;
+          if (checked.has(signature)) continue;
+          checked.add(signature);
+          if (chain.some(c => (c.methods.get(m.name) ?? []).some(x => !x.isStatic && sameParams(paramsSeen(x), params)))) continue;
+          const same = interfaces.flatMap(i => (i.methods.get(m.name) ?? []).filter(x => !x.isStatic && !x.modifiers.has('private') && sameParams(paramsSeen(x), params)));
+          const specific = same.filter(x => !same.some(o => o.owner !== x.owner && extendsInterface(o.owner, x.owner)));
+          const defaults = specific.filter(x => x.modifiers.has('default'));
+          if (specific.length < 2 || defaults.length === 0) continue;
+          const unrelated = defaults.length === specific.length;
+          if (!unrelated && !cls.isInterface && !cls.isAbstract) continue;
+          const [a, b] = specific;
+          const why = unrelated ? 'unrelated defaults' : 'abstract and default';
+          this.error(`types ${a.owner.name} and ${b.owner.name} are incompatible;\n  ${kindWord(cls)} ${cls.name} inherits ${why} for ${signature} from types ${a.owner.name} and ${b.owner.name}`, this.keywordRange(cls));
+        }
+      }
+    }
+  }
+
+  /** Where javac reports a class's own errors: at its `class` (`interface`, `enum`, `record`) keyword, after its modifiers. */
+  private keywordRange(cls: ClassSymbol): A.Range {
+    const decl = cls.decl!;
+    if (cls.isAnonymous || !('modifiers' in decl)) return decl.range;
+    const from = Math.max(decl.range.start, ...decl.modifiers.filter(m => typeof m === 'object' && 'range' in m).map(m => (m as A.Annotation).range.end));
+    const match = /\b(class|interface|enum|record)\b/.exec(this.source.slice(from, decl.range.end));
+    if (!match) return decl.range;
+    const at = from + match.index;
+    const before = this.source.slice(decl.range.start, at);
+    const newline = before.lastIndexOf('\n');
+    const line = decl.range.line + (before.match(/\n/g)?.length ?? 0);
+    const column = newline < 0 ? decl.range.column + before.length : before.length - newline;
+    return { start: at, end: at + match[1].length, line, column, endLine: line, endColumn: column + match[1].length - 1 };
   }
 
   /**
@@ -1413,7 +1507,7 @@ class Binder {
     });
   }
 
-  private switch_(selectorNode: A.Expr, body: A.SwitchBody, isExpression: boolean, range: A.Range): { sw: B.BSwitch; type: JType } {
+  private switch_(selectorNode: A.Expr, body: A.SwitchBody, isExpression: boolean, range: A.Range, target?: JType): { sw: B.BSwitch; type: JType } {
     return this.inScope(() => {
       let selector = this.expr(selectorNode);
       const st = selector.type;
@@ -1514,12 +1608,15 @@ class Binder {
         const covered = unconditional || sealed || (enumNames !== undefined && enumNames.every(n => seen.has(`enum:${n}`)));
         if (!covered) this.error(`the switch ${isExpression ? 'expression' : 'statement'} does not cover all possible input values`, range);
       }
-      // A switch expression's type: its values', as for ?: (yields are typed when bound).
+      // A switch expression's type (JLS §15.28.1): in an assignment context, its target's (a poly expression, so
+      // `Object o = switch … { case 1 -> 3; default -> 2.5; }` keeps the Integer, #76); else its values', as for ?:
+      // (yields are typed when bound).
       let type: JType = VOID;
       if (isExpression) {
         const yielded = collectYields(cases);
         const all = [...values, ...yielded];
-        type = all.length ? all.slice(1).reduce<JType>((t, v) => this.conditionalType(t, v.type, undefined), all[0].type) : ERROR;
+        const poly = target && (target.tag === 'class' || target.tag === 'array' || target.tag === 'typevar') && all.length > 0;
+        type = poly ? target : all.length ? all.slice(1).reduce<JType>((t, v) => this.conditionalType(t, v.type, undefined), all[0].type) : ERROR;
         for (const c of cases) if (c.value) c.value = this.assignConvert(c.value, type, c.value.range, 'assignment');
         convertYields(cases, v => this.assignConvert(v, type, v.range, 'assignment'));
       }
@@ -1604,7 +1701,7 @@ class Binder {
       }
       case 'ClassLiteral': return this.classLiteral(e);
       case 'SwitchExpr': {
-        const { sw, type } = this.switch_(e.selector, e.body, true, range);
+        const { sw, type } = this.switch_(e.selector, e.body, true, range, expected);
         return { kind: 'SwitchExpr', switch: sw, type, range };
       }
       case 'Unsupported': return this.unsupportedExpr(e.construct === 'string templates' ? 'String templates' : e.construct, range);
@@ -1683,7 +1780,7 @@ class Binder {
       if (field.isStatic) return { kind: 'expr', expr: { kind: 'StaticField', field, type: field.type, range } };
       const self = this.enclosingThis(c, range, `variable ${name}`);
       if (!self) return { kind: 'error' };
-      return { kind: 'expr', expr: { kind: 'Field', target: self, field, type: this.memberType(self.type, field.owner, field.type), range } };
+      return { kind: 'expr', expr: { kind: 'Field', target: self, field, type: this.memberType(self.type, field.owner, field.type), range, byName: true } };
     }
     return undefined;
   }
@@ -2637,6 +2734,7 @@ class Binder {
       collect(sym);
       for (const c of all) this.checkOverrides(c);
       for (const c of all) this.checkImplemented(c);
+      for (const c of all) this.checkDefaultConflicts(c);
       for (const c of all) this.extraClasses.push(this.bindClass(c));
     } finally {
       this.ctx = saved.ctx;
@@ -2684,8 +2782,10 @@ class Binder {
   private newObject(e: A.NewObject, expected?: JType): B.BExpr {
     const range = e.range;
     if (e.body) return this.anonymous(e, expected);
+    // `o.new Inner()`: Inner is a member class of o's type (JLS §15.9.1), however deeply nested (#76).
+    const qualifier = e.outer ? this.expr(e.outer) : undefined;
     const args = e.args.map(a => this.argExpr(a));
-    const resolved = this.declarer.resolveType(e.type, this.typeContext());
+    const resolved = (qualifier && this.memberOfQualifier(e.type, qualifier.type)) ?? this.declarer.resolveType(e.type, this.typeContext());
     if (resolved.tag !== 'class') {
       // A class JavaTutor's library doesn't have.
       if (resolved.tag === 'error' || resolved.tag === 'dynamic') {
@@ -2707,12 +2807,12 @@ class Binder {
     if (cls.isLibrary && !cls.constructors.length) return this.unsupportedExpr(`The ${cls.name} class`, range, true);
     // An inner class's object needs its enclosing instance: `o.new Inner()`, or `this` (or an enclosing one).
     let outer: B.BExpr | undefined;
-    if (e.outer) {
+    if (qualifier) {
       if (!cls.isInner) {
         this.error(`qualified new of static class`, range);
         return this.errorExpr(range);
       }
-      outer = this.expr(e.outer);
+      outer = qualifier;
     } else if (cls.isInner || ((cls.isLocal || cls.isAnonymous) && !cls.staticContext && cls.outerField)) {
       outer = this.enclosingThis(cls.outer!, range, 'variable this');
       if (!outer) return this.errorExpr(range);
@@ -2728,6 +2828,17 @@ class Binder {
     const node: B.BExpr = { kind: 'New', cls, ctor: chosen.method, args: chosen.args, outer, type, range };
     if (diamond && !chosen.classArgs) this.polyNodes.add(node);
     return node;
+  }
+
+  /** The member class `o.new Name<…>()` names, seen through o's type (its type arguments kept, #76). */
+  private memberOfQualifier(t: A.ClassType, qualifier: JType): ClassT | undefined {
+    if (t.parts.length !== 1 || qualifier.tag !== 'class') return undefined;
+    const part = t.parts[0];
+    const member = this.declarer.memberType(qualifier.symbol, part.name);
+    if (!member) return undefined;
+    const type = classType(member, part.typeArgs?.map(a => this.resolveType(a)) ?? []);
+    const outer = member.outer && asSuper(qualifier, member.outer);
+    return outer && (outer.args.length || outer.outer) ? { ...type, outer } : type;
   }
 
   /** `T.class`: the Class object of a type, named as Class.getName() names it. */
@@ -2917,17 +3028,16 @@ class Binder {
     if (sameType(a, b)) return a;
     const pa = primitiveOf(a), pb = primitiveOf(b);
     if (pa && pb && pa.name === 'boolean' && pb.name === 'boolean') return BOOLEAN;
+    // A numeric conditional (JLS §15.25.2), boxed operands too: Integer and Double make a double, so 1 prints as 1.0 (#76).
     if (pa && pb && pa.name !== 'boolean' && pb.name !== 'boolean') {
-      if (isPrimitive(a) || isPrimitive(b)) {
-        if (sameType(pa, pb)) return pa;
-        const narrow = ['byte', 'short', 'char'];
-        if ((pa.name === 'short' && pb.name === 'byte') || (pa.name === 'byte' && pb.name === 'short')) return primitive('short');
-        // byte, short or char against an int constant that fits: the narrower type.
-        const fits = (t: PrimitiveT, c: ConstValue | undefined) => typeof c === 'number' && assignable(INT, t, this.b, c);
-        if (narrow.includes(pa.name) && pb.name === 'int' && isPrimitive(b) && fits(pa, constants?.[1])) return pa;
-        if (narrow.includes(pb.name) && pa.name === 'int' && isPrimitive(a) && fits(pb, constants?.[0])) return pb;
-        return binaryPromote(pa, pb);
-      }
+      if (sameType(pa, pb)) return pa;
+      const narrow = ['byte', 'short', 'char'];
+      if ((pa.name === 'short' && pb.name === 'byte') || (pa.name === 'byte' && pb.name === 'short')) return primitive('short');
+      // byte, short or char (or their boxes) against an int constant that fits: the narrower type.
+      const fits = (t: PrimitiveT, c: ConstValue | undefined) => typeof c === 'number' && assignable(INT, t, this.b, c);
+      if (narrow.includes(pa.name) && pb.name === 'int' && isPrimitive(b) && fits(pa, constants?.[1])) return pa;
+      if (narrow.includes(pb.name) && pa.name === 'int' && isPrimitive(a) && fits(pb, constants?.[0])) return pb;
+      return binaryPromote(pa, pb);
     }
     if (a.tag === 'null' && b.tag === 'primitive') return classType(this.b.box(b.name));
     if (b.tag === 'null' && a.tag === 'primitive') return classType(this.b.box(a.name));
@@ -3319,7 +3429,18 @@ function constantOf(e: B.BExpr | undefined): ConstValue | undefined {
   if (e.kind === 'Const') return e.value === null ? undefined : e.value;
   if (e.kind === 'Local') return e.local.isFinal ? e.local.constant : undefined;
   if (e.kind === 'StaticField') return e.field.isFinal ? e.field.constant : undefined;
+  if (e.kind === 'Field') return instanceConstant(e);
   return undefined;
+}
+
+/**
+ * A final instance field with a constant initializer, named by its simple
+ * name: a constant variable, so the name is a constant expression (JLS
+ * §4.12.4, §15.29), even in a constructor that runs before the field is set
+ * (#76). `this.fixed` isn't one, though javac inlines it too.
+ */
+function instanceConstant(e: B.BField): ConstValue | undefined {
+  return e.byName && e.field.isFinal && !e.field.isStatic ? e.field.constant : undefined;
 }
 
 /** The value of a constant expression whose parts are constants, computed as Java does. */
@@ -3334,6 +3455,7 @@ function foldValue(e: B.BExpr): ConstValue | undefined {
     switch (e.kind) {
       case 'Local': return e.local.isFinal ? e.local.constant : undefined;
       case 'StaticField': return e.field.isFinal && e.field.isStatic ? e.field.constant : undefined;
+      case 'Field': return instanceConstant(e);
       case 'Unary': {
         const p = prim(e.operand);
         return p ? value(unaryOperation(e.op, p)) : undefined;

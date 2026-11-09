@@ -118,6 +118,55 @@ describe("#13's table, as binding decisions", () => {
     expect(x).toBe('x:Object = (widen:Object (box:Double (? t 1:double 2:double):double))');
   });
 
+  it('types a conditional of two boxes as a numeric one (JLS §15.25, #76): Integer and Double make a double', () => {
+    const [x, y, z, w] = shapes('Object x = true ? Integer.valueOf(1) : Double.valueOf(2.0); Integer i = 5; Long l = 7L; Object y = false ? i : l; Character c = \'a\'; Object z = true ? c : i; Integer j = true ? i : i;').filter(t => /^[xyzw]:|^j:/.test(t));
+    expect(x).toBe('x:Object = (widen:Object (box:Double (? true:boolean (widen:double (unbox:int (call Integer.valueOf(int) 1:int))) (unbox:double (call Double.valueOf(double) 2:double))):double))');
+    expect(y).toBe('y:Object = (widen:Object (box:Long (? false:boolean (widen:long (unbox:int i)) (unbox:long l)):long))');
+    expect(z).toBe('z:Object = (widen:Object (box:Integer (? true:boolean (widen:int (unbox:char c)) (unbox:int i)):int))');
+    expect(w).toBe('j:Integer = (? true:boolean i i):Integer'); // the same box: a reference conditional, no unboxing
+  });
+
+  it("types a switch expression by its target in an assignment context, else by its values (JLS §15.28.1, #76)", () => {
+    const [, poly, standalone] = shapes('int k = 2; Object poly = switch (k) { case 2 -> Integer.valueOf(3); default -> Double.valueOf(2.5); }; var standalone = switch (k) { case 2 -> Integer.valueOf(3); default -> Double.valueOf(2.5); };');
+    expect(poly).toBe('poly:Object = (switch k):Object');
+    expect(standalone).toBe('standalone:double = (switch k):double');
+  });
+
+  it('folds a final instance field with a constant initializer, named by its simple name (JLS §15.29, #76)', () => {
+    const { program, diagnostics } = bind(`public class Main {
+  final int fixed = 7;
+  final String label = "item" + fixed;
+  int f() { switch (7) { case fixed: return 1; default: return 0; } }
+  boolean g() { return this.fixed == 7; }
+  public static void main(String[] args) {}
+}`);
+    expect(diagnostics.map(d => d.message)).toEqual([]);
+    const label = program.classes[0].instanceInit.find(i => i.kind === 'field' && i.field.name === 'label');
+    expect(label?.kind === 'field' && sx(label.value)).toBe('"item7"');
+    // `this.fixed` isn't a constant expression, though the evaluator reads it as 7 as javac inlines it.
+    const g = program.classes[0].methods.find(m => m.symbol.name === 'g')!;
+    expect(g.body!.statements[0].kind === 'Return' && sx((g.body!.statements[0] as B.BReturn).value!)).toBe('(== (. this fixed) 7:int):boolean');
+  });
+
+  it("sees an inner class of a generic class through its enclosing instance's type (#76)", () => {
+    const shown = shapes('Ring<String> r = new Ring<>(); Ring<String>.Cursor c = r.new Cursor(1); String s = c.next(); var d = r.new Cursor(0); String t = d.next(); String u = r.cursor().next();',
+      '  static class Ring<T> {\n    class Cursor { Cursor(int at) {} T next() { return null; } }\n    Cursor cursor() { return new Cursor(0); }\n  }');
+    expect(shown.slice(1)).toEqual([
+      'c:Ring<String>.Cursor = (new Ring<String>.Cursor Cursor(int) 1:int)',
+      's:String = (call Cursor.next() c)',
+      'd:Ring<String>.Cursor = (new Ring<String>.Cursor Cursor(int) 0:int)',
+      't:String = (call Cursor.next() d)',
+      'u:String = (call Cursor.next() (call Ring.cursor() r))',
+    ]);
+  });
+
+  it('finds the class of `mid.new Inner()` among the members of mid\'s type, an inner class of an inner class (#76)', () => {
+    const shown = shapes('Main outer = new Main(); Main.Mid mid = outer.new Mid(); Main.Mid.Inner in = mid.new Inner(); int s = in.sum();',
+      '  int base = 1;\n  class Mid {\n    class Inner { int sum() { return base; } }\n  }');
+    expect(shown[2]).toBe('in:Inner = (new Inner Inner())');
+    expect(shown[3]).toBe('s:int = (call Inner.sum() in)');
+  });
+
   it('calls the library\'s static Integer.toString(int) even in a class with an instance toString()', () => {
     const [s] = shapes('String s = Integer.toString(42);', '  public String toString() { return "M"; }');
     expect(s).toBe('s:String = (call Integer.toString(int) 42:int)');

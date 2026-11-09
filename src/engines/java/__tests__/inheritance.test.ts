@@ -7,6 +7,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseJava } from '../parser';
 import { JavaInterpreter } from '../interpreter';
+import * as runner from '../run';
 import type { ExecutionSnapshot, StackFrame } from '../../../types/snapshot';
 
 function run(source: string) {
@@ -139,6 +140,48 @@ describe('the steps of a class chain', () => {
   });
 });
 
+describe('default methods (#76)', () => {
+  it('run the most specific default, whatever order the interfaces are named in (JLS §8.4.8, §9.4.1.3)', () => {
+    const result = run(`public class Main {
+  interface Greeter { default String greet() { return "Greeter"; } }
+  interface Polite extends Greeter { default String greet() { return "Polite"; } }
+  interface Quiet extends Greeter {}
+  interface Loud extends Polite { default String greet() { return "Loud"; } }
+  static class Butler implements Greeter, Polite {}
+  static class Valet implements Polite, Greeter {}
+  static class Page implements Quiet, Polite {}
+  static class Footman extends Butler implements Greeter {}
+  static class Crier extends Butler implements Loud {}
+  static class Host implements Greeter, Polite { public String greet() { return "Host"; } }
+  public static void main(String[] args) {
+    Greeter[] all = { new Butler(), new Valet(), new Page(), new Footman(), new Crier(), new Host() };
+    for (Greeter g : all) System.out.print(g.greet() + " ");
+    System.out.println(new Valet());
+  }
+}`);
+    expect(result.error).toBeUndefined();
+    expect(result.stdout).toMatch(/^Polite Polite Polite Polite Loud Host Main\$Valet@[0-9a-f]{8}$/);
+  });
+
+  it('label the frame of the default that runs with its interface', () => {
+    const result = run(`public class Main {
+  interface A { default String m() {
+    return "A";
+  } }
+  interface B extends A { default String m() {
+    return "B";
+  } }
+  static class C implements A, B {}
+  public static void main(String[] args) {
+    System.out.println(new C().m());
+  }
+}`);
+    expect(result.stdout).toBe('B');
+    expect(result.snapshots.some(s => s.callStack.some(f => f.name === 'B.m'))).toBe(true);
+    expect(result.snapshots.some(s => s.callStack.some(f => f.name === 'A.m'))).toBe(false);
+  });
+});
+
 describe("the class model's compile errors, before any step", () => {
   it.each([
     ['a cycle', 'static class A extends B { }\n  static class B extends A { }', 'Line 2: cyclic inheritance involving A'],
@@ -151,10 +194,21 @@ describe("the class model's compile errors, before any step", () => {
     ['no constructor for the implicit super()', 'static class A { A(int x) {} }\n  static class B extends A { }', 'Line 3: constructor A in class A cannot be applied to given types;\n  required: int\n  found:    no arguments\n  reason: actual and formal argument lists differ in length'],
     ['calling an abstract method through super', 'static abstract class S { abstract int f(); }\n  static class T extends S { int f() { return super.f(); } }', 'Line 3: abstract method f() in S cannot be accessed directly'],
     ['an incompatible return type', 'static class A { void m() {} }\n  static class B extends A { int m() { return 1; } }', 'Line 3: m() in B cannot override m() in A\n  return type int is not compatible with void'],
+    // Defaults (#76): two unrelated ones, and an abstract method an unrelated interface's default doesn't implement.
+    ['unrelated defaults', 'interface A { default String m() { return "A"; } }\n  interface B { default String m() { return "B"; } }\n  static class C implements A, B { }', 'Line 4: types A and B are incompatible;\n  class C inherits unrelated defaults for m() from types A and B'],
+    ['an abstract method and an unrelated default', 'interface A { default String m() { return "A"; } }\n  interface B { String m(); }\n  static class C implements A, B { }', 'Line 4: C is not abstract and does not override abstract method m() in B'],
+    ['an interface inheriting an abstract method and a default', 'interface A { default String m() { return "A"; } }\n  interface B { String m(); }\n  interface D extends A, B { }', 'Line 4: types A and B are incompatible;\n  interface D inherits abstract and default for m() from types A and B'],
+    ["a superclass's abstract method beside an interface's default", 'interface A { default String m() { return "A"; } }\n  static abstract class P { public abstract String m(); }\n  static class Q extends P implements A { }', 'Line 4: Q is not abstract and does not override abstract method m() in P'],
   ])('%s', (_name, classes, error) => {
     const result = run(`public class Main {\n  ${classes}\n  public static void main(String[] args) { System.out.println("ran"); }\n}`);
     expect(result.snapshots).toEqual([]);
     expect(result.error).toBe(error);
+  });
+
+  it('puts the caret of a class\'s own error on its keyword, as javac does (#76)', () => {
+    const { runJava } = runner;
+    const result = runJava('public class Main {\n  interface A { default String m() { return "A"; } }\n  interface B { default String m() { return "B"; } }\n  @SuppressWarnings("x") static\n  final class C implements A, B {}\n  public static void main(String[] args) {}\n}', '');
+    expect(result.error?.stderr).toBe('Main.java:5: error: types A and B are incompatible;\n  final class C implements A, B {}\n        ^\n  class C inherits unrelated defaults for m() from types A and B\n1 error');
   });
 
   it("accepts what javac accepts: an Iterator without remove(), a Comparator without reversed()", () => {

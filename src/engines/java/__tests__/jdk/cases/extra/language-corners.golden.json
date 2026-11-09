@@ -1,0 +1,8 @@
+{
+  "stdout": "Polite Polite Polite Polite\nPolite\n1.0\n7 Long\n97 Integer\n3 Short\n3 3.0\nunboxing null\nBase sees 7 item7 true 0 seven\n7 item7 true 8 seven\nBA\n1\n115 115\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "e93b33983c4eac0d0e8ac3c133df2c49861da47c2c80c29cf8f3ac3c71337248"
+}

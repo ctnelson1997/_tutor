@@ -20,7 +20,13 @@ import type { ClassSymbol } from './symbols';
 export type JType = PrimitiveT | ClassT | ArrayT | TypeVarT | WildcardT | NullT | VoidT | DynamicT | ErrorT;
 
 export interface PrimitiveT { tag: 'primitive'; name: PrimitiveName }
-export interface ClassT { tag: 'class'; symbol: ClassSymbol; args: JType[] }
+/**
+ * A class type. An inner class of a generic class is seen through its
+ * enclosing instance's type, `outer` (`Ring<String>.Cursor`, #76): the
+ * outer class's type variables in its members stand for that type's
+ * arguments.
+ */
+export interface ClassT { tag: 'class'; symbol: ClassSymbol; args: JType[]; outer?: ClassT }
 export interface ArrayT { tag: 'array'; component: JType }
 export interface TypeVarT { tag: 'typevar'; name: string; bound: JType; id: number }
 export interface WildcardT { tag: 'wildcard'; kind: 'extends' | 'super' | 'unbounded'; bound?: JType }
@@ -77,7 +83,10 @@ export function unboxedType(t: JType): PrimitiveT | undefined {
 export function typeName(t: JType): string {
   switch (t.tag) {
     case 'primitive': return t.name;
-    case 'class': return t.args.length ? `${t.symbol.name}<${t.args.map(typeName).join(',')}>` : t.symbol.name;
+    case 'class': {
+      const own = t.args.length ? `${t.symbol.name}<${t.args.map(typeName).join(',')}>` : t.symbol.name;
+      return t.outer?.args.length ? `${typeName(t.outer)}.${own}` : own;
+    }
     case 'array': return `${typeName(t.component)}[]`;
     case 'typevar': return t.name;
     case 'wildcard': return t.kind === 'unbounded' ? '?' : `? ${t.kind} ${typeName(t.bound!)}`;
@@ -136,7 +145,11 @@ export function substitute(t: JType, map: Map<number, JType>): JType {
   if (!map.size) return t;
   switch (t.tag) {
     case 'typevar': return map.get(t.id) ?? t;
-    case 'class': return t.args.length ? classType(t.symbol, t.args.map(a => substitute(a, map))) : t;
+    case 'class': {
+      if (!t.args.length && !t.outer) return t;
+      const c = classType(t.symbol, t.args.map(a => substitute(a, map)));
+      return t.outer ? { ...c, outer: substitute(t.outer, map) as ClassT } : c;
+    }
     case 'array': return arrayOf(substitute(t.component, map));
     case 'wildcard': return t.bound ? { ...t, bound: substitute(t.bound, map) } : t;
     default: return t;
@@ -151,10 +164,16 @@ export function readType(t: JType, fallback: JType): JType {
 
 /** The substitution a parameterized type implies for its class's type parameters (empty for a raw type). */
 export function typeArgMap(t: ClassT): Map<number, JType> {
-  const map = new Map<number, JType>();
+  // An inner class's members see the enclosing class's type variables as its enclosing instance's type has them.
+  const map = t.outer ? typeArgMap(t.outer) : new Map<number, JType>();
   if (t.args.length !== t.symbol.typeParams.length) return map;
   t.symbol.typeParams.forEach((p, i) => map.set(p.id, readType(t.args[i], p.bound)));
   return map;
+}
+
+/** Does interface `sub` extend `sup`, directly or through others? */
+export function extendsInterface(sub: ClassSymbol, sup: ClassSymbol): boolean {
+  return sub.interfaces.some(i => i.symbol === sup || extendsInterface(i.symbol, sup));
 }
 
 /** The direct supertypes of a class type, with its type arguments substituted in. */

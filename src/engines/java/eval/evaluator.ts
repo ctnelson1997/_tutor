@@ -25,7 +25,7 @@ import type { ConsoleLine, ExecutionSnapshot, StackFrame, Variable, RunError } f
 import { SnapshotSharer } from '../../../utils/snapshotSharing';
 import type * as B from '../semantic/bound';
 import type { ClassSymbol, MethodSymbol, FieldSymbol, LocalSymbol, ConstValue } from '../semantic/symbols';
-import { type JType, runtimeTypeName, unboxedType, erasure, asSuper, classType, substitute, typeArgMap } from '../semantic/types';
+import { type JType, runtimeTypeName, unboxedType, erasure, asSuper, classType, substitute, typeArgMap, extendsInterface } from '../semantic/types';
 import { library } from '../semantic/binder';
 import { InterpreterError, JavaRuntimeError, UnsupportedFeatureError, nullPointer } from '../errors';
 import { type Reference, type VariableSlot, assignmentConversion, slotReference, fieldReference, arrayElementReference } from '../references';
@@ -1498,7 +1498,7 @@ export class Evaluator {
       case 'Const': return this.constant(e);
       case 'Local': return slotReference(this.slotOf(e.local), e.local.name, this.line(e)).get();
       case 'StaticField': return this.readStatic(e.field);
-      case 'Field': return this.fieldRef(this.pv(e.target), e).get();
+      case 'Field': return this.readField(this.pv(e.target), e);
       case 'This': return this.top().thisValue ?? javaNull();
       case 'OuterThis': return this.outerThis(e.cls);
       case 'ClassLiteral': return this.classObjectNamed(e.name, e.simpleName);
@@ -1543,7 +1543,7 @@ export class Evaluator {
         yield* this.initClass(e.field.owner);
         return this.readStatic(e.field);
       }
-      case 'Field': return this.fieldRef(this.isPure(e.target) ? this.pv(e.target) : yield* this.gv(e.target), e).get();
+      case 'Field': return this.readField(this.isPure(e.target) ? this.pv(e.target) : yield* this.gv(e.target), e);
       case 'ArrayLength': return this.arrayLength(this.isPure(e.array) ? this.pv(e.array) : yield* this.gv(e.array), e);
       case 'ArrayElement': {
         const array = this.isPure(e.array) ? this.pv(e.array) : yield* this.gv(e.array);
@@ -1870,6 +1870,19 @@ export class Evaluator {
     return slotReference(slot, field.name, this.top()?.line ?? 0);
   }
 
+  /**
+   * A field's value. A constant variable's is its initializer's, which javac
+   * inlines wherever the field is read (JLS §13.1), so a constructor of a
+   * superclass calling an overridden method sees `final int fixed = 7` as 7
+   * before the field is set (#76); the object still must not be null.
+   */
+  private readField(target: JavaValue, e: B.BField): JavaValue {
+    const ref = this.fieldRef(target, e);
+    const c = e.field.constant;
+    if (c === undefined || !e.field.isFinal || e.field.isStatic || target.kind === 'null') return ref.get();
+    return constValue(c, e.field.type);
+  }
+
   private fieldRef(target: JavaValue, e: B.BField): Reference {
     return fieldReference(this.heap, target, this.fieldKey(target, e.field), runtimeTypeName(e.field.type), this.text(e.target), this.line(e));
   }
@@ -2177,17 +2190,35 @@ export class Evaluator {
         && m.params.every((p, i) => runtimeTypeName(erasure(p.type)) === wanted[i]));
     };
     for (let c: ClassSymbol | undefined = cls; c && !c.isLibrary && !found; c = c.superclass?.symbol) found = implementation(c);
-    // No class implements it: a default method of an interface the class implements.
-    const interfaces: ClassSymbol[] = [];
-    for (let c: ClassSymbol | undefined = cls; c && !c.isLibrary; c = c.superclass?.symbol) interfaces.push(...c.interfaces.map(i => i.symbol));
-    for (let i = 0; i < interfaces.length && !found; i++) {
-      const iface = interfaces[i];
-      if (iface.isLibrary) continue;
-      found = implementation(iface);
-      for (const s of iface.interfaces) if (!interfaces.includes(s.symbol)) interfaces.push(s.symbol);
-    }
+    // No class implements it: the most specific default method of the interfaces the class implements.
+    found ??= this.inheritedDefault(cls, iface => {
+      const view = asSuper(classType(iface, iface.typeParams), method.owner);
+      const map = view ? typeArgMap(view) : new Map<number, JType>();
+      const wanted = method.params.map(p => runtimeTypeName(erasure(substitute(p.type, map))));
+      return (iface.methods.get(method.name) ?? []).find(m => !m.isStatic && m.arity === method.arity
+        && m.params.every((p, i) => runtimeTypeName(erasure(p.type)) === wanted[i]));
+    });
     byClass.set(cls, found);
     return found;
+  }
+
+  /**
+   * The default method a class inherits (JLS §8.4.8, §9.4.1.3), of the
+   * methods its interfaces declare (`declared`: an interface's method, default
+   * or abstract): one no other interface's method overrides, that is, from
+   * the most specific interface, so `class C implements A, B` with
+   * `B extends A` runs B's (#76), whatever order it names them in. None when
+   * the most specific is abstract (javac makes the class implement it).
+   */
+  private inheritedDefault(cls: ClassSymbol, declared: (iface: ClassSymbol) => MethodSymbol | undefined): MethodSymbol | undefined {
+    const interfaces: ClassSymbol[] = [];
+    for (let c: ClassSymbol | undefined = cls; c && !c.isLibrary; c = c.superclass?.symbol) interfaces.push(...c.interfaces.map(i => i.symbol));
+    for (let i = 0; i < interfaces.length; i++) {
+      for (const s of interfaces[i].interfaces) if (!interfaces.includes(s.symbol)) interfaces.push(s.symbol);
+    }
+    const candidates = interfaces.filter(i => !i.isLibrary).map(declared).filter((m): m is MethodSymbol => m !== undefined);
+    const specific = candidates.filter(m => !candidates.some(o => o.owner !== m.owner && extendsInterface(o.owner, m.owner)));
+    return specific.find(m => this.methods.get(m)?.body !== undefined || m.synthetic !== undefined);
   }
 
   private *callUser(method: MethodSymbol, dispatch: B.BCall['dispatch'], receiver: JavaValue | undefined, args: JavaValue[], e: B.BExpr): Gen<JavaValue> {
@@ -2231,20 +2262,12 @@ export class Evaluator {
   private userMethod(value: JavaValue, name: string, arity: number): MethodSymbol | undefined {
     if (value.kind !== 'objectRef' || isBuiltinObject(this.heap.get(value.heapId))) return undefined;
     const runs = (x: MethodSymbol) => !x.isStatic && x.arity === arity && (this.methods.get(x)?.body !== undefined || x.synthetic !== undefined);
-    const interfaces: ClassSymbol[] = [];
-    for (let c: ClassSymbol | undefined = this.byName.get(value.className); c && !c.isLibrary; c = c.superclass?.symbol) {
+    const cls = this.byName.get(value.className);
+    for (let c: ClassSymbol | undefined = cls; c && !c.isLibrary; c = c.superclass?.symbol) {
       const m = (c.methods.get(name) ?? []).find(runs);
       if (m) return m;
-      interfaces.push(...c.interfaces.map(i => i.symbol));
     }
-    for (let i = 0; i < interfaces.length; i++) {
-      const iface = interfaces[i];
-      if (iface.isLibrary) continue;
-      const m = (iface.methods.get(name) ?? []).find(runs);
-      if (m) return m;
-      interfaces.push(...iface.interfaces.map(s => s.symbol).filter(s => !interfaces.includes(s)));
-    }
-    return undefined;
+    return cls && this.inheritedDefault(cls, iface => (iface.methods.get(name) ?? []).find(x => !x.isStatic && x.arity === arity));
   }
 
   /**
