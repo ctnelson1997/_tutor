@@ -502,8 +502,11 @@ function objectsMethod(method: string, args: JavaValue[], ctx: StdlibContext): J
     case 'equals': return javaBool(valuesEqual(args[0], args[1], ctx));
     case 'hashCode': return javaInt(hashCodeOf(args[0], ctx));
     case 'hash': {
+      // Arrays.hashCode of the varargs array (#63): Objects.hash(1, 2) is 994; a null array's is 0.
+      const values = varargValues(args, 0, ctx);
+      if (!values) return javaInt(0);
       let h = 1;
-      for (const a of args) h = (Math.imul(31, h) + hashCodeOf(a, ctx)) | 0;
+      for (const a of values) h = (Math.imul(31, h) + hashCodeOf(a, ctx)) | 0;
       return javaInt(h);
     }
     case 'isNull': return javaBool(args[0]?.kind === 'null');
@@ -525,6 +528,23 @@ function objectsMethod(method: string, args: JavaValue[], ctx: StdlibContext): J
 const text = (value: JavaValue, ctx: StdlibContext) => (ctx.stringify ? ctx.stringify(value) : javaValueToString(value, ctx.heap));
 
 const isPrimitiveType = (type: string) => ['int', 'long', 'short', 'byte', 'char', 'double', 'float', 'boolean'].includes(type);
+
+/**
+ * A variable-arity parameter's values, from position `from` (#63): the binder
+ * packs a call's variable arguments into one array (or passes the array the
+ * call gives), so they arrive as that array, whose elements they are;
+ * undefined for a null array. Spread values (the stdlib's own callers and
+ * tests) are taken as they are.
+ */
+function varargValues(args: JavaValue[], from: number, ctx: StdlibContext): JavaValue[] | undefined {
+  if (args.length === from + 1) {
+    const last = args[from];
+    if (last.kind === 'null') return undefined;
+    const arr = last.kind === 'arrayRef' ? ctx.heap.get(last.heapId) : undefined;
+    if (arr && isJavaArray(arr) && !isPrimitiveType(arr.elementType)) return arr.elements;
+  }
+  return args.slice(from);
+}
 
 /** A collection's elements, for the methods that only read it; null is a NullPointerException. */
 function listArg(value: JavaValue | undefined, ctx: StdlibContext): JavaValue[] {
@@ -622,10 +642,11 @@ function collectionsMethod(method: string, args: JavaValue[], ctx: StdlibContext
     case 'synchronizedList': case 'synchronizedSet': case 'synchronizedMap':
       return args[0]; // one thread, so the collection itself
     case 'addAll': {
-      // Collections.addAll(c, elements...): each through c.add().
-      if (args[0]?.kind !== 'objectRef') throw new StdlibError('NullPointerException');
+      // Collections.addAll(c, elements...): each element of the varargs array (#63) through c.add().
+      const elements = varargValues(args, 1, ctx);
+      if (args[0]?.kind !== 'objectRef' || !elements) throw new StdlibError('NullPointerException');
       let changed = false;
-      for (const e of args.slice(1)) changed = javaValueToBoolean(callInstanceMethod(args[0], 'add', [e], ctx) ?? javaBool(false)) || changed;
+      for (const e of elements) changed = javaValueToBoolean(callInstanceMethod(args[0], 'add', [e], ctx) ?? javaBool(false)) || changed;
       return javaBool(changed);
     }
   }

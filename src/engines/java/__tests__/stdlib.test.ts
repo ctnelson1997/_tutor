@@ -12,6 +12,8 @@ import { newBuiltin, callInstanceMethod, getIterableElements } from '../stdlib/c
 import type { StdlibContext } from '../stdlib/context';
 import { isLibrarySubtype, isStringType, isBoxedInstanceOf, isKnownLibraryType } from '../stdlib/hierarchy';
 import { qualifiedExceptionName } from '../stdlib/exceptions';
+import { libraryStubs } from '../semantic/stubs';
+import { readFileSync } from 'node:fs';
 import {
   type JavaValue,
   type JavaHeapEntry,
@@ -204,6 +206,27 @@ describe('callStaticMethod — Arrays / Objects / Collections', () => {
     expect(bool(callStaticMethod('Objects', 'equals', [javaString('a'), javaString('b')], ctx))).toBe(false);
     expect(bool(callStaticMethod('Objects', 'isNull', [javaNull()], ctx))).toBe(true);
     expect(() => callStaticMethod('Objects', 'requireNonNull', [javaNull()], ctx)).toThrow();
+  });
+  it('takes a varargs parameter as the array the binder packs (#63): Objects.hash, Collections.addAll', () => {
+    const ctx = makeCtx();
+    // Objects.hash(1, 2) arrives as one Object[] { 1, 2 }: Arrays.hashCode of it, 994, as in Java.
+    expect(num(callStaticMethod('Objects', 'hash', [arrRef(ctx, [javaInt(1), javaInt(2)])], ctx))).toBe(994);
+    expect(num(callStaticMethod('Objects', 'hash', [arrRef(ctx, [])], ctx))).toBe(1);
+    expect(num(callStaticMethod('Objects', 'hash', [javaNull()], ctx))).toBe(0);
+    // A primitive array is one value of the packed Object[], not the elements.
+    const ints = arrRef(ctx, [javaInt(1), javaInt(2)], 'int');
+    expect(num(callStaticMethod('Objects', 'hash', [arrRef(ctx, [ints])], ctx))).not.toBe(994);
+    const list = newBuiltin('ArrayList', [], ctx)!;
+    expect(bool(callStaticMethod('Collections', 'addAll', [list, arrRef(ctx, [javaInt(3), javaInt(1)], 'Integer')], ctx))).toBe(true);
+    expect(javaValueToString(list, ctx.heap)).toBe('[3, 1]');
+    expect(bool(callStaticMethod('Collections', 'addAll', [list, arrRef(ctx, [])], ctx))).toBe(false);
+    expect(() => callStaticMethod('Collections', 'addAll', [list, javaNull()], ctx)).toThrow('NullPointerException');
+  });
+  it("has every varargs method of the stubs in the corpus's extra/varargs-library case, run against the JDK (#63)", () => {
+    const stubMethods = new Set([...libraryStubs().flatMap(({ source }) => [...source.matchAll(/(\w+)\([^)]*\.\.\.\s*\w+\)/g)].map(m => m[1]))]);
+    const corpus = readFileSync(new URL('./jdk/cases/extra/varargs-library.java', import.meta.url), 'utf8');
+    expect(stubMethods.size).toBeGreaterThan(5);
+    expect([...stubMethods].filter(name => !corpus.includes(`.${name}(`))).toEqual([]);
   });
   it('Collections.sort / max / min on a list', () => {
     const ctx = makeCtx();
