@@ -128,11 +128,19 @@ def _readable_locals(frame):
     return dict(frame.f_locals)
 
 def _digits(v):
+    # From the logarithm: an int of millions of digits would take seconds to
+    # compare with powers of ten, and the reference trace counts its digits at
+    # every event; only one near a power of ten is compared with it.
+    import math
     v = abs(v)
-    n = int(v.bit_length() * 0.30102999566398) + 1
-    while n > 1 and 10 ** (n - 1) > v:
-        n -= 1
-    return n
+    if v < 10:
+        return 1
+    f = math.log10(v)
+    n = int(f)
+    if f - n < 1e-6 or n + 1 - f < 1e-6:
+        p = round(f)
+        return p + 1 if v >= 10 ** p else p
+    return n + 1
 
 def _r(v):
     t = type(v)

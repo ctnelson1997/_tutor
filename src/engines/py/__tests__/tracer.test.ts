@@ -117,11 +117,19 @@ describe('getTracerCode', () => {
     expect(code).toContain('tids = list(map(id, types))');
     expect(code).toContain('held = list(_compress(seq, map(_is_primitive_type, types)))');
     // The module's variables are compared by what they show; a function frame's held until its next event.
-    expect(code).toContain('key = value["heapId"] if value["type"] == "ref" else _encode(value)');
+    expect(code).toContain('key = value["heapId"] if value["type"] == "ref" else (id(val), str.__len__(val), str.__hash__(val)) if type(val) is str else _encode(value)');
     expect(code).toContain('holds = kind == "function"');
     // Heap ids by address and type, per-type facts by weak reference.
     expect(code).toContain('_heap_map[k] = (heap_id, tid)');
     expect(code).toContain('cache[k] = (value, _weakref.ref(t))');
+  });
+
+  it('costs each step what changed: containers of numbers and strings compared by identity, output parts from the new lines (#84)', () => {
+    expect(code).toContain('if len(held) == len(seq) and all(map(_is, seq, held)):');
+    expect(code).toContain('_BUILTIN_KINDS = {list: "list", tuple: "tuple", dict: "dict", set: "set", frozenset: "set", _types.FunctionType: "function"}');
+    expect(code).toContain('stdout = _part({"base": part, "keep": keep, "add": _out_lines[keep:n]})');
+    expect(code).toContain('def _start_console():');
+    expect(code).toContain('f = _log10(v)');
   });
 
   it('reads each frame from the frame itself, again whenever it may have changed (#80)', () => {

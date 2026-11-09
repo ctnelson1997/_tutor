@@ -119,6 +119,13 @@ describe('the recursion limit, as python main.py has it', () => {
 });
 
 describe('values the tracer used to fail on', () => {
+  it("counts a huge int's digits exactly, at powers of ten too (#84)", () => {
+    const reply = runProgram(py, 'a = 10 ** 5000\nb = a - 1\nc = a + 1\nd = 2 ** 100000\ne = -(10 ** 9999)');
+    if (reply.type !== 'result') throw new Error(reply.message);
+    const shownAs = Object.fromEntries(last(reply.snapshots).callStack[0].variables.map(v => [v.name, v.value.type === 'ref' ? '' : v.value.display]));
+    expect(shownAs).toEqual({ a: '<int with 5001 digits>', b: '<int with 5000 digits>', c: '<int with 5001 digits>', d: '<int with 30103 digits>', e: '<int with 10000 digits>' });
+  });
+
   it('draws an int past the digit limit by its size, and the run goes on', () => {
     const reply = runFull('x = 10 ** 5000\ny = x + 1\nprint(len(str(x // 10 ** 4990)))\n');
     expect(reply.error).toBeUndefined();

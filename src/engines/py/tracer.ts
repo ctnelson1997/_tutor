@@ -50,6 +50,7 @@ def _encode(obj):
     return ''.join(_c_encoder(obj, 0))
 _isinf = math.isinf
 _isnan = math.isnan
+_log10 = math.log10
 _now = time.time
 _settrace = sys.settrace
 _setprofile = sys.setprofile
@@ -312,17 +313,49 @@ def _main_module():
 # wrote its first characters).
 
 _out_lines = ['']       # stdout split on newlines; the last entry is the open line
-_console = []           # every line as [stream, text, input ranges or None], in program order
+# Every line as [stream, text, input ranges or None], in program order: kept
+# from the first write to stderr or read from stdin on (#84), started then
+# from stdout's lines; until then the console is stdout.
+_console = []
+_console_live = False
 _console_open = False   # the last line of _console has no newline yet
 _stderr_used = False
 _stdin_used = False
 _output_count = 0       # writes and echoes so far
 _output_seen = 0        # ... when the last step was taken
 
+def _start_console():
+    # The console from stdout's lines, at the first write to stderr or read from stdin.
+    global _console_live, _console_open
+    _console_live = True
+    _console.extend([['stdout', t, None] for t in _out_lines[:-1]])
+    if _out_lines[-1]:
+        _console.append(['stdout', _out_lines[-1], None])
+    _console_open = bool(_out_lines[-1])
+
 def _console_add(stream, s, echo):
     # Adds s to the console's lines; an echo marks its characters as input.
-    global _console_open, _output_count
-    _output_count += 1
+    global _console_open
+    if not echo:
+        # Many lines at once (one print of a long text, #84): the lines in between are whole.
+        parts = s.split('\\n')
+        first = parts[0]
+        if first:
+            if _console_open:
+                _console[-1][1] += first
+            else:
+                _console.append([stream, first, None])
+                _console_open = True
+        if len(parts) > 1:
+            if not _console_open:
+                _console.append([stream, '', None])
+            _console.extend([[stream, t, None] for t in parts[1:-1]])
+            if parts[-1]:
+                _console.append([stream, parts[-1], None])
+                _console_open = True
+            else:
+                _console_open = False
+        return
     for i, part in enumerate(s.split('\\n')):
         if i > 0:
             if not _console_open:
@@ -348,21 +381,28 @@ def _console_add(stream, s, echo):
                 line[2] = ranges
 
 def _write(stream, s):
-    global _stderr_used
+    global _stderr_used, _output_count
+    _output_count += 1
     if stream == 'stderr':
         _stderr_used = True
+        if not _console_live:
+            _start_console()
     if stream == 'stdout':
         parts = s.split('\\n')
         _out_lines[-1] += parts[0]
         _out_lines.extend(parts[1:])
-    _console_add(stream, s, False)
+    if _console_live:
+        _console_add(stream, s, False)
 
 def _echo(s):
     # What the program read from stdin shows on the console, marked as input,
     # where a terminal shows what was typed: after input()'s prompt (#32). It
     # isn't the program's output, so stdout doesn't hold it.
-    global _stdin_used
+    global _stdin_used, _output_count
     _stdin_used = True
+    _output_count += 1
+    if not _console_live:
+        _start_console()
     _console_add('stdout', s, True)
 
 class _TutorBuffer(_io.BufferedIOBase):
@@ -538,7 +578,7 @@ def _console_line_parts():
     # stderr or stdin was used. Only the last line can have changed since the
     # last call: the ones before it are finished.
     if not (_stderr_used or _stdin_used):
-        return None
+        return False
     n = len(_console_lines)
     for i in range(n - 1 if n else 0, len(_console)):
         st, t, rs = _console[i]
@@ -551,35 +591,34 @@ def _console_line_parts():
             _console_lines[i] = entry
         else:
             _console_lines.append(entry)
-    return [e[1] for e in _console_lines]
-
-def _lines_part(lines, last):
-    # A list of lines as a part: the previous list's first lines and the ones
-    # added since, when it grew (run.ts builds the whole list).
-    if last is None:
-        return _part({"add": lines})
-    before = last[1]
-    keep = len(before)
-    if keep and (keep > len(lines) or before[keep - 1] != lines[keep - 1]):
-        keep -= 1
-    if keep > len(lines) or before[:keep] != lines[:keep]:
-        return _part({"add": lines})
-    return _part({"base": last[0], "keep": keep, "add": lines[keep:]})
+    return True
 
 def _with_output(snapshot):
     # The output as it is now, on a step: the same parts as the last step's
-    # while nothing was written (#39).
+    # while nothing was written (#39). A list of lines grows at its end, and
+    # only its last line can change, so a new one is the last one's lines
+    # but that one and the lines added since, never compared (#84).
     global _output_seen, _output_parts, _stdout_last, _console_last
     _output_seen = _output_count
     if _output_parts is None or _output_parts[0] != _output_count:
-        lines = _stdout_shown()
-        stdout = _lines_part(lines, _stdout_last)
-        _stdout_last = (stdout, lines)
-        console = _console_line_parts()
-        if console is not None:
-            part = _lines_part(console, _console_last)
-            _console_last = (part, console)
-            console = part
+        n = len(_out_lines) - (1 if _out_lines[-1] == '' else 0)
+        if _stdout_last is None:
+            stdout = _part({"add": _out_lines[:n]})
+        else:
+            part, shown, was_open = _stdout_last
+            keep = shown - 1 if was_open else shown
+            stdout = _part({"base": part, "keep": keep, "add": _out_lines[keep:n]})
+        _stdout_last = (stdout, n, _out_lines[-1] != '')
+        console = None
+        if _console_line_parts():
+            count = len(_console_lines)
+            if _console_last is None:
+                console = _part({"add": [e[1] for e in _console_lines]})
+            else:
+                part, shown = _console_last
+                keep = max(shown - 1, 0)
+                console = _part({"base": part, "keep": keep, "add": [e[1] for e in _console_lines[keep:count]]})
+            _console_last = (console, count)
         _output_parts = (_output_count, stdout, console)
     snapshot["stdout"] = _output_parts[1]
     if _output_parts[2] is not None:
@@ -756,11 +795,18 @@ def _get_heap_id(obj):
     return heap_id
 
 def _digits(v):
+    # How many digits an int has, from its logarithm (#84: 10 ** (n - 1) for
+    # an int of millions of digits took seconds); only an int within a
+    # millionth of a power of ten is compared with that power.
     v = abs(v)
-    n = int(v.bit_length() * 0.30102999566398) + 1
-    while n > 1 and 10 ** (n - 1) > v:
-        n -= 1
-    return n
+    if v < 10:
+        return 1
+    f = _log10(v)
+    n = int(f)
+    if f - n < 1e-6 or n + 1 - f < 1e-6:
+        p = round(f)
+        return p + 1 if v >= 10 ** p else p
+    return n + 1
 
 def _int_value(val):
     # An int as Python writes it (#37): a JSON number while JavaScript holds it
@@ -1010,6 +1056,9 @@ _KIND_TYPES = (
     ("primitive", (int, float, str, complex)),
 )
 _kinds = {}           # id(type) -> (its kind, a weak reference to it), for this run
+# The kinds of the types most objects have, without a lookup through _kinds.
+_BUILTIN_KINDS = {list: "list", tuple: "tuple", dict: "dict", set: "set", frozenset: "set", _types.FunctionType: "function"}
+_is = _operator.is_
 _slots_of = {}        # id(type) -> (its slots' descriptors, a weak reference to it), for this run
 
 def _find_kind(t):
@@ -1125,6 +1174,17 @@ def _heap_read(obj, t, kind):
     # methods: the values it may show (seq), in a layout its kind fixes, and
     # anything else (meta). Another step that reads the same objects (by id
     # and type) and meta draws it as before, without building it again (#78).
+    # (The exact built-in types first, the most common, with the fewest calls, #84.)
+    if t is dict:
+        n = dict.__len__(obj)
+        if n <= _MAX_DICT_PROPS:
+            return [*obj, *obj.values(), None], (n, n, 0)
+    elif t is list:
+        seq = obj[:_MAX_SEQ_PROPS]
+        return seq, (list.__len__(obj), len(seq), 0)
+    elif t is tuple:
+        seq = list(obj[:_MAX_SEQ_PROPS])
+        return seq, (tuple.__len__(obj), len(seq), 0)
     if kind == "list" or kind == "tuple" or kind == "deque":
         if kind == "list":
             seq = list.__getitem__(obj, slice(0, _MAX_SEQ_PROPS))
@@ -1405,8 +1465,8 @@ def _heap_build(obj, t, kind, seq, meta):
 _parts = []           # every frame, variable, heap object, property and output list, by index, as JSON text
 _heap_cache = {}      # id(obj) -> what the last step drew of it, for the objects it drew
 _output_parts = None  # (_output_count, stdout part, console part) of the last step
-_stdout_last = None   # (part, lines) of the last stdout list
-_console_last = None  # (part, line parts) of the last console list
+_stdout_last = None   # (part, how many lines, whether the last was open) of the last stdout list
+_console_last = None  # (part, how many lines) of the last console list
 _console_lines = []   # (key, part) of each console line
 
 def _part(obj):
@@ -1458,7 +1518,8 @@ def _draw_frame(frame_info, top, return_value, has_return, visited, pending, ret
             cache[name] = (val, p)
         else:
             value = _serialize_value(val)
-            key = value["heapId"] if value["type"] == "ref" else _encode(value)
+            # (A string by its object, length and hash, not its text encoded again each step, #84.)
+            key = value["heapId"] if value["type"] == "ref" else (id(val), str.__len__(val), str.__hash__(val)) if type(val) is str else _encode(value)
             if hit is not None and hit[0] == key:
                 p = hit[1]
             else:
@@ -1535,22 +1596,42 @@ def _new_entry(obj, t, kind, seq, meta, ids, tids, types, old):
         part = _part(heap_object)
     # The numbers and strings it shows are held until the next step, so their
     # ids stay theirs: an entry that shows the same ids shows the same values.
+    # One that shows nothing else holds them all and is compared by identity
+    # (its ids None).
+    if _PRIMITIVE_TYPES.issuperset(types):
+        return (id(t), meta, None, tids, seq, part, children, sigs, props, object_type, label)
     held = list(_compress(seq, map(_is_primitive_type, types)))
     return (id(t), meta, ids, tids, held, part, children, sigs, props, object_type, label)
 
 def _draw_heap_object(obj, visited, pending, cache):
     # A heap object as a part: the last step's while it shows the same objects
-    # (by id and type, its numbers and strings held) and the same meta.
+    # (by id and type, its numbers and strings held) and the same meta. One
+    # that shows only numbers and strings (a grid's row, a dict of counts) is
+    # compared by identity with what it held, in one pass (#84).
     t = type(obj)
-    kind = _kind(t)
+    kind = _BUILTIN_KINDS.get(t) or _kind(t)
     seq, meta = _heap_read(obj, t, kind)
-    types = list(map(type, seq))
-    ids = list(map(id, seq))
-    tids = list(map(id, types))
     obj_id = id(obj)
     entry = _heap_cache.get(obj_id)
-    if entry is None or entry[0] != id(t) or entry[1] != meta or entry[2] != ids or entry[3] != tids:
-        entry = _new_entry(obj, t, kind, seq, meta, ids, tids, types, entry)
+    if entry is not None and entry[0] == id(t) and entry[1] == meta:
+        if entry[2] is None:
+            held = entry[4]
+            if len(held) == len(seq) and all(map(_is, seq, held)):
+                cache[obj_id] = entry
+                return entry[5]
+            types = list(map(type, seq))
+        else:
+            types = list(map(type, seq))
+            ids = list(map(id, seq))
+            tids = list(map(id, types))
+            if entry[2] == ids and entry[3] == tids:
+                cache[obj_id] = entry
+                for i in entry[6]:
+                    _enqueue(seq[i], visited, pending)
+                return entry[5]
+    else:
+        types = list(map(type, seq))
+    entry = _new_entry(obj, t, kind, seq, meta, list(map(id, seq)), list(map(id, types)), types, entry)
     cache[obj_id] = entry
     for i in entry[6]:
         _enqueue(seq[i], visited, pending)
@@ -1897,7 +1978,7 @@ def _compile_error(e, source_code):
 def run_traced(source_code, stdin_text=''):
     global _snapshots, _call_stack, _heap_map, _heap_counter, _step_counter, _continuation_lines, _module_order, _source_words
     global _stop_reason, _start_time, _events, _raised_at, _work
-    global _out_lines, _console, _console_open, _stderr_used, _stdin_used, _output_count, _output_seen
+    global _out_lines, _console, _console_live, _console_open, _stderr_used, _stdin_used, _output_count, _output_seen
     global _parts, _heap_cache, _output_parts, _stdout_last, _console_last, _console_lines, _kinds, _slots_of
     global _limit, _base, _refused, _program_trace, _program_local
     _stop_reason = None
@@ -1912,6 +1993,7 @@ def run_traced(source_code, stdin_text=''):
     _snapshots = []
     _out_lines = ['']
     _console = []
+    _console_live = False
     _console_open = False
     _stderr_used = False
     _stdin_used = False
