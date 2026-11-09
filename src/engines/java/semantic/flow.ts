@@ -50,6 +50,8 @@ interface Jump {
 interface Handler {
   catches: ClassSymbol[];
   thrown: ClassSymbol[];
+  /** The block calls what JavaTutor can't see the throws of (a method the stubs lack, an unsupported class's): it may throw any checked exception (#71). */
+  mayThrowAnything?: boolean;
 }
 
 interface Lib {
@@ -311,7 +313,8 @@ class Flow {
       case 'Try': return this.try_(st, s);
       case 'Synchronized': return this.stmt(st.body, this.expr(st.lock, s));
       case 'Assert': return s;
-      case 'Empty': case 'Unsupported': return s;
+      case 'Empty': return s;
+      case 'Unsupported': this.throwsUnknown(); return s;
     }
   }
 
@@ -415,12 +418,12 @@ class Flow {
     for (const c of st.catches) {
       for (const t of c.types) {
         if (seen.some(p => isSubclass(t, p))) this.error(`exception ${t.name} has already been caught`, c.range);
-        if (this.isChecked(t) && t !== this.lib.exception && t !== this.lib.throwable && !handler.thrown.some(x => isSubclass(x, t) || isSubclass(t, x))) {
+        if (this.isChecked(t) && t !== this.lib.exception && t !== this.lib.throwable && !handler.mayThrowAnything && !handler.thrown.some(x => isSubclass(x, t) || isSubclass(t, x))) {
           this.error(`exception ${t.name} is never thrown in body of corresponding try statement`, c.range);
         }
       }
       seen.push(...c.types);
-      this.rethrows.set(c.local, handler.thrown.filter(x => c.types.some(t => isSubclass(x, t))));
+      this.rethrows.set(c.local, handler.mayThrowAnything ? [...c.types] : handler.thrown.filter(x => c.types.some(t => isSubclass(x, t))));
     }
     const catchEnds = st.catches.map(c => {
       const start = copy(before);
@@ -466,7 +469,8 @@ class Flow {
 
   private expr(e: B.BExpr, s: State): State {
     switch (e.kind) {
-      case 'Const': case 'This': case 'OuterThis': case 'ClassLiteral': case 'StaticField': case 'Unsupported': return s;
+      case 'Const': case 'This': case 'OuterThis': case 'ClassLiteral': case 'StaticField': return s;
+      case 'Unsupported': this.throwsUnknown(); return s;
       case 'Local': this.read(e.local, s, e.range); return s;
       case 'Field': return this.readField(e, this.expr(e.target, s));
       case 'ArrayLength': return this.expr(e.array, s);
@@ -480,6 +484,7 @@ class Flow {
       case 'DynamicCall': {
         let cur = e.target ? this.expr(e.target, s) : s;
         for (const a of e.args) cur = this.expr(a, cur);
+        this.throwsUnknown();
         return cur;
       }
       case 'New': {
@@ -638,6 +643,11 @@ class Flow {
       return this.rethrows.get(e.local)!;
     }
     return e.type.tag === 'class' ? [e.type.symbol] : [];
+  }
+
+  /** A call whose throws JavaTutor doesn't know (#71): every enclosing try may catch any checked exception from it, so none is "never thrown". */
+  private throwsUnknown(): void {
+    for (const h of this.handlers) h.mayThrowAnything = true;
   }
 
   /** A call of a method (or constructor) whose throws clause declares checked exceptions. */

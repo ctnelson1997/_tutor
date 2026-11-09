@@ -57,7 +57,7 @@ import {
 import { hashCodeOf, spreadHash, newTable, hashFind, hashInsert, hashRemove, presize } from './hashing';
 import { timSort } from './timsort';
 import { isExceptionClass, newException, exceptionMethod } from './exceptions';
-import { newScanner, scannerMethod } from './scanner';
+import { newScanner, scannerMethod, newStringTokenizer, tokenizerMethod } from './scanner';
 import { newRandom, randomMethod } from './random';
 import { FUNCTION_CLASSES, applyFunction, functionalMethod, isOptionalClass, optionalMethod } from './functional';
 import { isStreamClass, streamMethod, collectionStream } from './streams';
@@ -65,7 +65,7 @@ import { isStreamClass, streamMethod, collectionStream } from './streams';
 /** The collections' methods that take functions (#16). */
 const FUNCTIONAL_METHODS = new Set(['forEach', 'removeIf', 'replaceAll', 'computeIfAbsent', 'computeIfPresent', 'compute', 'merge']);
 
-export { scannerRemaining } from './scanner';
+export { scannerRemaining, tokenizerRemaining } from './scanner';
 
 const ALL_BUILTIN = new Set<string>([
   ...LIST_LIKE, ...SET_LIKE, ...MAP_LIKE, 'Scanner', 'Random',
@@ -224,6 +224,7 @@ export function newBuiltin(className: string, args: JavaValue[], ctx: StdlibCont
     return map.ref;
   }
   if (className === 'Scanner') return newScanner(args, ctx);
+  if (className === 'StringTokenizer') return newStringTokenizer(args, ctx);
   if (className === 'Random') return newRandom(args, ctx);
   if (isExceptionClass(className)) return newException(className, args, ctx);
   return undefined;
@@ -290,6 +291,7 @@ export function callInstanceMethod(
   if (ref.kind !== 'objectRef') return undefined;
   const cls = ref.className;
   if (cls === 'Scanner') return scannerMethod(ref, method, ctx);
+  if (cls === 'StringTokenizer') return tokenizerMethod(ref, method, args, ctx);
   if (cls === 'Random') return randomMethod(ref, method, args, ctx);
   if (cls === 'Comparator') return functionalMethod(ref, method, args, ctx) ?? comparatorMethod(ref, method, args, ctx);
   // The library's own function objects (Function.identity(), f.andThen(g), …), streams and Optionals (#16).
@@ -420,6 +422,8 @@ function removeWhere(c: Coll, test: (e: JavaValue) => boolean): boolean {
 /** toArray() is an Object[]; toArray(T[] a) fills a if it is big enough (a null after the last), else a new T[]. */
 function toArray(c: Coll, target: JavaValue | undefined): JavaValue {
   const els = elements(c).slice();
+  // toArray(String[]::new) (#71): the generator makes an empty array of the type, then toArray(T[]) does the rest, as Collection's default does.
+  if (target && target.kind === 'objectRef') target = applyFunction(target, 'apply', [javaInt(0)], c.ctx);
   const arr = target?.kind === 'arrayRef' ? c.ctx.heap.get(target.heapId) : undefined;
   if (target && arr && isJavaArray(arr)) {
     if (arr.elements.length < els.length) return { kind: 'arrayRef', heapId: c.ctx.allocArray(arr.elementType, els) };

@@ -60,6 +60,7 @@ import {
   type StdlibContext,
   HaltSignal,
   StdlibError,
+  StdlibThrow,
   callStaticMethod,
   getStaticField,
   javaFormat,
@@ -2417,6 +2418,8 @@ export class Evaluator {
         write(args.length > 0 ? charArrayText(args[0], this.ctx) ?? this.stringify(args[0]) : '');
         return javaNull();
       case 'printf': case 'format': {
+        // printf(Locale, …) formats as the US does (#71).
+        if (args[0]?.kind === 'objectRef' && args[0].className === 'Locale') args = args.slice(1);
         const fmt = args.length > 0 ? javaValueToString(args[0], this.heap) : '';
         write(this.stdlib(line, () => javaFormat(fmt, args.slice(1), this.heap, v => this.stringify(v))));
         return javaNull();
@@ -2430,6 +2433,8 @@ export class Evaluator {
     try {
       return call();
     } catch (e) {
+      // An exception object of the program's the stdlib throws as it is (orElseThrow's supplier's, #71).
+      if (e instanceof StdlibThrow) throw new JavaThrow(e.value);
       if (e instanceof StdlibError) {
         const err = new InterpreterError(e.message, line);
         if (e instanceof PatternSyntaxError) this.patternErrors.set(err, e);
@@ -2686,6 +2691,7 @@ export class Evaluator {
         if (value.className === 'MapEntry') return this.stringify(obj.fields.get('key')!) + '=' + this.stringify(obj.fields.get('value')!);
         if (isOptionalClass(value.className)) return optionalText(obj, v => this.stringify(v));
         if (value.className === 'Class') return classText(javaValueToString(obj.fields.get('name') ?? javaNull(), this.heap));
+        if (value.className === 'Locale') return javaValueToString(obj.fields.get('tag') ?? javaNull(), this.heap);
       }
     }
     if (value.kind === 'arrayRef') {

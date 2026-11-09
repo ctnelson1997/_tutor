@@ -19,7 +19,7 @@ import {
   mapContents,
 } from '../types';
 import { stringLiteral, charLiteral } from '../literals';
-import { SET_LIKE, scannerRemaining } from '../stdlib';
+import { SET_LIKE, scannerRemaining, tokenizerRemaining } from '../stdlib';
 
 type Heap = Map<string, JavaHeapEntry>;
 
@@ -94,6 +94,9 @@ export function serializeObject(id: string, entry: JavaObject, heap: Heap): Heap
   }
   if (cls === 'StringBuilder' || cls === 'StringBuffer') {
     return { id, objectType: 'object', label: cls, properties: [{ key: 'value', value: javaToRuntime(entry.fields.get('value') ?? javaNull(), heap) }] };
+  }
+  if (cls === 'StringTokenizer') {
+    return { id, objectType: 'object', label: cls, properties: [{ key: 'remaining', value: javaToRuntime(javaString(tokenizerRemaining(entry)), heap) }] };
   }
   if (cls === 'Scanner') {
     // The input still to be read; a string shows its escapes, so the line break nextInt() leaves is visible as \n.

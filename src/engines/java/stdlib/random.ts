@@ -39,6 +39,20 @@ export function randomMethod(ref: JavaValue, method: string, args: JavaValue[], 
   switch (method) {
     case 'nextInt': {
       if (args.length === 0) return javaInt(rngNext(rng, 32));
+      if (args.length === 2) {
+        // RandomGenerator.nextInt(origin, bound) (Java 17+, #71): RandomSupport.boundedNextInt over nextInt().
+        const origin = javaValueToNumber(args[0]) | 0, bound = javaValueToNumber(args[1]) | 0;
+        if (origin >= bound) throw new StdlibError('IllegalArgumentException: bound must be greater than origin');
+        let r = rngNext(rng, 32);
+        const n = (bound - origin) | 0, m = (n - 1) | 0;
+        if ((n & m) === 0) return javaInt(((r & m) + origin) | 0);
+        if (n > 0) {
+          for (let u = r >>> 1; ((u + m - (r = u % n)) | 0) < 0; u = rngNext(rng, 32) >>> 1);
+          return javaInt((r + origin) | 0);
+        }
+        while (r < origin || r >= bound) r = rngNext(rng, 32);
+        return javaInt(r);
+      }
       const bound = javaValueToNumber(args[0]) | 0;
       if (bound <= 0) throw new StdlibError('IllegalArgumentException: bound must be positive');
       if ((bound & -bound) === bound) { // power of two

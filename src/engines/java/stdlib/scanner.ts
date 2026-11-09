@@ -136,3 +136,75 @@ export function scannerMethod(ref: JavaValue, method: string, ctx: StdlibContext
   }
   return undefined;
 }
+
+// ── java.util.StringTokenizer (#71) ──
+
+const tokenizerText = (obj: JavaObject, name: string) => {
+  const v = obj.fields.get(name);
+  return v?.kind === 'string' ? v.value : '';
+};
+
+/** new StringTokenizer(str), (str, delim), (str, delim, returnDelims): the delimiters " \t\n\r\f" by default. */
+export function newStringTokenizer(args: JavaValue[], ctx: StdlibContext): JavaValue {
+  if (args[0]?.kind !== 'string') throw new StdlibError('NullPointerException');
+  const fields = new Map<string, JavaValue>([
+    ['__text__', args[0]],
+    ['__pos__', numericValue('int', 0)],
+    ['__delims__', args[1]?.kind === 'string' ? args[1] : javaString(' \t\n\r\f')],
+    ['__returnDelims__', javaBool(args[2]?.kind === 'primitive' && args[2].value === true)],
+  ]);
+  const heapId = ctx.allocObject('StringTokenizer', fields);
+  return { kind: 'objectRef', heapId, className: 'StringTokenizer' };
+}
+
+/** The part of a StringTokenizer's text it hasn't returned yet (what it is drawn with). */
+export function tokenizerRemaining(obj: JavaObject): string {
+  const pos = obj.fields.get('__pos__');
+  return tokenizerText(obj, '__text__').slice(pos?.kind === 'primitive' ? Number(pos.value) : 0);
+}
+
+/** StringTokenizer's methods, as the JDK's: delimiters skipped (or returned as tokens), NoSuchElementException at the end. */
+export function tokenizerMethod(ref: JavaValue, method: string, args: JavaValue[], ctx: StdlibContext): JavaValue | undefined {
+  if (ref.kind !== 'objectRef') return undefined;
+  const obj = ctx.heap.get(ref.heapId) as JavaObject;
+  const text = tokenizerText(obj, '__text__');
+  const posValue = obj.fields.get('__pos__');
+  let pos = posValue?.kind === 'primitive' ? Number(posValue.value) : 0;
+  const returnDelims = obj.fields.get('__returnDelims__')?.kind === 'primitive' && (obj.fields.get('__returnDelims__') as { value: unknown }).value === true;
+  if (method === 'nextToken' && args.length === 1) {
+    if (args[0].kind !== 'string') throw new StdlibError('NullPointerException');
+    obj.fields.set('__delims__', args[0]);
+  }
+  const delims = tokenizerText(obj, '__delims__');
+  const skipDelimiters = (from: number) => {
+    if (!returnDelims) while (from < text.length && delims.includes(text[from])) from++;
+    return from;
+  };
+  const scanToken = (from: number) => {
+    const start = from;
+    while (from < text.length && !delims.includes(text[from])) from++;
+    if (returnDelims && start === from && from < text.length && delims.includes(text[from])) from++;
+    return from;
+  };
+  switch (method) {
+    case 'hasMoreTokens': case 'hasMoreElements': return javaBool(skipDelimiters(pos) < text.length);
+    case 'nextToken': case 'nextElement': {
+      pos = skipDelimiters(pos);
+      if (pos >= text.length) throw new StdlibError('NoSuchElementException');
+      const start = pos;
+      pos = scanToken(pos);
+      obj.fields.set('__pos__', numericValue('int', pos));
+      return javaString(text.slice(start, pos));
+    }
+    case 'countTokens': {
+      let count = 0;
+      for (let p = pos; ; count++) {
+        p = skipDelimiters(p);
+        if (p >= text.length) break;
+        p = scanToken(p);
+      }
+      return numericValue('int', count);
+    }
+  }
+  return undefined;
+}

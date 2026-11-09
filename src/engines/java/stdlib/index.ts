@@ -5,7 +5,7 @@
  */
 
 export type { StdlibContext } from './context';
-export { HaltSignal, StdlibError } from './context';
+export { HaltSignal, StdlibError, StdlibThrow } from './context';
 export { callStaticMethod, getStaticField } from './statics';
 export { javaFormat } from './format';
 export {
@@ -15,6 +15,7 @@ export {
   forEachIterator,
   isBuiltinCollection,
   scannerRemaining,
+  tokenizerRemaining,
 } from './collections';
 export { LIST_LIKE, SET_LIKE, MAP_LIKE, VIEW_CLASSES, charArrayText, valuesEqual } from './util';
 export { hashCodeOf, identityHashCode } from './hashing';

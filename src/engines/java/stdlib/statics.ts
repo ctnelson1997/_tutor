@@ -85,6 +85,12 @@ function numberAs(v: JavaValue | undefined, type: NumericType): NumericValue {
 
 export function getStaticField(className: string, field: string, ctx?: StdlibContext): JavaValue | undefined {
   switch (className) {
+    case 'Locale': {
+      // A Locale is its tag (#71); formatting ignores it and always uses the US conventions.
+      const tags: Record<string, string> = { US: 'en_US', UK: 'en_GB', ENGLISH: 'en', ROOT: '', CANADA: 'en_CA' };
+      if (ctx && field in tags) return { kind: 'objectRef', heapId: ctx.allocObject('Locale', new Map([['tag', javaString(tags[field])]])), className: 'Locale' };
+      break;
+    }
     case 'String':
       if (field === 'CASE_INSENSITIVE_ORDER' && ctx) return libraryComparator('caseInsensitive', undefined, ctx);
       break;
@@ -331,7 +337,8 @@ function booleanWrapper(method: string, args: JavaValue[], ctx: StdlibContext): 
 function characterWrapper(method: string, args: JavaValue[]): JavaValue | undefined {
   const code = args.length > 0 ? Math.trunc(javaValueToNumber(args[0])) : 0;
   const ch = String.fromCharCode(code);
-  const test = CHARACTER_TESTS[method];
+  // Own properties only: CHARACTER_TESTS.toString is Object's (Character.toString and valueOf broke on it).
+  const test = Object.hasOwn(CHARACTER_TESTS, method) ? CHARACTER_TESTS[method] : undefined;
   if (test) return javaBool(test(code));
   // A char in, a char out; a code point (int) in, an int out.
   const sameKind = (v: number) => (args[0]?.kind === 'primitive' && args[0].javaType === 'int' ? javaInt(v) : javaChar(v));
@@ -339,7 +346,8 @@ function characterWrapper(method: string, args: JavaValue[]): JavaValue | undefi
     case 'toUpperCase': return sameKind(toUpperCaseChar(code));
     case 'toLowerCase': return sameKind(toLowerCaseChar(code));
     case 'getNumericValue': return javaInt(characterValue(code));
-    case 'toString': return javaString(ch);
+    case 'valueOf': return { ...javaChar(code), boxed: true };
+    case 'toString': return javaString(args[0]?.kind === 'primitive' && args[0].javaType === 'int' ? String.fromCodePoint(code) : ch);
     case 'hashCode': return javaInt(code);
     case 'compare': return javaInt(code - Math.trunc(javaValueToNumber(args[1])));
   }
@@ -349,6 +357,8 @@ function characterWrapper(method: string, args: JavaValue[]): JavaValue | undefi
 function stringStatic(method: string, args: JavaValue[], ctx: StdlibContext): JavaValue | undefined {
   switch (method) {
     case 'format': {
+      // format(Locale, …) formats as the US does, whatever the locale (#71).
+      if (args[0]?.kind === 'objectRef' && args[0].className === 'Locale') args = args.slice(1);
       if (args[0]?.kind === 'null') throw new JavaRuntimeError('NullPointerException', 'Cannot invoke "String.length()" because "s" is null', 0);
       const fmt = javaValueToString(args[0], ctx.heap);
       return javaString(javaFormat(fmt, args.slice(1), ctx.heap, ctx.stringify));

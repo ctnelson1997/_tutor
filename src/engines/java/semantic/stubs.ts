@@ -234,6 +234,7 @@ ${['Object', 'char[]', ...PRIMS].map(t => `  public static String valueOf(${t} x
   public static String copyValueOf(char[] chars);
   public static String copyValueOf(char[] chars, int offset, int count);
   public static String format(String format, Object... args);
+  public static String format(java.util.Locale locale, String format, Object... args);
   public static String join(CharSequence delimiter, CharSequence... parts);
   public static String join(CharSequence delimiter, Iterable<? extends CharSequence> parts);
 }
@@ -272,12 +273,17 @@ public final class Boolean implements Comparable<Boolean> {
 public final class Character implements Comparable<Character> {
   public static final char MIN_VALUE;
   public static final char MAX_VALUE;
-${['isDigit', 'isLetter', 'isLetterOrDigit', 'isWhitespace', 'isSpaceChar', 'isUpperCase', 'isLowerCase'].map(n => `  public static boolean ${n}(char c);`).join('\n')}
+${['isDigit', 'isLetter', 'isLetterOrDigit', 'isWhitespace', 'isSpaceChar', 'isUpperCase', 'isLowerCase', 'isTitleCase', 'isJavaIdentifierStart', 'isJavaIdentifierPart', 'isISOControl']
+    .map(n => `  public static boolean ${n}(char c);\n  public static boolean ${n}(int codePoint);`).join('\n')}
   public static boolean isAlphabetic(int codePoint);
   public static char toUpperCase(char c);
+  public static int toUpperCase(int codePoint);
   public static char toLowerCase(char c);
+  public static int toLowerCase(int codePoint);
   public static int getNumericValue(char c);
+  public static int getNumericValue(int codePoint);
   public static String toString(char c);
+  public static String toString(int codePoint);
   public static Character valueOf(char c);
   public static int hashCode(char c);
   public static int compare(char a, char b);
@@ -307,6 +313,8 @@ ${printOverloads('println')}
 ${printOverloads('print')}
   public PrintStream printf(String format, Object... args);
   public PrintStream format(String format, Object... args);
+  public PrintStream printf(java.util.Locale locale, String format, Object... args);
+  public PrintStream format(java.util.Locale locale, String format, Object... args);
   public void flush();
 }
 `;
@@ -344,6 +352,7 @@ public final class Optional<T> {
   public T orElse(T other);
   public T orElseGet(Supplier<? extends T> supplier);
   public T orElseThrow();
+  public <X extends Throwable> T orElseThrow(Supplier<? extends X> exceptionSupplier);
   public void ifPresent(Consumer<? super T> action);
   public <U> Optional<U> map(Function<? super T, ? extends U> f);
   public Optional<T> filter(Predicate<? super T> p);
@@ -380,6 +389,7 @@ public interface Collection<E> extends Iterable<E> {
   void clear();
   Object[] toArray();
   <T> T[] toArray(T[] a);
+  default <T> T[] toArray(IntFunction<T[]> generator) {}
   Iterator<E> iterator();
   default boolean removeIf(Predicate<? super E> filter) {}
   default java.util.stream.Stream<E> stream() {}
@@ -551,6 +561,8 @@ ${mapOf}
     V setValue(V value);
     static <K extends Comparable<? super K>, V> Comparator<Map.Entry<K, V>> comparingByKey();
     static <K, V extends Comparable<? super V>> Comparator<Map.Entry<K, V>> comparingByValue();
+    static <K, V> Comparator<Map.Entry<K, V>> comparingByKey(Comparator<? super K> cmp);
+    static <K, V> Comparator<Map.Entry<K, V>> comparingByValue(Comparator<? super V> cmp);
   }
 }
 public interface SortedMap<K, V> extends Map<K, V> {
@@ -619,6 +631,9 @@ ${arrayCopies}
   public static <T> java.util.stream.Stream<T> stream(T[] a);
   public static java.util.stream.IntStream stream(int[] a);
   public static java.util.stream.DoubleStream stream(double[] a);
+  public static <T> java.util.stream.Stream<T> stream(T[] a, int from, int to);
+  public static java.util.stream.IntStream stream(int[] a, int from, int to);
+  public static java.util.stream.DoubleStream stream(double[] a, int from, int to);
 }
 public final class Collections {
   public static <T extends Comparable<? super T>> void sort(List<T> list);
@@ -686,11 +701,31 @@ public final class Scanner implements Iterator<String>, java.io.Closeable {
   public boolean hasNextFloat();
   public void close();
 }
+public class StringTokenizer {
+  public StringTokenizer(String str) {}
+  public StringTokenizer(String str, String delim) {}
+  public StringTokenizer(String str, String delim, boolean returnDelims) {}
+  public boolean hasMoreTokens();
+  public boolean hasMoreElements();
+  public String nextToken();
+  public String nextToken(String delim);
+  public Object nextElement();
+  public int countTokens();
+}
+public final class Locale {
+  public static final Locale US;
+  public static final Locale UK;
+  public static final Locale ENGLISH;
+  public static final Locale ROOT;
+  public static final Locale CANADA;
+  public static Locale getDefault();
+}
 public class Random {
   public Random() {}
   public Random(long seed) {}
   public int nextInt();
   public int nextInt(int bound);
+  public int nextInt(int origin, int bound);
   public long nextLong();
   public boolean nextBoolean();
   public double nextDouble();
@@ -767,6 +802,7 @@ public interface Stream<T> {
   <A> A[] toArray(IntFunction<A[]> generator);
   T reduce(T identity, BinaryOperator<T> op);
   Optional<T> reduce(BinaryOperator<T> op);
+  <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator, BinaryOperator<U> combiner);
   <R, A> R collect(Collector<? super T, A, R> collector);
   List<T> toList();
   Optional<T> min(Comparator<? super T> c);
@@ -780,6 +816,7 @@ public interface Stream<T> {
   static <T> Stream<T> of(T... values);
   static <T> Stream<T> empty();
   static <T> Stream<T> iterate(T seed, UnaryOperator<T> f);
+  static <T> Stream<T> iterate(T seed, Predicate<? super T> hasNext, UnaryOperator<T> next);
   static <T> Stream<T> generate(Supplier<? extends T> s);
 }
 public interface IntStream {
@@ -839,7 +876,10 @@ public final class Collectors {
   public static <T> Collector<T, ?, Double> averagingInt(ToIntFunction<? super T> f);
   public static <T, K> Collector<T, ?, Map<K, List<T>>> groupingBy(Function<? super T, ? extends K> classifier);
   public static <T, K, A, D> Collector<T, ?, Map<K, D>> groupingBy(Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream);
+  public static <T, K, D, A, M extends Map<K, D>> Collector<T, ?, M> groupingBy(Function<? super T, ? extends K> classifier, Supplier<M> mapFactory, Collector<? super T, A, D> downstream);
   public static <T, K, U> Collector<T, ?, Map<K, U>> toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper);
+  public static <T, K, U> Collector<T, ?, Map<K, U>> toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction);
+  public static <T, K, U, M extends Map<K, U>> Collector<T, ?, M> toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction, Supplier<M> mapFactory);
 }
 `;
 

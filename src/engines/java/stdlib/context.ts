@@ -72,3 +72,12 @@ export class HaltSignal {}
  * method. The interpreter reports the message like any other runtime error.
  */
 export class StdlibError extends Error {}
+
+/** An exception object the stdlib throws as it is (#71: what orElseThrow's supplier made), which the interpreter throws on. */
+export class StdlibThrow extends Error {
+  readonly value: JavaValue;
+  constructor(value: JavaValue) {
+    super('a Java exception');
+    this.value = value;
+  }
+}

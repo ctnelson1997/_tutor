@@ -20,7 +20,7 @@ import type * as A from '../ast/ast';
 import { parseAst } from '../ast/convert';
 import { libraryStubs } from './stubs';
 import { checkFlow } from './flow';
-import { JDK_METHODS } from './jdkMembers';
+import { JDK_METHODS, JDK_OVERLOADS } from './jdkMembers';
 import { ClassSymbol, FieldSymbol, MethodSymbol, LocalSymbol, type ClassKind, type ConstValue, type LocalKind, type ParamSymbol } from './symbols';
 import {
   type JType, type ClassT, type ArrayT, type PrimitiveT, type TypeVarT, type Builtins,
@@ -1367,6 +1367,9 @@ class Binder {
     switch (e.kind) {
       case 'Literal': return this.literal(e);
       case 'Name': {
+        // A field of a class JavaTutor lacks (BigInteger.ONE, #71): unsupported, not "cannot find symbol".
+        const unsupported = this.unsupportedLibrary(e);
+        if (unsupported) return unsupported;
         const m = this.name(e);
         if (m.kind === 'expr') return m.expr;
         if (m.kind !== 'error') this.error(`cannot find symbol\n  symbol:   variable ${e.parts[e.parts.length - 1].name}${this.location()}`, range);
@@ -1674,13 +1677,65 @@ class Binder {
       this.error(receiver?.kind === 'This' ? `cannot find symbol\n  symbol: ${symbol}` : `cannot find symbol\n  symbol:   ${symbol}\n  location: ${where}`, this.selectRange(e.nameRange));
       return this.errorExpr(range);
     }
+    const before = this.diagnostics.length;
     const chosen = this.chooseMethod(candidates, args, e.nameRange, e.name, receiverType, expected, options);
-    if (!chosen) return this.errorExpr(range);
+    if (!chosen) {
+      // No stub overload takes these arguments, but one of the JDK class's would (Random.nextLong(long)): JavaTutor's gap, not the
+      // program's mistake, so it is reported as unsupported where it runs (#71), never run as another overload. Math.sqrt("x") is
+      // still javac's error.
+      const gap = cls.isLibrary ? this.jdkOverloadTakes(cls, e.name, args, candidates) : undefined;
+      if (gap) {
+        this.diagnostics.length = before;
+        return this.unsupportedExpr(`${cls.name}.${gap}`, e.nameRange, true);
+      }
+      return this.errorExpr(range);
+    }
     if (staticOnly && !chosen.method.isStatic) {
       this.error(`non-static method ${chosen.method.signature} cannot be referenced from a static context`, e.nameRange);
       return this.errorExpr(range);
     }
     return this.callNode(chosen.method, chosen.method.isStatic ? undefined : receiver, chosen, range);
+  }
+
+  /**
+   * The JDK class's overload of a method the stubs lack that would take these
+   * arguments (jdkMembers.ts, erased parameter types by simple name; #71): a
+   * primitive by widening or boxing, a class the stubs know by subtyping, a
+   * class they don't by any reference; a lambda or method reference by any
+   * interface. Loose on purpose: only a call no JDK overload could take is
+   * javac's error. An overload the stubs declare (the same erased parameters)
+   * isn't asked: the stubs' answer is javac's (Collections.sort(List<S>) for
+   * an S that isn't Comparable).
+   */
+  private jdkOverloadTakes(cls: ClassSymbol, name: string, args: B.BExpr[], stubs: MethodSymbol[]): string | undefined {
+    let binary = cls.name;
+    for (let c = cls.outer; c; c = c.outer) binary = `${c.name}$${binary}`;
+    const overloads = JDK_OVERLOADS[`${cls.packageName}.${binary}`];
+    if (overloads === undefined) return undefined;
+    const takes = (param: string, arg: B.BExpr): boolean => {
+      const t = isDeferred(arg) ? undefined : arg.type;
+      if (t === undefined) return !PRIMITIVE_NAMES.has(param) && param !== 'String' && !param.endsWith('[]');
+      if (isLoose(t) || t.tag === 'null') return t.tag !== 'null' || !PRIMITIVE_NAMES.has(param);
+      if (PRIMITIVE_NAMES.has(param)) return invocable(t, primitive(param as A.PrimitiveName), true, this.b);
+      if (param === 'Object') return true;
+      if (param.endsWith('[]')) return t.tag === 'array';
+      const known = this.lib.byName(param);
+      if (known) return invocable(t, erasure(classType(known, known.typeParams)), true, this.b);
+      return t.tag !== 'primitive';
+    };
+    for (const sig of overloads.split(' ')) {
+      const open = sig.indexOf('(');
+      if (sig.slice(0, open) !== name) continue;
+      const params = sig.slice(open + 1, -1) ? sig.slice(open + 1, -1).split(',') : [];
+      const varargs = params.length > 0 && params[params.length - 1].endsWith('...');
+      const fixed = varargs ? params.length - 1 : params.length;
+      if (varargs ? args.length < fixed : args.length !== params.length) continue;
+      const rest = varargs ? params[params.length - 1].slice(0, -3) : '';
+      const erased = params.map(x => (x.endsWith('...') ? `${x.slice(0, -3)}[]` : x));
+      const declared = stubs.some(m => m.params.length === erased.length && m.params.every((q, i) => erasedSimpleName(q.type) === erased[i] || erasedSimpleName(q.type) === '$any'));
+      if (!declared && args.every((a, i) => takes(i < fixed ? params[i] : rest, a))) return sig.replace(/,/g, ', ');
+    }
+    return undefined;
   }
 
   /** `super` as a receiver: `this`, typed as the superclass. */
@@ -1898,7 +1953,7 @@ class Binder {
               const ea = expected.args[i];
               if (ea.tag !== 'wildcard') add(rarg.id, ea, 'eq');
               else if (ea.bound) add(rarg.id, ea.bound, ea.kind === 'super' ? 'lower' : 'upper');
-            } else if (rarg?.tag === 'class' && mentionsAny(rarg, new Set([...ids].filter(open))) && !mentionsAny(rarg, new Set([...ids].filter(id => !open(id))))) {
+            } else if (rarg?.tag === 'class' && mentionsAny(rarg, new Set([...ids].filter(open)))) {
               // A type argument that is a generic class of open variables, Entry<K, V> in Comparator<Entry<K, V>>, matches the target's
               // structurally (#70: Map.Entry.comparingByValue() as an argument for Comparator<? super Entry<String, Integer>>).
               const ea = expected.args[i];
@@ -2350,9 +2405,12 @@ class Binder {
   }
 
   private unsupportedLibrary(n: A.Name): B.BExpr | undefined {
-    const first = n.parts[0].name;
-    if (!UNSUPPORTED_LIBRARY.has(first) || this.scope.lookup(first) || this.declarer.findType(first, this.typeContext())) return undefined;
-    return this.unsupportedExpr(`The ${first} class`, n.parts[0].range, true);
+    // The class's simple name first (BigInteger.valueOf), or after its package (java.math.BigInteger.ONE, #71).
+    let i = 0;
+    if (n.parts[0].name === 'java' || n.parts[0].name === 'javax') while (i < n.parts.length - 1 && /^[a-z]/.test(n.parts[i].name)) i++;
+    const name = n.parts[i].name;
+    if (!UNSUPPORTED_LIBRARY.has(name) || (i === 0 && (this.scope.lookup(name) || this.declarer.findType(name, this.typeContext())))) return undefined;
+    return this.unsupportedExpr(`The ${name} class`, n.parts[i].range, true);
   }
 
   // ── Object creation ──
@@ -2906,12 +2964,26 @@ interface CallOptions {
   diamond?: boolean;
 }
 
+/** A parameter's erased type by simple name, as reflection names it: `int`, `List`, `Object[]`. */
+function erasedSimpleName(t: JType): string {
+  const e = erasure(t);
+  if (e.tag === 'primitive') return e.name;
+  if (e.tag === 'array') return `${erasedSimpleName(e.component)}[]`;
+  if (e.tag === 'class') return e.symbol.name;
+  return 'Object';
+}
+
+const PRIMITIVE_NAMES = new Set(['int', 'long', 'short', 'byte', 'char', 'float', 'double', 'boolean']);
+
 /** Library classes JavaTutor knows of but doesn't emulate. */
 const UNSUPPORTED_LIBRARY = new Set([
   'LongStream', 'OptionalLong', 'Thread', 'Callable', 'LongFunction', 'LongPredicate', 'LongUnaryOperator', 'ToIntBiFunction',
   'LocalDate', 'LocalDateTime', 'Duration', 'Instant', 'BigInteger', 'BigDecimal', 'Pattern', 'Matcher',
   'Files', 'Paths', 'Path', 'File', 'BufferedReader', 'InputStreamReader', 'FileReader', 'FileWriter', 'PrintWriter',
   'AtomicInteger', 'StringJoiner', 'EnumMap', 'EnumSet', 'BitSet', 'ListIterator', 'Executors',
+  // #71: common in courses, and better named than "cannot find symbol".
+  'DecimalFormat', 'NumberFormat', 'SimpleDateFormat', 'MathContext', 'RoundingMode', 'IntSummaryStatistics', 'DoubleSummaryStatistics',
+  'LongSummaryStatistics', 'LocalTime', 'ZonedDateTime', 'DateTimeFormatter', 'ChronoUnit', 'Calendar', 'TimeUnit', 'Timer',
 ]);
 
 function emptyRange(): A.Range {
