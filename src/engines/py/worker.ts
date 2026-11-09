@@ -11,6 +11,7 @@
  *   Worker → Main:  { type: 'ready' }                 → ready to run
  *   Worker → Main:  { type: 'result', snapshots, error? } (a syntax error: no steps, a compile error) or { type: 'error', message }
  */
+import { installSetImmediate } from './immediate';
 import { PYODIDE_VERSION } from './run';
 import { PySession, type SessionPyodide } from './session';
 
@@ -18,6 +19,10 @@ import { PySession, type SessionPyodide } from './session';
 // (this file is compiled under the app's tsconfig which uses DOM lib)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const _self = self as any;
+
+// Before any Pyodide instance is made: without a setImmediate, each one adds a
+// message listener to this scope that keeps it alive forever (#79).
+installSetImmediate(_self);
 
 const PYODIDE_CDN = `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full`;
 
