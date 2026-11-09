@@ -507,7 +507,8 @@ function compareSteps(c: PyCase, golden: PyGolden, reply: WorkerMessage): StepCo
     matched[found] = true;
     j = found + 1;
     const e = events[found];
-    const shown = new Map((top.variables ?? []).map(v => [v.name, v.value]));
+    // A closure's variables from the function around it are its closureVars (#82): CPython's frame has them among its locals.
+    const shown = new Map([...(top.variables ?? []), ...(top.closureVars ?? [])].map(v => [v.name, v.value]));
     // The recorder couldn't read this frame's variables (see `!unreadable` in record.ts): nothing to compare.
     if (Object.keys(e.locals ?? {}).some(name => name.startsWith('!'))) return;
     if (inComprehension) {
@@ -543,8 +544,10 @@ function compareSteps(c: PyCase, golden: PyGolden, reply: WorkerMessage): StepCo
     // The order: a function's and a class body's as CPython's frame has them,
     // the module's as they first appeared.
     const expected = top.name === '<module>' && e.stack.length === 1 ? moduleOrder.slice(0, moduleSeen[found]) : Object.keys(e.locals ?? {});
-    const both = new Set(expected.filter(name => shown.has(name)));
-    const shownOrder = [...shown.keys()].filter(name => both.has(name));
+    // (A closure's own variables only: its closure variables are apart, #82.)
+    const own = new Set((top.variables ?? []).map(v => v.name));
+    const both = new Set(expected.filter(name => own.has(name)));
+    const shownOrder = [...own].filter(name => both.has(name));
     const expectedOrder = expected.filter(name => both.has(name));
     if (shownOrder.join() !== expectedOrder.join() && misordered.length < 3) misordered.push(`step ${i} ${top.name}: ${shownOrder.join(', ')} (CPython: ${expectedOrder.join(', ')})`);
     if (handsBackValue(e) && e.value !== undefined && top.name !== '<module>') {
@@ -613,7 +616,7 @@ function checkFinalState(golden: PyGolden, reply: WorkerMessage): string[] {
 /** Every value in a snapshot, with where it is. */
 function* valuesOf(s: ExecutionSnapshot): Generator<[string, RuntimeValue]> {
   for (const f of s.callStack) {
-    for (const v of f.variables ?? []) yield [`${f.name}.${v.name}`, v.value];
+    for (const v of [...(f.variables ?? []), ...(f.closureVars ?? [])]) yield [`${f.name}.${v.name}`, v.value];
     if (f.thisArg) yield [`${f.name}.this`, f.thisArg];
   }
   for (const h of s.heap) {
@@ -679,7 +682,7 @@ function checkNames(c: PyCase, reply: WorkerMessage): { problems: string[]; inte
     problems.push(...firstViolations(reply.snapshots, s => {
       const found: string[] = [];
       for (const f of s.callStack) {
-        for (const v of f.variables ?? []) {
+        for (const v of [...(f.variables ?? []), ...(f.closureVars ?? [])]) {
           if (!SHOWN_NAMES(v.name) && !words.has(v.name)) found.push(`variable ${f.name}.${v.name} isn't the program's`);
         }
       }
@@ -711,7 +714,7 @@ function checkReachable(snapshots: ExecutionSnapshot[]): string[] {
     }
     const stack: string[] = [];
     for (const f of s.callStack) {
-      for (const v of f.variables ?? []) if (v.value.type === 'ref') stack.push(v.value.heapId);
+      for (const v of [...(f.variables ?? []), ...(f.closureVars ?? [])]) if (v.value.type === 'ref') stack.push(v.value.heapId);
       if (f.thisArg?.type === 'ref') stack.push(f.thisArg.heapId);
     }
     const seen = new Set<string>();

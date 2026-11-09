@@ -103,9 +103,10 @@ function ObjectDisplay({ obj, changedKeys, step, empty = 'empty object' }: { obj
 
 function FunctionDisplay({ obj }: { obj: HeapObject }) {
   const name = obj.label || 'anonymous';
-  // A Java lambda or method reference is labeled with its source, a JS or
-  // Python function with its name, a Python property as `@property name` (read, not called).
-  const shown = /->|::/.test(name) || name.startsWith('@property ') ? name : `${name}()`;
+  // A Java lambda or method reference is labeled with its source, a JS
+  // function with its name, a Python function with its parameters (#82,
+  // `add(a, b)`), a Python property as `@property name` (read, not called).
+  const shown = /->|::/.test(name) || name.startsWith('@property ') || name.endsWith(')') ? name : `${name}()`;
   return (
     <div style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
       <span style={{ color: '#6f42c1' }}>ƒ</span>{' '}

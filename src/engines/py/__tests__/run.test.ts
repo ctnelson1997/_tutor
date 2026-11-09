@@ -158,6 +158,16 @@ describe('decodeReply (#39)', () => {
     expect(long.snapshots[0].stdout.at(-1)).toBe('19999');
   });
 
+  it("rebuilds a closure's frame with its closure variables apart (#82)", () => {
+    const closure = decodeReply(JSON.stringify({
+      type: 'result',
+      parts: [{ name: 'count', value: { type: 'number', value: 1 } }, { name: 'inc', variables: [], closureVars: [0] }, { add: [] }],
+      snapshots: [{ step: 0, line: 1, callStack: [1], heap: [], stdout: 2 }],
+    }));
+    if (closure.type !== 'result') throw new Error('not a result');
+    expect(closure.snapshots[0].callStack[0]).toEqual({ name: 'inc', variables: [], closureVars: [{ name: 'count', value: { type: 'number', value: 1 } }] });
+  });
+
   it('passes an error reply, and a result without parts, through as they are', () => {
     expect(decodeReply(JSON.stringify({ type: 'error', message: 'SyntaxError: invalid syntax', line: 2 }))).toEqual({ type: 'error', message: 'SyntaxError: invalid syntax', line: 2 });
     expect(decodeReply(OK)).toEqual({ type: 'result', snapshots: [] });

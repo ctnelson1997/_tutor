@@ -92,7 +92,12 @@ export function decodeReply(text: string): WorkerMessage {
     return built.get(i) as T;
   };
   // Variables, properties and console lines are parts as they are.
-  const frame = (i: number) => once(i, (p: { name: string; variables: number[] }): StackFrame => ({ name: p.name, variables: p.variables.map(v => parts[v] as Variable) }));
+  // A closure's frame has its closure variables apart (#82).
+  const frame = (i: number) => once(i, (p: { name: string; variables: number[]; closureVars?: number[] }): StackFrame => {
+    const f: StackFrame = { name: p.name, variables: p.variables.map(v => parts[v] as Variable) };
+    if (p.closureVars) f.closureVars = p.closureVars.map(v => parts[v] as Variable);
+    return f;
+  });
   const heapObject = (i: number) => once(i, (p: Omit<HeapObject, 'properties'> & { properties: number[] }): HeapObject => ({ ...p, properties: p.properties.map(q => parts[q] as Property) }));
   // A list of lines from the list it grew from: built in order, never by recursion (a run may print thousands of times).
   const lines = <T>(i: number, item: (x: unknown) => T): T[] => {

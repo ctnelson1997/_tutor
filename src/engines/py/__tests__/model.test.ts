@@ -68,7 +68,8 @@ describe('classes', () => {
     const square = drawn(s, 'Square(Shape)');
     expect(keys(square)).toEqual(['sides', 'unit', 'make', 'side']);
     const labels = square.properties.slice(1).map(p => (p.value.type === 'ref' ? s.heap.find(h => h.id === (p.value as { heapId: string }).heapId)! : null)).map(h => [h?.objectType, h?.label]);
-    expect(labels).toEqual([['function', '@staticmethod unit'], ['function', '@classmethod make'], ['function', '@property side']]);
+    // With their parameters (#82); a property is read, not called.
+    expect(labels).toEqual([['function', '@staticmethod unit()'], ['function', '@classmethod make(cls)'], ['function', '@property side']]);
     expect(drawn(s, 'Both(Square, Shape)').properties).toEqual([]);
     expect(keys(drawn(s, 'Shape'))).toEqual(['area']);
   });
@@ -196,7 +197,8 @@ describe('the order of variables', () => {
 
 describe('frames below the top (#80)', () => {
   const valueOf = (f: StackFrame, name: string) => {
-    const v = f.variables.find(x => x.name === name)?.value;
+    // A closure's variable from the function around it is among its closureVars (#82).
+    const v = [...f.variables, ...(f.closureVars ?? [])].find(x => x.name === name)?.value;
     return v && v.type !== 'ref' ? v.value : v;
   };
 
@@ -346,6 +348,73 @@ describe('steps where CPython has events (#80, extra/steps-and-labels)', () => {
   });
 });
 
+describe("functions' state (#82, extra/closures-and-defaults)", () => {
+  const fnOf = (s: ExecutionSnapshot, name: string): HeapObject => {
+    const v = s.callStack[0].variables.find(x => x.name === name)?.value;
+    if (v?.type !== 'ref') throw new Error(`${name} isn't a reference`);
+    return s.heap.find(h => h.id === v.heapId)!;
+  };
+  const shownProps = (h: HeapObject) => h.properties.map(p => `${p.key}:${p.value.type === 'ref' ? 'ref' : p.value.display ?? p.value.value}`);
+  const counters = [
+    'def make_counter():',
+    '    count = 0',
+    '    def inc():',
+    '        nonlocal count',
+    '        count += 1',
+    '        return count',
+    '    return inc',
+    'c1 = make_counter(); c2 = make_counter()',
+    'c1(); c1(); c2()',
+  ].join('\n');
+
+  it("shows each counter's count on its function, at every step after it is made", () => {
+    const all = steps(counters);
+    const s = all.at(-1)!;
+    expect([fnOf(s, 'c1').label, shownProps(fnOf(s, 'c1'))]).toEqual(['inc()', ['count:2']]);
+    expect(shownProps(fnOf(s, 'c2'))).toEqual(['count:1']);
+    for (const step of all.filter(x => x.callStack[0].variables.some(v => v.name === 'c2'))) {
+      expect(shownProps(fnOf(step, 'c1')).length).toBe(1);
+    }
+  });
+
+  it("shows a running closure's variable from the function around it apart, as a closure variable", () => {
+    const inInc = steps(counters).filter(s => s.callStack.at(-1)!.name === 'inc');
+    expect(inInc.length).toBeGreaterThan(5);
+    for (const s of inInc) {
+      const f = s.callStack.at(-1)!;
+      expect(f.variables.map(v => v.name).filter(n => n !== 'return ↵')).toEqual([]);
+      expect(f.closureVars!.map(v => v.name)).toEqual(['count']);
+    }
+  });
+
+  it('shows a mutable default on its function between calls, already holding what the last call added', () => {
+    const all = steps(['def add_item(item, bucket=[]):', '    bucket.append(item)', '    return bucket', "add_item('a')", 'x = 1', "add_item('b')"].join('\n'));
+    for (const s of all.filter(x => x.callStack[0].variables.some(v => v.name === 'add_item'))) {
+      const f = fnOf(s, 'add_item');
+      expect([f.label, f.properties.map(p => p.key)]).toEqual(['add_item(item, bucket)', ['bucket=']]);
+    }
+    // Between the calls: about to run x = 1.
+    const between = all.find(s => s.callStack.length === 1 && s.line === 5)!;
+    const bucket = fnOf(between, 'add_item').properties[0].value;
+    expect(bucket.type === 'ref' && between.heap.find(h => h.id === bucket.heapId)!.properties.map(p => p.value.type === 'string' ? p.value.value : null)).toEqual(['a']);
+  });
+
+  it('labels a function with its parameters, keyword-only and starred ones too', () => {
+    const s = last('def f(a, b=2, /, c=3, *args, d, e=5, **kw):\n    pass\nlam = lambda x: x');
+    expect([fnOf(s, 'f').label, fnOf(s, 'f').properties.map(p => p.key), fnOf(s, 'lam').label]).toEqual([
+      'f(a, b, /, c, *args, d, e, **kw)', ['b=', 'c=', 'e='], '<lambda>(x)',
+    ]);
+  });
+
+  it("shows no comprehension's variables from the frame around it: they are that frame's", () => {
+    const all = steps('def scale(xs, k):\n    return [x * k for x in xs]\nscale([1, 2], 3)');
+    for (const s of all.filter(x => x.callStack.at(-1)!.name === 'list comprehension')) {
+      expect(s.callStack.at(-1)!.closureVars).toBeUndefined();
+      expect(s.callStack.at(-1)!.variables.map(v => v.name)).not.toContain('k');
+    }
+  });
+});
+
 describe('heap objects drawn as what they hold (#81, extra/heap-objects)', () => {
   const at = (s: ExecutionSnapshot, name: string): HeapObject => {
     const v = s.callStack[0].variables.find(x => x.name === name)?.value;
@@ -447,10 +516,11 @@ describe('heap objects drawn as what they hold (#81, extra/heap-objects)', () =>
       '    return n if n < 2 else fib(n - 1) + fib(n - 2)',
       'fib(4)',
     ].join('\n'));
-    expect([at(s, 'm').label, text(at(s, 'm'))]).toEqual(['P.move', ['__self__=ref']]);
+    // A bound method without its self parameter (#82).
+    expect([at(s, 'm').label, text(at(s, 'm'))]).toEqual(['P.move()', ['__self__=ref']]);
     // A library's hidden instance (random.randint's) isn't drawn.
-    expect([at(s, 'ri').label, text(at(s, 'ri'))]).toEqual(['Random.randint', []]);
-    expect([at(s, 'fib').label, text(at(s, 'fib'))]).toEqual(['@lru_cache fib', ['cached results=5']]);
+    expect([at(s, 'ri').label, text(at(s, 'ri'))]).toEqual(['Random.randint(a, b)', []]);
+    expect([at(s, 'fib').label, text(at(s, 'fib'))]).toEqual(['@lru_cache fib(n)', ['cached results=5']]);
   });
 
   it("draws a subclass of int or str as an object with its value, and runs none of the program's code doing it", () => {

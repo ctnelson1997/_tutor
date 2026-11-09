@@ -66,6 +66,10 @@ _type_name = type.__dict__['__name__'].__get__
 _type_bases = type.__dict__['__bases__'].__get__
 _type_mro = type.__dict__['__mro__'].__get__
 _function_code = _types.FunctionType.__dict__['__code__'].__get__
+_function_defaults = _types.FunctionType.__dict__['__defaults__'].__get__
+_function_kwdefaults = _types.FunctionType.__dict__['__kwdefaults__'].__get__
+_function_closure = _types.FunctionType.__dict__['__closure__'].__get__
+_cell_contents = _types.CellType.__dict__['cell_contents'].__get__
 
 # ══════════════════════════════════════
 # PyTutor Tracer
@@ -1042,14 +1046,72 @@ def _attributes(obj, seq):
     seq += list(dict.values(d))
     return dict.__len__(d)
 
-def _function_label(f):
-    # A function by the name it was defined with, a method by its class too:
-    # its qualified name, without the functions it was defined in.
+def _function_label(f, skip=0):
+    # A function by the name it was defined with, a method by its class too
+    # (its qualified name, without the functions it was defined in), and its
+    # parameters, as pythontutor.com shows them (#82): fee(self, amount=…)
+    # as fee(self, amount). A bound method's first (self) is left out (skip).
     try:
         name = _function_qualname(f)
     except Exception:
         return _safe_name(f)
-    return name.rsplit('<locals>.', 1)[-1] if type(name) is str else _safe_name(f)
+    if type(name) is not str:
+        return _safe_name(f)
+    return name.rsplit('<locals>.', 1)[-1] + _signature(_function_code(f), skip)
+
+_CO_VARARGS = 0x04
+_CO_VARKEYWORDS = 0x08
+
+def _signature(code, skip=0):
+    n = code.co_argcount
+    k = code.co_kwonlyargcount
+    names = list(code.co_varnames[:n])
+    if code.co_posonlyargcount:
+        names.insert(code.co_posonlyargcount, '/')
+    i = n + k
+    if code.co_flags & _CO_VARARGS:
+        names.append('*' + code.co_varnames[i])
+        i += 1
+    elif k:
+        names.append('*')
+    names += code.co_varnames[n:n + k]
+    if code.co_flags & _CO_VARKEYWORDS:
+        names.append('**' + code.co_varnames[i])
+    return '(' + ', '.join(names[skip:]) + ')'
+
+def _function_state(f, seq):
+    # What a program's function holds besides its code (#82): its default
+    # values, keyed name= (a mutable default lives on, between calls, here),
+    # and the variables it closes over (its cells, keyed by name: each
+    # counter's count). Appends the values to seq; returns their keys.
+    code = _function_code(f)
+    keys = []
+    if code.co_filename != _USER_FILE:
+        return keys
+    defaults = _function_defaults(f)
+    if type(defaults) is tuple and defaults:
+        params = code.co_varnames[:code.co_argcount]
+        for name, v in zip(params[len(params) - len(defaults):], defaults):
+            keys.append(name + '=')
+            seq.append(v)
+    kwdefaults = _function_kwdefaults(f)
+    if type(kwdefaults) is dict:
+        for name in code.co_varnames[code.co_argcount:code.co_argcount + code.co_kwonlyargcount]:
+            if name in kwdefaults:
+                keys.append(name + '=')
+                seq.append(dict.__getitem__(kwdefaults, name))
+    closure = _function_closure(f)
+    if type(closure) is tuple:
+        for name, cell in zip(code.co_freevars, closure):
+            if name in _FUNCTION_BOOKKEEPING:
+                continue
+            try:
+                v = _cell_contents(cell)
+            except ValueError:
+                continue  # an empty cell: a variable not assigned yet
+            keys.append(name)
+            seq.append(v)
+    return keys
 
 def _heap_read(obj, t, kind):
     # What a heap object's drawing depends on, read through the types' own
@@ -1106,13 +1168,17 @@ def _heap_read(obj, t, kind):
         if t is _types.MethodType:
             # A bound method: its function and the object it is bound to.
             f = _method_function(obj)
-            return [_function_label(f) if type(f) is _types.FunctionType else _safe_name(f), _method_self(obj)], "bound"
+            return [_function_label(f, 1) if type(f) is _types.FunctionType else _safe_name(f), _method_self(obj)], "bound"
         if t is _types.BuiltinMethodType:
             return [_safe_name(obj), _builtin_self(obj)], "bound"
-        return [_function_label(obj) if t is _types.FunctionType else _safe_name(obj)], None
+        if t is _types.FunctionType:
+            seq = [_function_label(obj)]
+            return seq, tuple(_function_state(obj, seq))
+        return [_safe_name(obj)], None
     if kind == "method":
         f = _wrapped_function(obj)
-        return [f, _safe_name(f) if f is not None else ''], None
+        signature = _signature(_function_code(f)) if type(f) is _types.FunctionType and not issubclass(t, property) else ''
+        return [f, (_safe_name(f) if f is not None else '') + signature], None
     if kind == "generator":
         # A generator (coroutine, async generator): its function, and while it
         # is suspended, its variables (a program's; a library's aren't shown).
@@ -1262,7 +1328,8 @@ def _heap_build(obj, t, kind, seq, meta):
             bt = type(bound)
             shown = bound is not None and not issubclass(bt, _types.ModuleType) and (_is_program_class(bt) or bt in _CONTAINER_TYPES)
             return "function", seq[0], [("__self__", 1, None)] if shown else []
-        return "function", seq[0], []
+        # A program's function with its defaults and closure variables (#82).
+        return "function", seq[0], [(meta[i], 1 + i, None) for i in range(len(meta))] if meta else []
     if kind == "method":
         # A staticmethod, classmethod or property in a class: drawn as its function.
         decorator = 'staticmethod' if issubclass(t, staticmethod) else 'classmethod' if issubclass(t, classmethod) else 'property'
@@ -1364,8 +1431,16 @@ def _draw_frame(frame_info, top, return_value, has_return, visited, pending, ret
     holds = kind == "function"
     cache = {}
     parts = []
+    closure_parts = []
     heap_values = []
+    # The variables a closure reads from the function around it are its
+    # closure variables (#82), apart from its own; a comprehension's (a frame
+    # PyTutor gives it) aren't shown, they are the frame below's.
+    free = frame_info["free"]
     for name in _shown_names(frame_info, local_vars):
+        is_free = name in free
+        if is_free and frame_info["comprehension"]:
+            continue
         val = dict.__getitem__(local_vars, name)
         hit = old.get(name)
         if holds:
@@ -1382,7 +1457,7 @@ def _draw_frame(frame_info, top, return_value, has_return, visited, pending, ret
             else:
                 p = _part({"name": name, "value": value})
             cache[name] = (key, p)
-        parts.append(p)
+        (closure_parts if is_free else parts).append(p)
         if not _is_primitive(val):
             heap_values.append(val)
     if has_return:
@@ -1391,9 +1466,13 @@ def _draw_frame(frame_info, top, return_value, has_return, visited, pending, ret
             heap_values.append(return_value)
     frame_info["variable_parts"] = cache
     frame_info["heap_values"] = heap_values if holds else None
-    if parts != frame_info.get("parts"):
+    if parts != frame_info.get("parts") or closure_parts != frame_info.get("closure_parts"):
         frame_info["parts"] = parts
-        frame_info["part"] = _part({"name": frame_info["name"], "variables": parts})
+        frame_info["closure_parts"] = closure_parts
+        frame = {"name": frame_info["name"], "variables": parts}
+        if closure_parts:
+            frame["closureVars"] = closure_parts
+        frame_info["part"] = _part(frame)
     for v in heap_values:
         _enqueue(v, visited, pending)
     return frame_info["part"]
@@ -1636,7 +1715,8 @@ def _trace_event(frame, event, arg):
         # Each frame is drawn from the frame itself, its variables read as they
         # are at each step (#78, #80): the module's are its globals.
         frame_info = {"name": _COMP_DISPLAY_NAMES.get(fname, fname), "kind": _frame_kind(code), "frame": frame,
-                      "cells": bool(code.co_cellvars or code.co_freevars), "stale": False}
+                      "cells": bool(code.co_cellvars or code.co_freevars), "stale": False,
+                      "free": frozenset(code.co_freevars), "comprehension": _is_comprehension(code)}
         if frame_info["kind"] == "class":
             # What the class's namespace started with, before its body ran.
             frame_info["base"] = dict(_frame_locals(frame))
