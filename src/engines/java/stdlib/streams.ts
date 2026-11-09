@@ -35,6 +35,7 @@ import {
 import { type StdlibContext, StdlibError } from './context';
 import { allocCollection, compareWith, valuesEqual } from './util';
 import { applyFunction, makeOptional } from './functional';
+import { timSort } from './timsort';
 import { callInstanceMethod, newBuiltin, immutableList, computePut } from './collections';
 
 type Kind = 'ref' | 'int' | 'double';
@@ -211,7 +212,8 @@ export function streamMethod(ref: JavaValue, method: string, args: JavaValue[], 
       return then('sorted', function* (src) {
         const all: JavaValue[] = [];
         for (let r = src.next(); !r.done; r = src.next()) all.push(r.value);
-        yield* all.sort((a, b) => compareWith(f, a, b, ctx));
+        timSort(all, 0, all.length, (a, b) => compareWith(f, a, b, ctx));
+        yield* all;
       });
     case 'limit': {
       const n = javaValueToNumber(f);

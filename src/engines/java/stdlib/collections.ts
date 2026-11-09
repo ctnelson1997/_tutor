@@ -55,6 +55,7 @@ import {
   valuesEqual, backingArray, mapArrays, allocCollection, allocMap, builtinObject,
 } from './util';
 import { hashCodeOf, spreadHash, newTable, hashFind, hashInsert, hashRemove, presize } from './hashing';
+import { timSort } from './timsort';
 import { isExceptionClass, newException, exceptionMethod } from './exceptions';
 import { newScanner, scannerMethod } from './scanner';
 import { newRandom, randomMethod } from './random';
@@ -542,9 +543,10 @@ function newSubList(parent: Coll, from: number, to: number): JavaValue {
   return sub.ref;
 }
 
-/** Sort a list (List.sort, Collections.sort). ArrayList and Vector count it as a change. */
+/** Sort a list (List.sort, Collections.sort) with Java's TimSort (#69). ArrayList and Vector count it as a change. */
 function sortList(c: Coll, cmp: JavaValue | undefined): void {
-  const sorted = elements(c).slice().sort((a, b) => compareWith(cmp, a, b, c.ctx));
+  const sorted = elements(c).slice();
+  timSort(sorted, 0, sorted.length, (a, b) => compareWith(cmp, a, b, c.ctx));
   sorted.forEach((e, i) => listSet(c, i, e));
   if (c.cls === 'ArrayList' || c.cls === 'Vector' || c.cls === 'Stack') modified(c.obj);
 }

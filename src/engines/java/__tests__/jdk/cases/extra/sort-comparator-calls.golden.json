@@ -1,0 +1,8 @@
+{
+  "stdout": "compare 4 5\ncompare 3 4\ncompare 2 3\ncompare 1 2\n[1, 2, 3, 4, 5]\ncompareTo 2 9\ncompareTo 7 2\ncompareTo 7 9\ncompareTo 7 2\ncompareTo 2 7\ncompareTo 2 2\ncompareTo 5 7\ncompareTo 5 2\n[C2, C2, C5, C7, C9]\nsorted fig pear\nsorted apple fig\nsorted apple pear\nsorted kiwi pear\nsorted kiwi apple\n[fig, pear, kiwi, apple]\n130 comparisons, -393597165, 0..146\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "21c7fd4a1b8636a576544e7386a2916dd8025b271fcc55708a2a64b7312490b6"
+}

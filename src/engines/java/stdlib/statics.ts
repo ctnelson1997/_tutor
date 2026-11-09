@@ -61,6 +61,7 @@ import { CHARACTER_TESTS, toUpperCaseChar, toLowerCaseChar, numericValue as char
 import { hashCodeOf } from './hashing';
 import { comparing, functionStatic, optionalStatic } from './functional';
 import { streamStatic } from './streams';
+import { timSort } from './timsort';
 import {
   callInstanceMethod,
   immutableList,
@@ -425,10 +426,10 @@ function arraysMethod(method: string, args: JavaValue[], ctx: StdlibContext): Ja
         if (ranged) {
           const from = javaValueToNumber(args[1]) | 0, to = javaValueToNumber(args[2]) | 0;
           rangeCheck(arr.elements.length, from, to);
-          const seg = arr.elements.slice(from, to).sort((a, b) => compareWith(cmp, a, b, ctx));
-          for (let i = 0; i < seg.length; i++) arr.elements[from + i] = seg[i];
+          timSort(arr.elements, from, to, (a, b) => compareWith(cmp, a, b, ctx));
         } else {
-          arr.elements.sort((a, b) => compareWith(cmp, a, b, ctx));
+          // Java's TimSort, whose comparisons a comparator or compareTo sees (#69).
+          timSort(arr.elements, 0, arr.elements.length, (a, b) => compareWith(cmp, a, b, ctx));
         }
       }
       return javaNull();
