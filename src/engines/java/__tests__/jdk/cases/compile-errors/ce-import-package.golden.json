@@ -1,0 +1,8 @@
+{
+  "stdout": "",
+  "stderr": "Main.java:1: error: package java.utils does not exist\nimport java.utils.ArrayList;\n                 ^\n1 error\nerror: compilation failed\n",
+  "exitCode": 1,
+  "exception": null,
+  "compileError": "Main.java:1: error: package java.utils does not exist\nimport java.utils.ArrayList;\n                 ^\n1 error",
+  "sourceSha256": "aa63b39000a67292cad72fddf5379a675789d47c343c66c95dcd3783b1b3491c"
+}

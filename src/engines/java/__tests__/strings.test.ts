@@ -5,7 +5,8 @@
 import { describe, it, expect } from 'vitest';
 import { parseJava } from '../parser';
 import { JavaInterpreter } from '../interpreter';
-import { javaRegex, javaSplit, javaReplacement, groupCount } from '../stdlib/regex';
+import { javaRegex, javaSplit, javaReplacement, groupCount, patternError, patternSyntaxMessage } from '../stdlib/regex';
+import { CHARACTER_TESTS, toUpperCaseChar, toLowerCaseChar, numericValue } from '../stdlib/characters';
 import { compareStrings, compareIgnoringCase, stringHashCode, boxedHashCode } from '../stdlib/strings';
 import { javaString, internedString, sameString } from '../types';
 
@@ -49,6 +50,39 @@ describe('Java regular expressions', () => {
     expect(() => javaRegex('(')).toThrow('PatternSyntaxException');
   });
 
+  it("refuse what Java's Pattern refuses, with its description and index (#66, JDK 21's)", () => {
+    const table: [string, string, number][] = [
+      ['+', "Dangling meta character '+'", 0], ['*a', "Dangling meta character '*'", 0], ['a|*', "Dangling meta character '*'", 2],
+      ['(+a)', "Dangling meta character '+'", 1], ['a**', "Dangling meta character '*'", 2], ['a{', 'Illegal repetition', 2],
+      ['a{2', 'Unclosed counted closure', 3], ['a{x}', 'Illegal repetition', 2], ['(a', 'Unclosed group', 2], ['((a)', 'Unclosed group', 4],
+      ['a)', "Unmatched closing ')'", 0], [')', "Unmatched closing ')'", -1], ['[a', 'Unclosed character class', 1],
+      ['[a-', 'Illegal character range', 3], ['[b-a]', 'Illegal character range', 3], ['a{2,1}', 'Illegal repetition range', 5],
+      ['\\', 'Unescaped trailing backslash', 1], ['\\k', "\\k is not followed by '<' for named capturing group", 2],
+      ['(?<n', "named capturing group is missing trailing '>'", 4], ['(?<n>a', 'Unclosed group', 6], ['[]', 'Unclosed character class', 1],
+      ['[^]', 'Unclosed character class', 2], ['x{,3}', 'Illegal repetition', 2], ['a{99999999999}', 'Illegal repetition range', 11],
+      ['(?<1a>x)', 'capturing group name does not start with a Latin letter', 3], ['[[a]', 'Unclosed character class', 3],
+      ['\\p{Foo}', 'Unknown character property name {Foo}', 6], ['\\xZZ', 'Illegal hexadecimal escape sequence', 2],
+      ['\\u12', 'Illegal Unicode escape sequence', 4], ['\\c', 'Illegal control escape sequence', 1],
+      ['a{2}+?', "Dangling meta character '?'", 5], ['a*??', "Dangling meta character '?'", 3],
+    ];
+    for (const [pattern, desc, index] of table) expect([pattern, patternError(pattern)]).toEqual([pattern, { desc, index }]);
+    for (const ok of ['{2}a', 'a|', '|a', '()', '(?:ab)+', '(?=x)y', '(?!x)y*', '(?<=a)b', '(?<name>a)+\\k<name>', '(?i)ab+', '(?i:ab)+', 'a*?', 'a+?b', '[a-z]{2,}', '\\p{Alpha}+', '[\\]-]', '\\Q+*\\E+', 'a{2}?']) {
+      expect([ok, patternError(ok)]).toEqual([ok, undefined]);
+    }
+    expect(patternSyntaxMessage("Dangling meta character '+'", '+', 0)).toBe("Dangling meta character '+' near index 0\n+\n^");
+    expect(patternSyntaxMessage('Unclosed group', '(a', 2)).toBe('Unclosed group near index 2\n(a');
+    expect(patternSyntaxMessage("Unmatched closing ')'", ')', -1)).toBe("Unmatched closing ')'\n)");
+  });
+
+  it("match as Java's do: \\R, ASCII \\s, class unions, matches() over the whole string whatever the flags (#66)", () => {
+    expect(javaSplit('a\r\nb\nc\rd', '\\R')).toEqual(['a', 'b', 'c', 'd']);
+    expect('a\u00a0b c'.replace(javaRegex('\\s', 'g'), '_')).toBe('a\u00a0b_c');
+    expect(javaRegex('[a-d[m-z]]').test('x')).toBe(true);
+    expect(javaRegex('[a-d[m-z]]').test('h')).toBe(false);
+    expect(javaRegex('{2}a').test('{2}a')).toBe(true);
+    expect(stdout('System.out.println("ab\\ncd".matches("(?m)ab") + " " + "ab\\ncd".matches("(?ms)ab.cd") + " " + "ab".matches("a|ab"));')).toBe('false true true');
+  });
+
   it("build replacements with Java's $ and \\ rules", () => {
     const re = javaRegex('(\\w+) (\\w+)');
     const build = javaReplacement('$2, $1', groupCount(re));
@@ -79,11 +113,46 @@ describe('String methods', () => {
 
   it('build new strings with new String(…) and String.valueOf', () => {
     expect(stdout('char[] cs = {\'o\', \'e\', \'l\'};\n    System.out.println(new String(cs) + String.valueOf(cs) + new String(cs, 1, 2) + new String(new StringBuilder("sb")));')).toBe('oeloelelsb');
-    expect(stdout('char[] cs = {\'a\'};\n    new String(cs, 0, 5);')).toContain('StringIndexOutOfBoundsException: offset 0, count 5, length 1');
+    expect(stdout('char[] cs = {\'a\'};\n    new String(cs, 0, 5);')).toContain('StringIndexOutOfBoundsException: Range [0, 0 + 5) out of bounds for length 1');
   });
 
   it('stream their characters with chars() (#16)', () => {
     expect(stdout(`System.out.println("hello".chars().filter(c -> c == 'l').count() + " " + "a\\nb\\n".lines().count());`)).toBe('2 2');
+  });
+});
+
+describe("Character's tests (#66), JDK 21's answers", () => {
+  it('know every script, Java whitespace and single-character case mappings', () => {
+    const answers = (c: number) => ['isLetter', 'isDigit', 'isAlphabetic', 'isUpperCase', 'isLowerCase', 'isWhitespace', 'isSpaceChar', 'isTitleCase']
+      .filter(t => CHARACTER_TESTS[t](c)).join(' ');
+    expect(answers(0xe9)).toBe('isLetter isAlphabetic isLowerCase');
+    expect(answers(0x3a9)).toBe('isLetter isAlphabetic isUpperCase');
+    expect(answers(0x4e2d)).toBe('isLetter isAlphabetic');
+    expect(answers(0x663)).toBe('isDigit');
+    expect(answers(0x09)).toBe('isWhitespace');
+    expect(answers(0xa0)).toBe('isSpaceChar');
+    expect(answers(0x2007)).toBe('isSpaceChar');
+    expect(answers(0x2003)).toBe('isWhitespace isSpaceChar');
+    expect(answers(0x1c)).toBe('isWhitespace');
+    expect(answers(0x1c5)).toBe('isLetter isAlphabetic isTitleCase');
+    expect(answers(0x2177)).toBe('isAlphabetic isLowerCase');
+    expect(answers(0xd83d)).toBe('');
+    expect([toUpperCaseChar(0xdf), toUpperCaseChar(0xe9), toUpperCaseChar(0x1c5), toUpperCaseChar(0x1f80), toUpperCaseChar(0x1fb3), toLowerCaseChar(0x130), toLowerCaseChar(0x1c5)])
+      .toEqual([0xdf, 0xc9, 0x1c4, 8072, 8124, 105, 454]);
+    expect([0x31, 0x61, 0x5a, 0x663, 0x966, 0x216b, 0x216c, 0x2177, 0xb2, 0xbd, 0x2460, 0xff41, 0x5f].map(numericValue))
+      .toEqual([1, 10, 35, 3, 0, 12, 50, 8, 2, -2, 1, 10, -1]);
+  });
+
+  it("String's methods by them: letters counted in any script, strip() and isBlank() by Java's whitespace, chars in UTF-16", () => {
+    expect(stdout(`int n = 0; for (char c : "Caf\u00e9 cr\u00e8me br\u00fbl\u00e9e, na\u00efve r\u00e9sum\u00e9!".toCharArray()) if (Character.isLetter(c)) n++;
+    System.out.println(n + " " + (int) Character.toUpperCase('\u00df') + " [" + "\u2003x\u00a0".strip() + "] " + "\u00a0".isBlank());
+    System.out.println("a\uD83D\uDE00bc".toCharArray().length + " " + "a\uD83D\uDE00bc".chars().count() + " " + "a\uD83D\uDE00bc".codePoints().count());`))
+      .toBe('26 223 [x\u00a0] false\n5 5 4');
+  });
+
+  it('refuse null arguments with the NullPointerException the JDK throws', () => {
+    expect(stdout('String n = null;\n    try { "abc".concat(n); } catch (NullPointerException e) { System.out.println(e.getMessage()); }\n    try { "abc".replace(n, "x"); } catch (NullPointerException e) { System.out.println(e.getMessage()); }\n    System.out.println("abc".equals(n) + " " + String.valueOf((Object) n));'))
+      .toBe('Cannot invoke "String.isEmpty()" because "str" is null\nCannot invoke "java.lang.CharSequence.toString()" because "target" is null\nfalse null');
   });
 });
 

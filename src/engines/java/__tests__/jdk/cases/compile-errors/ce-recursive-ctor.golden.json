@@ -1,0 +1,8 @@
+{
+  "stdout": "",
+  "stderr": "Main.java:3: error: recursive constructor invocation\n    Main(int x) { this(); }\n                  ^\n1 error\nerror: compilation failed\n",
+  "exitCode": 1,
+  "exception": null,
+  "compileError": "Main.java:3: error: recursive constructor invocation\n    Main(int x) { this(); }\n                  ^\n1 error",
+  "sourceSha256": "2ebe5f67f49870dfc27d4233d2c26fc93b08165a8a9d38d1dedc9be774d84196"
+}

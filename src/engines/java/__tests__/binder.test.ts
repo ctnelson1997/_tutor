@@ -118,6 +118,55 @@ describe("#13's table, as binding decisions", () => {
     expect(x).toBe('x:Object = (widen:Object (box:Double (? t 1:double 2:double):double))');
   });
 
+  it('types a conditional of two boxes as a numeric one (JLS §15.25, #76): Integer and Double make a double', () => {
+    const [x, y, z, w] = shapes('Object x = true ? Integer.valueOf(1) : Double.valueOf(2.0); Integer i = 5; Long l = 7L; Object y = false ? i : l; Character c = \'a\'; Object z = true ? c : i; Integer j = true ? i : i;').filter(t => /^[xyzw]:|^j:/.test(t));
+    expect(x).toBe('x:Object = (widen:Object (box:Double (? true:boolean (widen:double (unbox:int (call Integer.valueOf(int) 1:int))) (unbox:double (call Double.valueOf(double) 2:double))):double))');
+    expect(y).toBe('y:Object = (widen:Object (box:Long (? false:boolean (widen:long (unbox:int i)) (unbox:long l)):long))');
+    expect(z).toBe('z:Object = (widen:Object (box:Integer (? true:boolean (widen:int (unbox:char c)) (unbox:int i)):int))');
+    expect(w).toBe('j:Integer = (? true:boolean i i):Integer'); // the same box: a reference conditional, no unboxing
+  });
+
+  it("types a switch expression by its target in an assignment context, else by its values (JLS §15.28.1, #76)", () => {
+    const [, poly, standalone] = shapes('int k = 2; Object poly = switch (k) { case 2 -> Integer.valueOf(3); default -> Double.valueOf(2.5); }; var standalone = switch (k) { case 2 -> Integer.valueOf(3); default -> Double.valueOf(2.5); };');
+    expect(poly).toBe('poly:Object = (switch k):Object');
+    expect(standalone).toBe('standalone:double = (switch k):double');
+  });
+
+  it('folds a final instance field with a constant initializer, named by its simple name (JLS §15.29, #76)', () => {
+    const { program, diagnostics } = bind(`public class Main {
+  final int fixed = 7;
+  final String label = "item" + fixed;
+  int f() { switch (7) { case fixed: return 1; default: return 0; } }
+  boolean g() { return this.fixed == 7; }
+  public static void main(String[] args) {}
+}`);
+    expect(diagnostics.map(d => d.message)).toEqual([]);
+    const label = program.classes[0].instanceInit.find(i => i.kind === 'field' && i.field.name === 'label');
+    expect(label?.kind === 'field' && sx(label.value)).toBe('"item7"');
+    // `this.fixed` isn't a constant expression, though the evaluator reads it as 7 as javac inlines it.
+    const g = program.classes[0].methods.find(m => m.symbol.name === 'g')!;
+    expect(g.body!.statements[0].kind === 'Return' && sx((g.body!.statements[0] as B.BReturn).value!)).toBe('(== (. this fixed) 7:int):boolean');
+  });
+
+  it("sees an inner class of a generic class through its enclosing instance's type (#76)", () => {
+    const shown = shapes('Ring<String> r = new Ring<>(); Ring<String>.Cursor c = r.new Cursor(1); String s = c.next(); var d = r.new Cursor(0); String t = d.next(); String u = r.cursor().next();',
+      '  static class Ring<T> {\n    class Cursor { Cursor(int at) {} T next() { return null; } }\n    Cursor cursor() { return new Cursor(0); }\n  }');
+    expect(shown.slice(1)).toEqual([
+      'c:Ring<String>.Cursor = (new Ring<String>.Cursor Cursor(int) 1:int)',
+      's:String = (call Cursor.next() c)',
+      'd:Ring<String>.Cursor = (new Ring<String>.Cursor Cursor(int) 0:int)',
+      't:String = (call Cursor.next() d)',
+      'u:String = (call Cursor.next() (call Ring.cursor() r))',
+    ]);
+  });
+
+  it('finds the class of `mid.new Inner()` among the members of mid\'s type, an inner class of an inner class (#76)', () => {
+    const shown = shapes('Main outer = new Main(); Main.Mid mid = outer.new Mid(); Main.Mid.Inner in = mid.new Inner(); int s = in.sum();',
+      '  int base = 1;\n  class Mid {\n    class Inner { int sum() { return base; } }\n  }');
+    expect(shown[2]).toBe('in:Inner = (new Inner Inner())');
+    expect(shown[3]).toBe('s:int = (call Inner.sum() in)');
+  });
+
   it('calls the library\'s static Integer.toString(int) even in a class with an instance toString()', () => {
     const [s] = shapes('String s = Integer.toString(42);', '  public String toString() { return "M"; }');
     expect(s).toBe('s:String = (call Integer.toString(int) 42:int)');
@@ -239,6 +288,66 @@ describe('what javac rejects', () => {
     ['Integer i = 5L;', 'incompatible types: long cannot be converted to Integer'],
   ])('%s', (body, message) => {
     expect(firstLine(`class M { public static void main(String[] a) { ${body} } }`)).toEqual([message]);
+  });
+
+  it('accepts what javac accepts (#70): yield of a variable, a diamond with comparingInt, comparingByValue() as an argument, while-pattern scoping, Void', () => {
+    const errors = (body: string, members = '') => firstLine(`import java.util.*;\nimport java.util.function.*;\nclass M {\n${members}\n  public static void main(String[] a) {\n${body}\n  }\n}`);
+    expect(errors('int n = 2; String s = switch (n) { case 1 -> "one"; default -> { String t = "few"; yield t; } };')).toEqual([]);
+    expect(errors('int c = switch ("b") { case "b": { int v = 2; yield v; } default: yield 0; };')).toEqual([]);
+    expect(errors('PriorityQueue<int[]> pq = new PriorityQueue<>(Comparator.comparingInt(x -> x[1]));')).toEqual([]);
+    expect(errors('Map<String, Integer> m = new HashMap<>(); List<Map.Entry<String, Integer>> es = new ArrayList<>(m.entrySet());\n es.sort(Map.Entry.comparingByValue()); String k = Collections.max(m.entrySet(), Map.Entry.comparingByKey()).getKey();')).toEqual([]);
+    expect(errors('Object o = "s"; while (!(o instanceof Integer i)) { o = 1; } int twice = i * 2;')).toEqual([]);
+    expect(errors('Function<String, Void> f = s -> null; Void v = f.apply("x");')).toEqual([]);
+    // With a break out of the loop, the pattern variable isn't in scope after it (javac's error too).
+    expect(errors('Object o = "s"; while (!(o instanceof Integer i)) { if (o == null) break; o = 1; } int twice = i * 2;')).toEqual(['cannot find symbol']);
+    // A break inside a switch or a nested loop doesn't leave the while.
+    expect(errors('Object o = "s"; while (!(o instanceof Integer i)) { for (;;) break; switch (1) { case 1: break; } o = 1; } int twice = i * 2;')).toEqual([]);
+  });
+
+  it("keeps #72's checks to what javac rejects: valid programs bind with no error", () => {
+    const errors = (source: string) => bind(source).diagnostics.filter(d => d.kind === 'error').map(d => d.message.split('\n')[0]);
+    // A pattern's name again in an else branch, where the first isn't in scope.
+    expect(errors('class M { static void f(Object o) { if (o instanceof String s) {} else if (o instanceof Integer s) {} } public static void main(String[] a) {} }')).toEqual([]);
+    // Every enum constant, or a default, covers a switch expression; a sealed interface's patterns do too.
+    expect(errors(`class M {
+  enum C { R, G }
+  sealed interface S permits A, B {}
+  record A() implements S {}
+  record B() implements S {}
+  static int f(C c, S s, Object o, char ch) {
+    int x = switch (c) { case R -> 1; case G -> 2; };
+    int y = switch (s) { case A a -> 1; case B b -> 2; };
+    int z = switch (o) { case String t -> 1; case Object other -> 2; };
+    switch (ch) { case 'A': case 66: break; }
+    return x + y + z;
+  }
+  public static void main(String[] a) {}
+}`)).toEqual([]);
+    // Overloads, a public override, static hiding static, an interface's static method beside a class's instance method.
+    expect(errors(`class M {
+  static class P { public String toString() { return "p"; } static void s() {} void f(int x) {} void f(long x) {} }
+  static class Q extends P { static void s() {} }
+  interface I { static void m() {} }
+  static class R implements I { void m() {} }
+  public static void main(String[] a) {}
+}`)).toEqual([]);
+    // Real JDK classes, those JavaTutor lacks too, and packages it has none of.
+    expect(errors(`import java.util.Map.Entry;
+import java.util.function.*;
+import java.text.DecimalFormat;
+import javax.swing.JFrame;
+import java.util.concurrent.atomic.AtomicInteger;
+class M { public static void main(String[] a) {} }`)).toEqual([]);
+  });
+
+  it("rejects a type argument outside its bound: sorting objects that aren't Comparable (#62)", () => {
+    const program = (cls: string, call: string) => firstLine(`import java.util.*;
+class S${cls} { public int compareTo(S o) { return 0; } }
+class M { public static void main(String[] a) { List<S> list = new ArrayList<>(); ${call}; } }`);
+    expect(program('', 'Collections.sort(list)')).toEqual(['no suitable method found for sort(List<S>)']);
+    expect(program('', 'Collections.max(list)')).toEqual(['no suitable method found for max(List<S>)']);
+    expect(program(' implements Comparable<S>', 'Collections.sort(list); Collections.max(list)')).toEqual([]);
+    expect(program('', 'Collections.sort(list, (x, y) -> 0)')).toEqual([]);
   });
 
   it('reports a call with the wrong arguments as javac does', () => {

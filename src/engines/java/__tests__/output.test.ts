@@ -123,3 +123,106 @@ describe('printStackTrace', () => {
     ]);
   });
 });
+
+describe("Throwable's state (#64), traces checked against JDK 21's javac and java", () => {
+  const program = `public class Main {
+  static class Validation extends RuntimeException {
+    private final int age;
+    Validation(int age) { this.age = age; }
+    @Override public String getMessage() { return "age must be positive but was " + age; }
+  }
+  static class Res implements AutoCloseable {
+    final String name;
+    Res(String name) { this.name = name; }
+    public void close() { throw new IllegalStateException("close " + name); }
+  }
+  static void load() {
+    throw new IllegalArgumentException("missing");
+  }
+  static void wrap() {
+    try {
+      load();
+    } catch (IllegalArgumentException e) {
+      throw new RuntimeException("load failed", e);
+    }
+  }
+  public static void main(String[] args) {
+    try {
+      wrap();
+    } catch (RuntimeException e) {
+      e.printStackTrace();
+    }
+    try (Res a = new Res("a"); Res b = new Res("b")) {
+      throw new Validation(-3);
+    } catch (Validation e) {
+      e.printStackTrace();
+    }
+    wrap();
+  }
+}`;
+  const caused = (mainLine: number) => [
+    'java.lang.RuntimeException: load failed',
+    '\tat Main.wrap(Main.java:19)',
+    `\tat Main.main(Main.java:${mainLine})`,
+    'Caused by: java.lang.IllegalArgumentException: missing',
+    '\tat Main.load(Main.java:13)',
+    '\tat Main.wrap(Main.java:17)',
+    '\t... 1 more',
+  ];
+
+  it('prints causes, suppressed exceptions and an overridden getMessage() in printStackTrace and the uncaught trace', () => {
+    const result = new JavaInterpreter().execute(parseJava(program));
+    expect(stderrOf(result.snapshots.at(-1)!)).toEqual([
+      ...caused(24),
+      'Main$Validation: age must be positive but was -3',
+      '\tat Main.main(Main.java:29)',
+      '\tSuppressed: java.lang.IllegalStateException: close b',
+      '\t\tat Main$Res.close(Main.java:10)',
+      '\t\tat Main.main(Main.java:28)',
+      '\tSuppressed: java.lang.IllegalStateException: close a',
+      '\t\tat Main$Res.close(Main.java:10)',
+      '\t\tat Main.main(Main.java:28)',
+    ]);
+    expect(result.failure?.stderr).toBe(['Exception in thread "main" ' + caused(33)[0], ...caused(33).slice(1)].join('\n'));
+  });
+
+  it("keeps the detail message apart from a program's own fields, and makes a cause's message its toString()", () => {
+    const last = run(`public class Main {
+  static class BadEx extends Exception { private String msg; BadEx(String msg) { this.msg = msg; } }
+  static class OtherEx extends RuntimeException { private String message; OtherEx(String m) { super(m); message = "field"; } }
+  public static void main(String[] args) {
+    RuntimeException w = new RuntimeException(new IllegalStateException("inner"));
+    System.out.println(w.getMessage() + " | " + w.getCause().getMessage() + " | " + w);
+    System.out.println(new Exception("load failed", new ArrayIndexOutOfBoundsException("x")).getCause());
+    System.out.println(new BadEx("oops").getMessage() + " " + new OtherEx("detail").getMessage() + " " + new OtherEx("d").message);
+    Exception e = new Exception("top");
+    e.addSuppressed(new RuntimeException("s1"));
+    System.out.println(e.getSuppressed().length + " " + e.getSuppressed()[0]);
+    try { new Exception("c", null).initCause(new Error("z")); } catch (IllegalStateException x) { System.out.println(x.getMessage()); }
+  }
+}`);
+    expect(last.stdout).toEqual([
+      'java.lang.IllegalStateException: inner | inner | java.lang.RuntimeException: java.lang.IllegalStateException: inner',
+      'java.lang.ArrayIndexOutOfBoundsException: x',
+      'null detail field',
+      '1 java.lang.RuntimeException: s1',
+      "Can't overwrite cause with java.lang.Error: z",
+    ]);
+  });
+
+  it("draws Throwable's message and cause first, and a program's field of the same name beside Throwable's", () => {
+    const last = run(`public class Main {
+  static class OtherEx extends RuntimeException { private String message; OtherEx(String m, Throwable c) { super(m, c); message = "field"; } }
+  public static void main(String[] args) {
+    Exception inner = new IllegalStateException("inner");
+    OtherEx e = new OtherEx("detail", inner);
+    e.addSuppressed(new Error("s"));
+    System.out.println(e.getMessage());
+  }
+}`);
+    const drawn = (label: string) => last.heap.find(o => o.label === label)!.properties.map(p => `${p.key}=${p.value.type === 'ref' ? 'ref' : JSON.stringify(p.value.value)}`);
+    expect(drawn('OtherEx')).toEqual(['Throwable.message="detail"', 'cause=ref', 'suppressed[0]=ref', 'message="field"']);
+    expect(drawn('IllegalStateException')).toEqual(['message="inner"']);
+    expect(drawn('Error')).toEqual(['message="s"']);
+  });
+});

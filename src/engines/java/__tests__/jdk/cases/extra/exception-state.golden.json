@@ -1,0 +1,11 @@
+{
+  "stdout": "java.lang.ArrayIndexOutOfBoundsException: x\njava.lang.IllegalStateException: inner\ninner\njava.lang.RuntimeException: java.lang.IllegalStateException: inner\nnull\nMain$Validation: age must be positive but was -3\ncaught: Main$Validation: age must be positive but was -3\nage must be positive but was -3\nMain$Localized: localized text / text\nnull oops Main$BadEx\ndetail own field Main$OtherEx: detail\nbad input: 12x <- java.lang.NumberFormatException: For input string: \"12x\"\n2 java.lang.Error: second\nSelf-suppression not permitted\njava.lang.Error: why\nCan't overwrite cause with a null\nclose b\nclose a\nbody suppressed 2: close b, close a\nbody ok\nclose d\nclose c\nclose c suppressed 0\n",
+  "stderr": "Exception in thread \"main\" java.lang.IllegalArgumentException: bad input: seven\n\tat Main.parse(Main.java:43)\n\tat Main.main(Main.java:104)\nCaused by: java.lang.NumberFormatException: For input string: \"seven\"\n\tat java.base/java.lang.NumberFormatException.forInputString(NumberFormatException.java:67)\n\tat java.base/java.lang.Integer.parseInt(Integer.java:662)\n\tat java.base/java.lang.Integer.parseInt(Integer.java:778)\n\tat Main.parse(Main.java:41)\n\tat Main.main(Main.java:104)\n",
+  "exitCode": 1,
+  "exception": {
+    "class": "java.lang.IllegalArgumentException",
+    "message": "bad input: seven"
+  },
+  "compileError": null,
+  "sourceSha256": "bd5d39d1bc8ab39490d1c6b99670c7544391484ea8999b627df2dd4369b6c696"
+}

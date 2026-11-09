@@ -1,0 +1,8 @@
+{
+  "stdout": "",
+  "stderr": "Main.java:2: error: non-static type variable T cannot be referenced from a static context\n    static class Box<T> { static T item; }\n                                 ^\n1 error\nerror: compilation failed\n",
+  "exitCode": 1,
+  "exception": null,
+  "compileError": "Main.java:2: error: non-static type variable T cannot be referenced from a static context\n    static class Box<T> { static T item; }\n                                 ^\n1 error",
+  "sourceSha256": "6ff6ee78a6a7c670d983ab74d565c3c694df047bceb4752191c61b86f6be0a10"
+}

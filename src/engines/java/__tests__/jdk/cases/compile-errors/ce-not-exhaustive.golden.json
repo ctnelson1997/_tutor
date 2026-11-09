@@ -1,0 +1,8 @@
+{
+  "stdout": "",
+  "stderr": "Main.java:4: error: the switch expression does not cover all possible input values\n        String s = switch (n) { case 1 -> \"one\"; case 2 -> \"two\"; };\n                   ^\n1 error\nerror: compilation failed\n",
+  "exitCode": 1,
+  "exception": null,
+  "compileError": "Main.java:4: error: the switch expression does not cover all possible input values\n        String s = switch (n) { case 1 -> \"one\"; case 2 -> \"two\"; };\n                   ^\n1 error",
+  "sourceSha256": "4f9fd384ba330440ed75a303d55d38448b5d3916eb6effa22a0402d984dfca91"
+}

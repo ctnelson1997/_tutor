@@ -1,0 +1,8 @@
+{
+  "stdout": "",
+  "stderr": "Main.java:2: error: missing method body, or declare abstract\n    public static void greet(); {\n                       ^\n1 error\nerror: compilation failed\n",
+  "exitCode": 1,
+  "exception": null,
+  "compileError": "Main.java:2: error: missing method body, or declare abstract\n    public static void greet(); {\n                       ^\n1 error",
+  "sourceSha256": "8981045a7ab845a84b57f0a7f5e635f02e20f607d31fdd0dd506ef512a4f6e51"
+}

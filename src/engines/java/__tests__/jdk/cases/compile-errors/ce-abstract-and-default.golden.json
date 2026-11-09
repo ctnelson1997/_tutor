@@ -1,0 +1,8 @@
+{
+  "stdout": "",
+  "stderr": "Main.java:4: error: C is not abstract and does not override abstract method m() in B\n  static class C implements A, B {}\n         ^\nMain.java:5: error: types A and B are incompatible;\n  interface D extends A, B {}\n  ^\n  interface D inherits abstract and default for m() from types A and B\n2 errors\nerror: compilation failed\n",
+  "exitCode": 1,
+  "exception": null,
+  "compileError": "Main.java:4: error: C is not abstract and does not override abstract method m() in B\n  static class C implements A, B {}\n         ^\nMain.java:5: error: types A and B are incompatible;\n  interface D extends A, B {}\n  ^\n  interface D inherits abstract and default for m() from types A and B\n2 errors",
+  "sourceSha256": "d336cb1e7226a0261973a81ae21862abef09da963dbe9dae5eb7eb14bddf2167"
+}

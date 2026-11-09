@@ -224,3 +224,40 @@ describe('class initialization happens where Java does it', () => {
     expect(result.stdout).toBe('Helper init\nargument\nHelper ctor\nright-hand side\nTarget init\n1\n1 5');
   });
 });
+
+describe('library gaps say what JavaTutor lacks, never a javac error on valid code (#71)', () => {
+  const run = (body: string, imports = '') => new JavaInterpreter().execute(parseJava(`import java.util.*;\n${imports}\npublic class Main {\n  public static void main(String[] args) {\n    ${body}\n  }\n}`));
+
+  it('lets a catch for a checked exception stand around a call JavaTutor can\'t see the throws of', () => {
+    expect(run('try { Thread.sleep(5); } catch (InterruptedException e) {}').error).toBe("Line 5: The Thread class isn't supported in JavaTutor yet");
+    expect(run('java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(System.in)); try { br.readLine(); } catch (java.io.IOException e) {}').error).toBe("Line 5: The BufferedReader class isn't supported in JavaTutor yet");
+  });
+
+  it("names a JDK overload the stubs lack as unsupported, and keeps javac's errors for calls no JDK overload takes", () => {
+    expect(run('System.out.println(new Random(1).nextLong(5L));').error).toBe("Line 5: Random.nextLong(long) isn't supported in JavaTutor yet");
+    expect(run('System.out.println(Math.sqrt("x"));').failure?.kind).toBe('compile');
+    expect(run('String[] p = "a,b".split(1);').failure?.kind).toBe('compile');
+    // Collections.sort(List<S>) is the stubs' own overload: its bound is javac's error (#62), not a gap.
+    expect(run('List<Object> l = new ArrayList<>(); Collections.sort(l);').failure?.kind).toBe('compile');
+  });
+
+  it('names a class JavaTutor lacks, also through a field or its package', () => {
+    expect(run('System.out.println(java.math.BigInteger.ONE);').error).toBe("Line 5: The BigInteger class isn't supported in JavaTutor yet");
+    expect(run('System.out.println(BigInteger.ONE);', 'import java.math.BigInteger;').error).toBe("Line 5: The BigInteger class isn't supported in JavaTutor yet");
+    expect(run('DecimalFormat df = new DecimalFormat("#.00");', 'import java.text.DecimalFormat;').error).toContain("DecimalFormat class isn't supported in JavaTutor yet");
+  });
+
+  it('runs the overloads courses use: Character by code point, nextInt(origin, bound), toArray(String[]::new), orElseThrow(supplier), StringTokenizer', () => {
+    const result = run(`System.out.println(Character.isLetter(97) + " " + Character.toUpperCase(97) + " " + Character.toString(65) + " " + Character.valueOf('z') + " " + Character.toString('q'));
+    Random r = new Random(7);
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < 6; i++) sb.append(r.nextInt(-5, 3)).append(' ');
+    System.out.println(sb.toString().trim() + " " + List.of("a", "b").toArray(String[]::new).length);
+    try { Optional.empty().orElseThrow(() -> new IllegalStateException("none")); } catch (IllegalStateException e) { System.out.println(e.getMessage()); }
+    StringTokenizer st = new StringTokenizer("x=1;y=2", "=;", true);
+    System.out.println(st.countTokens() + " " + st.nextToken() + st.nextToken() + st.nextToken("") + " " + st.hasMoreTokens());`);
+    expect(result.error).toBeUndefined();
+    // JDK 21's: nextInt(-5, 3) after a Random(7) (RandomSupport.boundedNextInt).
+    expect(result.snapshots.at(-1)!.stdout).toEqual(['true 65 A z q', '-4 -5 -3 -4 -4 0 2', 'none', '7 x=1;y=2 false']);
+  });
+});

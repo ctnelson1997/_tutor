@@ -73,6 +73,34 @@ export interface JavaObject {
    * needs, the evaluator's business.
    */
   lambda?: { text: string; run: unknown };
+  /** A Throwable's own state (#64), apart from the fields its class declares (a field named `message` is the program's). */
+  throwable?: ThrowableState;
+  /** A Scanner's input and whether it is closed (#65); every Scanner on System.in shares one input. */
+  scanner?: ScannerState;
+}
+
+/** What a Scanner reads (#65): its text, where it is in it, and whether it was closed (System.in, by any of its Scanners). */
+export interface ScannerInput {
+  text: string;
+  pos: number;
+  closed: boolean;
+}
+
+export interface ScannerState {
+  input: ScannerInput;
+  closed: boolean;
+}
+
+/**
+ * What Throwable keeps (#64): the detail message getMessage() returns, the
+ * cause (`causeSet` once a constructor or initCause() gave one, even null,
+ * as initCause() then refuses another) and the suppressed exceptions.
+ */
+export interface ThrowableState {
+  message: JavaValue;
+  cause: JavaValue;
+  causeSet: boolean;
+  suppressed: JavaValue[];
 }
 
 /**
@@ -238,6 +266,19 @@ const JAVA_UTIL = new Set(['ArrayList', 'LinkedList', 'Vector', 'Stack', 'ArrayD
 /** A library class's full name, `java.lang.String`; any other name is returned as it is. */
 export function qualifiedLibraryName(name: string): string {
   return JAVA_LANG.has(name) ? `java.lang.${name}` : JAVA_UTIL.has(name) ? `java.util.${name}` : name;
+}
+
+/**
+ * A ClassCastException's message as HotSpot words it for `java Main` after
+ * javac: each class with its module and loader, a program's class in the
+ * unnamed module of loader 'app', a library class in java.base (#62).
+ */
+export function classCastMessage(from: string, fromProgram: boolean, to: string, toProgram = false): string {
+  const place = (program: boolean) => (program ? "unnamed module of loader 'app'" : "module java.base of loader 'bootstrap'");
+  const where = fromProgram === toProgram
+    ? `${from} and ${to} are in ${place(fromProgram)}`
+    : `${from} is in ${place(fromProgram)}; ${to} is in ${place(toProgram)}`;
+  return `class ${from} cannot be cast to class ${to} (${where})`;
 }
 
 const DESCRIPTORS: Record<string, string> = { int: 'I', long: 'J', double: 'D', float: 'F', char: 'C', byte: 'B', short: 'S', boolean: 'Z' };

@@ -1,0 +1,8 @@
+{
+  "stdout": "one\nfew\nmany\n2\n2 3\nb\nm\n[b=1, c=2, a=3]\n[b, c, a]\na\nc\n42\ngot x\nnull\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "b5d00df678ee5874194647067690ad0878945b53e1932a05850730b19b5fa4a3"
+}

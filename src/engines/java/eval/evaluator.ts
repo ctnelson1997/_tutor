@@ -7,7 +7,7 @@
  * keeps the frames on an explicit stack and resumes the caller with the
  * result. JavaScript's stack depth is independent of Java's recursion depth,
  * and recursing past `maxDepth` frames is a StackOverflowError a program can
- * catch.
+ * catch. Calls deeper than the steps can show run without steps (#73).
  *
  * An expression that can't call a method of the program (no user calls,
  * object creation or class initialization in it) is evaluated by plain
@@ -25,7 +25,8 @@ import type { ConsoleLine, ExecutionSnapshot, StackFrame, Variable, RunError } f
 import { SnapshotSharer } from '../../../utils/snapshotSharing';
 import type * as B from '../semantic/bound';
 import type { ClassSymbol, MethodSymbol, FieldSymbol, LocalSymbol, ConstValue } from '../semantic/symbols';
-import { type JType, runtimeTypeName, unboxedType, erasure, asSuper, classType, substitute, typeArgMap } from '../semantic/types';
+import { type JType, runtimeTypeName, unboxedType, erasure, asSuper, classType, substitute, typeArgMap, extendsInterface } from '../semantic/types';
+import { library } from '../semantic/binder';
 import { InterpreterError, JavaRuntimeError, UnsupportedFeatureError, nullPointer } from '../errors';
 import { type Reference, type VariableSlot, assignmentConversion, slotReference, fieldReference, arrayElementReference } from '../references';
 import { binaryOperation, unaryOperation, castPrimitive, stepped, numericValue } from '../numeric';
@@ -59,6 +60,7 @@ import {
   type StdlibContext,
   HaltSignal,
   StdlibError,
+  StdlibThrow,
   callStaticMethod,
   getStaticField,
   javaFormat,
@@ -72,8 +74,9 @@ import {
   newString,
   isExceptionClass,
   newException,
-  exceptionMethod,
   formatException,
+  throwableState,
+  throwableFromArgs,
   qualifiedExceptionName,
   isLibrarySubtype,
   isStringType,
@@ -82,8 +85,9 @@ import {
   hashCodeOf,
   valuesEqual,
 } from '../stdlib';
-import { javaToRuntime, reachableHeap } from './display';
+import { javaToRuntime, HeapDrawing } from './display';
 import { functionalMethod, isOptionalClass, optionalText } from '../stdlib/functional';
+import { PatternSyntaxError } from '../stdlib/regex';
 
 // ── Limits ──
 
@@ -95,11 +99,13 @@ export interface RunLimits {
   maxWork: number;
   /** Milliseconds, checked every 1024 units of work. */
   timeBudgetMs: number;
-  /** Java frames before a call throws StackOverflowError. */
+  /** Java frames whose calls take steps: a deeper call runs without steps (#73). */
+  shownDepth: number;
+  /** Java frames before a call throws StackOverflowError, about as deep as `java`'s default stack lets a small method recurse (#73). */
   maxDepth: number;
 }
 
-export const DEFAULT_LIMITS: RunLimits = { maxSteps: 5000, maxWork: 1_000_000, timeBudgetMs: 8_500, maxDepth: 1200 };
+export const DEFAULT_LIMITS: RunLimits = { maxSteps: 5000, maxWork: 1_000_000, timeBudgetMs: 8_500, shownDepth: 2000, maxDepth: 10_000 };
 
 /** What a run reports. */
 export interface ExecuteResult {
@@ -118,6 +124,8 @@ export const RETURN_VALUE = 'return ↵';
 const MAX_TRACE_FRAMES = 64;
 /** Frames a step shows: past this many, the outermost and the deepest, with a note for the rest. */
 const MAX_SHOWN_FRAMES = 100;
+/** Steps kept for what runs after a deep recursion returns (#73; see quietCall). */
+const STEP_RESERVE = 200;
 
 // ── Signals ──
 
@@ -259,6 +267,24 @@ const FUNCTION_METHODS: [string, number[]][] = [
   ['applyAsLong', [1]], ['get', [0]], ['getAsInt', [0]], ['run', [0]],
 ];
 
+/**
+ * The library methods the stdlib calls back by name (#62), each by the class
+ * that declares it: a program's method runs for such a call only if it
+ * overrides that method, so `equals(Point p)` (an overload) isn't called by a
+ * HashSet, and `compareTo` only for a class that implements Comparable.
+ */
+const CALLBACKS: Record<string, string> = {
+  equals: 'Object', hashCode: 'Object', toString: 'Object', compareTo: 'Comparable', compare: 'Comparator',
+  getMessage: 'Throwable', getLocalizedMessage: 'Throwable',
+};
+
+/** Whether a Throwable constructor is the one taking just a cause, `(Throwable cause)`, whose message is the cause's toString() (#64). */
+function causeConstructor(ctor: MethodSymbol | undefined): boolean | undefined {
+  if (!ctor) return undefined;
+  const t = ctor.params[0]?.type;
+  return ctor.params.length === 1 && t?.tag === 'class' && t.symbol.name === 'Throwable';
+}
+
 const SYSTEM_OUT_ID = '__system_out__';
 const SYSTEM_ERR_ID = '__system_err__';
 const SYSTEM_IN_ID = '__system_in__';
@@ -285,7 +311,12 @@ export class Evaluator {
   private startTime = 0;
   /** When > 0, no steps are recorded (a library callback such as toString() runs atomically). */
   private suppress = 0;
+  /** The index in `frames` of the outermost frame that runs without steps, too deep to show (#73). */
+  private quietFrom = Infinity;
+  /** The calls that ran without steps since the last step, and how deep the stack went: the next step's label says so (#73). */
+  private unshown = { calls: 0, depth: 0 };
   private readonly sharer = new SnapshotSharer();
+  private readonly drawing = new HeapDrawing(this.heap);
   private fileName = 'Main.java';
 
   private readonly classes = new Map<ClassSymbol, ClassRuntime>();
@@ -299,6 +330,8 @@ export class Evaluator {
   private stderrUsed = false;
   /** The stack trace each exception object was created with, by heap id (for printStackTrace). */
   private readonly exceptionTraces = new Map<string, string[]>();
+  /** The PatternSyntaxException behind an engine error made from it (#66), for its getDescription(), getIndex() and getPattern(). */
+  private readonly patternErrors = new WeakMap<object, PatternSyntaxError>();
   private readonly failureSites = new WeakMap<object, FailureSite>();
   /** Boxes of small values, shared as Integer.valueOf shares them. */
   private readonly boxCache = new Map<string, JavaPrimitive>();
@@ -345,6 +378,7 @@ export class Evaluator {
       binaryName: className => this.binaryName(className),
       stringify: value => this.stringify(value),
       functionShape: value => this.functionShape(value),
+      storeCheck: (value, elementType) => this.unstorable(value, elementType),
     };
   }
 
@@ -398,7 +432,7 @@ export class Evaluator {
       } catch (e) {
         // The generator ended by throwing: note where, while its frame is still on the stack.
         const err = this.atFailureSite(e);
-        if (top.frame) this.frames.pop();
+        if (top.frame) this.popFrame();
         stack.pop();
         if (stack.length === 0) throw err;
         failed = true;
@@ -406,7 +440,7 @@ export class Evaluator {
         continue;
       }
       if (result.done) {
-        if (top.frame) this.frames.pop();
+        if (top.frame) this.popFrame();
         stack.pop();
         if (stack.length === 0) return result.value as T;
         input = result.value as JavaValue | undefined;
@@ -418,6 +452,11 @@ export class Evaluator {
         error = new JavaRuntimeError('StackOverflowError', '', this.top()?.line ?? 0);
         continue;
       }
+      if (this.frames.length >= this.quietFrom || this.quietCall(this.frames.length)) {
+        this.quietFrom = Math.min(this.quietFrom, this.frames.length);
+        this.unshown.calls++;
+        this.unshown.depth = Math.max(this.unshown.depth, this.frames.length + 1);
+      }
       this.frames.push(callee);
       stack.push({ gen: callee.gen!, frame: callee });
       input = undefined;
@@ -426,6 +465,31 @@ export class Evaluator {
 
   private top(): Frame {
     return this.frames[this.frames.length - 1];
+  }
+
+  private popFrame(): void {
+    this.frames.pop();
+    if (this.frames.length <= this.quietFrom) this.quietFrom = Infinity;
+  }
+
+  /**
+   * Does a call made with `depth` frames on the stack run without steps
+   * (#73)? Past `shownDepth` frames it does, and so it does once the steps
+   * left wouldn't show the frames on the stack returning (up to three steps
+   * a frame: the line of the call, a return statement, the return), with
+   * steps to spare, so a deep recursion still shows its way back up and what
+   * comes after it within the step cap. The first MAX_SHOWN_FRAMES frames
+   * always take steps.
+   */
+  private quietCall(depth: number): boolean {
+    if (depth >= this.limits.shownDepth) return true;
+    if (depth < MAX_SHOWN_FRAMES) return false;
+    return this.limits.maxSteps - this.snapshots.length < 3 * depth + STEP_RESERVE;
+  }
+
+  /** Is a step taken now left out: inside a quiet library callback, or a call too deep to show? */
+  private quiet(): boolean {
+    return this.suppress > 0 || this.frames.length > this.quietFrom;
   }
 
   private newFrame(name: string, kind: Frame['kind'], cls: ClassSymbol, thisValue?: JavaValue, method = name): Frame {
@@ -472,7 +536,7 @@ export class Evaluator {
     const frame = this.top();
     if (frame) frame.line = line;
     this.tick(line);
-    if (this.suppress > 0) return;
+    if (this.quiet()) return;
     if (frame) {
       if (!force && frame.lastStepLine === line) return;
       frame.lastStepLine = line;
@@ -506,14 +570,21 @@ export class Evaluator {
     } else {
       for (const f of shown) this.pushFrame(callStack, f);
     }
-    this.snapshots.push(this.sharer.share({
+    const label = this.unshown.calls > 0
+      ? `${this.unshown.calls.toLocaleString('en-US')} deeper ${this.unshown.calls === 1 ? 'call' : 'calls'} ran without steps (${this.unshown.depth.toLocaleString('en-US')} frames deep)`
+      : undefined;
+    this.unshown = { calls: 0, depth: 0 };
+    const snapshot = this.sharer.share({
       step: this.step++,
       line,
       callStack,
-      heap: reachableHeap(callStack, this.heap),
+      heap: this.drawing.reachable(callStack),
       stdout: this.snapshotStdout(),
       ...(this.stderrUsed ? { console: this.snapshotConsole() } : {}),
-    }));
+      ...(label ? { label } : {}),
+    });
+    this.drawing.remember(snapshot.heap);
+    this.snapshots.push(snapshot);
   }
 
   /** A frame as a step shows it: its own variables (and `this`, and a return value), then its block scopes nested in it. */
@@ -592,23 +663,35 @@ export class Evaluator {
     return s.split('\n');
   }
 
-  /** What printStackTrace() prints: the exception, the frames it was created in, and its causes ("... n more" for shared frames). */
-  private stackTraceText(exception: JavaValue): string {
+  /**
+   * What printStackTrace() prints, as Throwable's does: the exception, the
+   * frames it was created in (`trace` for one that has none recorded), then
+   * each suppressed exception (`Suppressed: `, indented a tab) and the cause
+   * (`Caused by: `), each with the frames it shares with the trace around it
+   * shortened to `... n more`, and one seen before as a circular reference (#64).
+   */
+  private stackTraceText(exception: JavaValue, trace?: string[]): string {
     const out: string[] = [];
-    let current: JavaValue | undefined = exception;
-    let enclosing: string[] = [];
-    for (let depth = 0; current?.kind === 'objectRef' && depth < 20; depth++) {
-      const trace = this.exceptionTraces.get(current.heapId) ?? [];
+    const seen = new Set<string>();
+    const frameLine = (prefix: string, frame: string) => (frame.startsWith('...') ? `${prefix}\t${frame}` : `${prefix}\tat ${frame}`);
+    const print = (current: JavaValue, enclosing: string[], caption: string, prefix: string) => {
+      if (current.kind !== 'objectRef') return;
+      if (seen.has(current.heapId)) {
+        out.push(`${prefix}${caption}[CIRCULAR REFERENCE: ${this.stringify(current)}]`);
+        return;
+      }
+      seen.add(current.heapId);
+      const own = this.exceptionTraces.get(current.heapId) ?? (current === exception ? trace ?? [] : []);
       let shared = 0;
-      while (shared < trace.length && shared < enclosing.length && trace[trace.length - 1 - shared] === enclosing[enclosing.length - 1 - shared]) shared++;
-      out.push((depth > 0 ? 'Caused by: ' : '') + this.stringify(current));
-      for (const frame of trace.slice(0, trace.length - shared)) out.push(`\tat ${frame}`);
-      if (shared > 0) out.push(`\t... ${shared} more`);
-      const obj = this.heap.get(current.heapId);
-      const cause = obj && isJavaObject(obj) ? obj.fields.get('cause') : undefined;
-      enclosing = trace;
-      current = cause && cause.kind === 'objectRef' && cause.heapId !== current.heapId ? cause : undefined;
-    }
+      while (shared < own.length && shared < enclosing.length && own[own.length - 1 - shared] === enclosing[enclosing.length - 1 - shared]) shared++;
+      out.push(prefix + caption + this.stringify(current));
+      for (const frame of own.slice(0, own.length - shared)) out.push(frameLine(prefix, frame));
+      if (shared > 0) out.push(`${prefix}\t... ${shared} more`);
+      const state = throwableState(current, this.heap);
+      for (const s of state?.suppressed ?? []) print(s, own, 'Suppressed: ', prefix + '\t');
+      if (state && state.cause.kind !== 'null') print(state.cause, own, 'Caused by: ', prefix);
+    };
+    print(exception, [], '', '');
     return out.join('\n') + '\n';
   }
 
@@ -625,11 +708,20 @@ export class Evaluator {
     const site = typeof e === 'object' && e !== null ? this.failureSites.get(e) : undefined;
     const at = site?.line ? { line: site.line } : {};
     if (this.exceptionClassOf(e) !== undefined) {
-      const text = this.describeException(e);
-      const summary = `Exception in thread "main" ${text}`;
-      const trace = site?.trace ?? [];
-      const stderr = [summary, ...trace.map(frame => (frame.startsWith('...') ? `\t${frame}` : `\tat ${frame}`))].join('\n');
-      return { snapshots, error: summary, failure: { kind: 'exception', message: text, ...at, stderr } };
+      // The program has ended: a toString() or getMessage() of its own runs without steps.
+      this.suppress++;
+      try {
+        const text = this.describeException(e);
+        const summary = `Exception in thread "main" ${text}`;
+        const trace = site?.trace ?? [];
+        // A thrown object prints as printStackTrace() prints it, with its causes and suppressed exceptions (#64).
+        const stderr = e instanceof JavaThrow && e.value.kind === 'objectRef'
+          ? `Exception in thread "main" ${this.stackTraceText(e.value, trace).slice(0, -1)}`
+          : [summary, ...trace.map(frame => (frame.startsWith('...') ? `\t${frame}` : `\tat ${frame}`))].join('\n');
+        return { snapshots, error: summary, failure: { kind: 'exception', message: text, ...at, stderr } };
+      } finally {
+        this.suppress--;
+      }
     }
     let message: string;
     if (e instanceof InterpreterError) message = e.reason;
@@ -676,7 +768,7 @@ export class Evaluator {
     this.failureSites.set(e, { line, trace: this.stackTrace(line) });
     const overflow = e instanceof JavaRuntimeError && e.className === 'StackOverflowError';
     const runtimeException = !(e instanceof JavaThrow) && this.exceptionClassOf(e) !== undefined;
-    if (runtimeException && !overflow && top && this.suppress === 0 && this.snapshots.length < this.limits.maxSteps && !this.lastStepShows(line)) {
+    if (runtimeException && !overflow && top && !this.quiet() && this.snapshots.length < this.limits.maxSteps && !this.lastStepShows(line)) {
       top.line = line;
       this.recordStep(line);
     }
@@ -713,6 +805,17 @@ export class Evaluator {
     return undefined;
   }
 
+  /** A Java exception as a thrown object (a runtime error made one, with its trace), so it can hold suppressed exceptions. */
+  private asThrow(e: unknown): unknown {
+    if (e instanceof JavaThrow) return e;
+    const value = this.toExceptionValue(e);
+    if (!value) return e;
+    const thrown = new JavaThrow(value);
+    const site = typeof e === 'object' && e !== null ? this.failureSites.get(e) : undefined;
+    if (site) this.failureSites.set(thrown, site);
+    return thrown;
+  }
+
   /** The exception object a catch clause binds: the thrown value, or a new object for a runtime error. */
   private toExceptionValue(e: unknown): JavaValue | null {
     if (e instanceof JavaThrow) return e.value;
@@ -720,6 +823,13 @@ export class Evaluator {
       const parsed = parseRuntimeException(e.message);
       if (parsed) {
         const value = newException(parsed.className, parsed.detail ? [javaString(parsed.detail)] : [], this.ctx);
+        const pse = e instanceof PatternSyntaxError ? e : this.patternErrors.get(e);
+        if (pse && value.kind === 'objectRef') {
+          const fields = (this.heap.get(value.heapId) as JavaObject).fields;
+          fields.set('__description__', javaString(pse.desc));
+          fields.set('__index__', javaInt(pse.index));
+          fields.set('__pattern__', javaString(pse.pattern));
+        }
         const trace = this.failureSites.get(e)?.trace;
         if (trace && value.kind === 'objectRef') this.exceptionTraces.set(value.heapId, trace);
         return value;
@@ -814,8 +924,9 @@ export class Evaluator {
   }
 
   private newThrowable(className: string, message: string | null, cause?: JavaValue): JavaValue {
-    const ref = newException(className, message === null ? [] : [javaString(message)], this.ctx);
-    if (cause && ref.kind === 'objectRef') (this.heap.get(ref.heapId) as JavaObject).fields.set('cause', cause);
+    const ref = newException(className, [message === null ? javaNull() : javaString(message), ...(cause ? [cause] : [])], this.ctx, false);
+    const trace = this.top() ? this.stackTrace(this.top().line) : undefined;
+    if (trace && ref.kind === 'objectRef') this.exceptionTraces.set(ref.heapId, trace);
     return ref;
   }
 
@@ -1211,12 +1322,19 @@ export class Evaluator {
     for (let i = opened.length - 1; i >= 0; i--) {
       const { value, name } = opened[i];
       if (value.kind === 'null') continue;
+      // javac puts the implicit close() calls on the try's line, which a stack trace shows (#64).
+      frame.line = s.range.line;
       try {
         yield* this.callByName(value, 'close', [], name, s.range.line);
       } catch (thrown) {
         const e = this.atFailureSite(thrown);
         if (e instanceof HaltSignal || this.exceptionClassOf(e) === undefined) throw e;
-        if (!hasPending) {
+        // An exception already on its way keeps going with this one suppressed (#64); a return or break gives way to it.
+        if (hasPending && this.exceptionClassOf(pending) !== undefined) {
+          pending = this.asThrow(pending);
+          const closed = this.toExceptionValue(e);
+          if (closed) throwableState((pending as JavaThrow).value, this.heap)!.suppressed.push(closed);
+        } else {
           pending = e;
           hasPending = true;
         }
@@ -1330,13 +1448,22 @@ export class Evaluator {
       case 'ArrayLiteral': return e.elements.every(p);
       case 'Unary': return p(e.operand);
       case 'IncDec': return this.isPure(e.target);
-      case 'Binary': case 'Logical': case 'RefEquals': case 'Concat': return p(e.left) && p(e.right);
-      case 'Assign': case 'CompoundAssign': return this.isPure(e.target) && p(e.value);
+      case 'Binary': case 'Logical': case 'RefEquals': return p(e.left) && p(e.right);
+      // A program's toString() runs as a frame (stringOf).
+      case 'Concat': return p(e.left) && p(e.right) && !this.mayPrintByProgram(e.left.type) && !this.mayPrintByProgram(e.right.type);
+      case 'Assign': return this.isPure(e.target) && p(e.value);
+      case 'CompoundAssign': return this.isPure(e.target) && p(e.value) && !(e.concat && (this.mayPrintByProgram(e.target.type) || this.mayPrintByProgram(e.value.type)));
       case 'Conditional': return p(e.cond) && p(e.then) && p(e.else);
       case 'Convert': return p(e.expr);
       case 'InstanceOf': return p(e.expr);
       case 'SwitchExpr': return false;
     }
+  }
+
+  /** Could string conversion of a value of this type run a program's toString()? Not for a primitive, a String, a box or an array. */
+  private mayPrintByProgram(t: JType): boolean {
+    if (t.tag === 'primitive' || t.tag === 'null' || t.tag === 'array') return false;
+    return !(t.tag === 'class' && t.symbol.isLibrary && (t.symbol.name === 'String' || unboxedType(t) !== undefined));
   }
 
   /** Is a library method called on this receiver surely the library's (not a program class's implementation)? */
@@ -1371,7 +1498,7 @@ export class Evaluator {
       case 'Const': return this.constant(e);
       case 'Local': return slotReference(this.slotOf(e.local), e.local.name, this.line(e)).get();
       case 'StaticField': return this.readStatic(e.field);
-      case 'Field': return this.fieldRef(this.pv(e.target), e).get();
+      case 'Field': return this.readField(this.pv(e.target), e);
       case 'This': return this.top().thisValue ?? javaNull();
       case 'OuterThis': return this.outerThis(e.cls);
       case 'ClassLiteral': return this.classObjectNamed(e.name, e.simpleName);
@@ -1416,7 +1543,7 @@ export class Evaluator {
         yield* this.initClass(e.field.owner);
         return this.readStatic(e.field);
       }
-      case 'Field': return this.fieldRef(this.isPure(e.target) ? this.pv(e.target) : yield* this.gv(e.target), e).get();
+      case 'Field': return this.readField(this.isPure(e.target) ? this.pv(e.target) : yield* this.gv(e.target), e);
       case 'ArrayLength': return this.arrayLength(this.isPure(e.array) ? this.pv(e.array) : yield* this.gv(e.array), e);
       case 'ArrayElement': {
         const array = this.isPure(e.array) ? this.pv(e.array) : yield* this.gv(e.array);
@@ -1475,7 +1602,7 @@ export class Evaluator {
       case 'Concat': {
         const l = this.isPure(e.left) ? this.pv(e.left) : yield* this.gv(e.left);
         const r = this.isPure(e.right) ? this.pv(e.right) : yield* this.gv(e.right);
-        return this.concat(l, r);
+        return javaString((yield* this.stringOf(l)) + (yield* this.stringOf(r)));
       }
       case 'Assign': {
         if (e.target.kind === 'StaticField') {
@@ -1491,6 +1618,7 @@ export class Evaluator {
         const ref = yield* this.refGen(e.target);
         const current = ref.get();
         const value = this.isPure(e.value) ? this.pv(e.value) : yield* this.gv(e.value);
+        if (e.concat) return ref.set(javaString((yield* this.stringOf(current)) + (yield* this.stringOf(value))));
         return ref.set(this.compound(e, current, value));
       }
       case 'Conditional': {
@@ -1665,12 +1793,13 @@ export class Evaluator {
    * The program's code a call `name(args)` on `value` runs, if the program
    * provides it: a lambda's body (for its interface's method), a method of
    * the value's class or a default method of its interfaces, or a method
-   * javac generates for a record or an enum.
+   * javac generates for a record or an enum. A call of a library method
+   * (`libraryMethod`) runs only a method that overrides it (#62).
    */
-  private programCode(value: JavaValue, name: string, args: JavaValue[], line: number): { frame: Frame } | { value: JavaValue } | undefined {
+  private programCode(value: JavaValue, name: string, args: JavaValue[], line: number, libraryMethod?: MethodSymbol): { frame: Frame } | { value: JavaValue } | undefined {
     const run = this.lambdaOf(value);
     if (run) return run.node.sam.name === name && run.node.params.length === args.length ? { frame: this.lambdaFrame(run, args) } : undefined;
-    const method = this.userMethod(value, name, args.length);
+    const method = libraryMethod ? this.overrideOf(value, libraryMethod) : this.userMethod(value, name, args.length);
     if (!method) return undefined;
     if (method.synthetic) return { value: this.synthetic(method, value, args, line) };
     return { frame: this.methodFrame(method, value, args, line) };
@@ -1741,6 +1870,19 @@ export class Evaluator {
     return slotReference(slot, field.name, this.top()?.line ?? 0);
   }
 
+  /**
+   * A field's value. A constant variable's is its initializer's, which javac
+   * inlines wherever the field is read (JLS §13.1), so a constructor of a
+   * superclass calling an overridden method sees `final int fixed = 7` as 7
+   * before the field is set (#76); the object still must not be null.
+   */
+  private readField(target: JavaValue, e: B.BField): JavaValue {
+    const ref = this.fieldRef(target, e);
+    const c = e.field.constant;
+    if (c === undefined || !e.field.isFinal || e.field.isStatic || target.kind === 'null') return ref.get();
+    return constValue(c, e.field.type);
+  }
+
   private fieldRef(target: JavaValue, e: B.BField): Reference {
     return fieldReference(this.heap, target, this.fieldKey(target, e.field), runtimeTypeName(e.field.type), this.text(e.target), this.line(e));
   }
@@ -1779,7 +1921,46 @@ export class Evaluator {
 
   private elementRef(array: JavaValue, index: JavaValue, e: B.BArrayElement): Reference {
     const component = e.array.type.tag === 'array' ? runtimeTypeName(e.array.type.component) : undefined;
-    return arrayElementReference(this.heap, array, javaValueToNumber(index), this.text(e.array), this.line(e), component);
+    const ref = arrayElementReference(this.heap, array, javaValueToNumber(index), this.text(e.array), this.line(e), component);
+    // Arrays are covariant: a String[] seen as an Object[] still holds only strings (#67).
+    const set = ref.set;
+    ref.set = value => {
+      // After the null and bounds checks, which set() makes with its own messages, as the JVM orders them.
+      const arr = array.kind === 'arrayRef' ? this.heap.get(array.heapId) : undefined;
+      const i = javaValueToNumber(index);
+      if (arr && isJavaArray(arr) && Number.isInteger(i) && i >= 0 && i < arr.elements.length) {
+        const refused = this.unstorable(value, arr.elementType);
+        if (refused !== undefined) throw new JavaRuntimeError('ArrayStoreException', refused, this.line(e));
+      }
+      return set(value);
+    };
+    return ref;
+  }
+
+  /**
+   * The class Java's ArrayStoreException names when an array of this
+   * element type can't hold the value (#67), else undefined. Checked where
+   * JavaTutor knows both types for certain: an element type of the
+   * program's classes, String, a box or an array, or a value that is a
+   * string, a box or an array; anything else is let through.
+   */
+  private unstorable(value: JavaValue, elementType: string): string | undefined {
+    if (value.kind === 'null' || elementType === 'Object' || elementType in BOXES) return undefined;
+    if (value.kind === 'objectRef' && (this.lambdaOf(value) || isBuiltinObject(this.heap.get(value.heapId)))) return undefined;
+    const certain = this.byName.has(elementType) || elementType === 'String' || Object.values(BOXES).includes(elementType)
+      || elementType.endsWith('[]') || value.kind !== 'objectRef';
+    if (!certain) return undefined;
+    switch (value.kind) {
+      case 'string': return isStringType(elementType) ? undefined : 'java.lang.String';
+      case 'primitive': return isBoxedInstanceOf(value.javaType, elementType) ? undefined : `java.lang.${BOXES[value.javaType]}`;
+      case 'arrayRef': {
+        const arr = this.heap.get(value.heapId);
+        if (!arr || !isJavaArray(arr)) return undefined;
+        const fits = elementType.endsWith('[]') ? this.arrayElementAssignable(arr.elementType, elementType.slice(0, -2)) : ['Cloneable', 'Serializable'].includes(elementType);
+        return fits ? undefined : arrayClassName(arr.elementType, name => this.javaClassName(name));
+      }
+      case 'objectRef': return this.isSubclass(value.className, elementType) ? undefined : this.javaClassName(value.className);
+    }
   }
 
   private arrayLength(array: JavaValue, e: B.BArrayLength): JavaValue {
@@ -2005,21 +2186,39 @@ export class Evaluator {
       const view = asSuper(classType(c, c.typeParams), method.owner);
       const map = view ? typeArgMap(view) : new Map<number, JType>();
       const wanted = method.params.map(p => runtimeTypeName(erasure(substitute(p.type, map))));
-      return (c.methods.get(method.name) ?? []).find(m => !m.isStatic && m.arity === method.arity && this.methods.get(m)?.body
+      return (c.methods.get(method.name) ?? []).find(m => !m.isStatic && m.arity === method.arity && (this.methods.get(m)?.body || m.synthetic)
         && m.params.every((p, i) => runtimeTypeName(erasure(p.type)) === wanted[i]));
     };
     for (let c: ClassSymbol | undefined = cls; c && !c.isLibrary && !found; c = c.superclass?.symbol) found = implementation(c);
-    // No class implements it: a default method of an interface the class implements.
-    const interfaces: ClassSymbol[] = [];
-    for (let c: ClassSymbol | undefined = cls; c && !c.isLibrary; c = c.superclass?.symbol) interfaces.push(...c.interfaces.map(i => i.symbol));
-    for (let i = 0; i < interfaces.length && !found; i++) {
-      const iface = interfaces[i];
-      if (iface.isLibrary) continue;
-      found = implementation(iface);
-      for (const s of iface.interfaces) if (!interfaces.includes(s.symbol)) interfaces.push(s.symbol);
-    }
+    // No class implements it: the most specific default method of the interfaces the class implements.
+    found ??= this.inheritedDefault(cls, iface => {
+      const view = asSuper(classType(iface, iface.typeParams), method.owner);
+      const map = view ? typeArgMap(view) : new Map<number, JType>();
+      const wanted = method.params.map(p => runtimeTypeName(erasure(substitute(p.type, map))));
+      return (iface.methods.get(method.name) ?? []).find(m => !m.isStatic && m.arity === method.arity
+        && m.params.every((p, i) => runtimeTypeName(erasure(p.type)) === wanted[i]));
+    });
     byClass.set(cls, found);
     return found;
+  }
+
+  /**
+   * The default method a class inherits (JLS §8.4.8, §9.4.1.3), of the
+   * methods its interfaces declare (`declared`: an interface's method, default
+   * or abstract): one no other interface's method overrides, that is, from
+   * the most specific interface, so `class C implements A, B` with
+   * `B extends A` runs B's (#76), whatever order it names them in. None when
+   * the most specific is abstract (javac makes the class implement it).
+   */
+  private inheritedDefault(cls: ClassSymbol, declared: (iface: ClassSymbol) => MethodSymbol | undefined): MethodSymbol | undefined {
+    const interfaces: ClassSymbol[] = [];
+    for (let c: ClassSymbol | undefined = cls; c && !c.isLibrary; c = c.superclass?.symbol) interfaces.push(...c.interfaces.map(i => i.symbol));
+    for (let i = 0; i < interfaces.length; i++) {
+      for (const s of interfaces[i].interfaces) if (!interfaces.includes(s.symbol)) interfaces.push(s.symbol);
+    }
+    const candidates = interfaces.filter(i => !i.isLibrary).map(declared).filter((m): m is MethodSymbol => m !== undefined);
+    const specific = candidates.filter(m => !candidates.some(o => o.owner !== m.owner && extendsInterface(o.owner, m.owner)));
+    return specific.find(m => this.methods.get(m)?.body !== undefined || m.synthetic !== undefined);
   }
 
   private *callUser(method: MethodSymbol, dispatch: B.BCall['dispatch'], receiver: JavaValue | undefined, args: JavaValue[], e: B.BExpr): Gen<JavaValue> {
@@ -2063,20 +2262,31 @@ export class Evaluator {
   private userMethod(value: JavaValue, name: string, arity: number): MethodSymbol | undefined {
     if (value.kind !== 'objectRef' || isBuiltinObject(this.heap.get(value.heapId))) return undefined;
     const runs = (x: MethodSymbol) => !x.isStatic && x.arity === arity && (this.methods.get(x)?.body !== undefined || x.synthetic !== undefined);
-    const interfaces: ClassSymbol[] = [];
-    for (let c: ClassSymbol | undefined = this.byName.get(value.className); c && !c.isLibrary; c = c.superclass?.symbol) {
+    const cls = this.byName.get(value.className);
+    for (let c: ClassSymbol | undefined = cls; c && !c.isLibrary; c = c.superclass?.symbol) {
       const m = (c.methods.get(name) ?? []).find(runs);
       if (m) return m;
-      interfaces.push(...c.interfaces.map(i => i.symbol));
     }
-    for (let i = 0; i < interfaces.length; i++) {
-      const iface = interfaces[i];
-      if (iface.isLibrary) continue;
-      const m = (iface.methods.get(name) ?? []).find(runs);
-      if (m) return m;
-      interfaces.push(...iface.interfaces.map(s => s.symbol).filter(s => !interfaces.includes(s)));
-    }
-    return undefined;
+    return cls && this.inheritedDefault(cls, iface => (iface.methods.get(name) ?? []).find(x => !x.isStatic && x.arity === arity));
+  }
+
+  /**
+   * The program's method that overrides a library method for a program's
+   * object (#62): none if its class isn't a subtype of the method's class
+   * (a compareTo of a class that isn't Comparable), or declares only an
+   * overload (`equals(Point p)` beside Object's `equals(Object)`).
+   */
+  private overrideOf(value: JavaValue, method: MethodSymbol): MethodSymbol | undefined {
+    if (value.kind !== 'objectRef' || isBuiltinObject(this.heap.get(value.heapId))) return undefined;
+    const cls = this.byName.get(value.className);
+    if (!cls || !this.isSubclass(value.className, method.owner.name)) return undefined;
+    return this.findOverride(cls, method);
+  }
+
+  /** The library method a library callback by this name calls (CALLBACKS), if it is one. */
+  private callbackMethod(name: string, arity: number): MethodSymbol | undefined {
+    const owner = CALLBACKS[name];
+    return owner ? library().byName(owner)?.methods.get(name)?.find(m => !m.isStatic && m.arity === arity) : undefined;
   }
 
   /**
@@ -2086,7 +2296,7 @@ export class Evaluator {
    * program has none; an enum constant compares by ordinal.
    */
   private invokeUser(ref: JavaValue, name: string, args: JavaValue[]): JavaValue | undefined {
-    const code = this.programCode(ref, name, args, this.top()?.line ?? 0);
+    const code = this.programCode(ref, name, args, this.top()?.line ?? 0, this.callbackMethod(name, args.length));
     if (code) return 'frame' in code ? this.runNow(code.frame, false) : code.value;
     const constant = ref.kind === 'objectRef' ? (this.heap.get(ref.heapId) as JavaObject | undefined)?.enumConstant : undefined;
     if (constant && name === 'compareTo' && args[0]?.kind === 'objectRef') {
@@ -2099,7 +2309,7 @@ export class Evaluator {
   /** A call of a library method from the generator: one the program provides (a class's compareTo, toString, …, or a lambda) runs as a frame. */
   private *callLibrary(e: B.BCall, target: JavaValue | undefined, args: JavaValue[]): Gen<JavaValue> {
     if (target && !e.method.isStatic && e.dispatch !== 'special') {
-      const code = this.programCode(target, e.method.name, args, this.line(e));
+      const code = this.programCode(target, e.method.name, args, this.line(e), e.method);
       if (code) return 'frame' in code ? ((yield code.frame) ?? javaNull()) : code.value;
     }
     return this.callLibraryNow(e, target, args);
@@ -2115,7 +2325,7 @@ export class Evaluator {
     }
     // super.toString() and the like run Object's (or Throwable's) own method, whatever the class overrides.
     if (e.dispatch === 'special' && target.kind === 'objectRef') return this.toStatic(this.objectMethod(target, m.name, args, line), e.type);
-    const code = this.programCode(target, m.name, args, line);
+    const code = this.programCode(target, m.name, args, line, m);
     if (code) return 'frame' in code ? this.runNow(code.frame, false) : code.value;
     return this.toStatic(this.instanceCall(target, m.name, args, e.target ? this.text(e.target) : '', line), e.type);
   }
@@ -2193,11 +2403,11 @@ export class Evaluator {
         const r = this.classMethod(target, name);
         if (r) return r;
       }
+      if (this.isThrowable(target)) {
+        const r = this.throwableMethod(target, name, args, line);
+        if (r !== undefined) return r;
+      }
       if (isBuiltinObject(obj)) {
-        if (name === 'printStackTrace' && args.length === 0 && this.isThrowable(target)) {
-          this.appendStderr(this.stackTraceText(target));
-          return javaNull();
-        }
         if (target.className === 'StringBuilder' || target.className === 'StringBuffer') {
           const r = this.stdlib(line, () => stringBuilderMethod(target, name, args, this.ctx));
           if (r !== undefined) return r;
@@ -2205,13 +2415,6 @@ export class Evaluator {
           const r = this.stdlib(line, () => callInstanceMethod(target, name, args, this.ctx));
           if (r !== undefined) return r;
         }
-      }
-      if (this.isThrowable(target)) {
-        if (name === 'printStackTrace') {
-          this.appendStderr(this.stackTraceText(target));
-          return javaNull();
-        }
-        if (['getMessage', 'getLocalizedMessage', 'toString', 'getCause'].includes(name)) return exceptionMethod(target, name, this.ctx) ?? javaNull();
       }
       // A functional interface's default methods on a lambda or a function object of the program's (cmp.reversed(), f.andThen(g)).
       if (!isBuiltinObject(obj)) {
@@ -2294,6 +2497,8 @@ export class Evaluator {
         write(args.length > 0 ? charArrayText(args[0], this.ctx) ?? this.stringify(args[0]) : '');
         return javaNull();
       case 'printf': case 'format': {
+        // printf(Locale, …) formats as the US does (#71).
+        if (args[0]?.kind === 'objectRef' && args[0].className === 'Locale') args = args.slice(1);
         const fmt = args.length > 0 ? javaValueToString(args[0], this.heap) : '';
         write(this.stdlib(line, () => javaFormat(fmt, args.slice(1), this.heap, v => this.stringify(v))));
         return javaNull();
@@ -2307,7 +2512,13 @@ export class Evaluator {
     try {
       return call();
     } catch (e) {
-      if (e instanceof StdlibError) throw new InterpreterError(e.message, line);
+      // An exception object of the program's the stdlib throws as it is (orElseThrow's supplier's, #71).
+      if (e instanceof StdlibThrow) throw new JavaThrow(e.value);
+      if (e instanceof StdlibError) {
+        const err = new InterpreterError(e.message, line);
+        if (e instanceof PatternSyntaxError) this.patternErrors.set(err, e);
+        throw err;
+      }
       throw e;
     }
   }
@@ -2323,7 +2534,9 @@ export class Evaluator {
       const initial = args.length > 0 && args[0].kind !== 'primitive' ? javaValueToString(args[0], this.heap) : '';
       return { kind: 'objectRef', heapId: this.allocObject(name, new Map([['value', javaString(initial)]]), true), className: name };
     }
-    const built = this.stdlib(line, () => newBuiltin(name, args, this.ctx));
+    const built = isExceptionClass(name)
+      ? newException(name, args, this.ctx, causeConstructor(e.ctor))
+      : this.stdlib(line, () => newBuiltin(name, args, this.ctx));
     if (!built) throw new UnsupportedFeatureError(`The ${name} class`, line, true);
     if (built.kind === 'objectRef' && this.isThrowable(built)) this.exceptionTraces.set(built.heapId, this.stackTrace(line));
     return built;
@@ -2336,7 +2549,10 @@ export class Evaluator {
     for (const [f, key] of this.layout(cls)) fields.set(key, defaultValue(runtimeTypeName(f.type)));
     const heapId = this.allocObject(cls.name, fields);
     const self: JavaObjectRef = { kind: 'objectRef', heapId, className: cls.name };
-    if (this.isThrowable(self)) this.exceptionTraces.set(heapId, this.stackTrace(this.line(e)));
+    if (this.isThrowable(self)) {
+      this.exceptionTraces.set(heapId, this.stackTrace(this.line(e)));
+      throwableState(self, this.heap);
+    }
     // An inner class's enclosing instance, and a local or anonymous class's captured locals (#16), before its constructor runs.
     if (cls.outerField) {
       const outer = e.outer ? (this.isPure(e.outer) ? this.pv(e.outer) : yield* this.gv(e.outer)) : this.top()?.thisValue;
@@ -2359,7 +2575,7 @@ export class Evaluator {
     const sup = cls.superclass?.symbol;
     const programSuper = sup !== undefined && !sup.isLibrary;
     if (!programSuper && rt.bound.instanceInit.length === 0) {
-      this.superConstructor(cls, self, args);
+      this.superConstructor(cls, self, args, superCtor);
       return;
     }
     const frame = this.newFrame(cls.name, 'constructor', cls, self);
@@ -2369,7 +2585,7 @@ export class Evaluator {
 
   private *runAnonymousConstructor(frame: Frame, rt: ClassRuntime, sup: ClassSymbol | undefined, superCtor: MethodSymbol | undefined, self: JavaObjectRef, args: JavaValue[]): Gen<undefined> {
     if (sup) yield* this.construct(sup, superCtor, self, args);
-    else this.superConstructor(rt.bound.symbol, self, args);
+    else this.superConstructor(rt.bound.symbol, self, args, superCtor);
     yield* this.instanceInit(frame, rt);
     return undefined;
   }
@@ -2444,19 +2660,18 @@ export class Evaluator {
   private *superCall(call: NonNullable<B.BMethod['explicitCall']>, rt: ClassRuntime, self: JavaObjectRef, args: JavaValue[]): Gen<void> {
     const sup = call.ctor?.owner;
     if (sup && !sup.isLibrary) yield* this.construct(sup, call.ctor, self, args);
-    else this.superConstructor(rt.bound.symbol, self, args);
+    else this.superConstructor(rt.bound.symbol, self, args, call.ctor);
   }
 
-  /** The superclass constructor: Object's does nothing; a library exception's records the message and cause. */
-  private superConstructor(cls: ClassSymbol, self: JavaObjectRef, args: JavaValue[]): void {
+  /**
+   * The superclass constructor: Object's does nothing; a library
+   * exception's sets Throwable's state as that constructor does (#64), never
+   * a field of the program's class, whatever it is called.
+   */
+  private superConstructor(cls: ClassSymbol, self: JavaObjectRef, args: JavaValue[], ctor?: MethodSymbol): void {
     if (!cls.superclass || cls.superclass.symbol.name === 'Object') return;
-    const obj = this.heap.get(self.heapId) as JavaObject;
-    const [first, second] = args;
-    if (first) {
-      if (!obj.fields.has('message')) obj.fields.set('message', first.kind === 'null' ? javaNull() : javaString(this.stringify(first)));
-      if (this.isThrowable(first)) obj.fields.set('cause', first);
-    }
-    if (second) obj.fields.set('cause', second);
+    if (!this.isThrowable(self)) return;
+    (this.heap.get(self.heapId) as JavaObject).throwable = throwableFromArgs(args, this.ctx, ctor ? causeConstructor(ctor) : undefined);
   }
 
   /**
@@ -2488,15 +2703,68 @@ export class Evaluator {
     }
   }
 
+  // ── Throwable (#64) ──
+
+  /** What Throwable.toString() prints after the class name: the virtual getLocalizedMessage(), whose own implementation is the virtual getMessage(). */
+  private localizedMessage(ref: JavaValue): JavaValue {
+    return this.invokeUser(ref, 'getLocalizedMessage', []) ?? this.invokeUser(ref, 'getMessage', []) ?? throwableState(ref, this.heap)?.message ?? javaNull();
+  }
+
+  /** Throwable's own instance methods, for a library exception and a program's alike; undefined for another method. */
+  private throwableMethod(target: JavaObjectRef, name: string, args: JavaValue[], line: number): JavaValue | undefined {
+    const state = throwableState(target, this.heap)!;
+    const same = (v: JavaValue | undefined) => v?.kind === 'objectRef' && v.heapId === target.heapId;
+    switch (`${name}/${args.length}`) {
+      case 'printStackTrace/0':
+        this.appendStderr(this.stackTraceText(target));
+        return javaNull();
+      case 'getMessage/0': return state.message;
+      case 'getLocalizedMessage/0': return this.invokeUser(target, 'getMessage', []) ?? state.message;
+      case 'toString/0': return javaString(this.ownString(target));
+      case 'getCause/0': return state.cause;
+      case 'initCause/1': {
+        if (state.causeSet) throw new JavaRuntimeError('IllegalStateException', `Can't overwrite cause with ${args[0].kind === 'null' ? 'a null' : this.stringify(args[0])}`, line);
+        if (same(args[0])) throw new JavaRuntimeError('IllegalArgumentException', 'Self-causation not permitted', line);
+        state.cause = args[0];
+        state.causeSet = true;
+        return target;
+      }
+      case 'addSuppressed/1':
+        if (same(args[0])) throw new JavaRuntimeError('IllegalArgumentException', 'Self-suppression not permitted', line);
+        if (args[0].kind === 'null') throw new JavaRuntimeError('NullPointerException', 'Cannot suppress a null exception.', line);
+        state.suppressed.push(args[0]);
+        return javaNull();
+      case 'getSuppressed/0': return { kind: 'arrayRef', heapId: this.allocArray('Throwable', [...state.suppressed]) };
+    }
+    return undefined;
+  }
+
   // ── Printing ──
 
-  /** A value as String.valueOf prints it, with a user class's own toString(). */
+  /** A value as String.valueOf prints it, with a user class's own toString() (which may return null: "null"). */
   stringify(value: JavaValue): string {
     if (value.kind === 'objectRef') {
       const user = this.invokeUser(value, 'toString', []);
-      if (user !== undefined && user.kind === 'string') return user.value;
+      if (user !== undefined) return user.kind === 'string' ? user.value : 'null';
     }
     return this.ownString(value);
+  }
+
+  /**
+   * A value as string conversion gives it (`"" + x`), on the explicit stack:
+   * a program's toString() runs as a frame the trampoline drives, so a
+   * toString that recurses through concatenation (`v + "," + next`) goes as
+   * deep as any recursion, not as deep as JavaScript's stack (#73).
+   */
+  private *stringOf(value: JavaValue): Gen<string> {
+    if (value.kind === 'objectRef') {
+      const code = this.programCode(value, 'toString', [], this.top()?.line ?? 0, this.callbackMethod('toString', 0));
+      if (code) {
+        const result = 'frame' in code ? ((yield code.frame) ?? javaNull()) : code.value;
+        return result.kind === 'string' ? result.value : 'null';
+      }
+    }
+    return this.stringify(value);
   }
 
   /** A value as the library's own toString() prints it: Object's `Main$Pt@hash` for a program's object, without its class's toString(). */
@@ -2505,7 +2773,7 @@ export class Evaluator {
       const obj = this.heap.get(value.heapId);
       if (obj && isJavaObject(obj)) {
         if (this.isThrowable(value)) {
-          const exc = formatException(value, this.heap, this.ctx.binaryName);
+          const exc = formatException(value, this.heap, this.ctx.binaryName, this.localizedMessage(value));
           if (exc !== undefined) return exc;
         }
         if (obj.enumConstant) return obj.enumConstant.name;
@@ -2519,6 +2787,7 @@ export class Evaluator {
         if (value.className === 'MapEntry') return this.stringify(obj.fields.get('key')!) + '=' + this.stringify(obj.fields.get('value')!);
         if (isOptionalClass(value.className)) return optionalText(obj, v => this.stringify(v));
         if (value.className === 'Class') return classText(javaValueToString(obj.fields.get('name') ?? javaNull(), this.heap));
+        if (value.className === 'Locale') return javaValueToString(obj.fields.get('tag') ?? javaNull(), this.heap);
       }
     }
     if (value.kind === 'arrayRef') {

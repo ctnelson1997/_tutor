@@ -189,7 +189,7 @@ class Converter {
   }
 
   private qualifiedName(ids: CstToken[], range: A.Range): A.QualifiedName {
-    return { kind: 'QualifiedName', parts: ids.map(t => t.image), range };
+    return { kind: 'QualifiedName', parts: ids.map(t => t.image), partRanges: ids.map(t => rangeOf(t)), range };
   }
 
   private importDeclaration(n: CstNode): A.ImportDecl {
@@ -429,6 +429,7 @@ class Converter {
       modifiers: this.modifiers(nodes(n, 'constructorModifier')),
       typeParams: [],
       name: tok(node(node(n, 'simpleTypeName')!, 'typeIdentifier')!, 'Identifier')!.image,
+      nameRange: rangeOf(tok(node(node(n, 'simpleTypeName')!, 'typeIdentifier')!, 'Identifier')!),
       params: [],
       throws: [],
       compact: true,
@@ -561,6 +562,7 @@ class Converter {
       resultAnnotations: this.annotations(nodes(header, 'annotation')),
       result: voidTok ? { kind: 'VoidType', range: rangeOf(voidTok) } : this.unannType(node(result, 'unannType')!),
       name: tok(declarator, 'Identifier')!.image,
+      nameRange: rangeOf(tok(declarator, 'Identifier')!),
       receiver: this.receiver(node(declarator, 'receiverParameter')),
       params: this.formalParameters(node(declarator, 'formalParameterList')),
       dims: this.dimCount(node(declarator, 'dims')),
@@ -628,6 +630,7 @@ class Converter {
       modifiers: this.modifiers(nodes(n, 'constructorModifier')),
       typeParams: this.typeParameters(node(declarator, 'typeParameters')),
       name: tok(node(node(declarator, 'simpleTypeName')!, 'typeIdentifier')!, 'Identifier')!.image,
+      nameRange: rangeOf(tok(node(node(declarator, 'simpleTypeName')!, 'typeIdentifier')!, 'Identifier')!),
       receiver: this.receiver(node(declarator, 'receiverParameter')),
       params: this.formalParameters(node(declarator, 'formalParameterList')),
       throws: throws ? this.throwsList(throws) : [],
@@ -676,7 +679,16 @@ class Converter {
 
   private blockStatement(n: CstNode): A.Stmt {
     const local = node(n, 'localVariableDeclarationStatement');
-    if (local) return { ...this.localVariableDeclaration(node(local, 'localVariableDeclaration')!), range: rangeOf(n) };
+    if (local) {
+      const decl = this.localVariableDeclaration(node(local, 'localVariableDeclaration')!);
+      // java-parser reads `yield t;` as a declaration of t with the type yield, which can't name a type (JLS §3.9): it yields t (#70).
+      const [only] = decl.declarators;
+      const type = decl.type.kind === 'ClassType' && decl.type.parts.length === 1 ? decl.type.parts[0] : undefined;
+      if (type?.name === 'yield' && !type.typeArgs && decl.declarators.length === 1 && !only.init && only.dims === 0 && decl.modifiers.length === 0) {
+        return { kind: 'Yield', value: { kind: 'Name', parts: [{ name: only.name, range: only.range }], range: only.range }, range: rangeOf(n) };
+      }
+      return { ...decl, range: rangeOf(n) };
+    }
     const cls = node(n, 'classDeclaration');
     if (cls) return { kind: 'LocalClassDecl', decl: this.classDeclaration(cls), range: rangeOf(n) };
     const iface = node(n, 'interfaceDeclaration');

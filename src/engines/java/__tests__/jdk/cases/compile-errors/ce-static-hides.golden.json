@@ -1,0 +1,8 @@
+{
+  "stdout": "",
+  "stderr": "Main.java:3: error: m() in B cannot override m() in A\n    static class B extends A { static void m() {} }\n                                           ^\n  overriding method is static\n1 error\nerror: compilation failed\n",
+  "exitCode": 1,
+  "exception": null,
+  "compileError": "Main.java:3: error: m() in B cannot override m() in A\n    static class B extends A { static void m() {} }\n                                           ^\n  overriding method is static\n1 error",
+  "sourceSha256": "a46a9150f3a1ed0a6f33fa998b88ca096b5472c498236be2631b9159038e20e2"
+}

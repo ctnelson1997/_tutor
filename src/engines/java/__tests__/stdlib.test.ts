@@ -12,6 +12,8 @@ import { newBuiltin, callInstanceMethod, getIterableElements } from '../stdlib/c
 import type { StdlibContext } from '../stdlib/context';
 import { isLibrarySubtype, isStringType, isBoxedInstanceOf, isKnownLibraryType } from '../stdlib/hierarchy';
 import { qualifiedExceptionName } from '../stdlib/exceptions';
+import { libraryStubs } from '../semantic/stubs';
+import { readFileSync } from 'node:fs';
 import {
   type JavaValue,
   type JavaHeapEntry,
@@ -198,12 +200,60 @@ describe('callStaticMethod — Arrays / Objects / Collections', () => {
     const copy = callStaticMethod('Arrays', 'copyOf', [a, javaInt(5)], ctx)!;
     expect(javaValueToString(callStaticMethod('Arrays', 'toString', [copy], ctx)!, ctx.heap)).toBe('[1, 2, 3, 0, 0]');
   });
+  it("System.arraycopy and the Arrays range methods check as the JDK does, never growing an array (#67, JDK 21's messages)", () => {
+    const ctx = makeCtx();
+    const ints = (...n: number[]) => arrRef(ctx, n.map(javaInt), 'int');
+    const length = (a: JavaValue) => (ctx.heap.get((a as { heapId: string }).heapId) as { elements: unknown[] }).elements.length;
+    const copy = (src: JavaValue, sp: number, dest: JavaValue, dp: number, n: number) => () => callStaticMethod('System', 'arraycopy', [src, javaInt(sp), dest, javaInt(dp), javaInt(n)], ctx);
+    const big = ints(0, 0, 0, 0, 0, 0);
+    expect(copy(ints(10, 20, 30), 0, big, 0, 4)).toThrow('ArrayIndexOutOfBoundsException: arraycopy: last source index 4 out of bounds for int[3]');
+    const small = ints(0, 0, 0);
+    expect(copy(ints(1, 2, 3, 4, 5), 0, small, 0, 5)).toThrow('ArrayIndexOutOfBoundsException: arraycopy: last destination index 5 out of bounds for int[3]');
+    expect(length(small)).toBe(3);
+    expect(copy(ints(1, 2, 3), 0, small, -1, 2)).toThrow('arraycopy: destination index -1 out of bounds for int[3]');
+    expect(copy(ints(1, 2, 3), -2, small, 0, 1)).toThrow('arraycopy: source index -2 out of bounds for int[3]');
+    expect(copy(ints(1, 2, 3), 0, small, 0, -1)).toThrow('arraycopy: length -1 is negative');
+    expect(copy(javaNull(), 0, small, 0, 1)).toThrow(/^NullPointerException$/);
+    expect(copy(javaString('x'), 0, small, 0, 1)).toThrow('ArrayStoreException: arraycopy: source type java.lang.String is not an array');
+    expect(copy(ints(1), 0, arrRef(ctx, [javaInt(0)], 'long'), 0, 1)).toThrow('arraycopy: type mismatch: can not copy int[] into long[]');
+    expect(copy(arrRef(ctx, [javaNull()]), 0, small, 0, 1)).toThrow('arraycopy: type mismatch: can not copy object array[] into int[]');
+    const fill = (a: JavaValue, from: number, to: number) => () => callStaticMethod('Arrays', 'fill', [a, javaInt(from), javaInt(to), javaInt(7)], ctx);
+    expect(fill(ints(0, 0, 0, 0, 0), 0, 8)).toThrow('ArrayIndexOutOfBoundsException: Array index out of range: 8');
+    expect(fill(ints(0, 0, 0, 0, 0), 3, 1)).toThrow('IllegalArgumentException: fromIndex(3) > toIndex(1)');
+    expect(fill(ints(0, 0, 0, 0, 0), -1, 2)).toThrow('ArrayIndexOutOfBoundsException: Array index out of range: -1');
+    expect(() => callStaticMethod('Arrays', 'sort', [ints(5, 4, 3, 2, 1), javaInt(2), javaInt(9)], ctx)).toThrow('Array index out of range: 9');
+    expect(() => callStaticMethod('Arrays', 'copyOfRange', [ints(1, 2, 3, 4, 5), javaInt(4), javaInt(2)], ctx)).toThrow('IllegalArgumentException: 4 > 2');
+    expect(() => callStaticMethod('Arrays', 'copyOfRange', [ints(1, 2, 3), javaInt(4), javaInt(6)], ctx)).toThrow('arraycopy: length -1 is negative');
+    expect(() => callStaticMethod('Arrays', 'copyOf', [ints(1, 2), javaInt(-1)], ctx)).toThrow('NegativeArraySizeException: -1');
+    expect(javaValueToString(callStaticMethod('Arrays', 'toString', [callStaticMethod('Arrays', 'copyOfRange', [ints(1, 2, 3), javaInt(1), javaInt(6)], ctx)!], ctx)!, ctx.heap)).toBe('[2, 3, 0, 0, 0]');
+  });
   it('Objects.equals / hash / requireNonNull', () => {
     const ctx = makeCtx();
     expect(bool(callStaticMethod('Objects', 'equals', [javaInt(1), javaInt(1)], ctx))).toBe(true);
     expect(bool(callStaticMethod('Objects', 'equals', [javaString('a'), javaString('b')], ctx))).toBe(false);
     expect(bool(callStaticMethod('Objects', 'isNull', [javaNull()], ctx))).toBe(true);
     expect(() => callStaticMethod('Objects', 'requireNonNull', [javaNull()], ctx)).toThrow();
+  });
+  it('takes a varargs parameter as the array the binder packs (#63): Objects.hash, Collections.addAll', () => {
+    const ctx = makeCtx();
+    // Objects.hash(1, 2) arrives as one Object[] { 1, 2 }: Arrays.hashCode of it, 994, as in Java.
+    expect(num(callStaticMethod('Objects', 'hash', [arrRef(ctx, [javaInt(1), javaInt(2)])], ctx))).toBe(994);
+    expect(num(callStaticMethod('Objects', 'hash', [arrRef(ctx, [])], ctx))).toBe(1);
+    expect(num(callStaticMethod('Objects', 'hash', [javaNull()], ctx))).toBe(0);
+    // A primitive array is one value of the packed Object[], not the elements.
+    const ints = arrRef(ctx, [javaInt(1), javaInt(2)], 'int');
+    expect(num(callStaticMethod('Objects', 'hash', [arrRef(ctx, [ints])], ctx))).not.toBe(994);
+    const list = newBuiltin('ArrayList', [], ctx)!;
+    expect(bool(callStaticMethod('Collections', 'addAll', [list, arrRef(ctx, [javaInt(3), javaInt(1)], 'Integer')], ctx))).toBe(true);
+    expect(javaValueToString(list, ctx.heap)).toBe('[3, 1]');
+    expect(bool(callStaticMethod('Collections', 'addAll', [list, arrRef(ctx, [])], ctx))).toBe(false);
+    expect(() => callStaticMethod('Collections', 'addAll', [list, javaNull()], ctx)).toThrow('NullPointerException');
+  });
+  it("has every varargs method of the stubs in the corpus's extra/varargs-library case, run against the JDK (#63)", () => {
+    const stubMethods = new Set([...libraryStubs().flatMap(({ source }) => [...source.matchAll(/(\w+)\([^)]*\.\.\.\s*\w+\)/g)].map(m => m[1]))]);
+    const corpus = readFileSync(new URL('./jdk/cases/extra/varargs-library.java', import.meta.url), 'utf8');
+    expect(stubMethods.size).toBeGreaterThan(5);
+    expect([...stubMethods].filter(name => !corpus.includes(`.${name}(`))).toEqual([]);
   });
   it('Collections.sort / max / min on a list', () => {
     const ctx = makeCtx();
@@ -296,6 +346,49 @@ describe('Scanner', () => {
     expect(num(callInstanceMethod(sc, 'nextInt', [], ctx))).toBe(42);
     expect(bool(callInstanceMethod(sc, 'hasNextInt', [], ctx))).toBe(false);
     expect(javaValueToString(callInstanceMethod(sc, 'next', [], ctx)!, ctx.heap)).toBe('foo');
+  });
+
+  it("matches tokens by Scanner's own patterns, leaving one that doesn't match unread (#65, JDK 21's results)", () => {
+    const ctx = makeCtx();
+    const scan = (text: string) => newBuiltin('Scanner', [javaString(text)], ctx)!;
+    const has = (text: string, method: string) => bool(callInstanceMethod(scan(text), method, [], ctx));
+    // hasNextInt, hasNextLong, hasNextDouble, hasNextBoolean for each token.
+    const table: [string, boolean, boolean, boolean, boolean][] = [
+      ['3.5', false, false, true, false], ['abc', false, false, false, false], ['4x', false, false, false, false],
+      ['1,5', false, false, false, false], ['1,234', true, true, true, false], ['1,234.5', false, false, true, false],
+      ['12,34', false, false, false, false], ['2.5f', false, false, false, false], ['0x1.8p1', false, false, true, false],
+      ['NaN', false, false, true, false], ['-Infinity', false, false, true, false], ['.5', false, false, true, false],
+      ['5.', false, false, true, false], ['+3', true, true, true, false], ['99999999999', false, true, true, false],
+      ['TRUE', false, false, false, true], ['yes', false, false, false, false],
+    ];
+    for (const [token, int, long, double, boolean] of table) {
+      expect([token, has(token, 'hasNextInt'), has(token, 'hasNextLong'), has(token, 'hasNextDouble'), has(token, 'hasNextBoolean')]).toEqual([token, int, long, double, boolean]);
+    }
+    expect(num(callInstanceMethod(scan('1,234.5'), 'nextDouble', [], ctx))).toBe(1234.5);
+    expect(num(callInstanceMethod(scan('1,234'), 'nextInt', [], ctx))).toBe(1234);
+    const sc = scan('abc 2');
+    expect(() => callInstanceMethod(sc, 'nextDouble', [], ctx)).toThrow(/^InputMismatchException$/);
+    expect(() => callInstanceMethod(sc, 'nextBoolean', [], ctx)).toThrow(/^InputMismatchException$/);
+    expect(javaValueToString(callInstanceMethod(sc, 'next', [], ctx)!, ctx.heap)).toBe('abc');
+    expect(() => callInstanceMethod(scan('99999999999'), 'nextInt', [], ctx)).toThrow('InputMismatchException: For input string: "99999999999"');
+    expect(() => callInstanceMethod(scan(''), 'nextBoolean', [], ctx)).toThrow(/^NoSuchElementException$/);
+    expect(() => callInstanceMethod(scan(''), 'nextLine', [], ctx)).toThrow('NoSuchElementException: No line found');
+  });
+
+  it('shares System.in between its Scanners, as typed input is (#65), and refuses a closed one', () => {
+    const ctx = makeCtx('5\n7\n');
+    // A helper that makes a new Scanner(System.in) for each number reads the next one.
+    const read = () => num(callInstanceMethod(newBuiltin('Scanner', [javaNull()], ctx)!, 'nextInt', [], ctx));
+    expect(read() + read()).toBe(12);
+    const sc = newBuiltin('Scanner', [javaNull()], ctx)!;
+    callInstanceMethod(sc, 'close', [], ctx);
+    expect(() => callInstanceMethod(sc, 'hasNext', [], ctx)).toThrow('IllegalStateException: Scanner closed');
+    // Closing it closed System.in: a new Scanner on it has nothing to read.
+    const again = newBuiltin('Scanner', [javaNull()], ctx)!;
+    expect(bool(callInstanceMethod(again, 'hasNextLine', [], ctx))).toBe(false);
+    expect(() => callInstanceMethod(again, 'next', [], ctx)).toThrow(/^NoSuchElementException$/);
+    // A Scanner over a String is its own.
+    expect(num(callInstanceMethod(newBuiltin('Scanner', [javaString('9')], ctx)!, 'nextInt', [], ctx))).toBe(9);
   });
 });
 

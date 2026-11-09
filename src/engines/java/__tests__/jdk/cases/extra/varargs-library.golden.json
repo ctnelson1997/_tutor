@@ -1,0 +1,8 @@
+{
+  "stdout": "2 true 994\n3 1 2\n994 1 1074126976 0\n994\ntrue [3, 1, 2]\ntrue [x, y] false\ntrue [x, y, z]\na-b x+y\np/q x/y\n[4, 5] [x, y] 2\n[6, 7] [w, y] w\n2 w,y\n6 9 0.75\n10 20\nm/n\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "c398a488bfa16d6c94cf4fb6fa4c00158f02ba2790f015bcc3f843111bd4e0ad"
+}

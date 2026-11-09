@@ -21,7 +21,7 @@ import {
   javaValueToNumber,
   mapContents,
 } from '../types';
-import { type StdlibContext, StdlibError } from './context';
+import { type StdlibContext, StdlibError, StdlibThrow } from './context';
 import { compareWith, libraryComparator, valuesEqual } from './util';
 
 /** The library's own function objects, by class. */
@@ -134,7 +134,8 @@ export function functionalMethod(ref: JavaValue, method: string, args: JavaValue
     }
     case 'thenComparingInt': case 'thenComparingDouble': case 'thenComparingLong':
       if (!isComparator) return undefined;
-      return libraryComparator('then', ref, ctx, { then: comparing(args[0], undefined, method.replace('then', 'c') as ComparingKind, ctx) });
+      // thenComparingInt orders by comparingInt (#68: the name was cComparingInt, which ordered naturally).
+      return libraryComparator('then', ref, ctx, { then: comparing(args[0], undefined, `comparing${method.slice('thenComparing'.length)}` as ComparingKind, ctx) });
     case 'andThen':
       if (shape.name === 'accept') return libraryFunctionObject('Consumer', 'consumerAndThen', { first: ref, then: args[0] }, shape.arity, ctx);
       if (shape.name === 'apply') return libraryFunctionObject('Function', 'andThen', { first: ref, then: args[0] }, shape.arity, ctx);
@@ -163,7 +164,8 @@ export function functionStatic(className: string, method: string, args: JavaValu
     case 'BinaryOperator.minBy': case 'BinaryOperator.maxBy':
       return libraryFunctionObject('Function', method, { comparator: args[0] }, 2, ctx);
     case 'Entry.comparingByKey': case 'Entry.comparingByValue':
-      return comparing(libraryFunctionObject('Function', method === 'comparingByKey' ? 'entryKey' : 'entryValue', {}, 1, ctx), undefined, 'comparing', ctx);
+      // With a comparator for the keys or values (#71), else their natural order.
+      return comparing(libraryFunctionObject('Function', method === 'comparingByKey' ? 'entryKey' : 'entryValue', {}, 1, ctx), args[0], 'comparing', ctx);
   }
   return undefined;
 }
@@ -201,7 +203,11 @@ export function optionalMethod(ref: JavaValue, method: string, args: JavaValue[]
   const empty = () => new StdlibError('NoSuchElementException: No value present');
   switch (method) {
     case 'get': case 'getAsInt': case 'getAsDouble': case 'orElseThrow':
-      if (value === undefined) throw empty();
+      if (value === undefined) {
+        // orElseThrow(supplier) throws what the supplier makes (#71).
+        if (method === 'orElseThrow' && args.length === 1) throw new StdlibThrow(applyFunction(args[0], 'get', [], ctx));
+        throw empty();
+      }
       return value;
     case 'isPresent': return javaBool(value !== undefined);
     case 'isEmpty': return javaBool(value === undefined);

@@ -108,13 +108,19 @@ export function hashFind(table: HashTable, keys: JavaValue[], key: JavaValue, ha
  * iterates it: at the end of its bucket for a HashMap or HashSet
  * (`bucketOrder`), at the end for a LinkedHashMap or LinkedHashSet. Then grow
  * the table as HashMap.putVal does.
+ *
+ * `compute` is HashMap's compute, computeIfAbsent and merge (#68), which
+ * differ from putVal: they grow the table before inserting, when it is
+ * already past its threshold, put the new key at the head of its bucket,
+ * and treeify (on a small table, grow) a bucket one key sooner.
  */
-export function hashInsert(table: HashTable, arrays: JavaValue[][], items: JavaValue[], hash: number, bucketOrder: boolean): void {
+export function hashInsert(table: HashTable, arrays: JavaValue[][], items: JavaValue[], hash: number, bucketOrder: boolean, compute = false): void {
   if (table.capacity === 0) table.capacity = table.initialCapacity || 16;
+  else if (compute && table.hashes.length > threshold(table.capacity)) resize(table, arrays, bucketOrder);
   let pos = table.hashes.length;
   if (bucketOrder) {
     const b = bucket(hash, table.capacity);
-    pos = table.hashes.findIndex(h => bucket(h, table.capacity) > b);
+    pos = table.hashes.findIndex(h => (compute ? bucket(h, table.capacity) >= b : bucket(h, table.capacity) > b));
     if (pos < 0) pos = table.hashes.length;
   }
   table.hashes.splice(pos, 0, hash);
@@ -122,9 +128,9 @@ export function hashInsert(table: HashTable, arrays: JavaValue[][], items: JavaV
   if (table.capacity < 64) {
     const b = bucket(hash, table.capacity);
     const binCount = table.hashes.reduce((n, h) => n + (bucket(h, table.capacity) === b ? 1 : 0), 0);
-    if (binCount >= 9) resize(table, arrays, bucketOrder); // treeifyBin on a small table
+    if (binCount >= (compute ? 8 : 9)) resize(table, arrays, bucketOrder); // treeifyBin on a small table
   }
-  if (table.hashes.length > threshold(table.capacity)) resize(table, arrays, bucketOrder);
+  if (!compute && table.hashes.length > threshold(table.capacity)) resize(table, arrays, bucketOrder);
 }
 
 /** Remove the key at `index` (the table keeps its capacity, as HashMap's does). */

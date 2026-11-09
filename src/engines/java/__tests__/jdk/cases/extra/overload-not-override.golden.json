@@ -1,0 +1,11 @@
+{
+  "stdout": "direct: true\nthrough Object: false\ncontains: false, indexOf: -1\nObjects.equals: false\nHashSet contains: false, add: true, size: 2\noverridden: true 0\nrecord: true\nsorted: [R1, R2, R3], max: R3, tree: [R1, R2, R3]\none student sorts: [Ann:90]\nTreeSet: ClassCastException\nPriorityQueue: ClassCastException\n",
+  "stderr": "Exception in thread \"main\" java.lang.ClassCastException: class Main$Student cannot be cast to class java.lang.Comparable (Main$Student is in unnamed module of loader com.sun.tools.javac.launcher.Main$MemoryClassLoader @3a52dba3; java.lang.Comparable is in module java.base of loader 'bootstrap')\n\tat java.base/java.util.ComparableTimSort.countRunAndMakeAscending(ComparableTimSort.java:320)\n\tat java.base/java.util.ComparableTimSort.sort(ComparableTimSort.java:188)\n\tat java.base/java.util.Arrays.sort(Arrays.java:1042)\n\tat Main.main(Main.java:74)\n",
+  "exitCode": 1,
+  "exception": {
+    "class": "java.lang.ClassCastException",
+    "message": "class Main$Student cannot be cast to class java.lang.Comparable (Main$Student is in unnamed module of loader com.sun.tools.javac.launcher.Main$MemoryClassLoader @3a52dba3; java.lang.Comparable is in module java.base of loader 'bootstrap')"
+  },
+  "compileError": null,
+  "sourceSha256": "21e4c72878598e6dfe61440da7ee166b331870b803ff7c5fa8b409ab58ef57bd"
+}

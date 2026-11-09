@@ -9,7 +9,7 @@
  * `../types`.
  */
 
-import type { JavaValue, JavaType, JavaHeapEntry } from '../types';
+import type { JavaValue, JavaType, JavaHeapEntry, ScannerInput } from '../types';
 
 export interface StdlibContext {
   /** The interpreter's live heap. */
@@ -22,6 +22,8 @@ export interface StdlibContext {
   random(): number;
   /** Preset stdin buffer consumed by `new Scanner(System.in)`. */
   stdin: string;
+  /** System.in as the Scanners on it read it (#65): made by the first, shared by every later one. */
+  systemIn?: ScannerInput;
   /** Append text to the program's console output (used by printStackTrace). */
   writeStdout(text: string): void;
   /**
@@ -51,6 +53,12 @@ export interface StdlibContext {
    * and thenComparing(Function) can be told apart when the program runs.
    */
   functionShape?(value: JavaValue): { name: string; arity: number } | undefined;
+  /**
+   * Whether an array whose elements are of `elementType` can hold `value`
+   * (#67): the class of a value it can't (what ArrayStoreException names,
+   * `java.lang.Integer`), else undefined.
+   */
+  storeCheck?(value: JavaValue, elementType: string): string | undefined;
 }
 
 /**
@@ -64,3 +72,12 @@ export class HaltSignal {}
  * method. The interpreter reports the message like any other runtime error.
  */
 export class StdlibError extends Error {}
+
+/** An exception object the stdlib throws as it is (#71: what orElseThrow's supplier made), which the interpreter throws on. */
+export class StdlibThrow extends Error {
+  readonly value: JavaValue;
+  constructor(value: JavaValue) {
+    super('a Java exception');
+    this.value = value;
+  }
+}

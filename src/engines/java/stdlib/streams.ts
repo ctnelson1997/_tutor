@@ -35,7 +35,8 @@ import {
 import { type StdlibContext, StdlibError } from './context';
 import { allocCollection, compareWith, valuesEqual } from './util';
 import { applyFunction, makeOptional } from './functional';
-import { callInstanceMethod, newBuiltin, immutableList } from './collections';
+import { timSort } from './timsort';
+import { callInstanceMethod, newBuiltin, immutableList, computePut } from './collections';
 
 type Kind = 'ref' | 'int' | 'double';
 type Stage = (source: Iterator<JavaValue>) => Iterator<JavaValue>;
@@ -82,9 +83,14 @@ export function collectionStream(ref: JavaValue, ctx: StdlibContext): JavaValue 
   return streamOf('ref', () => collectionElements(obj, ctx.heap) ?? [], 'stream()', ref, ctx);
 }
 
-/** String.chars(): its UTF-16 code units, as ints. */
+/** String.chars(): its UTF-16 code units, as ints (an emoji is two, #66). */
 export function charsStream(text: string, ctx: StdlibContext): JavaValue {
-  return streamOf('int', () => Array.from(text, (_, i) => javaInt(text.charCodeAt(i))), 'chars()', undefined, ctx);
+  return streamOf('int', () => Array.from({ length: text.length }, (_, i) => javaInt(text.charCodeAt(i))), 'chars()', undefined, ctx);
+}
+
+/** String.codePoints(): its code points, as ints (an emoji is one). */
+export function codePointsStream(text: string, ctx: StdlibContext): JavaValue {
+  return streamOf('int', () => Array.from(text, c => javaInt(c.codePointAt(0)!)), 'codePoints()', undefined, ctx);
 }
 
 function arrayItems(value: JavaValue, ctx: StdlibContext): JavaValue[] {
@@ -120,6 +126,15 @@ export function streamStatic(className: string, method: string, args: JavaValue[
       let current = args[0];
       let first = true;
       const fn = method === 'iterate' && className === 'IntStream' ? 'applyAsInt' : 'apply';
+      if (args.length === 3) {
+        // iterate(seed, hasNext, next) (#71): while hasNext holds, like a for loop.
+        return makeStream({
+          kind: className === 'IntStream' ? 'int' : 'ref', stages: [], names: [`${className}.iterate(…)`],
+          source: function* () {
+            for (let v = args[0]; javaValueToBoolean(applyFunction(args[1], 'test', [v], ctx)); v = applyFunction(args[2], fn, [v], ctx)) yield v;
+          },
+        }, ctx);
+      }
       return infinite(className === 'IntStream' ? 'int' : 'ref', `${className}.iterate(…)`, () => {
         if (!first) current = applyFunction(args[1], fn, [current], ctx);
         first = false;
@@ -131,6 +146,13 @@ export function streamStatic(className: string, method: string, args: JavaValue[
       const arr = args[0].kind === 'arrayRef' ? ctx.heap.get(args[0].heapId) : undefined;
       const type = arr && isJavaArray(arr) ? arr.elementType : 'Object';
       const kind: Kind = type === 'int' ? 'int' : type === 'double' ? 'double' : 'ref';
+      if (args.length === 3) {
+        // Arrays.stream(a, from, to) (#71): the elements in the range, checked as Spliterators.checkFromToBounds does.
+        const length = arrayItems(args[0], ctx).length;
+        const from = javaValueToNumber(args[1]) | 0, to = javaValueToNumber(args[2]) | 0;
+        if (from < 0 || from > to || to > length) throw new StdlibError(`ArrayIndexOutOfBoundsException: origin(${from}) > fence(${to})`);
+        return streamOf(kind, () => arrayItems(args[0], ctx).slice(from, to), 'Arrays.stream(…)', args[0], ctx);
+      }
       return streamOf(kind, () => arrayItems(args[0], ctx), 'Arrays.stream(…)', args[0], ctx);
     }
   }
@@ -142,7 +164,9 @@ export function streamStatic(className: string, method: string, args: JavaValue[
 function collector(method: string, args: JavaValue[], ctx: StdlibContext): JavaValue | undefined {
   const names: Record<string, string[]> = {
     toList: [], toSet: [], counting: [], joining: ['delimiter', 'prefix', 'suffix'], summingInt: ['mapper'], averagingInt: ['mapper'],
-    groupingBy: ['classifier', 'downstream'], toMap: ['keyMapper', 'valueMapper'],
+    // groupingBy(classifier, mapFactory, downstream) and toMap(…, mergeFunction, mapFactory) (#71).
+    groupingBy: args.length === 3 ? ['classifier', 'mapFactory', 'downstream'] : ['classifier', 'downstream'],
+    toMap: ['keyMapper', 'valueMapper', 'mergeFunction', 'mapFactory'],
   };
   if (!(method in names)) return undefined;
   const fields = new Map<string, JavaValue>([['kind', javaString(method)]]);
@@ -206,7 +230,8 @@ export function streamMethod(ref: JavaValue, method: string, args: JavaValue[], 
       return then('sorted', function* (src) {
         const all: JavaValue[] = [];
         for (let r = src.next(); !r.done; r = src.next()) all.push(r.value);
-        yield* all.sort((a, b) => compareWith(f, a, b, ctx));
+        timSort(all, 0, all.length, (a, b) => compareWith(f, a, b, ctx));
+        yield* all;
       });
     case 'limit': {
       const n = javaValueToNumber(f);
@@ -262,10 +287,11 @@ export function streamMethod(ref: JavaValue, method: string, args: JavaValue[], 
       return optional(items.reduce((best, v) => (sign * cmp(v, best) < 0 ? v : best)));
     }
     case 'reduce': {
-      const op = args.length === 2 ? args[1] : args[0];
+      const op = args.length >= 2 ? args[1] : args[0];
       const name = fnName('apply', 'applyAsInt', 'applyAsDouble');
       const it = run();
-      if (args.length === 2) {
+      // reduce(identity, accumulator, combiner) (#71): a sequential stream never combines.
+      if (args.length >= 2) {
         let acc = args[0];
         for (let r = it.next(); !r.done; r = it.next()) acc = applyFunction(op, name, [acc, r.value], ctx);
         return acc;
@@ -339,7 +365,7 @@ function collect(collectorRef: JavaValue, items: JavaValue[], ctx: StdlibContext
       return { ...javaDouble(items.length ? sum / items.length : 0), boxed: true };
     }
     case 'groupingBy': {
-      const map = newBuiltin('HashMap', [], ctx)!;
+      const map = fields.has('mapFactory') ? applyFunction(fields.get('mapFactory'), 'get', [], ctx) : newBuiltin('HashMap', [], ctx)!;
       const groups: [JavaValue, JavaValue[]][] = [];
       for (const v of items) {
         const key = applyFunction(fields.get('classifier'), 'apply', [v], ctx);
@@ -348,18 +374,24 @@ function collect(collectorRef: JavaValue, items: JavaValue[], ctx: StdlibContext
         if (group) group[1].push(v);
         else groups.push([key, [v]]);
       }
+      // Each key as computeIfAbsent puts it, where groupingBy's accumulator does (#68), in the order the keys first came.
       const downstream = fields.get('downstream');
       for (const [key, group] of groups) {
-        callInstanceMethod(map, 'put', [key, downstream ? collect(downstream, group, ctx) : allocCollection('ArrayList', group, 'Object', ctx)], ctx);
+        computePut(map, key, downstream ? collect(downstream, group, ctx) : allocCollection('ArrayList', group, 'Object', ctx), ctx);
       }
       return map;
     }
     case 'toMap': {
-      const map = newBuiltin('HashMap', [], ctx)!;
+      const map = fields.has('mapFactory') ? applyFunction(fields.get('mapFactory'), 'get', [], ctx) : newBuiltin('HashMap', [], ctx)!;
       for (const v of items) {
         const key = applyFunction(fields.get('keyMapper'), 'apply', [v], ctx);
         const value = applyFunction(fields.get('valueMapper'), 'apply', [v], ctx);
         if (value.kind === 'null') throw new StdlibError('NullPointerException');
+        // With a merge function, Map.merge puts each element (#71: a duplicate key merged, not an error).
+        if (fields.has('mergeFunction')) {
+          callInstanceMethod(map, 'merge', [key, value, fields.get('mergeFunction')!], ctx);
+          continue;
+        }
         const contents = mapContents(ctx.heap.get((map as { heapId: string }).heapId) as JavaObject, ctx.heap)!;
         const i = contents.keys.findIndex(k => valuesEqual(k, key, ctx));
         if (i >= 0) {

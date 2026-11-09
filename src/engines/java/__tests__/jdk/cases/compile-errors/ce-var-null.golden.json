@@ -1,0 +1,8 @@
+{
+  "stdout": "",
+  "stderr": "Main.java:3: error: cannot infer type for local variable x\n        var x = null;\n            ^\n  (variable initializer is 'null')\n1 error\nerror: compilation failed\n",
+  "exitCode": 1,
+  "exception": null,
+  "compileError": "Main.java:3: error: cannot infer type for local variable x\n        var x = null;\n            ^\n  (variable initializer is 'null')\n1 error",
+  "sourceSha256": "3f64380818709390f8ac24e48b29d01042b6116b3de20fdae9c67a3a24c77205"
+}

@@ -371,6 +371,38 @@ export function parseIntegerText(text: string, radix: number, type: 'int' | 'lon
 
 // ── Floating point ──
 
+/**
+ * Double.parseDouble / Float.parseFloat (#65), as FloatingDecimal reads a
+ * string: trimmed (characters up to ' '), a sign, then `NaN`, `Infinity`,
+ * decimal digits with a point and an exponent, or a hex float with its
+ * binary exponent (`0x1.8p1`), each number with an optional `f`/`d` suffix.
+ * Anything else is a NumberFormatException with Java's message
+ * (`For input string: "ten"`, `empty String`), never a prefix parsed.
+ */
+export function parseFloatingText(text: string, type: 'double' | 'float'): number {
+  // String.trim(): every character up to ' ' at either end.
+  let start = 0, end = text.length;
+  while (start < end && text.charCodeAt(start) <= 32) start++;
+  while (end > start && text.charCodeAt(end - 1) <= 32) end--;
+  const trimmed = text.slice(start, end);
+  if (trimmed === '') throw new JavaRuntimeError('NumberFormatException', 'empty String', 0);
+  const decimal = /^([+-]?)(?:(NaN|Infinity)|((?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)[fFdD]?)$/.exec(trimmed);
+  const hex = decimal ? null : /^([+-]?)0[xX]([0-9a-fA-F]*)\.?([0-9a-fA-F]*)[pP]([+-]?\d+)[fFdD]?$/.exec(trimmed);
+  let value: number;
+  if (decimal) {
+    value = Number(decimal[2] ?? decimal[3]);
+    if (decimal[1] === '-') value = -value;
+  } else if (hex && (hex[2] || hex[3])) {
+    // The hex digits as an integer, scaled by the binary exponent less four bits per fraction digit.
+    const mantissa = BigInt('0x' + ((hex[2] + hex[3]) || '0'));
+    value = Number(mantissa) * 2 ** (Number(hex[4]) - 4 * hex[3].length);
+    if (hex[1] === '-') value = -value;
+  } else {
+    throw new JavaRuntimeError('NumberFormatException', `For input string: "${trimmed}"`, 0);
+  }
+  return type === 'float' ? Math.fround(value) : value;
+}
+
 /** Double.compare and Float.compare: NaN above everything (and equal to itself), -0.0 below 0.0. */
 export function compareFloating(a: number, b: number): number {
   if (a < b) return -1;

@@ -129,6 +129,48 @@ describe("HashMap's table", () => {
     expect(order([5, 3, 4], false)).toEqual([5, 3, 4]);
   });
 
+  it('puts a key as compute, computeIfAbsent and merge do (#68): at the head of its bucket, growing the table first', () => {
+    const computed = (hashes: number[], table = newTable(), keys: JavaValue[] = []) => {
+      for (const h of hashes) hashInsert(table, [keys], [javaInt(h)], h, true, true);
+      return keys.map(k => (k as { value: number }).value);
+    };
+    // "Aa" and "BB" share a hash: merge puts BB before Aa, put after it.
+    expect(computed([17, 1, 33])).toEqual([33, 1, 17]);
+    expect(order([17, 1, 33])).toEqual([17, 1, 33]);
+    // The 13th key fits a table of 16 (it grows only when the next one comes); putVal grows right after it.
+    const table = newTable(), keys: JavaValue[] = [];
+    computed([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], table, keys);
+    expect(table.capacity).toBe(16);
+    computed([13], table, keys);
+    expect(table.capacity).toBe(32);
+    // A bucket of 8 keys in a small table grows it (putVal waits for 9).
+    const bin = newTable(), binKeys: JavaValue[] = [];
+    computed([0, 16, 32, 48, 64, 80, 96], bin, binKeys);
+    expect(bin.capacity).toBe(16);
+    computed([112], bin, binKeys);
+    expect(bin.capacity).toBe(32);
+  });
+
+  it("merges a word count, shuffles from a seeded Random and replaces values in place as JDK 21 does (#68)", () => {
+    const result = new JavaInterpreter().execute(parseJava(`import java.util.*;
+public class Main {
+  public static void main(String[] args) {
+    Map<String, Integer> counts = new HashMap<>();
+    for (String w : "Aa BB Aa".split(" ")) counts.merge(w, 1, Integer::sum);
+    List<Integer> list = new ArrayList<>(List.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10));
+    Random rnd = new Random(42);
+    Collections.shuffle(list, rnd);
+    Map<String, Integer> lru = new LinkedHashMap<>(16, 0.75f, true);
+    lru.put("a", 1); lru.put("b", 2); lru.put("c", 3);
+    lru.get("a");
+    lru.replaceAll((k, v) -> v * 10);
+    System.out.println(counts + " " + list + " " + rnd.nextInt(100) + " " + lru);
+  }
+}`));
+    expect(result.error).toBeUndefined();
+    expect(result.snapshots.at(-1)!.stdout).toEqual(['{BB=1, Aa=2} [5, 7, 3, 2, 8, 10, 9, 6, 4, 1] 93 {b=20, c=30, a=10}']);
+  });
+
   it('sizes a table for the entries of a copy, as HashMap.putMapEntries does', () => {
     expect(tableSizeFor(0)).toBe(1);
     expect(tableSizeFor(17)).toBe(32);

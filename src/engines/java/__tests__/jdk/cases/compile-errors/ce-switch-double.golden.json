@@ -1,0 +1,8 @@
+{
+  "stdout": "",
+  "stderr": "Main.java:4: error: selector type double is not allowed\n        switch (d) { case 1: System.out.println(\"one\"); }\n               ^\n1 error\nerror: compilation failed\n",
+  "exitCode": 1,
+  "exception": null,
+  "compileError": "Main.java:4: error: selector type double is not allowed\n        switch (d) { case 1: System.out.println(\"one\"); }\n               ^\n1 error",
+  "sourceSha256": "302ae9b1f5dee5666ccda8c99d26e03d5a2bdb1e63ae333dde9618f08aba8cf0"
+}

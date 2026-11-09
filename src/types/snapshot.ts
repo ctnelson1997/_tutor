@@ -125,7 +125,9 @@ export interface ExecutionSnapshot {
   /**
    * Why this step happens when nothing on the stack called it: the first step
    * of a callback the event loop runs after the script (JS, #45), such as
-   * `setTimeout callback`, `promise callback` or `resumed after await`.
+   * `setTimeout callback`, `promise callback` or `resumed after await`; or
+   * what ran before it without steps, too deep to show (Java, #73: `1,368
+   * deeper calls ran without steps (3,001 frames deep)`).
    */
   label?: string;
   /**

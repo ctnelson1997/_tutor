@@ -51,6 +51,8 @@ export interface BField extends BTyped {
   kind: 'Field';
   target: BExpr;
   field: FieldSymbol;
+  /** Named by its simple name: a constant variable's name is then a constant expression (#76). */
+  byName?: boolean;
 }
 
 export interface BArrayLength extends BTyped {

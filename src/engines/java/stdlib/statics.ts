@@ -23,6 +23,7 @@ import {
   javaChar,
   javaString,
   javaNull,
+  qualifiedLibraryName,
 } from '../types';
 import {
   type NumericType,
@@ -34,6 +35,7 @@ import {
   negate,
   numericValue,
   parseIntegerText,
+  parseFloatingText,
   rint,
   floatToString,
   compareFloating,
@@ -54,10 +56,12 @@ import {
   charArrayText,
 } from './util';
 import { javaFormat } from './format';
-import { boxedHashCode } from './strings';
+import { boxedHashCode, charRange } from './strings';
+import { CHARACTER_TESTS, toUpperCaseChar, toLowerCaseChar, numericValue as characterValue } from './characters';
 import { hashCodeOf } from './hashing';
 import { comparing, functionStatic, optionalStatic } from './functional';
 import { streamStatic } from './streams';
+import { timSort } from './timsort';
 import {
   callInstanceMethod,
   immutableList,
@@ -81,6 +85,12 @@ function numberAs(v: JavaValue | undefined, type: NumericType): NumericValue {
 
 export function getStaticField(className: string, field: string, ctx?: StdlibContext): JavaValue | undefined {
   switch (className) {
+    case 'Locale': {
+      // A Locale is its tag (#71); formatting ignores it and always uses the US conventions.
+      const tags: Record<string, string> = { US: 'en_US', UK: 'en_GB', ENGLISH: 'en', ROOT: '', CANADA: 'en_CA' };
+      if (ctx && field in tags) return { kind: 'objectRef', heapId: ctx.allocObject('Locale', new Map([['tag', javaString(tags[field])]])), className: 'Locale' };
+      break;
+    }
     case 'String':
       if (field === 'CASE_INSENSITIVE_ORDER' && ctx) return libraryComparator('caseInsensitive', undefined, ctx);
       break;
@@ -281,13 +291,16 @@ function integerWrapper(cls: string, method: string, args: JavaValue[], ctx: Std
 /** Double and Float statics; Float's work on floats. */
 function floatWrapper(cls: string, method: string, args: JavaValue[], ctx: StdlibContext): JavaValue | undefined {
   const type = cls === 'Float' ? 'float' : 'double';
-  const str = args.length > 0 ? javaValueToString(args[0], ctx.heap) : '';
   const a = numberAs(args[0], type) as number;
   const b = numberAs(args[1], type) as number;
   const result = (v: number) => numericValue(type, type === 'float' ? Math.fround(v) : v);
   switch (method) {
-    case 'parseDouble': case 'parseFloat': return result(parseFloat(str));
-    case 'valueOf': return args[0]?.kind === 'string' ? result(parseFloat(str)) : result(a);
+    case 'parseDouble': case 'parseFloat': case 'valueOf': {
+      if (method === 'valueOf' && args[0]?.kind !== 'string' && args[0]?.kind !== 'null') return result(a);
+      // Java's grammar, not JavaScript's parseFloat, which reads a prefix (#65): "3.5abc" is a NumberFormatException.
+      if (args[0]?.kind !== 'string') throw new JavaRuntimeError('NullPointerException', 'Cannot invoke "String.trim()" because "in" is null', 0);
+      return result(parseFloatingText(args[0].value, type));
+    }
     case 'toString': return javaString(type === 'float' ? floatToString(a) : javaValueToString(javaDouble(a), ctx.heap));
     case 'isNaN': return javaBool(Number.isNaN(a));
     case 'isInfinite': return javaBool(!Number.isFinite(a) && !Number.isNaN(a));
@@ -320,21 +333,21 @@ function booleanWrapper(method: string, args: JavaValue[], ctx: StdlibContext): 
   return undefined;
 }
 
+/** Character's statics (#66): Unicode's tests and single-character case mappings, as the JDK defines them (characters.ts). */
 function characterWrapper(method: string, args: JavaValue[]): JavaValue | undefined {
   const code = args.length > 0 ? Math.trunc(javaValueToNumber(args[0])) : 0;
   const ch = String.fromCharCode(code);
+  // Own properties only: CHARACTER_TESTS.toString is Object's (Character.toString and valueOf broke on it).
+  const test = Object.hasOwn(CHARACTER_TESTS, method) ? CHARACTER_TESTS[method] : undefined;
+  if (test) return javaBool(test(code));
+  // A char in, a char out; a code point (int) in, an int out.
+  const sameKind = (v: number) => (args[0]?.kind === 'primitive' && args[0].javaType === 'int' ? javaInt(v) : javaChar(v));
   switch (method) {
-    case 'isDigit': return javaBool(ch >= '0' && ch <= '9');
-    case 'isLetter': return javaBool(/[a-zA-Z]/.test(ch));
-    case 'isLetterOrDigit': return javaBool(/[a-zA-Z0-9]/.test(ch));
-    case 'isAlphabetic': return javaBool(/[a-zA-Z]/.test(ch));
-    case 'isWhitespace': case 'isSpaceChar': return javaBool(/\s/.test(ch));
-    case 'isUpperCase': return javaBool(ch !== ch.toLowerCase() && ch === ch.toUpperCase());
-    case 'isLowerCase': return javaBool(ch !== ch.toUpperCase() && ch === ch.toLowerCase());
-    case 'toUpperCase': return javaChar(ch.toUpperCase().charCodeAt(0));
-    case 'toLowerCase': return javaChar(ch.toLowerCase().charCodeAt(0));
-    case 'getNumericValue': return javaInt(/[0-9]/.test(ch) ? code - 48 : /[a-z]/.test(ch) ? code - 87 : /[A-Z]/.test(ch) ? code - 55 : -1);
-    case 'toString': return javaString(ch);
+    case 'toUpperCase': return sameKind(toUpperCaseChar(code));
+    case 'toLowerCase': return sameKind(toLowerCaseChar(code));
+    case 'getNumericValue': return javaInt(characterValue(code));
+    case 'valueOf': return { ...javaChar(code), boxed: true };
+    case 'toString': return javaString(args[0]?.kind === 'primitive' && args[0].javaType === 'int' ? String.fromCodePoint(code) : ch);
     case 'hashCode': return javaInt(code);
     case 'compare': return javaInt(code - Math.trunc(javaValueToNumber(args[1])));
   }
@@ -344,18 +357,24 @@ function characterWrapper(method: string, args: JavaValue[]): JavaValue | undefi
 function stringStatic(method: string, args: JavaValue[], ctx: StdlibContext): JavaValue | undefined {
   switch (method) {
     case 'format': {
+      // format(Locale, …) formats as the US does, whatever the locale (#71).
+      if (args[0]?.kind === 'objectRef' && args[0].className === 'Locale') args = args.slice(1);
+      if (args[0]?.kind === 'null') throw new JavaRuntimeError('NullPointerException', 'Cannot invoke "String.length()" because "s" is null', 0);
       const fmt = javaValueToString(args[0], ctx.heap);
       return javaString(javaFormat(fmt, args.slice(1), ctx.heap, ctx.stringify));
     }
     case 'valueOf': case 'copyValueOf': {
       if (args.length === 0) return javaString('null');
       if (args[0].kind === 'string') return args[0]; // String.valueOf(s) is s itself
-      const chars = charArrayText(args[0], ctx); // String.valueOf(char[]) is the characters
+      const chars = charArrayText(args[0], ctx); // String.valueOf(char[]) is the characters, valueOf(char[], offset, count) some of them
+      if (chars !== undefined && args.length >= 3) return javaString(charRange(chars, args[1], args[2]));
       return javaString(chars ?? (ctx.stringify ? ctx.stringify(args[0]) : javaValueToString(args[0], ctx.heap)));
     }
     case 'join': {
+      if (args[0]?.kind === 'null') throw new JavaRuntimeError('NullPointerException', 'Cannot invoke "java.lang.CharSequence.toString()" because "delimiter" is null', 0);
       const delim = javaValueToString(args[0], ctx.heap);
       const rest = args.slice(1);
+      if (rest.length === 1 && rest[0].kind === 'null') throw new StdlibError('NullPointerException');
       // join(delim, array) or join(delim, a, b, c)
       let parts: JavaValue[] = rest;
       if (rest.length === 1 && rest[0].kind === 'arrayRef') {
@@ -376,19 +395,9 @@ function systemMethod(method: string, args: JavaValue[], ctx: StdlibContext): Ja
     case 'nanoTime': return javaLong(BigInt(Date.now()) * 1000000n + BigInt(Math.trunc(ctx.random() * 1e6)));
     case 'lineSeparator': return javaString('\n');
     case 'exit': throw new HaltSignal();
-    case 'arraycopy': {
-      const src = args[0], srcPos = javaValueToNumber(args[1]) | 0;
-      const dest = args[2], destPos = javaValueToNumber(args[3]) | 0;
-      const len = javaValueToNumber(args[4]) | 0;
-      if (src?.kind !== 'arrayRef' || dest?.kind !== 'arrayRef') {
-        throw new StdlibError('System.arraycopy requires array arguments');
-      }
-      const s = ctx.heap.get(src.heapId), d = ctx.heap.get(dest.heapId);
-      if (!s || !isJavaArray(s) || !d || !isJavaArray(d)) return javaNull();
-      const copy = s.elements.slice(srcPos, srcPos + len);
-      for (let i = 0; i < copy.length; i++) d.elements[destPos + i] = copy[i];
+    case 'arraycopy':
+      arraycopy(args[0], javaValueToNumber(args[1]) | 0, args[2], javaValueToNumber(args[3]) | 0, javaValueToNumber(args[4]) | 0, ctx);
       return javaNull();
-    }
   }
   return undefined;
 }
@@ -426,10 +435,11 @@ function arraysMethod(method: string, args: JavaValue[], ctx: StdlibContext): Ja
       if (arr && isJavaArray(arr)) {
         if (ranged) {
           const from = javaValueToNumber(args[1]) | 0, to = javaValueToNumber(args[2]) | 0;
-          const seg = arr.elements.slice(from, to).sort((a, b) => compareWith(cmp, a, b, ctx));
-          for (let i = 0; i < seg.length; i++) arr.elements[from + i] = seg[i];
+          rangeCheck(arr.elements.length, from, to);
+          timSort(arr.elements, from, to, (a, b) => compareWith(cmp, a, b, ctx));
         } else {
-          arr.elements.sort((a, b) => compareWith(cmp, a, b, ctx));
+          // Java's TimSort, whose comparisons a comparator or compareTo sees (#69).
+          timSort(arr.elements, 0, arr.elements.length, (a, b) => compareWith(cmp, a, b, ctx));
         }
       }
       return javaNull();
@@ -439,30 +449,27 @@ function arraysMethod(method: string, args: JavaValue[], ctx: StdlibContext): Ja
       if (arr && isJavaArray(arr)) {
         if (args.length >= 4) {
           const from = javaValueToNumber(args[1]) | 0, to = javaValueToNumber(args[2]) | 0;
-          const value = assignmentConversion(args[3], arr.elementType);
+          rangeCheck(arr.elements.length, from, to);
+          const value = stored(args[3], arr.elementType, ctx);
           for (let i = from; i < to; i++) arr.elements[i] = value;
         } else {
-          const value = assignmentConversion(args[1], arr.elementType);
+          const value = stored(args[1], arr.elementType, ctx);
           for (let i = 0; i < arr.elements.length; i++) arr.elements[i] = value;
         }
       }
       return javaNull();
     }
-    case 'copyOf': {
+    case 'copyOf': case 'copyOfRange': {
+      // A new array of the length asked for, then System.arraycopy of what the original has there, as the JDK does it (#67).
       const arr = arrOf(args[0]);
-      if (!arr || !isJavaArray(arr)) return javaNull();
-      const n = javaValueToNumber(args[1]) | 0;
-      const out: JavaValue[] = [];
-      for (let i = 0; i < n; i++) out.push(arr.elements[i] ?? defaultValue(arr.elementType));
-      return { kind: 'arrayRef', heapId: ctx.allocArray(arr.elementType, out) };
-    }
-    case 'copyOfRange': {
-      const arr = arrOf(args[0]);
-      if (!arr || !isJavaArray(arr)) return javaNull();
-      const from = javaValueToNumber(args[1]) | 0, to = javaValueToNumber(args[2]) | 0;
-      const out: JavaValue[] = [];
-      for (let i = from; i < to; i++) out.push(arr.elements[i] ?? defaultValue(arr.elementType));
-      return { kind: 'arrayRef', heapId: ctx.allocArray(arr.elementType, out) };
+      if (!arr || !isJavaArray(arr)) throw new StdlibError('NullPointerException');
+      const from = method === 'copyOf' ? 0 : javaValueToNumber(args[1]) | 0;
+      const to = method === 'copyOf' ? javaValueToNumber(args[1]) | 0 : javaValueToNumber(args[2]) | 0;
+      if (method === 'copyOf' && to < 0) throw new StdlibError(`NegativeArraySizeException: ${to}`);
+      if (from > to) throw new StdlibError(`IllegalArgumentException: ${from} > ${to}`);
+      const copy: JavaValue = { kind: 'arrayRef', heapId: ctx.allocArray(arr.elementType, Array.from({ length: to - from }, () => defaultValue(arr.elementType))) };
+      arraycopy(args[0], from, copy, 0, Math.min(arr.elements.length - from, to - from), ctx);
+      return copy;
     }
     case 'equals': case 'deepEquals': {
       // equals compares elements with equals(); deepEquals compares nested arrays by their elements too.
@@ -483,6 +490,7 @@ function arraysMethod(method: string, args: JavaValue[], ctx: StdlibContext): Ja
       const ranged = args.length >= 4;
       const from = ranged ? javaValueToNumber(args[1]) | 0 : 0;
       const to = ranged ? javaValueToNumber(args[2]) | 0 : arr.elements.length;
+      rangeCheck(arr.elements.length, from, to);
       const found = javaValueToNumber(binarySearch(arr.elements.slice(from, to), args[ranged ? 3 : 1], args[ranged ? 4 : 2], ctx));
       return javaInt(found >= 0 ? found + from : found - from);
     }
@@ -502,8 +510,11 @@ function objectsMethod(method: string, args: JavaValue[], ctx: StdlibContext): J
     case 'equals': return javaBool(valuesEqual(args[0], args[1], ctx));
     case 'hashCode': return javaInt(hashCodeOf(args[0], ctx));
     case 'hash': {
+      // Arrays.hashCode of the varargs array (#63): Objects.hash(1, 2) is 994; a null array's is 0.
+      const values = varargValues(args, 0, ctx);
+      if (!values) return javaInt(0);
       let h = 1;
-      for (const a of args) h = (Math.imul(31, h) + hashCodeOf(a, ctx)) | 0;
+      for (const a of values) h = (Math.imul(31, h) + hashCodeOf(a, ctx)) | 0;
       return javaInt(h);
     }
     case 'isNull': return javaBool(args[0]?.kind === 'null');
@@ -525,6 +536,80 @@ function objectsMethod(method: string, args: JavaValue[], ctx: StdlibContext): J
 const text = (value: JavaValue, ctx: StdlibContext) => (ctx.stringify ? ctx.stringify(value) : javaValueToString(value, ctx.heap));
 
 const isPrimitiveType = (type: string) => ['int', 'long', 'short', 'byte', 'char', 'double', 'float', 'boolean'].includes(type);
+
+/** A type as Java names it in a message: `int`, `java.lang.String`, `Main$Point`, `java.lang.Object[]`. */
+function javaTypeName(type: string, ctx: StdlibContext): string {
+  if (type.endsWith('[]')) return javaTypeName(type.slice(0, -2), ctx) + '[]';
+  if (isPrimitiveType(type)) return type;
+  const binary = ctx.binaryName?.(type) ?? type;
+  return binary === type ? qualifiedLibraryName(type) : binary;
+}
+
+/**
+ * System.arraycopy as the JVM checks it (#67): a null array is a
+ * NullPointerException; then the arrays' types (both of one primitive type,
+ * or both of objects); then the positions and length, with HotSpot's
+ * messages; an array never changes its length. Objects are checked one by
+ * one against the destination's element type, those before a mismatch
+ * copied (an ArrayStoreException). Overlapping ranges copy as if through a
+ * temporary array.
+ */
+export function arraycopy(src: JavaValue, srcPos: number, dest: JavaValue, destPos: number, length: number, ctx: StdlibContext): void {
+  if (src?.kind === 'null' || dest?.kind === 'null') throw new StdlibError('NullPointerException');
+  const typeOf = (v: JavaValue) => (v.kind === 'string' ? 'java.lang.String' : v.kind === 'objectRef' ? javaTypeName(v.className, ctx) : v.kind === 'primitive' ? v.javaType : 'Object');
+  const s = src?.kind === 'arrayRef' ? ctx.heap.get(src.heapId) : undefined;
+  const d = dest?.kind === 'arrayRef' ? ctx.heap.get(dest.heapId) : undefined;
+  if (!s || !isJavaArray(s)) throw new StdlibError(`ArrayStoreException: arraycopy: source type ${typeOf(src)} is not an array`);
+  if (!d || !isJavaArray(d)) throw new StdlibError(`ArrayStoreException: arraycopy: destination type ${typeOf(dest)} is not an array`);
+  const kind = (a: { elementType: string }) => (isPrimitiveType(a.elementType) ? a.elementType : 'object array');
+  if ((isPrimitiveType(s.elementType) || isPrimitiveType(d.elementType)) && s.elementType !== d.elementType) {
+    throw new StdlibError(`ArrayStoreException: arraycopy: type mismatch: can not copy ${kind(s)}[] into ${kind(d)}[]`);
+  }
+  const bounds = (message: string) => new StdlibError(`ArrayIndexOutOfBoundsException: arraycopy: ${message}`);
+  if (srcPos < 0) throw bounds(`source index ${srcPos} out of bounds for ${kind(s)}[${s.elements.length}]`);
+  if (destPos < 0) throw bounds(`destination index ${destPos} out of bounds for ${kind(d)}[${d.elements.length}]`);
+  if (length < 0) throw bounds(`length ${length} is negative`);
+  if (srcPos + length > s.elements.length) throw bounds(`last source index ${srcPos + length} out of bounds for ${kind(s)}[${s.elements.length}]`);
+  if (destPos + length > d.elements.length) throw bounds(`last destination index ${destPos + length} out of bounds for ${kind(d)}[${d.elements.length}]`);
+  const copy = s.elements.slice(srcPos, srcPos + length);
+  for (let i = 0; i < copy.length; i++) {
+    if (!isPrimitiveType(d.elementType) && ctx.storeCheck?.(copy[i], d.elementType) !== undefined) {
+      throw new StdlibError(`ArrayStoreException: arraycopy: element type mismatch: can not cast one of the elements of ${javaTypeName(s.elementType, ctx)}[] to the type of the destination array, ${javaTypeName(d.elementType, ctx)}`);
+    }
+    d.elements[destPos + i] = copy[i];
+  }
+}
+
+/** Arrays.rangeCheck (#67): from after to is an IllegalArgumentException, either end outside the array an ArrayIndexOutOfBoundsException. */
+function rangeCheck(length: number, from: number, to: number): void {
+  if (from > to) throw new StdlibError(`IllegalArgumentException: fromIndex(${from}) > toIndex(${to})`);
+  if (from < 0) throw new StdlibError(`ArrayIndexOutOfBoundsException: Array index out of range: ${from}`);
+  if (to > length) throw new StdlibError(`ArrayIndexOutOfBoundsException: Array index out of range: ${to}`);
+}
+
+/** A value an array of this element type takes, or Java's ArrayStoreException naming the value's class (#67). */
+function stored(value: JavaValue, elementType: string, ctx: StdlibContext): JavaValue {
+  const refused = isPrimitiveType(elementType) ? undefined : ctx.storeCheck?.(value, elementType);
+  if (refused !== undefined) throw new StdlibError(`ArrayStoreException: ${refused}`);
+  return assignmentConversion(value, elementType);
+}
+
+/**
+ * A variable-arity parameter's values, from position `from` (#63): the binder
+ * packs a call's variable arguments into one array (or passes the array the
+ * call gives), so they arrive as that array, whose elements they are;
+ * undefined for a null array. Spread values (the stdlib's own callers and
+ * tests) are taken as they are.
+ */
+function varargValues(args: JavaValue[], from: number, ctx: StdlibContext): JavaValue[] | undefined {
+  if (args.length === from + 1) {
+    const last = args[from];
+    if (last.kind === 'null') return undefined;
+    const arr = last.kind === 'arrayRef' ? ctx.heap.get(last.heapId) : undefined;
+    if (arr && isJavaArray(arr) && !isPrimitiveType(arr.elementType)) return arr.elements;
+  }
+  return args.slice(from);
+}
 
 /** A collection's elements, for the methods that only read it; null is a NullPointerException. */
 function listArg(value: JavaValue | undefined, ctx: StdlibContext): JavaValue[] {
@@ -563,10 +648,11 @@ function collectionsMethod(method: string, args: JavaValue[], ctx: StdlibContext
       rewriteList(args[0], ctx, els => els.reverse());
       return javaNull();
     case 'shuffle':
+      // Java's: for i = size down to 2, swap i - 1 with rnd.nextInt(i), from the Random given (#68), so a seeded shuffle is the JDK's.
       rewriteList(args[0], ctx, els => {
-        for (let i = els.length - 1; i > 0; i--) {
-          const j = Math.floor(ctx.random() * (i + 1));
-          [els[i], els[j]] = [els[j], els[i]];
+        for (let i = els.length; i > 1; i--) {
+          const j = args[1] ? javaValueToNumber(callInstanceMethod(args[1], 'nextInt', [javaInt(i)], ctx)!) : Math.floor(ctx.random() * i);
+          [els[i - 1], els[j]] = [els[j], els[i - 1]];
         }
         return els;
       });
@@ -622,10 +708,11 @@ function collectionsMethod(method: string, args: JavaValue[], ctx: StdlibContext
     case 'synchronizedList': case 'synchronizedSet': case 'synchronizedMap':
       return args[0]; // one thread, so the collection itself
     case 'addAll': {
-      // Collections.addAll(c, elements...): each through c.add().
-      if (args[0]?.kind !== 'objectRef') throw new StdlibError('NullPointerException');
+      // Collections.addAll(c, elements...): each element of the varargs array (#63) through c.add().
+      const elements = varargValues(args, 1, ctx);
+      if (args[0]?.kind !== 'objectRef' || !elements) throw new StdlibError('NullPointerException');
       let changed = false;
-      for (const e of args.slice(1)) changed = javaValueToBoolean(callInstanceMethod(args[0], 'add', [e], ctx) ?? javaBool(false)) || changed;
+      for (const e of elements) changed = javaValueToBoolean(callInstanceMethod(args[0], 'add', [e], ctx) ?? javaBool(false)) || changed;
       return javaBool(changed);
     }
   }

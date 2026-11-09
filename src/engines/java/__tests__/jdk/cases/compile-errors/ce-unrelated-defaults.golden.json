@@ -1,0 +1,8 @@
+{
+  "stdout": "",
+  "stderr": "Main.java:4: error: types A and B are incompatible;\n  static class C implements A, B {}\n         ^\n  class C inherits unrelated defaults for m() from types A and B\n1 error\nerror: compilation failed\n",
+  "exitCode": 1,
+  "exception": null,
+  "compileError": "Main.java:4: error: types A and B are incompatible;\n  static class C implements A, B {}\n         ^\n  class C inherits unrelated defaults for m() from types A and B\n1 error",
+  "sourceSha256": "4927b589d7e55d2eed66f7cd0fd1d8c97d6bbc1eff40b022648cd933bc9b6362"
+}

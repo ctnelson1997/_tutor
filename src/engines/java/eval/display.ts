@@ -19,7 +19,7 @@ import {
   mapContents,
 } from '../types';
 import { stringLiteral, charLiteral } from '../literals';
-import { SET_LIKE, scannerRemaining } from '../stdlib';
+import { SET_LIKE, scannerRemaining, tokenizerRemaining } from '../stdlib';
 
 type Heap = Map<string, JavaHeapEntry>;
 
@@ -72,7 +72,7 @@ export function serializeArray(id: string, entry: JavaArray, heap: Heap): HeapOb
  */
 export function serializeObject(id: string, entry: JavaObject, heap: Heap): HeapObject {
   const cls = entry.className;
-  const fields = () => Array.from(entry.fields.entries()).map(([k, v]) => ({ key: k, value: javaToRuntime(v, heap) }));
+  const fields = () => [...throwableProperties(entry, heap), ...Array.from(entry.fields.entries()).map(([k, v]) => ({ key: k, value: javaToRuntime(v, heap) }))];
   // A lambda or method reference: its source, with the values it captured.
   if (entry.lambda) return { id, objectType: 'function', label: entry.lambda.text, properties: fields() };
   // An enum constant is labeled with its name.
@@ -95,14 +95,36 @@ export function serializeObject(id: string, entry: JavaObject, heap: Heap): Heap
   if (cls === 'StringBuilder' || cls === 'StringBuffer') {
     return { id, objectType: 'object', label: cls, properties: [{ key: 'value', value: javaToRuntime(entry.fields.get('value') ?? javaNull(), heap) }] };
   }
+  if (cls === 'StringTokenizer') {
+    return { id, objectType: 'object', label: cls, properties: [{ key: 'remaining', value: javaToRuntime(javaString(tokenizerRemaining(entry)), heap) }] };
+  }
   if (cls === 'Scanner') {
     // The input still to be read; a string shows its escapes, so the line break nextInt() leaves is visible as \n.
     return { id, objectType: 'object', label: cls, properties: [{ key: 'remaining', value: javaToRuntime(javaString(scannerRemaining(entry)), heap) }] };
   }
   return {
     id, objectType: 'object', label: cls,
-    properties: Array.from(entry.fields.entries()).filter(([k]) => !k.startsWith('__')).map(([k, v]) => ({ key: k, value: javaToRuntime(v, heap) })),
+    properties: [
+      ...throwableProperties(entry, heap),
+      ...Array.from(entry.fields.entries()).filter(([k]) => !k.startsWith('__')).map(([k, v]) => ({ key: k, value: javaToRuntime(v, heap) })),
+    ],
   };
+}
+
+/**
+ * A Throwable's own state, drawn before its class's fields (#64): its
+ * `message`, its `cause` and its suppressed exceptions when it has them.
+ * A field of the program's class with one of those names keeps it, and
+ * Throwable's is drawn as `Throwable.message`, as a hidden field is.
+ */
+function throwableProperties(entry: JavaObject, heap: Heap): HeapObject['properties'] {
+  const t = entry.throwable;
+  if (!t) return [];
+  const key = (name: string) => (entry.fields.has(name) ? `Throwable.${name}` : name);
+  const out = [{ key: key('message'), value: javaToRuntime(t.message, heap) }];
+  if (t.cause.kind !== 'null') out.push({ key: key('cause'), value: javaToRuntime(t.cause, heap) });
+  t.suppressed.forEach((s, i) => out.push({ key: `suppressed[${i}]`, value: javaToRuntime(s, heap) }));
+  return out;
 }
 
 /**
@@ -111,27 +133,105 @@ export function serializeObject(id: string, entry: JavaObject, heap: Heap): Heap
  * more is left out, as it is garbage in Java. The walk follows the references
  * the drawing shows, so a collection's backing array isn't drawn.
  */
-export function reachableHeap(callStack: StackFrame[], heap: Heap): HeapObject[] {
-  const objects: HeapObject[] = [];
-  const reached = new Set<string>();
-  const pending: string[] = [];
+export function reachableHeap(callStack: StackFrame[], heap: Heap, draw: (id: string, entry: JavaHeapEntry) => HeapObject = (id, entry) => drawEntry(id, entry, heap)): HeapObject[] {
+  const drawn = new Map<string, HeapObject>();
+  const pending: HeapObject[] = [];
   const reach = (value: RuntimeValue | undefined) => {
-    if (value?.type === 'ref' && !reached.has(value.heapId)) {
-      reached.add(value.heapId);
-      pending.push(value.heapId);
-    }
+    if (value?.type !== 'ref' || drawn.has(value.heapId)) return;
+    const entry = heap.get(value.heapId);
+    if (!entry) return;
+    const obj = draw(value.heapId, entry);
+    drawn.set(value.heapId, obj);
+    pending.push(obj);
   };
   for (const frame of callStack) {
     for (const v of frame.variables) reach(v.value);
     reach(frame.thisArg);
   }
   while (pending.length > 0) {
-    const id = pending.pop()!;
-    const entry = heap.get(id);
-    if (!entry) continue;
-    const obj = isJavaArray(entry) ? serializeArray(id, entry, heap) : serializeObject(id, entry, heap);
-    objects.push(obj);
-    for (const p of obj.properties) reach(p?.value);
+    for (const p of pending.pop()!.properties) reach(p?.value);
   }
-  return objects.sort((a, b) => Number(a.id) - Number(b.id));
+  // The heap holds its objects in creation order (ids count up, and none is removed): walking it beats sorting once a step shows a good part of it.
+  if (drawn.size * 8 < heap.size) return [...drawn.values()].sort((a, b) => Number(a.id) - Number(b.id));
+  const objects: HeapObject[] = [];
+  for (const id of heap.keys()) {
+    const obj = drawn.get(id);
+    if (obj) objects.push(obj);
+  }
+  return objects;
+}
+
+function drawEntry(id: string, entry: JavaHeapEntry, heap: Heap): HeapObject {
+  return isJavaArray(entry) ? serializeArray(id, entry, heap) : serializeObject(id, entry, heap);
+}
+
+/**
+ * The heap as the steps draw it, each object drawn again only when what it
+ * shows has changed (#73): an array when one of its elements is another
+ * value, an object of the program's class when one of its fields is, a
+ * library collection when one of its elements (or a map's keys and values)
+ * is. Java values are never changed in place, so a field that holds the same
+ * value object shows the same thing. Other library objects (a Scanner, a
+ * StringBuilder), throwables and maps keyed by objects (whose keys print
+ * what the objects hold) are drawn at every step. `remember` keeps the
+ * version the snapshot sharer settled on, so an unchanged object is the very
+ * object the step before showed, and sharing it costs nothing.
+ */
+export class HeapDrawing {
+  private readonly heap: Heap;
+  private readonly cache = new Map<string, { shows: JavaValue[]; drawn: HeapObject }>();
+
+  constructor(heap: Heap) {
+    this.heap = heap;
+  }
+
+  /** The heap objects a step shows (see reachableHeap). */
+  reachable(callStack: StackFrame[]): HeapObject[] {
+    return reachableHeap(callStack, this.heap, (id, entry) => this.draw(id, entry));
+  }
+
+  /** Keep the objects a step was recorded with, as the sharer gave them back. */
+  remember(objects: HeapObject[]): void {
+    for (const obj of objects) {
+      const cached = this.cache.get(obj.id);
+      if (cached) cached.drawn = obj;
+    }
+  }
+
+  private draw(id: string, entry: JavaHeapEntry): HeapObject {
+    const cached = this.cache.get(id);
+    if (cached && this.unchanged(cached.shows, entry)) return cached.drawn;
+    const drawn = drawEntry(id, entry, this.heap);
+    const shows = this.shown(entry);
+    if (shows) this.cache.set(id, { shows: shows.slice(), drawn });
+    return drawn;
+  }
+
+  /** Does the object show the values it showed (compared without copying them)? */
+  private unchanged(shows: JavaValue[], entry: JavaHeapEntry): boolean {
+    if (!isJavaArray(entry) && !entry.builtin && !entry.throwable) {
+      if (entry.fields.size !== shows.length) return false;
+      let i = 0;
+      for (const value of entry.fields.values()) if (value !== shows[i++]) return false;
+      return true;
+    }
+    const now = this.shown(entry);
+    return now !== undefined && sameValues(shows, now);
+  }
+
+  /** The values an object's drawing depends on alone (a live array: copied when kept), or undefined to draw it every time. */
+  private shown(entry: JavaHeapEntry): JavaValue[] | undefined {
+    if (isJavaArray(entry)) return entry.elements;
+    if (entry.throwable) return undefined;
+    if (!entry.builtin) return Array.from(entry.fields.values());
+    const map = mapContents(entry, this.heap);
+    if (map) return map.keys.some(k => k.kind === 'objectRef' || k.kind === 'arrayRef') ? undefined : [...map.keys, ...map.values];
+    return collectionElements(entry, this.heap);
+  }
+}
+
+function sameValues(a: readonly JavaValue[], b: readonly JavaValue[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+  return true;
 }

@@ -1,0 +1,8 @@
+{
+  "stdout": "",
+  "stderr": "Main.java:2: error: abstract methods cannot have a body\n    static abstract class Shape { abstract double area() { return 0; } }\n                                                  ^\n1 error\nerror: compilation failed\n",
+  "exitCode": 1,
+  "exception": null,
+  "compileError": "Main.java:2: error: abstract methods cannot have a body\n    static abstract class Shape { abstract double area() { return 0; } }\n                                                  ^\n1 error",
+  "sourceSha256": "e2b5a2bd896ad825b0a792cd65596c096c013147b710ca7a738609272586fb00"
+}
