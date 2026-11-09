@@ -9,7 +9,7 @@
  * `../types`.
  */
 
-import type { JavaValue, JavaType, JavaHeapEntry } from '../types';
+import type { JavaValue, JavaType, JavaHeapEntry, ScannerInput } from '../types';
 
 export interface StdlibContext {
   /** The interpreter's live heap. */
@@ -22,6 +22,8 @@ export interface StdlibContext {
   random(): number;
   /** Preset stdin buffer consumed by `new Scanner(System.in)`. */
   stdin: string;
+  /** System.in as the Scanners on it read it (#65): made by the first, shared by every later one. */
+  systemIn?: ScannerInput;
   /** Append text to the program's console output (used by printStackTrace). */
   writeStdout(text: string): void;
   /**

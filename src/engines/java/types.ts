@@ -75,6 +75,20 @@ export interface JavaObject {
   lambda?: { text: string; run: unknown };
   /** A Throwable's own state (#64), apart from the fields its class declares (a field named `message` is the program's). */
   throwable?: ThrowableState;
+  /** A Scanner's input and whether it is closed (#65); every Scanner on System.in shares one input. */
+  scanner?: ScannerState;
+}
+
+/** What a Scanner reads (#65): its text, where it is in it, and whether it was closed (System.in, by any of its Scanners). */
+export interface ScannerInput {
+  text: string;
+  pos: number;
+  closed: boolean;
+}
+
+export interface ScannerState {
+  input: ScannerInput;
+  closed: boolean;
 }
 
 /**

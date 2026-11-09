@@ -34,6 +34,7 @@ import {
   negate,
   numericValue,
   parseIntegerText,
+  parseFloatingText,
   rint,
   floatToString,
   compareFloating,
@@ -281,13 +282,16 @@ function integerWrapper(cls: string, method: string, args: JavaValue[], ctx: Std
 /** Double and Float statics; Float's work on floats. */
 function floatWrapper(cls: string, method: string, args: JavaValue[], ctx: StdlibContext): JavaValue | undefined {
   const type = cls === 'Float' ? 'float' : 'double';
-  const str = args.length > 0 ? javaValueToString(args[0], ctx.heap) : '';
   const a = numberAs(args[0], type) as number;
   const b = numberAs(args[1], type) as number;
   const result = (v: number) => numericValue(type, type === 'float' ? Math.fround(v) : v);
   switch (method) {
-    case 'parseDouble': case 'parseFloat': return result(parseFloat(str));
-    case 'valueOf': return args[0]?.kind === 'string' ? result(parseFloat(str)) : result(a);
+    case 'parseDouble': case 'parseFloat': case 'valueOf': {
+      if (method === 'valueOf' && args[0]?.kind !== 'string' && args[0]?.kind !== 'null') return result(a);
+      // Java's grammar, not JavaScript's parseFloat, which reads a prefix (#65): "3.5abc" is a NumberFormatException.
+      if (args[0]?.kind !== 'string') throw new JavaRuntimeError('NullPointerException', 'Cannot invoke "String.trim()" because "in" is null', 0);
+      return result(parseFloatingText(args[0].value, type));
+    }
     case 'toString': return javaString(type === 'float' ? floatToString(a) : javaValueToString(javaDouble(a), ctx.heap));
     case 'isNaN': return javaBool(Number.isNaN(a));
     case 'isInfinite': return javaBool(!Number.isFinite(a) && !Number.isNaN(a));

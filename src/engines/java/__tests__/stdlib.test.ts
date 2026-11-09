@@ -320,6 +320,49 @@ describe('Scanner', () => {
     expect(bool(callInstanceMethod(sc, 'hasNextInt', [], ctx))).toBe(false);
     expect(javaValueToString(callInstanceMethod(sc, 'next', [], ctx)!, ctx.heap)).toBe('foo');
   });
+
+  it("matches tokens by Scanner's own patterns, leaving one that doesn't match unread (#65, JDK 21's results)", () => {
+    const ctx = makeCtx();
+    const scan = (text: string) => newBuiltin('Scanner', [javaString(text)], ctx)!;
+    const has = (text: string, method: string) => bool(callInstanceMethod(scan(text), method, [], ctx));
+    // hasNextInt, hasNextLong, hasNextDouble, hasNextBoolean for each token.
+    const table: [string, boolean, boolean, boolean, boolean][] = [
+      ['3.5', false, false, true, false], ['abc', false, false, false, false], ['4x', false, false, false, false],
+      ['1,5', false, false, false, false], ['1,234', true, true, true, false], ['1,234.5', false, false, true, false],
+      ['12,34', false, false, false, false], ['2.5f', false, false, false, false], ['0x1.8p1', false, false, true, false],
+      ['NaN', false, false, true, false], ['-Infinity', false, false, true, false], ['.5', false, false, true, false],
+      ['5.', false, false, true, false], ['+3', true, true, true, false], ['99999999999', false, true, true, false],
+      ['TRUE', false, false, false, true], ['yes', false, false, false, false],
+    ];
+    for (const [token, int, long, double, boolean] of table) {
+      expect([token, has(token, 'hasNextInt'), has(token, 'hasNextLong'), has(token, 'hasNextDouble'), has(token, 'hasNextBoolean')]).toEqual([token, int, long, double, boolean]);
+    }
+    expect(num(callInstanceMethod(scan('1,234.5'), 'nextDouble', [], ctx))).toBe(1234.5);
+    expect(num(callInstanceMethod(scan('1,234'), 'nextInt', [], ctx))).toBe(1234);
+    const sc = scan('abc 2');
+    expect(() => callInstanceMethod(sc, 'nextDouble', [], ctx)).toThrow(/^InputMismatchException$/);
+    expect(() => callInstanceMethod(sc, 'nextBoolean', [], ctx)).toThrow(/^InputMismatchException$/);
+    expect(javaValueToString(callInstanceMethod(sc, 'next', [], ctx)!, ctx.heap)).toBe('abc');
+    expect(() => callInstanceMethod(scan('99999999999'), 'nextInt', [], ctx)).toThrow('InputMismatchException: For input string: "99999999999"');
+    expect(() => callInstanceMethod(scan(''), 'nextBoolean', [], ctx)).toThrow(/^NoSuchElementException$/);
+    expect(() => callInstanceMethod(scan(''), 'nextLine', [], ctx)).toThrow('NoSuchElementException: No line found');
+  });
+
+  it('shares System.in between its Scanners, as typed input is (#65), and refuses a closed one', () => {
+    const ctx = makeCtx('5\n7\n');
+    // A helper that makes a new Scanner(System.in) for each number reads the next one.
+    const read = () => num(callInstanceMethod(newBuiltin('Scanner', [javaNull()], ctx)!, 'nextInt', [], ctx));
+    expect(read() + read()).toBe(12);
+    const sc = newBuiltin('Scanner', [javaNull()], ctx)!;
+    callInstanceMethod(sc, 'close', [], ctx);
+    expect(() => callInstanceMethod(sc, 'hasNext', [], ctx)).toThrow('IllegalStateException: Scanner closed');
+    // Closing it closed System.in: a new Scanner on it has nothing to read.
+    const again = newBuiltin('Scanner', [javaNull()], ctx)!;
+    expect(bool(callInstanceMethod(again, 'hasNextLine', [], ctx))).toBe(false);
+    expect(() => callInstanceMethod(again, 'next', [], ctx)).toThrow(/^NoSuchElementException$/);
+    // A Scanner over a String is its own.
+    expect(num(callInstanceMethod(newBuiltin('Scanner', [javaString('9')], ctx)!, 'nextInt', [], ctx))).toBe(9);
+  });
 });
 
 describe('Random', () => {

@@ -19,6 +19,7 @@ import {
   castPrimitive,
   numericValue,
   parseIntegerText,
+  parseFloatingText,
   rint,
   floatToString,
   doubleToString,
@@ -216,6 +217,30 @@ describe('operators on Java values', () => {
     expect(castPrimitive(v('boolean', true), 'boolean')).toEqual(v('boolean', true));
     expect(() => castPrimitive(v('int', 1), 'boolean')).toThrow("A int can't be cast to boolean");
     expect(numericValue('short', 5)).toEqual(v('short', 5));
+  });
+});
+
+describe('parseFloatingText (Double.parseDouble, Float.parseFloat, #65)', () => {
+  const nfe = (message: string) => new JavaRuntimeError('NumberFormatException', message, 0);
+
+  it("reads Java's grammar, with JDK 21's values", () => {
+    const table: [string, number][] = [
+      [' 2.5 ', 2.5], ['2.5f', 2.5], ['2.5D', 2.5], ['+.5', 0.5], ['5.', 5], ['-NaN', NaN], ['+Infinity', Infinity],
+      ['1e3', 1000], ['1E+3', 1000], ['0x1.8p1', 3], ['0x1p-2f', 0.25], ['1e400', Infinity], ['\t7\n', 7], ['-0', -0],
+    ];
+    for (const [text, value] of table) expect([text, parseFloatingText(text, 'double')]).toEqual([text, value]);
+    expect(parseFloatingText('3.4028236e38', 'float')).toBe(Infinity);
+    expect(parseFloatingText('1e-50', 'float')).toBe(0);
+    expect(parseFloatingText('0.1', 'float')).toBe(Math.fround(0.1));
+  });
+
+  it("refuses anything else with Java's messages, never parsing a prefix", () => {
+    for (const text of ['ten', '3.5abc', '1,5', '0x10', '1_000', '.', 'infinity', '1e', '0x1.8', 'NaNf']) {
+      expect(() => parseFloatingText(text, 'double')).toThrow(nfe(`For input string: "${text}"`));
+    }
+    expect(() => parseFloatingText(' 7x ', 'double')).toThrow(nfe('For input string: "7x"'));
+    expect(() => parseFloatingText('', 'double')).toThrow(nfe('empty String'));
+    expect(() => parseFloatingText('  ', 'float')).toThrow(nfe('empty String'));
   });
 });
 

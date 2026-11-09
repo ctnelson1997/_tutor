@@ -1,0 +1,8 @@
+{
+  "stdout": "rejected: For input string: \"ten\"\nrejected: For input string: \"3,5\"\nrejected: empty String\nrejected: For input string: \"3.5abc\"\nrejected: For input string: \"1_000\"\nrejected: For input string: \"0x10\"\nrejected: For input string: \"infinity\"\n-73.75 7\nfloat: For input string: \"2.5x\"\n6.25 1.5 NaN Infinity 3.0\nskip abc\nskip 4x\nskip 1,5\nskip 2.5f\nsum=16.5 skipped=4\nmismatch, still there: abc\nnot a boolean: yes\ntrue false\nfalse true 99999999999\ntoo big: For input string: \"99999999999\", 99999999999\n1234 1234.5\nlast line: the end\nend: No line found\nScanner closed\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "c6db52cdbe75927b51b3d807ab0a78283a2b4b2e939237d1324875b5eae5bdf0"
+}
