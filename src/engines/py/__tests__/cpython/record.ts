@@ -236,7 +236,9 @@ def _record(frame, event, arg):
         _last_return[1] = ev
     elif event == 'exception':
         ev['exc'] = arg[0].__name__
-        if _raised_here(frame, arg[2]):
+        # Raised by the program's code: not a finished sub-iterator's
+        # StopIteration ending a yield from or an await (SEND, END_SEND).
+        if _raised_here(frame, arg[2]) and dis.opname[frame.f_code.co_code[frame.f_lasti]] not in ('SEND', 'END_SEND'):
             ev['raised'] = True
     _events.append(ev)
     return _trace
@@ -282,6 +284,35 @@ def _getframe(depth=0, /):
 
 traceback.walk_stack = _walk_program_stack
 sys._getframe = _getframe
+# asyncio.run() as CPython runs it (Pyodide's own loop is always running,
+# which asyncio.run() refuses): CPython's scheduling (BaseEventLoop), with a
+# clock that moves to the next timer instead of waiting.
+import asyncio.base_events, asyncio.events
+
+class _VirtualClockLoop(asyncio.base_events.BaseEventLoop):
+    def __init__(self):
+        super().__init__()
+        self._now = 0.0
+        self._selector = self
+
+    def time(self):
+        return self._now
+
+    def select(self, timeout):
+        self._now += timeout or 0
+        return []
+
+    def _process_events(self, event_list):
+        pass
+
+    def _write_to_self(self):
+        pass
+
+class _VirtualClockPolicy(asyncio.events.BaseDefaultEventLoopPolicy):
+    _loop_factory = _VirtualClockLoop
+
+asyncio.events._set_running_loop(None)
+asyncio.events.set_event_loop_policy(_VirtualClockPolicy())
 with open('main.py', 'w', encoding='utf-8') as _f:
     _f.write(__src)
 linecache.cache['main.py'] = (len(__src), None, __src.splitlines(True), 'main.py')

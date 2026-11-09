@@ -346,3 +346,56 @@ describe("tracing changes nothing the program does (#78)", () => {
     expect(s.console!.filter(l => l.input?.length).map(l => l.text.slice(l.input![0][0], l.input![0][1]))).toEqual(['one', 'two', 'three', 'four', 'five']);
   });
 });
+
+describe('what a browser can\'t run as CPython does (#86)', () => {
+  it('runs asyncio.run() in CPython\'s order, its clock virtual, and gives Pyodide its own loop back', () => {
+    const before = py.runPython('import asyncio.events; id(asyncio.events._get_running_loop())');
+    const t0 = performance.now();
+    const reply = runFull([
+      'import asyncio',
+      'async def worker(name, delay):',
+      '    await asyncio.sleep(delay)',
+      '    print(name)',
+      'async def main():',
+      '    await asyncio.gather(worker("slow", 10), worker("fast", 5))',
+      '    print(type(asyncio.get_running_loop()).__name__)',
+      'asyncio.run(main())',
+    ].join('\n'));
+    expect(reply.error).toBeUndefined();
+    expect(consoleText(reply.snapshots)).toBe('fast\nslow\n_UnixSelectorEventLoop');
+    expect(performance.now() - t0).toBeLessThan(5000);
+    // A coroutine pausing at an await shows no value of its own (#80).
+    const paused = reply.snapshots.filter(s => s.callStack.at(-1)!.name === 'worker' && s.line === 3);
+    expect(paused.length).toBeGreaterThan(0);
+    for (const s of paused) expect(s.callStack.at(-1)!.variables.map(v => v.name)).not.toContain('yield ↵');
+    // Nor a "raises StopIteration" step at each finished await (END_SEND).
+    expect(reply.snapshots.some(s => s.exception?.startsWith('StopIteration'))).toBe(false);
+    expect(py.runPython('import asyncio.events; id(asyncio.events._get_running_loop())')).toBe(before);
+  });
+
+  it('stops at a thread with its message and its steps so far, as an engine error', () => {
+    for (const start of ['threading.Thread(target=print).start()', 'concurrent.futures.ThreadPoolExecutor().submit(print)']) {
+      const reply = runProgram(py, `import threading, concurrent.futures\nx = 1\n${start}\nprint("after")`);
+      if (reply.type !== 'result') throw new Error(reply.message);
+      expect(reply.error).toEqual({ kind: 'error', message: "Threads aren't supported in PyTutor yet", line: 3 });
+      expect(reply.snapshots.at(-1)!.line).toBe(3);
+      expect(reply.snapshots.some(s => s.exception)).toBe(false);
+    }
+    // And threading is whole again after the run.
+    expect(py.runPython('import threading, _thread; threading._start_new_thread is _thread.start_new_thread and _thread.start_new_thread.__name__')).toBe('start_new_thread');
+  });
+
+  it('reads the stdin panel through open(0), as python main.py reads its stdin (stdlib/open-stdin)', () => {
+    const reply = runProgram(py, 'data = open(0).read().split()\nprint(sum(map(int, data)))', { stdin: '3 4\n5' });
+    if (reply.type !== 'result') throw new Error(reply.message);
+    expect(reply.snapshots.at(-1)!.stdout).toEqual(['12']);
+  });
+
+  it('goes on past breakpoint() and pdb.set_trace(): the visualizer is the debugger', () => {
+    const reply = runProgram(py, 'import pdb\nx = 1\nbreakpoint()\npdb.set_trace()\nprint(x + 1)');
+    if (reply.type !== 'result') throw new Error(reply.message);
+    expect(reply.error).toBeUndefined();
+    expect(reply.snapshots.at(-1)!.stdout).toEqual(['2']);
+    expect(py.runPython('import pdb, sys; pdb.set_trace.__name__ == "set_trace" and sys.breakpointhook is sys.__breakpointhook__')).toBe(true);
+  });
+});

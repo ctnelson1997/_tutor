@@ -28,6 +28,9 @@ import operator as _operator
 import weakref as _weakref
 import enum as _enum
 import collections as _collections
+import threading as _threading
+import _thread
+from asyncio import events as _aio_events, base_events as _aio_base_events
 from importlib.machinery import SourceFileLoader as _SourceFileLoader
 
 # The tracer's own builtins and library functions (#34): a program that
@@ -112,6 +115,10 @@ _raised_at = {}       # frame -> the instruction an exception last passed throug
 # another instruction, a real return (#80).
 _RETURN_OPS = frozenset(_dis.opmap[name] for name in ('RETURN_VALUE', 'RETURN_CONST', 'YIELD_VALUE') if name in _dis.opmap)
 _YIELD_VALUE = _dis.opmap['YIELD_VALUE']
+# The instructions a yield from or an await ends a finished sub-iterator at,
+# its StopIteration the interpreter's signal (3.12's; the tests also run the
+# tracer in older CPythons).
+_SEND_OPS = frozenset(_dis.opmap[name] for name in ('SEND', 'END_SEND') if name in _dis.opmap)
 # A coroutine's or async generator's frame suspends at its awaits with a YIELD_VALUE too.
 _CO_AWAITING = 0x80 | 0x100 | 0x200   # CO_COROUTINE, CO_ITERABLE_COROUTINE, CO_ASYNC_GENERATOR
 
@@ -120,6 +127,55 @@ def _returns(frame):
 
 class _TutorStop(BaseException):
     """Ends a run from the tracer. A BaseException, so the program's own 'except Exception' doesn't catch it."""
+
+class _TutorUnsupported(BaseException):
+    """Ends a run at something PyTutor can't run (#86): the run's steps so far, and the message, as an engine error."""
+
+# ── What a browser can't run as CPython does (#86) ──
+#
+# asyncio.run() gets an event loop of its own: CPython's scheduling
+# (BaseEventLoop), with a clock that jumps to the next timer instead of
+# waiting (asyncio.sleep(2) takes no time) and nothing else to wait for.
+# Pyodide's own loop (always running, which asyncio.run() refuses) comes back
+# after the run. Starting a thread stops the run with PyTutor's message
+# (Pyodide has none), and breakpoint() and pdb.set_trace() do nothing: the
+# visualizer is the debugger already.
+
+class _UnixSelectorEventLoop(_aio_base_events.BaseEventLoop):
+    # Named as CPython's on Linux.
+
+    def __init__(self):
+        super().__init__()
+        self._clock = 0.0
+        self._selector = self
+
+    def time(self):
+        return self._clock
+
+    def select(self, timeout):
+        # What a selector would wait for: only time, which passes at once.
+        if timeout:
+            self._clock += timeout
+        return []
+
+    def _process_events(self, event_list):
+        pass
+
+    def _write_to_self(self):
+        pass
+
+class _UnixDefaultEventLoopPolicy(_aio_events.BaseDefaultEventLoopPolicy):
+    _loop_factory = _UnixSelectorEventLoop
+
+for _aio_class in (_UnixSelectorEventLoop, _UnixDefaultEventLoopPolicy):
+    _aio_class.__module__ = 'asyncio.unix_events'
+del _aio_class
+
+def _no_threads(*args, **kwargs):
+    raise _TutorUnsupported("Threads aren't supported in PyTutor yet")
+
+def _no_breakpoint(*args, **kwargs):
+    return None
 
 def _stop(reason):
     global _stop_reason
@@ -1983,7 +2039,9 @@ def _trace_event(frame, event, arg):
         _raised_at[frame] = frame.f_lasti
         if _call_stack and _call_stack[-1]["frame"] is frame:
             exc = arg[1]
-            if _raised_here(frame, arg[2]) and not issubclass(type(exc), SystemExit):
+            # (Not a finished sub-iterator's StopIteration, which ends a yield
+            # from or an await, at SEND or END_SEND: the interpreter's, not raised, #86.)
+            if _raised_here(frame, arg[2]) and code.co_code[frame.f_lasti] not in _SEND_OPS and not issubclass(type(exc), (SystemExit, _TutorUnsupported)):
                 # Where the program's code raised it (or called what did): a
                 # step, with the exception (#80), as pythontutor.com takes one.
                 _capture_snapshot(frame.f_lineno, exception=_exception_label(exc))
@@ -2247,7 +2305,10 @@ def run_traced(source_code, stdin_text=''):
     sys.stdout = sys.__stdout__ = _output_stream('stdout', 'strict')
     sys.stderr = sys.__stderr__ = _output_stream('stderr', 'backslashreplace')
     saved_sys_functions = (sys.getrecursionlimit, sys.setrecursionlimit, sys.settrace, sys.gettrace, sys._getframe,
-                           _traceback._walk_tb_with_full_positions, _traceback.walk_stack)
+                           _traceback._walk_tb_with_full_positions, _traceback.walk_stack, sys.breakpointhook,
+                           _threading._start_new_thread, _thread.start_new_thread)
+    saved_loop = (_aio_events._get_running_loop(), _aio_events.get_event_loop_policy())
+    pdb = saved_pdb = None
     saved_main = (sys.modules.get('__main__'), sys.argv, sys.path)
     sys.modules['__main__'] = main_module
     sys.argv = [_USER_FILE]
@@ -2272,6 +2333,16 @@ def run_traced(source_code, stdin_text=''):
         sys._getframe = _program_getframe
         _traceback._walk_tb_with_full_positions = _program_walk_tb
         _traceback.walk_stack = _program_walk_stack
+        sys.breakpointhook = _no_breakpoint
+        _threading._start_new_thread = _thread.start_new_thread = _no_threads
+        _aio_events._set_running_loop(None)
+        _aio_events.set_event_loop_policy(_UnixDefaultEventLoopPolicy())
+        pdb = sys.modules.get('pdb')
+        if pdb is None and 'pdb' in source_code:
+            import pdb
+        if pdb is not None:
+            saved_pdb = (pdb.set_trace, pdb.Pdb.set_trace)
+            pdb.set_trace = pdb.Pdb.set_trace = _no_breakpoint
         _real_setlimit(_limit + _base + _HEADROOM)
         # The tracer's own garbage (its setup's) isn't the program's to collect.
         _gc_collect()
@@ -2282,6 +2353,13 @@ def run_traced(source_code, stdin_text=''):
             _finish_output()
         except _TutorStop:
             pass
+        except _TutorUnsupported as e:
+            _settrace(None)
+            error = {"kind": "error", "message": str(e)}
+            line = _user_line(e)
+            if line is not None:
+                error["line"] = line
+            _finish_output()
         except SystemExit as e:
             # sys.exit() ends the program; as CPython ends, a code that isn't
             # None or an int is printed to stderr.
@@ -2304,7 +2382,12 @@ def run_traced(source_code, stdin_text=''):
     finally:
         sys.stdin, sys.stdout, sys.stderr, sys.__stdin__, sys.__stdout__, sys.__stderr__ = saved_streams
         (sys.getrecursionlimit, sys.setrecursionlimit, sys.settrace, sys.gettrace, sys._getframe,
-         _traceback._walk_tb_with_full_positions, _traceback.walk_stack) = saved_sys_functions
+         _traceback._walk_tb_with_full_positions, _traceback.walk_stack, sys.breakpointhook,
+         _threading._start_new_thread, _thread.start_new_thread) = saved_sys_functions
+        _aio_events.set_event_loop_policy(saved_loop[1])
+        _aio_events._set_running_loop(saved_loop[0])
+        if saved_pdb is not None:
+            pdb.set_trace, pdb.Pdb.set_trace = saved_pdb
         sys.modules['__main__'], sys.argv, sys.path = saved_main
         _real_setlimit(_DEFAULT_LIMIT)
 
