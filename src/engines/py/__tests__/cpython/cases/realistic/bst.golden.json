@@ -37,7 +37,7 @@
   {"event":"call","line":2,"stack":["<module>","TreeNode"],"locals":{}},
   {"event":"line","line":2,"stack":["<module>","TreeNode"],"locals":{}},
   {"event":"line","line":3,"stack":["<module>","TreeNode"],"locals":{"__module__":"'__main__'","__qualname__":"'TreeNode'"}},
-  {"event":"return","line":3,"stack":["<module>","TreeNode"],"locals":{"__module__":"'__main__'","__qualname__":"'TreeNode'","__init__":"<function>"},"value":"None"},
+  {"event":"return","line":3,"stack":["<module>","TreeNode"],"locals":{"__module__":"'__main__'","__qualname__":"'TreeNode'","__init__":"<function>"},"value":"None","classBody":true},
   {"event":"line","line":9,"stack":["<module>"],"locals":{"TreeNode":"<type>"}},
   {"event":"line","line":19,"stack":["<module>"],"locals":{"TreeNode":"<type>","insert":"<function>"}},
   {"event":"line","line":27,"stack":["<module>"],"locals":{"TreeNode":"<type>","insert":"<function>","search":"<function>"}},

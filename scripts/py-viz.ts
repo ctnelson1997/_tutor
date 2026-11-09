@@ -41,7 +41,7 @@ function show(v: RuntimeValue): string {
 function stepLine(s: ExecutionSnapshot): string {
   const top = s.callStack[s.callStack.length - 1];
   const vars = (top?.variables ?? []).map(v => `${v.name}=${show(v.value)}`).join(' ');
-  const extra = [s.condition ? `[${s.condition.expression} → ${s.condition.result}]` : '', s.columnRange ? `cols ${s.columnRange.startCol}-${s.columnRange.endCol}` : ''].filter(Boolean).join(' ');
+  const extra = [s.condition ? `[${s.condition.expression} → ${s.condition.result}]` : '', s.columnRange ? `cols ${s.columnRange.startCol}-${s.columnRange.endCol}` : '', s.exception ? `raises ${s.exception}` : ''].filter(Boolean).join(' ');
   return `${String(s.step).padStart(4)} ${String(s.line).padStart(3)} ${s.callStack.map(f => f.name).join(' > ')}  ${vars}${extra ? '  ' + extra : ''}`;
 }
 

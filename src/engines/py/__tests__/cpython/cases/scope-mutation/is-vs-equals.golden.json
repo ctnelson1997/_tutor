@@ -57,7 +57,7 @@
   {"event":"call","line":15,"stack":["<module>","Always"],"locals":{}},
   {"event":"line","line":15,"stack":["<module>","Always"],"locals":{}},
   {"event":"line","line":16,"stack":["<module>","Always"],"locals":{"__module__":"'__main__'","__qualname__":"'Always'"}},
-  {"event":"return","line":16,"stack":["<module>","Always"],"locals":{"__module__":"'__main__'","__qualname__":"'Always'","__eq__":"<function>"},"value":"None"},
+  {"event":"return","line":16,"stack":["<module>","Always"],"locals":{"__module__":"'__main__'","__qualname__":"'Always'","__eq__":"<function>"},"value":"None","classBody":true},
   {"event":"line","line":19,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","x":"None","empty1":"<list>","empty2":"<list>","t":"<tuple>","u":"<tuple>","Always":"<type>"}},
   {"event":"line","line":20,"stack":["<module>"],"locals":{"a":"<list>","b":"<list>","c":"<list>","x":"None","empty1":"<list>","empty2":"<list>","t":"<tuple>","u":"<tuple>","Always":"<type>","w":"<Always>"}},
   {"event":"call","line":16,"stack":["<module>","__eq__"],"locals":{"self":"<Always>","other":"5"}},

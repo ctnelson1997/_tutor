@@ -522,7 +522,9 @@ describe.skipIf(!PYTHON_AVAILABLE)('Python tracer: runs that end early', () => {
     const r = runTracedResult('def f(x):\n    if x > 1:\n        raise ValueError("big")\n    return x\ntry:\n    f(5)\nexcept ValueError as e:\n    print("handled", e)\nprint("after")');
     expect(r.error).toBeUndefined();
     const lines = r.snapshots!.map(s => s.line);
-    expect(lines).toEqual([1, 5, 6, 1, 2, 3, 7, 8, 9, 9]);
+    // The raise is a step, then the step where it was raised (#80), then the handler.
+    expect(lines).toEqual([1, 5, 6, 1, 2, 3, 3, 7, 8, 9, 9]);
+    expect(r.snapshots![6].exception).toBe('ValueError: big');
     const returns = r.snapshots!.filter(s => s.callStack.some(f => f.variables.some(v => v.name.startsWith('return'))));
     expect(returns).toHaveLength(0);
   });

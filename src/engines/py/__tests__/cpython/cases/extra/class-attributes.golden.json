@@ -20,7 +20,7 @@
   {"event":"line","line":4,"stack":["<module>","Counter"],"locals":{"__module__":"'__main__'","__qualname__":"'Counter'","instances":"0"}},
   {"event":"line","line":6,"stack":["<module>","Counter"],"locals":{"__module__":"'__main__'","__qualname__":"'Counter'","instances":"0","step":"2"}},
   {"event":"line","line":10,"stack":["<module>","Counter"],"locals":{"__module__":"'__main__'","__qualname__":"'Counter'","instances":"0","step":"2","__init__":"<function>"}},
-  {"event":"return","line":10,"stack":["<module>","Counter"],"locals":{"__module__":"'__main__'","__qualname__":"'Counter'","instances":"0","step":"2","__init__":"<function>","bump":"<function>"},"value":"None"},
+  {"event":"return","line":10,"stack":["<module>","Counter"],"locals":{"__module__":"'__main__'","__qualname__":"'Counter'","instances":"0","step":"2","__init__":"<function>","bump":"<function>"},"value":"None","classBody":true},
   {"event":"line","line":14,"stack":["<module>"],"locals":{"Counter":"<type>"}},
   {"event":"call","line":6,"stack":["<module>","__init__"],"locals":{"self":"<Counter>"}},
   {"event":"line","line":7,"stack":["<module>","__init__"],"locals":{"self":"<Counter>"}},

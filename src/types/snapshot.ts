@@ -120,6 +120,13 @@ export interface ExecutionSnapshot {
    * `setTimeout callback`, `promise callback` or `resumed after await`.
    */
   label?: string;
+  /**
+   * The exception this step raises, as a traceback's last line names it
+   * (`ValueError: invalid literal for int() with base 10: 'abc'`): Python's
+   * step where the program's code raised it, caught or not (#80), as
+   * pythontutor.com takes one.
+   */
+  exception?: string;
 }
 
 // ── Execution result from the worker ──

@@ -42,7 +42,7 @@
   {"event":"line","line":2,"stack":["<module>","Book"],"locals":{}},
   {"event":"line","line":3,"stack":["<module>","Book"],"locals":{"__module__":"'__main__'","__qualname__":"'Book'"}},
   {"event":"line","line":5,"stack":["<module>","Book"],"locals":{"__module__":"'__main__'","__qualname__":"'Book'","genre":"'fiction'"}},
-  {"event":"return","line":5,"stack":["<module>","Book"],"locals":{"__module__":"'__main__'","__qualname__":"'Book'","genre":"'fiction'","__init__":"<function>"},"value":"None"},
+  {"event":"return","line":5,"stack":["<module>","Book"],"locals":{"__module__":"'__main__'","__qualname__":"'Book'","genre":"'fiction'","__init__":"<function>"},"value":"None","classBody":true},
   {"event":"line","line":9,"stack":["<module>"],"locals":{"Book":"<type>"}},
   {"event":"call","line":5,"stack":["<module>","__init__"],"locals":{"self":"<Book>","title":"'Dune'","pages":"412"}},
   {"event":"line","line":6,"stack":["<module>","__init__"],"locals":{"self":"<Book>","title":"'Dune'","pages":"412"}},

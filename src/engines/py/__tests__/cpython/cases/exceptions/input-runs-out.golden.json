@@ -38,7 +38,7 @@
   {"event":"line","line":8,"stack":["<module>"],"locals":{"total":"14","count":"2","text":"'10'"}},
   {"event":"line","line":4,"stack":["<module>"],"locals":{"total":"14","count":"2","text":"'10'"}},
   {"event":"line","line":5,"stack":["<module>"],"locals":{"total":"14","count":"2","text":"'10'"}},
-  {"event":"exception","line":5,"stack":["<module>"],"locals":{"total":"14","count":"2","text":"'10'"},"exc":"EOFError"},
+  {"event":"exception","line":5,"stack":["<module>"],"locals":{"total":"14","count":"2","text":"'10'"},"exc":"EOFError","raised":true},
   {"event":"return","line":5,"stack":["<module>"],"locals":{"total":"14","count":"2","text":"'10'"},"value":"None","unwinding":true}
  ],
  "truncated": false,

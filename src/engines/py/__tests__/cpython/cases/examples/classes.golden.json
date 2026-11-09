@@ -18,7 +18,7 @@
   {"event":"line","line":1,"stack":["<module>","Dog"],"locals":{}},
   {"event":"line","line":2,"stack":["<module>","Dog"],"locals":{"__module__":"'__main__'","__qualname__":"'Dog'"}},
   {"event":"line","line":6,"stack":["<module>","Dog"],"locals":{"__module__":"'__main__'","__qualname__":"'Dog'","__init__":"<function>"}},
-  {"event":"return","line":6,"stack":["<module>","Dog"],"locals":{"__module__":"'__main__'","__qualname__":"'Dog'","__init__":"<function>","bark":"<function>"},"value":"None"},
+  {"event":"return","line":6,"stack":["<module>","Dog"],"locals":{"__module__":"'__main__'","__qualname__":"'Dog'","__init__":"<function>","bark":"<function>"},"value":"None","classBody":true},
   {"event":"line","line":9,"stack":["<module>"],"locals":{"Dog":"<type>"}},
   {"event":"call","line":2,"stack":["<module>","__init__"],"locals":{"self":"<Dog>","name":"'Rex'","age":"5"}},
   {"event":"line","line":3,"stack":["<module>","__init__"],"locals":{"self":"<Dog>","name":"'Rex'","age":"5"}},

@@ -84,7 +84,7 @@
   {"event":"line","line":21,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>","existing":"<list>","removed":"0","missing":"'none'","merged":"<dict>"}},
   {"event":"line","line":22,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>","existing":"<list>","removed":"0","missing":"'none'","merged":"<dict>"}},
   {"event":"line","line":23,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>","existing":"<list>","removed":"0","missing":"'none'","merged":"<dict>"}},
-  {"event":"exception","line":23,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>","existing":"<list>","removed":"0","missing":"'none'","merged":"<dict>"},"exc":"KeyError"},
+  {"event":"exception","line":23,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>","existing":"<list>","removed":"0","missing":"'none'","merged":"<dict>"},"exc":"KeyError","raised":true},
   {"event":"line","line":24,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>","existing":"<list>","removed":"0","missing":"'none'","merged":"<dict>"}},
   {"event":"line","line":25,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>","existing":"<list>","removed":"0","missing":"'none'","merged":"<dict>","e":"<KeyError>"}},
   {"event":"line","line":26,"stack":["<module>"],"locals":{"inventory":"<dict>","groups":"<dict>","word":"'cow'","bucket":"<list>","existing":"<list>","removed":"0","missing":"'none'","merged":"<dict>"}},

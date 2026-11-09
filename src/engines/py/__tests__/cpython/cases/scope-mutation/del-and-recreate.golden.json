@@ -50,7 +50,7 @@
   {"event":"line","line":4,"stack":["<module>"],"locals":{"x":"10"}},
   {"event":"line","line":5,"stack":["<module>"],"locals":{}},
   {"event":"line","line":6,"stack":["<module>"],"locals":{}},
-  {"event":"exception","line":6,"stack":["<module>"],"locals":{},"exc":"NameError"},
+  {"event":"exception","line":6,"stack":["<module>"],"locals":{},"exc":"NameError","raised":true},
   {"event":"line","line":7,"stack":["<module>"],"locals":{}},
   {"event":"line","line":8,"stack":["<module>"],"locals":{"err":"<NameError>"}},
   {"event":"line","line":9,"stack":["<module>"],"locals":{}},

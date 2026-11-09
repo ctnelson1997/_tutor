@@ -38,7 +38,7 @@
   {"event":"line","line":10,"stack":["<module>","Student"],"locals":{"__module__":"'__main__'","__qualname__":"'Student'","__init__":"<function>"}},
   {"event":"line","line":13,"stack":["<module>","Student"],"locals":{"__module__":"'__main__'","__qualname__":"'Student'","__init__":"<function>","__eq__":"<function>"}},
   {"event":"line","line":16,"stack":["<module>","Student"],"locals":{"__module__":"'__main__'","__qualname__":"'Student'","__init__":"<function>","__eq__":"<function>","__lt__":"<function>"}},
-  {"event":"return","line":16,"stack":["<module>","Student"],"locals":{"__module__":"'__main__'","__qualname__":"'Student'","__init__":"<function>","__eq__":"<function>","__lt__":"<function>","__repr__":"<function>"},"value":"None"},
+  {"event":"return","line":16,"stack":["<module>","Student"],"locals":{"__module__":"'__main__'","__qualname__":"'Student'","__init__":"<function>","__eq__":"<function>","__lt__":"<function>","__repr__":"<function>"},"value":"None","classBody":true},
   {"event":"line","line":4,"stack":["<module>"],"locals":{"total_ordering":"<function>"}},
   {"event":"line","line":5,"stack":["<module>"],"locals":{"total_ordering":"<function>"}},
   {"event":"line","line":19,"stack":["<module>"],"locals":{"total_ordering":"<function>","Student":"<type>"}},

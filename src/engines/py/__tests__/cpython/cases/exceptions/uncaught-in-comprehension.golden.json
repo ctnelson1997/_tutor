@@ -39,7 +39,7 @@
   {"event":"line","line":6,"stack":["<module>","parse_all"],"locals":{"items":"<list>","t":"'3'"}},
   {"event":"call","line":2,"stack":["<module>","parse_all","parse"],"locals":{"text":"'four'"}},
   {"event":"line","line":3,"stack":["<module>","parse_all","parse"],"locals":{"text":"'four'"}},
-  {"event":"exception","line":3,"stack":["<module>","parse_all","parse"],"locals":{"text":"'four'"},"exc":"ValueError"},
+  {"event":"exception","line":3,"stack":["<module>","parse_all","parse"],"locals":{"text":"'four'"},"exc":"ValueError","raised":true},
   {"event":"return","line":3,"stack":["<module>","parse_all","parse"],"locals":{"text":"'four'"},"value":"None","unwinding":true},
   {"event":"exception","line":6,"stack":["<module>","parse_all"],"locals":{"items":"<list>","t":"'four'"},"exc":"ValueError"},
   {"event":"line","line":6,"stack":["<module>","parse_all"],"locals":{"items":"<list>","t":"'four'"}},

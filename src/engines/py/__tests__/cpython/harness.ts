@@ -390,6 +390,13 @@ const HIDDEN_CLASS_NAMES = new Set(['__classcell__', '__class__', '__module__', 
 const INLINED_COMPREHENSION = /^(list|set|dict) comprehension$/;
 /** CPython's names for the frames PyTutor names in words. */
 const CPYTHON_FRAME_NAMES: Record<string, string> = { 'generator expression': '<genexpr>' };
+/** The names a frame hands its value back under as it leaves: what it returns, or yields (#80). */
+const RETURN_NAMES = new Set(['return ↵', 'yield ↵']);
+
+/** A return event whose value a step shows: not a frame unwinding, a class body's, or a coroutine pausing at an await (#80). */
+function handsBackValue(e: GoldenEvent): boolean {
+  return e.event === 'return' && !e.unwinding && e.stack.length > 1 && !e.classBody && !(e.awaiting && e.yield);
+}
 
 interface StepComparison {
   steps: string[];
@@ -432,6 +439,27 @@ function compareSteps(c: PyCase, golden: PyGolden, reply: WorkerMessage): StepCo
     });
   }
   const continuation = new Set(golden.continuation);
+  // A statement's first line, for a line of it.
+  const statementOf = (line: number) => {
+    let l = line;
+    while (continuation.has(l)) l--;
+    return l;
+  };
+  // A line event that only comes back to its statement's first line from the
+  // statement's other lines (the call after its arguments' lines), which
+  // PyTutor gives no step of its own (#80).
+  const rejoins = new Array<boolean>(events.length).fill(false);
+  {
+    const lastLine: (number | undefined)[] = [];
+    events.forEach((e, k) => {
+      const depth = e.stack.length;
+      if (e.event === 'call') lastLine[depth] = undefined;
+      if (e.event !== 'line') return;
+      const prev = lastLine[depth];
+      rejoins[k] = prev !== undefined && continuation.has(prev) && !continuation.has(e.line) && statementOf(prev) === e.line;
+      lastLine[depth] = e.line;
+    });
+  }
   let j = 0;
   let misaligned = 0;
   const firstMisaligned: string[] = [];
@@ -447,18 +475,24 @@ function compareSteps(c: PyCase, golden: PyGolden, reply: WorkerMessage): StepCo
     if (inComprehension && top.variables.some(v => v.name === 'return ↵')) return;
     // A comprehension's iterations are CPython's events in the frame around it.
     const names = s.callStack.filter(f => !INLINED_COMPREHENSION.test(f.name)).map(f => CPYTHON_FRAME_NAMES[f.name] ?? f.name);
-    // A step showing `return ↵` is a return event; any other, a call or line
-    // event (or the module's return, the last step). A frame an exception
+    // A step showing `return ↵` is a return event, one showing `yield ↵` a
+    // yield; a step with an exception is where it was raised (#80); any other
+    // is a call or line event (or the module's return, the last step, a class
+    // body's return, a coroutine pausing at an await). A frame an exception
     // leaves gets no step for its return.
-    const returns = top.variables.some(v => v.name === 'return ↵');
+    const handedBack = top.variables.find(v => RETURN_NAMES.has(v.name))?.name;
+    const raises = s.exception;
     // Up to 60 events ahead, not counting the ones no step stands for (an
     // exception passing through, a frame unwinding: hundreds after a RecursionError).
     let found = -1;
     for (let k = j, seen = 0; k < events.length && seen < 60; k++) {
       const e = events[k];
-      if (e.event === 'exception' || e.unwinding) continue;
+      if (e.unwinding || (e.event === 'exception' && !e.raised)) continue;
       seen++;
-      if (returns !== (e.event === 'return' && e.stack.length > 1)) continue;
+      if ((e.event === 'exception') !== !!raises) continue;
+      if (raises && !raises.startsWith(e.exc!)) continue;
+      if (!!handedBack !== handsBackValue(e)) continue;
+      if (handedBack && (handedBack === 'yield ↵') !== !!e.yield) continue;
       if (e.line === s.line && e.stack.length === names.length && e.stack.every((n, q) => n === names[q])) { found = k; break; }
     }
     if (found < 0) {
@@ -498,7 +532,7 @@ function compareSteps(c: PyCase, golden: PyGolden, reply: WorkerMessage): StepCo
       if (d) valueDiffs.push(`step ${i} ${top.name}.${name}: ${d}`);
     }
     for (const [name, v] of shown) {
-      if (name === 'return ↵' || name in (e.locals ?? {})) continue;
+      if (RETURN_NAMES.has(name) || name in (e.locals ?? {})) continue;
       // The recorder leaves the module's dunder names out.
       if (top.name === '<module>' && /^__\w+__$/.test(name)) continue;
       const h = v.type === 'ref' ? s.heap.find(x => x.id === v.heapId) : null;
@@ -513,9 +547,10 @@ function compareSteps(c: PyCase, golden: PyGolden, reply: WorkerMessage): StepCo
     const shownOrder = [...shown.keys()].filter(name => both.has(name));
     const expectedOrder = expected.filter(name => both.has(name));
     if (shownOrder.join() !== expectedOrder.join() && misordered.length < 3) misordered.push(`step ${i} ${top.name}: ${shownOrder.join(', ')} (CPython: ${expectedOrder.join(', ')})`);
-    if (e.event === 'return' && e.value !== undefined && !e.unwinding && top.name !== '<module>') {
-      const rv = shown.get('return ↵');
-      if (!rv) returnDiffs.push(`step ${i} ${top.name}: no return ↵ (returns ${e.value})`);
+    if (handsBackValue(e) && e.value !== undefined && top.name !== '<module>') {
+      const as = e.yield ? 'yield ↵' : 'return ↵';
+      const rv = shown.get(as);
+      if (!rv) returnDiffs.push(`step ${i} ${top.name}: no ${as} (${e.yield ? 'yields' : 'returns'} ${e.value})`);
       else {
         const d = compareValue(e.value, rv);
         if (d) returnDiffs.push(`step ${i} ${top.name} return: ${d}`);
@@ -525,12 +560,15 @@ function compareSteps(c: PyCase, golden: PyGolden, reply: WorkerMessage): StepCo
   const covered = limited ? j : events.length;
   const skipped: GoldenEvent[] = [];
   const unreturned: GoldenEvent[] = [];
+  const unraised: GoldenEvent[] = [];
   for (let k = 0; k < covered; k++) {
     const e = events[k];
     if (matched[k]) continue;
-    if (e.event === 'line' && !continuation.has(e.line)) skipped.push(e);
-    // A function returning (not unwinding) with no step showing its `return ↵`.
-    if (e.event === 'return' && !e.unwinding && e.stack.length > 1) unreturned.push(e);
+    if (e.event === 'line' && !continuation.has(e.line) && !rejoins[k]) skipped.push(e);
+    // A function returning or yielding (not unwinding) with no step showing its `return ↵` or `yield ↵`.
+    if (handsBackValue(e)) unreturned.push(e);
+    // An exception the program raised (sys.exit()'s aside) with no step showing it.
+    if (e.event === 'exception' && e.raised && e.exc !== 'SystemExit') unraised.push(e);
   }
   if (misaligned) out.steps.push(`${misaligned} step(s) match no CPython event in order, first: ${firstMisaligned.join('; ')}`);
   if (skipped.length) {
@@ -539,7 +577,11 @@ function compareSteps(c: PyCase, golden: PyGolden, reply: WorkerMessage): StepCo
   }
   if (unreturned.length) {
     const first = unreturned[0];
-    out.steps.push(`${unreturned.length} return(s) have no step showing return ↵, first: ${first.stack[first.stack.length - 1]} at line ${first.line} (returns ${first.value})`);
+    out.steps.push(`${unreturned.length} return(s) and yield(s) have no step showing return ↵ or yield ↵, first: ${first.stack[first.stack.length - 1]} at line ${first.line} (${first.yield ? 'yields' : 'returns'} ${first.value})`);
+  }
+  if (unraised.length) {
+    const first = unraised[0];
+    out.steps.push(`${unraised.length} exception(s) raised with no step showing them, first: ${first.exc} at line ${first.line} in ${first.stack[first.stack.length - 1]}`);
   }
   if (missing.size) out.variables.push(`not shown: ${[...missing].slice(0, 8).join(', ')}`);
   if (extra.size) out.variables.push(`shown but not in CPython's frame: ${[...extra].slice(0, 8).join(', ')}`);
@@ -609,8 +651,8 @@ function checkLines(snapshots: ExecutionSnapshot[], lineCount: number): string[]
   return firstViolations(snapshots, s => (Number.isInteger(s.line) && s.line >= 1 && s.line <= lineCount ? [] : [`line ${s.line} isn't a line of the program (1–${lineCount})`]));
 }
 
-/** The name PyTutor shows that isn't the program's own, on purpose: a return value. */
-const SHOWN_NAMES = (name: string) => name === 'return ↵';
+/** The names PyTutor shows that aren't the program's own, on purpose: a return or yielded value. */
+const SHOWN_NAMES = (name: string) => RETURN_NAMES.has(name);
 
 /** The words of a program's source: the names it can define. */
 function sourceWords(source: string): Set<string> {

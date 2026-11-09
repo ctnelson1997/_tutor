@@ -63,10 +63,37 @@ _real_getlimit = sys.getrecursionlimit
 _real_setlimit = sys.setrecursionlimit
 _real_settrace = sys.settrace
 _refused = set()
-_unwinding = set()   # frames an exception is passing through: their 'return' event is the frame unwinding
-# A 'return' event at any other instruction is the frame unwinding too, after
-# a finally block or an inlined comprehension's cleanup re-raised.
-_RETURN_OPS = frozenset(dis.opmap[n] for n in ('RETURN_VALUE', 'RETURN_CONST', 'YIELD_VALUE'))
+_RECORDER_FILE = sys._getframe().f_code.co_filename
+
+# Whether a 'return' event is a frame unwinding (an exception leaving it) or
+# yielding, CPython says itself: sys.monitoring's PY_UNWIND and PY_YIELD
+# events come right after the legacy 'return' event of the same frame (#80,
+# #61: the reference trace doesn't share PyTutor's rule for it). Only the
+# frame's id is kept, never the frame.
+_mon = sys.monitoring
+_MON_TOOL = _mon.OPTIMIZER_ID
+_last_return = [None, None]   # the id of the frame of the last 'return' event, and the event
+
+def _mark_last_return(flag):
+    if _last_return[0] == id(sys._getframe(2)):
+        _last_return[1][flag] = True
+    _last_return[0] = None
+
+def _on_unwind(code, offset, exc):
+    if code.co_filename == 'main.py':
+        _mark_last_return('unwinding')
+
+def _on_yield(code, offset, value):
+    if code.co_filename == 'main.py':
+        _mark_last_return('yield')
+
+def _raised_here(frame, tb):
+    # Where the program first saw the exception: no other frame of main.py in its traceback.
+    while tb is not None:
+        if tb.tb_frame is not frame and tb.tb_frame.f_code.co_filename == 'main.py':
+            return False
+        tb = tb.tb_next
+    return True
 
 def _getrecursionlimit():
     return _limit
@@ -148,6 +175,8 @@ def _program_gettrace():
     return _program_trace
 
 def _forward(frame, event, arg, result):
+    if frame.f_code.co_filename == _RECORDER_FILE:
+        return result
     if event == 'call':
         if _program_trace is not None:
             local = _program_trace(frame, event, arg)
@@ -190,14 +219,17 @@ def _record(frame, event, arg):
         ev['locals'] = {'!error': repr(ex)}
     if event == 'return':
         ev['value'] = _r(arg)
-        if frame in _unwinding or frame.f_code.co_code[frame.f_lasti] not in _RETURN_OPS:
-            ev['unwinding'] = True
-        _unwinding.discard(frame)
+        code = frame.f_code
+        if code.co_name != '<module>' and not (code.co_flags & 1):
+            ev['classBody'] = True   # a class body, whose return value is Python's own
+        if code.co_flags & 0x380:
+            ev['awaiting'] = True    # a coroutine or async generator (a yield is an await's suspension)
+        _last_return[0] = id(frame)
+        _last_return[1] = ev
     elif event == 'exception':
         ev['exc'] = arg[0].__name__
-        _unwinding.add(frame)
-    elif event == 'line':
-        _unwinding.discard(frame)
+        if _raised_here(frame, arg[2]):
+            ev['raised'] = True
     _events.append(ev)
     return _trace
 
@@ -242,6 +274,10 @@ if _compile_error is None:
     if __traced:
         sys.settrace = _program_settrace
         sys.gettrace = _program_gettrace
+        _mon.use_tool_id(_MON_TOOL, 'reference trace')
+        _mon.register_callback(_MON_TOOL, _mon.events.PY_UNWIND, _on_unwind)
+        _mon.register_callback(_MON_TOOL, _mon.events.PY_YIELD, _on_yield)
+        _mon.set_events(_MON_TOOL, _mon.events.PY_UNWIND | _mon.events.PY_YIELD)
         _real_settrace(_trace)
     try:
         exec(_code, _g)
@@ -258,6 +294,9 @@ if _compile_error is None:
     finally:
         _real_settrace(None)
         sys.setprofile(None)
+        if __traced:
+            _mon.set_events(_MON_TOOL, 0)
+            _mon.free_tool_id(_MON_TOOL)
 _final = {}
 for _k, _v in list(_g.items()):
     if not _k.startswith('__'):

@@ -427,7 +427,40 @@ describe('checkCase', () => {
       snap(3, 2, [frame('<module>', { f: ref('1') }), frame('f', ret ? { 'return ↵': ret } : {})], [], [{ id: '1', objectType: 'function', properties: [] }]),
     ];
     expect(checkCase(fc, fg, outcome(result(steps(num(5))))).checks.values.join()).toMatch(/f return: 5\.0 shown as 5/);
-    expect(checkCase(fc, fg, outcome(result(steps(null)))).checks.steps.join()).toMatch(/1 return\(s\) have no step showing return ↵, first: f at line 2 \(returns 5\.0\)/);
+    expect(checkCase(fc, fg, outcome(result(steps(null)))).checks.steps.join()).toMatch(/1 return\(s\) and yield\(s\) have no step showing return ↵ or yield ↵, first: f at line 2 \(returns 5\.0\)/);
+  });
+
+  it("matches a yield with yield ↵, and a class body's return or a coroutine's await with a step showing no value (#80)", () => {
+    const fn = { id: '1', objectType: 'function', properties: [] };
+    const at = (step: number, line: number, stack: StackFrame[]) => snap(step, line, stack, [], [fn]);
+    const m = () => frame('<module>', { g: ref('1') });
+    const yc = pyCase('def g():\n    yield 1\nnext(g())\n');
+    const yg = golden({ events: [ev('line', 3, ['<module>']), ev('call', 1, ['<module>', 'g']), ev('line', 2, ['<module>', 'g']), ev('return', 2, ['<module>', 'g'], {}, { value: '1', yield: true })] });
+    const run = (name: string) => [at(0, 3, [m()]), at(1, 1, [m(), frame('g')]), at(2, 2, [m(), frame('g')]), at(3, 2, [m(), frame('g', { [name]: num(1) })])];
+    expect(checkCase(yc, yg, outcome(result(run('yield ↵')))).checks.steps).toEqual([]);
+    expect(checkCase(yc, yg, outcome(result(run('return ↵')))).checks.steps.join()).toMatch(/have no step showing return ↵ or yield ↵, first: g at line 2 \(yields 1\)/);
+    // A class body's return, and a coroutine pausing at an await, show no value.
+    for (const flags of [{ classBody: true }, { awaiting: true, yield: true }] as const) {
+      const cg = golden({ events: [ev('line', 3, ['<module>']), ev('call', 1, ['<module>', 'g']), ev('line', 2, ['<module>', 'g']), ev('return', 2, ['<module>', 'g'], {}, { value: 'None', ...flags })] });
+      const noValue = [at(0, 3, [m()]), at(1, 1, [m(), frame('g')]), at(2, 2, [m(), frame('g')]), at(3, 2, [m(), frame('g')])];
+      expect(checkCase(yc, cg, outcome(result(noValue))).checks.steps).toEqual([]);
+    }
+  });
+
+  it('matches a step with an exception with where CPython says the program raised it, and finds one raised with no step (#80)', () => {
+    const ec = pyCase('try:\n    int("x")\nexcept ValueError:\n    pass\n');
+    const eg = golden({ events: [ev('line', 1, ['<module>']), ev('line', 2, ['<module>']), ev('exception', 2, ['<module>'], {}, { exc: 'ValueError', raised: true }), ev('line', 3, ['<module>']), ev('line', 4, ['<module>'])] });
+    const run = (exception?: string) => [snap(0, 1, [frame('<module>')]), snap(1, 2, [frame('<module>')]), ...(exception ? [{ ...snap(2, 2, [frame('<module>')]), exception }] : []), snap(3, 3, [frame('<module>')]), snap(4, 4, [frame('<module>')])];
+    expect(checkCase(ec, eg, outcome(result(run("ValueError: invalid literal for int() with base 10: 'x'")))).checks.steps).toEqual([]);
+    expect(checkCase(ec, eg, outcome(result(run()))).checks.steps.join()).toMatch(/1 exception\(s\) raised with no step showing them, first: ValueError at line 2/);
+    expect(checkCase(ec, eg, outcome(result(run('KeyError: x')))).checks.steps.join()).toMatch(/match no CPython event/);
+  });
+
+  it("doesn't count coming back to a statement's first line from its other lines, a step of its own (#80)", () => {
+    // print(\n  1) runs line 1, its argument on line 2, then the call on line 1 again.
+    const pc = pyCase('print(\n    1)\n');
+    const pg = golden({ continuation: [2], events: [ev('line', 1, ['<module>']), ev('line', 2, ['<module>']), ev('line', 1, ['<module>'])] });
+    expect(checkCase(pc, pg, outcome(result([snap(0, 1, [frame('<module>')])]))).checks.steps).toEqual([]);
   });
 
   it("checks the final globals in the last step's module frame", () => {

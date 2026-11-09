@@ -186,7 +186,7 @@
   {"event":"line","line":16,"stack":["<module>"],"locals":{"is_leap":"<function>","days_in_february":"<function>","leap_years":"<list>","common_years":"<list>","line":"'2100'","year":"2100"}},
   {"event":"line","line":17,"stack":["<module>"],"locals":{"is_leap":"<function>","days_in_february":"<function>","leap_years":"<list>","common_years":"<list>","line":"'2100'","year":"2100"}},
   {"event":"line","line":18,"stack":["<module>"],"locals":{"is_leap":"<function>","days_in_february":"<function>","leap_years":"<list>","common_years":"<list>","line":"'2100'","year":"2100"}},
-  {"event":"exception","line":18,"stack":["<module>"],"locals":{"is_leap":"<function>","days_in_february":"<function>","leap_years":"<list>","common_years":"<list>","line":"'2100'","year":"2100"},"exc":"EOFError"},
+  {"event":"exception","line":18,"stack":["<module>"],"locals":{"is_leap":"<function>","days_in_february":"<function>","leap_years":"<list>","common_years":"<list>","line":"'2100'","year":"2100"},"exc":"EOFError","raised":true},
   {"event":"line","line":19,"stack":["<module>"],"locals":{"is_leap":"<function>","days_in_february":"<function>","leap_years":"<list>","common_years":"<list>","line":"'2100'","year":"2100"}},
   {"event":"line","line":20,"stack":["<module>"],"locals":{"is_leap":"<function>","days_in_february":"<function>","leap_years":"<list>","common_years":"<list>","line":"'2100'","year":"2100"}},
   {"event":"line","line":31,"stack":["<module>"],"locals":{"is_leap":"<function>","days_in_february":"<function>","leap_years":"<list>","common_years":"<list>","line":"'2100'","year":"2100"}},

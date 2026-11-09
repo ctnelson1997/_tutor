@@ -56,7 +56,7 @@
   {"event":"call","line":15,"stack":["<module>","Team"],"locals":{}},
   {"event":"line","line":15,"stack":["<module>","Team"],"locals":{}},
   {"event":"line","line":16,"stack":["<module>","Team"],"locals":{"__module__":"'__main__'","__qualname__":"'Team'"}},
-  {"event":"return","line":16,"stack":["<module>","Team"],"locals":{"__module__":"'__main__'","__qualname__":"'Team'","__init__":"<function>"},"value":"None"},
+  {"event":"return","line":16,"stack":["<module>","Team"],"locals":{"__module__":"'__main__'","__qualname__":"'Team'","__init__":"<function>"},"value":"None","classBody":true},
   {"event":"line","line":20,"stack":["<module>"],"locals":{"copy":"<module>","grid":"<list>","alias":"<list>","shallow":"<list>","deep":"<list>","Team":"<type>"}},
   {"event":"call","line":16,"stack":["<module>","__init__"],"locals":{"self":"<Team>","name":"'A'","members":"<list>"}},
   {"event":"line","line":17,"stack":["<module>","__init__"],"locals":{"self":"<Team>","name":"'A'","members":"<list>"}},

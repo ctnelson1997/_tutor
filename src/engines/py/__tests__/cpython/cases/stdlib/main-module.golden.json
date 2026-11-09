@@ -31,7 +31,7 @@
   {"event":"call","line":6,"stack":["<module>","Point"],"locals":{}},
   {"event":"line","line":6,"stack":["<module>","Point"],"locals":{}},
   {"event":"line","line":7,"stack":["<module>","Point"],"locals":{"__module__":"'__main__'","__qualname__":"'Point'"}},
-  {"event":"return","line":7,"stack":["<module>","Point"],"locals":{"__module__":"'__main__'","__qualname__":"'Point'","__init__":"<function>"},"value":"None"},
+  {"event":"return","line":7,"stack":["<module>","Point"],"locals":{"__module__":"'__main__'","__qualname__":"'Point'","__init__":"<function>"},"value":"None","classBody":true},
   {"event":"line","line":12,"stack":["<module>"],"locals":{"pickle":"<module>","sys":"<module>","Point":"<type>"}},
   {"event":"call","line":7,"stack":["<module>","__init__"],"locals":{"self":"<Point>","x":"3","y":"4"}},
   {"event":"line","line":8,"stack":["<module>","__init__"],"locals":{"self":"<Point>","x":"3","y":"4"}},

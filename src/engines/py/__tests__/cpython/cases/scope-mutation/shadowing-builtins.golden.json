@@ -45,7 +45,7 @@
   {"event":"line","line":3,"stack":["<module>"],"locals":{"list":"<list>"}},
   {"event":"line","line":4,"stack":["<module>"],"locals":{"list":"<list>"}},
   {"event":"line","line":5,"stack":["<module>"],"locals":{"list":"<list>"}},
-  {"event":"exception","line":5,"stack":["<module>"],"locals":{"list":"<list>"},"exc":"TypeError"},
+  {"event":"exception","line":5,"stack":["<module>"],"locals":{"list":"<list>"},"exc":"TypeError","raised":true},
   {"event":"line","line":6,"stack":["<module>"],"locals":{"list":"<list>"}},
   {"event":"line","line":7,"stack":["<module>"],"locals":{"list":"<list>","err":"<TypeError>"}},
   {"event":"line","line":8,"stack":["<module>"],"locals":{"list":"<list>"}},

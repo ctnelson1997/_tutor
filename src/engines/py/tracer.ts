@@ -95,16 +95,22 @@ _WORK_BUDGET = None
 _STEP_WORK = 10
 _OBJECT_WORK = 5
 _VALUE_WORK = 2
-_unwinding = set()    # frames an exception is propagating out of
+_raised_at = {}       # frame -> the instruction an exception last passed through it at (#80)
 
 # The instructions a frame returns (or yields) at. A 'return' event anywhere
 # else is the frame unwinding: an exception leaving it, perhaps after a
-# finally block or an inlined comprehension's cleanup ran (whose line events
-# end _unwinding's mark) and re-raised it.
+# finally block or an inlined comprehension's cleanup ran and re-raised it.
+# So is one at the very instruction an exception passed through the frame
+# at: nothing ran since. A frame that handled the exception and went on
+# (a for loop ending at a StopIteration, contextlib.suppress) returns from
+# another instruction, a real return (#80).
 _RETURN_OPS = frozenset(_dis.opmap[name] for name in ('RETURN_VALUE', 'RETURN_CONST', 'YIELD_VALUE') if name in _dis.opmap)
+_YIELD_VALUE = _dis.opmap['YIELD_VALUE']
+# A coroutine's or async generator's frame suspends at its awaits with a YIELD_VALUE too.
+_CO_AWAITING = 0x80 | 0x100 | 0x200   # CO_COROUTINE, CO_ITERABLE_COROUTINE, CO_ASYNC_GENERATOR
 
 def _returns(frame):
-    return frame not in _unwinding and frame.f_code.co_code[frame.f_lasti] in _RETURN_OPS
+    return _raised_at.get(frame) != frame.f_lasti and frame.f_code.co_code[frame.f_lasti] in _RETURN_OPS
 
 class _TutorStop(BaseException):
     """Ends a run from the tracer. A BaseException, so the program's own 'except Exception' doesn't catch it."""
@@ -268,9 +274,11 @@ def _is_source_word(name):
     i = name.find('__', 1)
     return name.startswith('_') and i > 1 and name[i:] in _source_words
 
-# Lines that are continuations of multi-line simple statements.
-# These produce no visible variable changes, so we skip snapshots for them.
-_continuation_lines = set()
+# Lines that are continuations of multi-line simple statements, each with the
+# line its statement starts on: they take no step of their own, nor does the
+# statement's first line when the statement comes back to it (a call on a
+# line of its own after its arguments' lines, #80).
+_continuation_lines = {}
 
 # The program's file name, as CPython names it in tracebacks and warnings.
 _USER_FILE = 'main.py'
@@ -665,9 +673,11 @@ def _frame_locals(frame):
 def _scan_continuation_lines(source_code):
     """Find continuation lines of multi-line simple statements (no visible effect)."""
     global _continuation_lines
-    _continuation_lines = set()
+    _continuation_lines = {}
     try:
-        tree = _ast.parse(source_code)
+        with _warnings.catch_warnings():
+            _warnings.simplefilter('ignore')
+            tree = _ast.parse(source_code)
     except SyntaxError:
         return
 
@@ -688,7 +698,7 @@ def _scan_continuation_lines(source_code):
             if end > node.lineno:
                 for ln in range(node.lineno + 1, end + 1):
                     if ln not in _start_lines:
-                        _continuation_lines.add(ln)
+                        _continuation_lines.setdefault(ln, node.lineno)
 
 # ── Heap serialization ──
 #
@@ -1105,7 +1115,7 @@ def _enqueue(v, visited, pending):
         visited.add(k)
         pending.append(v)
 
-def _draw_frame(frame_info, top, return_value, has_return, visited, pending):
+def _draw_frame(frame_info, top, return_value, has_return, visited, pending, return_name=None):
     # A frame as a part, its variables read from the frame as it is (#80).
     kind = frame_info["kind"]
     if kind == "function" and not top and not frame_info["stale"] and not frame_info["cells"] and "part" in frame_info:
@@ -1146,7 +1156,7 @@ def _draw_frame(frame_info, top, return_value, has_return, visited, pending):
         if not _is_primitive(val):
             heap_values.append(val)
     if has_return:
-        parts.append(_part({"name": "return \\u21b5", "value": _serialize_value(return_value)}))
+        parts.append(_part({"name": return_name, "value": _serialize_value(return_value)}))
         if not _is_primitive(return_value):
             heap_values.append(return_value)
     frame_info["variable_parts"] = cache
@@ -1229,7 +1239,7 @@ def _check_budgets():
     if _now() - _start_time > _TIME_BUDGET:
         _stop("time")
 
-def _capture_snapshot(line, return_value=None, has_return=False, column_range=None, condition=None):
+def _capture_snapshot(line, return_value=None, has_return=False, column_range=None, condition=None, return_name=None, exception=None):
     """Capture a full execution snapshot at the given line."""
     global _step_counter, _heap_cache, _work
 
@@ -1245,7 +1255,7 @@ def _capture_snapshot(line, return_value=None, has_return=False, column_range=No
     stack = []
     for i, frame_info in enumerate(_call_stack):
         if i == top:
-            stack.append(_draw_frame(frame_info, True, return_value, has_return, visited, pending))
+            stack.append(_draw_frame(frame_info, True, return_value, has_return, visited, pending, return_name or _RETURN_NAME))
         else:
             stack.append(_draw_frame(frame_info, False, None, False, visited, pending))
     _work += _STEP_WORK + len(stack)
@@ -1275,11 +1285,57 @@ def _capture_snapshot(line, return_value=None, has_return=False, column_range=No
         snapshot["columnRange"] = {"startCol": column_range[0], "endCol": column_range[1]}
     if condition:
         snapshot["condition"] = condition
+    if exception is not None:
+        snapshot["exception"] = exception
 
     _snapshots.append(snapshot)
     _step_counter += 1
 
 # ── Trace function ──
+
+# The value a frame hands back as it leaves: what it returns, or yields (#80).
+_RETURN_NAME = 'return \\u21b5'
+_YIELD_NAME = 'yield \\u21b5'
+
+def _raised_here(frame, tb):
+    # Whether an exception event's frame is where the program's code first
+    # saw the exception: no other frame of the program's in its traceback
+    # (it was raised here, or in a library function called from here). A for
+    # loop ending at an iterator's StopIteration gets the iterator's
+    # traceback, without the loop's own frame.
+    while tb is not None:
+        if tb.tb_frame is not frame and tb.tb_frame.f_code.co_filename == _USER_FILE:
+            return False
+        tb = tb.tb_next
+    return True
+
+_LABEL_LIMIT = 200
+
+def _exception_label(e):
+    # An exception as a traceback's last line names it ('ValueError: bad
+    # value'), without running the program's code: its own __str__ isn't
+    # called, nor a library's on arguments that aren't plain values.
+    t = type(e)
+    name = _type_name(t)
+    try:
+        args = BaseException.__dict__['args'].__get__(e)
+    except Exception:
+        args = ()
+    str_owner = next((c for c in _type_mro(t) if '__str__' in _type_dict(c)), BaseException)
+    text = None
+    if all(_is_primitive(a) for a in args) and not _is_program_class(str_owner):
+        try:
+            text = str(e)
+        except Exception:
+            text = None
+    if text is None:
+        if len(args) == 1:
+            text = args[0] if type(args[0]) is str else _safe_repr(args[0])
+        else:
+            text = _safe_repr(tuple(args)) if args else ''
+    if len(text) > _LABEL_LIMIT:
+        text = text[:_LABEL_LIMIT] + '\u2026'
+    return name + ': ' + text if text else name
 
 # Display names of the comprehensions' frames: theirs (see _CompWrapper), and
 # a generator expression's, which CPython calls <genexpr>.
@@ -1355,27 +1411,46 @@ def _trace_event(frame, event, arg):
     elif event == 'exception':
         # An exception is passing through this frame. If the frame doesn't
         # handle it, its 'return' event is the frame unwinding, not a return.
-        _unwinding.add(frame)
+        _raised_at[frame] = frame.f_lasti
         if _call_stack and _call_stack[-1]["frame"] is frame:
-            _drop_stale(_call_stack[-1])
+            exc = arg[1]
+            if _raised_here(frame, arg[2]) and not issubclass(type(exc), SystemExit):
+                # Where the program's code raised it (or called what did): a
+                # step, with the exception (#80), as pythontutor.com takes one.
+                _capture_snapshot(frame.f_lineno, exception=_exception_label(exc))
+            else:
+                _drop_stale(_call_stack[-1])
         return _tracer
 
     elif event == 'line':
-        _unwinding.discard(frame)  # the frame handled the exception and goes on
+        _raised_at.pop(frame, None)  # the frame handled the exception and goes on
         line = frame.f_lineno
+        frame_info = _call_stack[-1] if _call_stack and _call_stack[-1]["frame"] is frame else None
         if _is_comprehension(code):
-            # The first line event comes before the first iteration: nothing to
-            # show yet. Then one per iteration, on whichever of the
-            # comprehension's lines it is (they aren't a statement's
-            # continuation lines here).
-            if _call_stack and not _call_stack[-1].get("started"):
-                _call_stack[-1]["started"] = True
-                return _tracer
+            # Nothing to show before the first iteration binds a variable (a
+            # comprehension's lines before it, #80); then one step per
+            # iteration, on whichever of its lines it is (they aren't a
+            # statement's continuation lines here).
+            if frame_info is not None and not frame_info.get("started"):
+                # Its own variables, not the ones it reads from the frame around it.
+                local_vars = _frame_locals(frame)
+                if not any(name in local_vars for name in code.co_varnames[code.co_argcount:] + code.co_cellvars):
+                    return _tracer
+                frame_info["started"] = True
         elif line in _continuation_lines and fname not in _EXPRESSION_FRAMES:
             # Skip continuation lines of multi-line statements (no visible
             # changes), in the frame the statement runs in: a lambda's or
             # generator expression's frame written inside it has only those lines.
+            if frame_info is not None:
+                frame_info["continued"] = _continuation_lines[line]
             return _tracer
+        elif frame_info is not None and frame_info.get("continued") is not None:
+            # Back at its statement's first line from the statement's other
+            # lines (the call after its arguments' lines): the same step.
+            back = frame_info["continued"] == line
+            frame_info["continued"] = None
+            if back:
+                return _tracer
 
         if _call_stack:
             _capture_snapshot(line)
@@ -1385,15 +1460,26 @@ def _trace_event(frame, event, arg):
         if not _returns(frame):
             # Leaving because of an exception: no "return ↵ None" step. The
             # last step stays where the exception was raised.
-            _unwinding.discard(frame)
+            _raised_at.pop(frame, None)
             if _call_stack:
                 _call_stack.pop()
             return _tracer
+        _raised_at.pop(frame, None)
 
         if _call_stack:
             if fname == '<module>':
                 # Capture final state so stdout from the last line is visible
                 _capture_snapshot(frame.f_lineno)
+            elif _call_stack[-1]["kind"] == "class":
+                # A class body's return value is Python's own (None, or the
+                # cell super() uses): the step shows the body done (#80).
+                _capture_snapshot(frame.f_lineno)
+            elif code.co_code[frame.f_lasti] == _YIELD_VALUE:
+                if code.co_flags & _CO_AWAITING:
+                    # A coroutine pausing at an await: what it hands its event loop isn't a value of the program's.
+                    _capture_snapshot(frame.f_lineno)
+                else:
+                    _capture_snapshot(frame.f_lineno, return_value=arg, has_return=True, return_name=_YIELD_NAME)
             else:
                 _capture_snapshot(frame.f_lineno, return_value=arg, has_return=True)
             _call_stack.pop()
@@ -1484,7 +1570,7 @@ def _compile_error(e, source_code):
 
 def run_traced(source_code, stdin_text=''):
     global _snapshots, _call_stack, _heap_map, _heap_counter, _step_counter, _continuation_lines, _module_order, _source_words
-    global _stop_reason, _start_time, _events, _unwinding, _work
+    global _stop_reason, _start_time, _events, _raised_at, _work
     global _out_lines, _console, _console_open, _stderr_used, _stdin_used, _output_count, _output_seen
     global _parts, _heap_cache, _output_parts, _stdout_last, _console_last, _console_lines, _kinds, _slots_of
     global _limit, _base, _refused, _program_trace, _program_local
@@ -1492,7 +1578,7 @@ def run_traced(source_code, stdin_text=''):
     _start_time = _now()
     _events = 0
     _work = 0
-    _unwinding = set()
+    _raised_at = {}
     _refused = set()
     _limit = _DEFAULT_LIMIT
     _program_trace = None
@@ -1517,7 +1603,7 @@ def run_traced(source_code, stdin_text=''):
     _heap_map = {}
     _heap_counter = 0
     _step_counter = 0
-    _continuation_lines = set()
+    _continuation_lines = {}
     _module_order = {}
     _source_words = frozenset(_re.findall(r'[A-Za-z_][A-Za-z0-9_]*', source_code))
 

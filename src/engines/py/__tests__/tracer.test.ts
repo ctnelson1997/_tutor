@@ -106,7 +106,7 @@ describe('getTracerCode', () => {
   });
 
   it('draws each step from the parts of the step before that are unchanged (#39)', () => {
-    expect(code).toContain('def _draw_frame(frame_info, top, return_value, has_return, visited, pending):');
+    expect(code).toContain('def _draw_frame(frame_info, top, return_value, has_return, visited, pending, return_name=None):');
     expect(code).toContain('if hit is not None and hit[0] is val:');
     expect(code).toContain('ids = list(map(id, seq))');
     expect(code).toContain('_heap_cache = cache');
@@ -273,7 +273,7 @@ describe('getTracerCode', () => {
 
   it('resets _continuation_lines in run_traced', () => {
     const runTracedSection = code.slice(code.indexOf('def run_traced'));
-    expect(runTracedSection).toContain('_continuation_lines = set()');
+    expect(runTracedSection).toContain('_continuation_lines = {}');
   });
 
   it('collects statement start lines to avoid skipping real statements', () => {
@@ -296,7 +296,7 @@ describe('getTracerCode', () => {
 
   it('_capture_snapshot accepts column_range and condition parameters', () => {
     expect(code).toContain(
-      'def _capture_snapshot(line, return_value=None, has_return=False, column_range=None, condition=None):',
+      'def _capture_snapshot(line, return_value=None, has_return=False, column_range=None, condition=None, return_name=None, exception=None):',
     );
   });
 

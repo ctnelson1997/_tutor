@@ -124,7 +124,8 @@ describe('classes', () => {
       's = Stack()',
     ].join('\n') + '\n');
     const body = all.filter(s => s.callStack.at(-1)!.name === 'Stack').at(-1)!;
-    expect(names(body.callStack.at(-1)!)).toEqual(['__slots__', '__init__', '__repr__', 'push', 'return ↵']);
+    // (No return value: a class body's is Python's own, #80.)
+    expect(names(body.callStack.at(-1)!)).toEqual(['__slots__', '__init__', '__repr__', 'push']);
   });
 
   it("hides what an Enum's metaclass put in its class body, and draws members by name with their value", () => {
@@ -247,5 +248,99 @@ describe('frames below the top (#80)', () => {
     const before = all[all.indexOf(deepest) - 1];
     // The frames below the top are the same objects in consecutive steps (decodeReply shares a part).
     expect(deepest.callStack.slice(0, 30).every((f, i) => f === before.callStack[i])).toBe(true);
+  });
+});
+
+describe('steps where CPython has events (#80, extra/steps-and-labels)', () => {
+  const frameNames = (s: ExecutionSnapshot) => s.callStack.map(f => f.name);
+  const returnOf = (s: ExecutionSnapshot) => s.callStack.at(-1)!.variables.find(v => v.name === 'return ↵' || v.name === 'yield ↵');
+  const countdown = [
+    'class Countdown:',
+    '    def __init__(self, n):',
+    '        self.n = n',
+    '    def __iter__(self):',
+    '        return self',
+    '    def __next__(self):',
+    '        if self.n == 0:',
+    '            raise StopIteration',
+    '        self.n -= 1',
+    '        return self.n',
+  ];
+
+  it('gives a function whose for loop ended at its iterator\'s StopIteration a return step, and the run its last step', () => {
+    const all = steps([...countdown, 'def show(it):', '    for x in it:', '        pass', 'show(Countdown(1))', 'for y in Countdown(1):', '    pass'].join('\n'));
+    const showReturns = all.filter(s => s.callStack.at(-1)!.name === 'show' && returnOf(s));
+    expect(showReturns.map(s => returnOf(s)!.value.type)).toEqual(['null']);
+    // The program's last step is the module's, not one inside __next__.
+    expect(frameNames(all.at(-1)!)).toEqual(['<module>']);
+  });
+
+  it('gives a function a return step after contextlib.suppress swallowed an exception', () => {
+    const all = steps(['from contextlib import suppress', 'def parse(s):', '    with suppress(ValueError):', '        return int(s)', 'parse("x")'].join('\n'));
+    expect(all.some(s => s.callStack.at(-1)!.name === 'parse' && returnOf(s)?.name === 'return ↵')).toBe(true);
+  });
+
+  it('takes a step where an exception is raised, with the exception, in the frame that raised it', () => {
+    const all = steps(['def parse(s):', '    return int(s)', 'try:', '    parse("abc")', 'except ValueError as e:', '    print("bad")'].join('\n'));
+    const raising = all.filter(s => s.exception);
+    expect(raising.map(s => [s.line, frameNames(s).join(' > '), s.exception])).toEqual([
+      [2, '<module> > parse', "ValueError: invalid literal for int() with base 10: 'abc'"],
+    ]);
+    // The next step is the handler, in the caller.
+    expect(all[all.indexOf(raising[0]) + 1].line).toBe(5);
+  });
+
+  it("ends an uncaught exception's run at the step that raises it, and takes none for sys.exit()", () => {
+    const reply = runProgram(py, 'x = 1\nraise KeyError("k")');
+    if (reply.type !== 'result') throw new Error(reply.message);
+    expect(reply.snapshots.at(-1)!.exception).toBe("KeyError: 'k'");
+    expect(steps('import sys\nsys.exit(0)').some(s => s.exception)).toBe(false);
+  });
+
+  it("names an exception without running the program's code: its own __str__, or one on its arguments", () => {
+    const reply = runProgram(py, [
+      'class Oops(Exception):',
+      '    def __str__(self):',
+      '        print("__str__ ran")',
+      '        return "oops"',
+      'class Loud:',
+      '    def __repr__(self):',
+      '        print("__repr__ ran")',
+      '        return "Loud()"',
+      'for e in (Oops("plain"), ValueError(Loud()), KeyError(3), StopIteration()):',
+      '    try:',
+      '        raise e',
+      '    except BaseException:',
+      '        pass',
+    ].join('\n'));
+    if (reply.type !== 'result') throw new Error(reply.message);
+    expect(reply.snapshots.at(-1)!.stdout).toEqual([]);
+    expect(reply.snapshots.filter(s => s.exception).map(s => s.exception)).toEqual(['Oops: plain', 'ValueError: <Loud object>', 'KeyError: 3', 'StopIteration']);
+  });
+
+  it('gives a multi-line comprehension one step for its statement and no step before its first iteration', () => {
+    const all = steps(['data = [3, -1]', 'result = [', '    x * 2', '    for x in data', '    if x > 0', ']'].join('\n'));
+    // (The program's last step, its end, is on the statement's line too.)
+    expect(all.slice(0, -1).filter(s => s.line === 2 && s.callStack.length === 1).length).toBe(1);
+    const comp = all.filter(s => s.callStack.at(-1)!.name === 'list comprehension');
+    // Each step before its return shows the iteration's variable.
+    expect(comp.filter(s => !returnOf(s)).every(s => names(s.callStack.at(-1)!).includes('x'))).toBe(true);
+  });
+
+  it("labels a generator's yields yield ↵, and shows no return value for a class body (super()'s cell)", () => {
+    const all = steps([
+      'def gen():',
+      '    yield 1',
+      'list(gen())',
+      'class Base:',
+      '    def hi(self):',
+      '        return 1',
+      'class Child(Base):',
+      '    def hi(self):',
+      '        return super().hi()',
+    ].join('\n'));
+    const genSteps = all.filter(s => s.callStack.at(-1)!.name === 'gen' && returnOf(s));
+    expect(genSteps.map(s => returnOf(s)!.name)).toEqual(['yield ↵', 'return ↵']);
+    for (const s of all.filter(x => ['Base', 'Child'].includes(x.callStack.at(-1)!.name))) expect(returnOf(s)).toBeUndefined();
   });
 });
