@@ -1094,7 +1094,17 @@ class Binder {
       case 'LocalClassDecl': return this.localClass(s.decl, range);
       case 'ExprStmt': return { kind: 'ExprStmt', expr: this.statementExpr(s.expr), range };
       case 'If': return this.ifStmt(s);
-      case 'While': return this.inScope(() => ({ kind: 'While', cond: this.condition(s.cond), body: this.inScope(() => this.stmt(s.body)), range }));
+      case 'While': {
+        // `while (!(o instanceof T t)) { … }` with no break out of it leaves t in scope after the loop (JLS §6.3.2.5, #70).
+        const outer = this.scope;
+        let condScope: Scope = outer;
+        const loop: B.BStmt = this.inScope(() => {
+          condScope = this.scope;
+          return { kind: 'While', cond: this.condition(s.cond), body: this.inScope(() => this.stmt(s.body)), range };
+        });
+        if (isNegatedPattern(s.cond) && !breaksOut(s.body)) for (const [name, local] of condScope.vars) outer.vars.set(name, local);
+        return loop;
+      }
       case 'DoWhile': return { kind: 'DoWhile', body: this.inScope(() => this.stmt(s.body)), cond: this.inScope(() => this.condition(s.cond)), range };
       case 'For': return this.inScope(() => {
         const init: B.BStmt[] = s.init === undefined ? []
@@ -1811,6 +1821,7 @@ class Binder {
         if (!this.potentiallyCompatible(d.ast, pt)) return undefined;
         // A generic call's type arguments may change with the target, its class can't: check it erased.
         if (d.first && !isLoose(pt) && !invocable(erasure(d.first.type), erasure(pt), loose, this.b)) return undefined;
+        if (!d.first && d.erased && !isLoose(pt) && !invocable(d.erased, erasure(pt), loose, this.b)) return undefined;
         continue;
       }
       if (!invocable(argTypes[i], pt, loose, this.b)) return undefined;
@@ -1887,6 +1898,12 @@ class Binder {
               const ea = expected.args[i];
               if (ea.tag !== 'wildcard') add(rarg.id, ea, 'eq');
               else if (ea.bound) add(rarg.id, ea.bound, ea.kind === 'super' ? 'lower' : 'upper');
+            } else if (rarg?.tag === 'class' && mentionsAny(rarg, new Set([...ids].filter(open))) && !mentionsAny(rarg, new Set([...ids].filter(id => !open(id))))) {
+              // A type argument that is a generic class of open variables, Entry<K, V> in Comparator<Entry<K, V>>, matches the target's
+              // structurally (#70: Map.Entry.comparingByValue() as an argument for Comparator<? super Entry<String, Integer>>).
+              const ea = expected.args[i];
+              if (ea.tag !== 'wildcard') match(rarg, ea, 'eq');
+              else if (ea.bound) match(rarg, ea.bound, 'lower');
             }
           });
         }
@@ -2062,7 +2079,10 @@ class Binder {
       // It failed alone (a lambda in it needs the target's types), or it left type arguments open: bind it again with the target.
       if (this.diagnostics.length > before) {
         this.diagnostics.length = before;
-        return { kind: 'Deferred', ast: e, type: DYNAMIC, range: a.range } as unknown as B.BExpr;
+        // The method itself was found (comparingInt's Comparator): its erased class still rules out a parameter it can't be (#70).
+        const found = bound.kind === 'Call' || bound.kind === 'New' ? erasure(bound.type) : undefined;
+        const erased = found?.tag === 'class' ? found : undefined;
+        return { kind: 'Deferred', ast: e, type: DYNAMIC, erased, range: a.range } as unknown as B.BExpr;
       }
       if (this.polyNodes.has(bound)) return { kind: 'Deferred', ast: e, first: bound, type: bound.type, range: a.range } as unknown as B.BExpr;
       return bound;
@@ -2869,6 +2889,8 @@ interface Deferred {
   kind: 'Deferred';
   ast: A.Expr;
   first?: B.BExpr;
+  /** For a call that failed alone (a lambda in it needing the target's types): the erased class it returns, if the method was found (#70). */
+  erased?: JType;
   type: JType;
   range: A.Range;
 }
@@ -3003,6 +3025,25 @@ function isNegatedPattern(e: A.Expr): boolean {
   let inner = e.operand;
   while (inner.kind === 'Parens') inner = inner.expr;
   return inner.kind === 'InstanceOf' && inner.pattern !== undefined;
+}
+
+/** Whether a loop's body has a break that leaves the loop: an unlabeled one outside the loops and switches inside it, or any labeled one. */
+function breaksOut(s: A.Stmt, nested = false): boolean {
+  switch (s.kind) {
+    case 'Break': return s.label !== undefined || !nested;
+    case 'Block': return s.statements.some(x => breaksOut(x, nested));
+    case 'If': return breaksOut(s.then, nested) || (s.else !== undefined && breaksOut(s.else, nested));
+    case 'While': case 'DoWhile': case 'For': case 'ForEach': return breaksOut(s.body, true);
+    case 'Labeled': return breaksOut(s.body, nested);
+    case 'SwitchStmt': {
+      // An unlabeled break in a switch leaves the switch.
+      const body = s.body.kind === 'groups' ? s.body.groups.flatMap(g => g.statements) : s.body.rules.flatMap(r => (r.body.kind === 'Block' ? [r.body] : []));
+      return body.some(x => breaksOut(x, true));
+    }
+    case 'Try': return breaksOut(s.block, nested) || s.catches.some(c => breaksOut(c.body, nested)) || (s.finally !== undefined && breaksOut(s.finally, nested));
+    case 'Synchronized': return breaksOut(s.body, nested);
+    default: return false;
+  }
 }
 
 /** Whether a statement can finish normally (JLS §14.22, roughly): not if it always returns, throws, breaks or continues. */

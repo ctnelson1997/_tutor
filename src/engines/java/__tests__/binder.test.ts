@@ -241,6 +241,20 @@ describe('what javac rejects', () => {
     expect(firstLine(`class M { public static void main(String[] a) { ${body} } }`)).toEqual([message]);
   });
 
+  it('accepts what javac accepts (#70): yield of a variable, a diamond with comparingInt, comparingByValue() as an argument, while-pattern scoping, Void', () => {
+    const errors = (body: string, members = '') => firstLine(`import java.util.*;\nimport java.util.function.*;\nclass M {\n${members}\n  public static void main(String[] a) {\n${body}\n  }\n}`);
+    expect(errors('int n = 2; String s = switch (n) { case 1 -> "one"; default -> { String t = "few"; yield t; } };')).toEqual([]);
+    expect(errors('int c = switch ("b") { case "b": { int v = 2; yield v; } default: yield 0; };')).toEqual([]);
+    expect(errors('PriorityQueue<int[]> pq = new PriorityQueue<>(Comparator.comparingInt(x -> x[1]));')).toEqual([]);
+    expect(errors('Map<String, Integer> m = new HashMap<>(); List<Map.Entry<String, Integer>> es = new ArrayList<>(m.entrySet());\n es.sort(Map.Entry.comparingByValue()); String k = Collections.max(m.entrySet(), Map.Entry.comparingByKey()).getKey();')).toEqual([]);
+    expect(errors('Object o = "s"; while (!(o instanceof Integer i)) { o = 1; } int twice = i * 2;')).toEqual([]);
+    expect(errors('Function<String, Void> f = s -> null; Void v = f.apply("x");')).toEqual([]);
+    // With a break out of the loop, the pattern variable isn't in scope after it (javac's error too).
+    expect(errors('Object o = "s"; while (!(o instanceof Integer i)) { if (o == null) break; o = 1; } int twice = i * 2;')).toEqual(['cannot find symbol']);
+    // A break inside a switch or a nested loop doesn't leave the while.
+    expect(errors('Object o = "s"; while (!(o instanceof Integer i)) { for (;;) break; switch (1) { case 1: break; } o = 1; } int twice = i * 2;')).toEqual([]);
+  });
+
   it("rejects a type argument outside its bound: sorting objects that aren't Comparable (#62)", () => {
     const program = (cls: string, call: string) => firstLine(`import java.util.*;
 class S${cls} { public int compareTo(S o) { return 0; } }

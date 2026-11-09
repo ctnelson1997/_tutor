@@ -253,6 +253,7 @@ ${integralWrapper('Short', 'short', 'parseShort')}
 ${integralWrapper('Byte', 'byte', 'parseByte')}
 ${floatingWrapper('Double', 'double', 'parseDouble')}
 ${floatingWrapper('Float', 'float', 'parseFloat')}
+public final class Void {}
 public final class Boolean implements Comparable<Boolean> {
   public static final Boolean TRUE;
   public static final Boolean FALSE;
