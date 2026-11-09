@@ -311,3 +311,52 @@ public class Main {
     ]);
   });
 });
+
+describe('library calls run overrides, never overloads (#62)', () => {
+  it("calls a class's equals(P) only where Java's binder chose it, and Object's equals elsewhere", () => {
+    const result = run(`import java.util.*;
+public class Main {
+  static class P {
+    int v;
+    P(int v) { this.v = v; }
+    public boolean equals(P other) { return v == other.v; }
+    public int hashCode() { return v; }
+  }
+  record R(int v) {}
+  public static void main(String[] args) {
+    P a = new P(1), b = new P(1);
+    Object o = b;
+    List<P> list = new ArrayList<>(List.of(a));
+    System.out.println(a.equals(b) + " " + a.equals(o) + " " + list.contains(b) + " " + list.indexOf(b) + " " + Objects.equals(a, b) + " " + new HashSet<>(list).contains(b));
+    System.out.println(new HashSet<>(List.of(new R(2))).contains(new R(2)) + " " + Objects.equals(new R(3), new R(3)));
+  }
+}`);
+    expect(result.error).toBeUndefined();
+    expect(result.stdout).toBe('true false false -1 false false\ntrue true');
+  });
+
+  it("orders only a Comparable class's objects, with the JVM's ClassCastException otherwise", () => {
+    const result = run(`import java.util.*;
+public class Main {
+  static class S {
+    int score;
+    S(int s) { score = s; }
+    public int compareTo(S o) { return score - o.score; }
+  }
+  static class C implements Comparable<C> {
+    int score;
+    C(int s) { score = s; }
+    public int compareTo(C o) { return score - o.score; }
+  }
+  public static void main(String[] args) {
+    C[] cs = { new C(2), new C(1) };
+    Arrays.sort(cs);
+    System.out.println(cs[0].score + " " + new TreeSet<>(List.of(new C(5), new C(4))).first().score);
+    Arrays.sort(new S[] { new S(1) });
+    try { new TreeSet<S>().add(new S(1)); } catch (ClassCastException e) { System.out.println(e.getMessage()); }
+  }
+}`);
+    expect(result.error).toBeUndefined();
+    expect(result.stdout).toBe("1 4\nclass Main$S cannot be cast to class java.lang.Comparable (Main$S is in unnamed module of loader 'app'; java.lang.Comparable is in module java.base of loader 'bootstrap')");
+  });
+});

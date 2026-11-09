@@ -241,6 +241,16 @@ describe('what javac rejects', () => {
     expect(firstLine(`class M { public static void main(String[] a) { ${body} } }`)).toEqual([message]);
   });
 
+  it("rejects a type argument outside its bound: sorting objects that aren't Comparable (#62)", () => {
+    const program = (cls: string, call: string) => firstLine(`import java.util.*;
+class S${cls} { public int compareTo(S o) { return 0; } }
+class M { public static void main(String[] a) { List<S> list = new ArrayList<>(); ${call}; } }`);
+    expect(program('', 'Collections.sort(list)')).toEqual(['no suitable method found for sort(List<S>)']);
+    expect(program('', 'Collections.max(list)')).toEqual(['no suitable method found for max(List<S>)']);
+    expect(program(' implements Comparable<S>', 'Collections.sort(list); Collections.max(list)')).toEqual([]);
+    expect(program('', 'Collections.sort(list, (x, y) -> 0)')).toEqual([]);
+  });
+
   it('reports a call with the wrong arguments as javac does', () => {
     const lines = bind('class M { static int add(int a, int b) { return a + b; } public static void main(String[] x) { add(1); } }').diagnostics[0].message.split('\n');
     expect(lines).toEqual(['method add in class M cannot be applied to given types;', '  required: int,int', '  found:    int', '  reason: actual and formal argument lists differ in length']);

@@ -19,6 +19,8 @@ import {
   javaValueToBoolean,
   javaValueToString,
   javaString,
+  classCastMessage,
+  qualifiedLibraryName,
 } from '../types';
 import { type StdlibContext, StdlibError } from './context';
 import { applyFunction } from './functional';
@@ -198,7 +200,10 @@ export function compareValues(a: JavaValue, b: JavaValue, ctx: StdlibContext): n
   if (a.kind === 'objectRef') {
     const r = ctx.invokeUserMethod(a, 'compareTo', [b]);
     if (r !== undefined) return javaValueToNumber(r);
-    throw new StdlibError(`ClassCastException: class ${a.className} cannot be cast to class Comparable`);
+    // Only a class that implements Comparable has a natural order (#62).
+    const library = isBuiltinObject(ctx.heap.get(a.heapId));
+    const name = library ? qualifiedLibraryName(a.className) : ctx.binaryName?.(a.className) ?? a.className;
+    throw new StdlibError(`ClassCastException: ${classCastMessage(name, !library, 'java.lang.Comparable')}`);
   }
   return compareJava(a, b);
 }

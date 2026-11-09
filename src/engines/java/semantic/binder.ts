@@ -1788,6 +1788,14 @@ class Binder {
     }
     const open = options.typeArgs && options.typeArgs.length === m.typeParams.length ? new Set<number>() : new Set(this.lastOpen);
     const params = viewed.map(p => substitute(p, inferred));
+    // A type argument must be within its bound, checked erased (#62): what rejects Collections.sort(List<S>)
+    // for a class S that doesn't implement Comparable (`T extends Comparable<? super T>`).
+    for (const v of m.typeParams) {
+      const t = inferred.get(v.id);
+      const bound = erasure(v.bound);
+      if (t?.tag === 'class' && !isLoose(t) && !open.has(v.id) && bound.tag === 'class' && bound.symbol !== this.b.object
+        && !isSubtype(erasure(t), bound, this.b)) return undefined;
+    }
     const loose = phase !== 'strict';
     for (let i = 0; i < argTypes.length; i++) {
       let pt: JType;

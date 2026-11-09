@@ -240,6 +240,19 @@ export function qualifiedLibraryName(name: string): string {
   return JAVA_LANG.has(name) ? `java.lang.${name}` : JAVA_UTIL.has(name) ? `java.util.${name}` : name;
 }
 
+/**
+ * A ClassCastException's message as HotSpot words it for `java Main` after
+ * javac: each class with its module and loader, a program's class in the
+ * unnamed module of loader 'app', a library class in java.base (#62).
+ */
+export function classCastMessage(from: string, fromProgram: boolean, to: string, toProgram = false): string {
+  const place = (program: boolean) => (program ? "unnamed module of loader 'app'" : "module java.base of loader 'bootstrap'");
+  const where = fromProgram === toProgram
+    ? `${from} and ${to} are in ${place(fromProgram)}`
+    : `${from} is in ${place(fromProgram)}; ${to} is in ${place(toProgram)}`;
+  return `class ${from} cannot be cast to class ${to} (${where})`;
+}
+
 const DESCRIPTORS: Record<string, string> = { int: 'I', long: 'J', double: 'D', float: 'F', char: 'C', byte: 'B', short: 'S', boolean: 'Z' };
 
 /**

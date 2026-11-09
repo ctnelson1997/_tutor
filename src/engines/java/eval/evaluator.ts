@@ -26,6 +26,7 @@ import { SnapshotSharer } from '../../../utils/snapshotSharing';
 import type * as B from '../semantic/bound';
 import type { ClassSymbol, MethodSymbol, FieldSymbol, LocalSymbol, ConstValue } from '../semantic/symbols';
 import { type JType, runtimeTypeName, unboxedType, erasure, asSuper, classType, substitute, typeArgMap } from '../semantic/types';
+import { library } from '../semantic/binder';
 import { InterpreterError, JavaRuntimeError, UnsupportedFeatureError, nullPointer } from '../errors';
 import { type Reference, type VariableSlot, assignmentConversion, slotReference, fieldReference, arrayElementReference } from '../references';
 import { binaryOperation, unaryOperation, castPrimitive, stepped, numericValue } from '../numeric';
@@ -258,6 +259,14 @@ const FUNCTION_METHODS: [string, number[]][] = [
   ['compare', [2]], ['apply', [1, 2]], ['accept', [1, 2]], ['test', [1, 2]], ['applyAsInt', [1, 2]], ['applyAsDouble', [1, 2]],
   ['applyAsLong', [1]], ['get', [0]], ['getAsInt', [0]], ['run', [0]],
 ];
+
+/**
+ * The library methods the stdlib calls back by name (#62), each by the class
+ * that declares it: a program's method runs for such a call only if it
+ * overrides that method, so `equals(Point p)` (an overload) isn't called by a
+ * HashSet, and `compareTo` only for a class that implements Comparable.
+ */
+const CALLBACKS: Record<string, string> = { equals: 'Object', hashCode: 'Object', toString: 'Object', compareTo: 'Comparable', compare: 'Comparator' };
 
 const SYSTEM_OUT_ID = '__system_out__';
 const SYSTEM_ERR_ID = '__system_err__';
@@ -1665,12 +1674,13 @@ export class Evaluator {
    * The program's code a call `name(args)` on `value` runs, if the program
    * provides it: a lambda's body (for its interface's method), a method of
    * the value's class or a default method of its interfaces, or a method
-   * javac generates for a record or an enum.
+   * javac generates for a record or an enum. A call of a library method
+   * (`libraryMethod`) runs only a method that overrides it (#62).
    */
-  private programCode(value: JavaValue, name: string, args: JavaValue[], line: number): { frame: Frame } | { value: JavaValue } | undefined {
+  private programCode(value: JavaValue, name: string, args: JavaValue[], line: number, libraryMethod?: MethodSymbol): { frame: Frame } | { value: JavaValue } | undefined {
     const run = this.lambdaOf(value);
     if (run) return run.node.sam.name === name && run.node.params.length === args.length ? { frame: this.lambdaFrame(run, args) } : undefined;
-    const method = this.userMethod(value, name, args.length);
+    const method = libraryMethod ? this.overrideOf(value, libraryMethod) : this.userMethod(value, name, args.length);
     if (!method) return undefined;
     if (method.synthetic) return { value: this.synthetic(method, value, args, line) };
     return { frame: this.methodFrame(method, value, args, line) };
@@ -2005,7 +2015,7 @@ export class Evaluator {
       const view = asSuper(classType(c, c.typeParams), method.owner);
       const map = view ? typeArgMap(view) : new Map<number, JType>();
       const wanted = method.params.map(p => runtimeTypeName(erasure(substitute(p.type, map))));
-      return (c.methods.get(method.name) ?? []).find(m => !m.isStatic && m.arity === method.arity && this.methods.get(m)?.body
+      return (c.methods.get(method.name) ?? []).find(m => !m.isStatic && m.arity === method.arity && (this.methods.get(m)?.body || m.synthetic)
         && m.params.every((p, i) => runtimeTypeName(erasure(p.type)) === wanted[i]));
     };
     for (let c: ClassSymbol | undefined = cls; c && !c.isLibrary && !found; c = c.superclass?.symbol) found = implementation(c);
@@ -2080,13 +2090,32 @@ export class Evaluator {
   }
 
   /**
+   * The program's method that overrides a library method for a program's
+   * object (#62): none if its class isn't a subtype of the method's class
+   * (a compareTo of a class that isn't Comparable), or declares only an
+   * overload (`equals(Point p)` beside Object's `equals(Object)`).
+   */
+  private overrideOf(value: JavaValue, method: MethodSymbol): MethodSymbol | undefined {
+    if (value.kind !== 'objectRef' || isBuiltinObject(this.heap.get(value.heapId))) return undefined;
+    const cls = this.byName.get(value.className);
+    if (!cls || !this.isSubclass(value.className, method.owner.name)) return undefined;
+    return this.findOverride(cls, method);
+  }
+
+  /** The library method a library callback by this name calls (CALLBACKS), if it is one. */
+  private callbackMethod(name: string, arity: number): MethodSymbol | undefined {
+    const owner = CALLBACKS[name];
+    return owner ? library().byName(owner)?.methods.get(name)?.find(m => !m.isStatic && m.arity === arity) : undefined;
+  }
+
+  /**
    * ctx.invokeUserMethod: the program's code for a call the library makes
    * (compareTo in a sort, a lambda for forEach, toString for println). It
    * takes steps, as pythontutor.com shows such calls. Undefined if the
    * program has none; an enum constant compares by ordinal.
    */
   private invokeUser(ref: JavaValue, name: string, args: JavaValue[]): JavaValue | undefined {
-    const code = this.programCode(ref, name, args, this.top()?.line ?? 0);
+    const code = this.programCode(ref, name, args, this.top()?.line ?? 0, this.callbackMethod(name, args.length));
     if (code) return 'frame' in code ? this.runNow(code.frame, false) : code.value;
     const constant = ref.kind === 'objectRef' ? (this.heap.get(ref.heapId) as JavaObject | undefined)?.enumConstant : undefined;
     if (constant && name === 'compareTo' && args[0]?.kind === 'objectRef') {
@@ -2099,7 +2128,7 @@ export class Evaluator {
   /** A call of a library method from the generator: one the program provides (a class's compareTo, toString, …, or a lambda) runs as a frame. */
   private *callLibrary(e: B.BCall, target: JavaValue | undefined, args: JavaValue[]): Gen<JavaValue> {
     if (target && !e.method.isStatic && e.dispatch !== 'special') {
-      const code = this.programCode(target, e.method.name, args, this.line(e));
+      const code = this.programCode(target, e.method.name, args, this.line(e), e.method);
       if (code) return 'frame' in code ? ((yield code.frame) ?? javaNull()) : code.value;
     }
     return this.callLibraryNow(e, target, args);
@@ -2115,7 +2144,7 @@ export class Evaluator {
     }
     // super.toString() and the like run Object's (or Throwable's) own method, whatever the class overrides.
     if (e.dispatch === 'special' && target.kind === 'objectRef') return this.toStatic(this.objectMethod(target, m.name, args, line), e.type);
-    const code = this.programCode(target, m.name, args, line);
+    const code = this.programCode(target, m.name, args, line, m);
     if (code) return 'frame' in code ? this.runNow(code.frame, false) : code.value;
     return this.toStatic(this.instanceCall(target, m.name, args, e.target ? this.text(e.target) : '', line), e.type);
   }
