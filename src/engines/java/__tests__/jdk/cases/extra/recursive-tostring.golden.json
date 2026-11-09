@@ -1,0 +1,8 @@
+{
+  "stdout": "3889 999,998,997,996,995,994, ... ,2,1,0\nlist: 4,3,2,1,0\n490575 true\nnothing: null\nnull\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "8b56346c7f3d1a208dcff388ab98213df3c9ad21699a1463c64f4476ac95b827"
+}

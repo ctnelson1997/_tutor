@@ -7,7 +7,7 @@
  * keeps the frames on an explicit stack and resumes the caller with the
  * result. JavaScript's stack depth is independent of Java's recursion depth,
  * and recursing past `maxDepth` frames is a StackOverflowError a program can
- * catch.
+ * catch. Calls deeper than the steps can show run without steps (#73).
  *
  * An expression that can't call a method of the program (no user calls,
  * object creation or class initialization in it) is evaluated by plain
@@ -85,7 +85,7 @@ import {
   hashCodeOf,
   valuesEqual,
 } from '../stdlib';
-import { javaToRuntime, reachableHeap } from './display';
+import { javaToRuntime, HeapDrawing } from './display';
 import { functionalMethod, isOptionalClass, optionalText } from '../stdlib/functional';
 import { PatternSyntaxError } from '../stdlib/regex';
 
@@ -99,11 +99,13 @@ export interface RunLimits {
   maxWork: number;
   /** Milliseconds, checked every 1024 units of work. */
   timeBudgetMs: number;
-  /** Java frames before a call throws StackOverflowError. */
+  /** Java frames whose calls take steps: a deeper call runs without steps (#73). */
+  shownDepth: number;
+  /** Java frames before a call throws StackOverflowError, about as deep as `java`'s default stack lets a small method recurse (#73). */
   maxDepth: number;
 }
 
-export const DEFAULT_LIMITS: RunLimits = { maxSteps: 5000, maxWork: 1_000_000, timeBudgetMs: 8_500, maxDepth: 1200 };
+export const DEFAULT_LIMITS: RunLimits = { maxSteps: 5000, maxWork: 1_000_000, timeBudgetMs: 8_500, shownDepth: 2000, maxDepth: 10_000 };
 
 /** What a run reports. */
 export interface ExecuteResult {
@@ -122,6 +124,8 @@ export const RETURN_VALUE = 'return ↵';
 const MAX_TRACE_FRAMES = 64;
 /** Frames a step shows: past this many, the outermost and the deepest, with a note for the rest. */
 const MAX_SHOWN_FRAMES = 100;
+/** Steps kept for what runs after a deep recursion returns (#73; see quietCall). */
+const STEP_RESERVE = 200;
 
 // ── Signals ──
 
@@ -307,7 +311,12 @@ export class Evaluator {
   private startTime = 0;
   /** When > 0, no steps are recorded (a library callback such as toString() runs atomically). */
   private suppress = 0;
+  /** The index in `frames` of the outermost frame that runs without steps, too deep to show (#73). */
+  private quietFrom = Infinity;
+  /** The calls that ran without steps since the last step, and how deep the stack went: the next step's label says so (#73). */
+  private unshown = { calls: 0, depth: 0 };
   private readonly sharer = new SnapshotSharer();
+  private readonly drawing = new HeapDrawing(this.heap);
   private fileName = 'Main.java';
 
   private readonly classes = new Map<ClassSymbol, ClassRuntime>();
@@ -423,7 +432,7 @@ export class Evaluator {
       } catch (e) {
         // The generator ended by throwing: note where, while its frame is still on the stack.
         const err = this.atFailureSite(e);
-        if (top.frame) this.frames.pop();
+        if (top.frame) this.popFrame();
         stack.pop();
         if (stack.length === 0) throw err;
         failed = true;
@@ -431,7 +440,7 @@ export class Evaluator {
         continue;
       }
       if (result.done) {
-        if (top.frame) this.frames.pop();
+        if (top.frame) this.popFrame();
         stack.pop();
         if (stack.length === 0) return result.value as T;
         input = result.value as JavaValue | undefined;
@@ -443,6 +452,11 @@ export class Evaluator {
         error = new JavaRuntimeError('StackOverflowError', '', this.top()?.line ?? 0);
         continue;
       }
+      if (this.frames.length >= this.quietFrom || this.quietCall(this.frames.length)) {
+        this.quietFrom = Math.min(this.quietFrom, this.frames.length);
+        this.unshown.calls++;
+        this.unshown.depth = Math.max(this.unshown.depth, this.frames.length + 1);
+      }
       this.frames.push(callee);
       stack.push({ gen: callee.gen!, frame: callee });
       input = undefined;
@@ -451,6 +465,31 @@ export class Evaluator {
 
   private top(): Frame {
     return this.frames[this.frames.length - 1];
+  }
+
+  private popFrame(): void {
+    this.frames.pop();
+    if (this.frames.length <= this.quietFrom) this.quietFrom = Infinity;
+  }
+
+  /**
+   * Does a call made with `depth` frames on the stack run without steps
+   * (#73)? Past `shownDepth` frames it does, and so it does once the steps
+   * left wouldn't show the frames on the stack returning (up to three steps
+   * a frame: the line of the call, a return statement, the return), with
+   * steps to spare, so a deep recursion still shows its way back up and what
+   * comes after it within the step cap. The first MAX_SHOWN_FRAMES frames
+   * always take steps.
+   */
+  private quietCall(depth: number): boolean {
+    if (depth >= this.limits.shownDepth) return true;
+    if (depth < MAX_SHOWN_FRAMES) return false;
+    return this.limits.maxSteps - this.snapshots.length < 3 * depth + STEP_RESERVE;
+  }
+
+  /** Is a step taken now left out: inside a quiet library callback, or a call too deep to show? */
+  private quiet(): boolean {
+    return this.suppress > 0 || this.frames.length > this.quietFrom;
   }
 
   private newFrame(name: string, kind: Frame['kind'], cls: ClassSymbol, thisValue?: JavaValue, method = name): Frame {
@@ -497,7 +536,7 @@ export class Evaluator {
     const frame = this.top();
     if (frame) frame.line = line;
     this.tick(line);
-    if (this.suppress > 0) return;
+    if (this.quiet()) return;
     if (frame) {
       if (!force && frame.lastStepLine === line) return;
       frame.lastStepLine = line;
@@ -531,14 +570,21 @@ export class Evaluator {
     } else {
       for (const f of shown) this.pushFrame(callStack, f);
     }
-    this.snapshots.push(this.sharer.share({
+    const label = this.unshown.calls > 0
+      ? `${this.unshown.calls.toLocaleString('en-US')} deeper ${this.unshown.calls === 1 ? 'call' : 'calls'} ran without steps (${this.unshown.depth.toLocaleString('en-US')} frames deep)`
+      : undefined;
+    this.unshown = { calls: 0, depth: 0 };
+    const snapshot = this.sharer.share({
       step: this.step++,
       line,
       callStack,
-      heap: reachableHeap(callStack, this.heap),
+      heap: this.drawing.reachable(callStack),
       stdout: this.snapshotStdout(),
       ...(this.stderrUsed ? { console: this.snapshotConsole() } : {}),
-    }));
+      ...(label ? { label } : {}),
+    });
+    this.drawing.remember(snapshot.heap);
+    this.snapshots.push(snapshot);
   }
 
   /** A frame as a step shows it: its own variables (and `this`, and a return value), then its block scopes nested in it. */
@@ -722,7 +768,7 @@ export class Evaluator {
     this.failureSites.set(e, { line, trace: this.stackTrace(line) });
     const overflow = e instanceof JavaRuntimeError && e.className === 'StackOverflowError';
     const runtimeException = !(e instanceof JavaThrow) && this.exceptionClassOf(e) !== undefined;
-    if (runtimeException && !overflow && top && this.suppress === 0 && this.snapshots.length < this.limits.maxSteps && !this.lastStepShows(line)) {
+    if (runtimeException && !overflow && top && !this.quiet() && this.snapshots.length < this.limits.maxSteps && !this.lastStepShows(line)) {
       top.line = line;
       this.recordStep(line);
     }
@@ -1402,13 +1448,22 @@ export class Evaluator {
       case 'ArrayLiteral': return e.elements.every(p);
       case 'Unary': return p(e.operand);
       case 'IncDec': return this.isPure(e.target);
-      case 'Binary': case 'Logical': case 'RefEquals': case 'Concat': return p(e.left) && p(e.right);
-      case 'Assign': case 'CompoundAssign': return this.isPure(e.target) && p(e.value);
+      case 'Binary': case 'Logical': case 'RefEquals': return p(e.left) && p(e.right);
+      // A program's toString() runs as a frame (stringOf).
+      case 'Concat': return p(e.left) && p(e.right) && !this.mayPrintByProgram(e.left.type) && !this.mayPrintByProgram(e.right.type);
+      case 'Assign': return this.isPure(e.target) && p(e.value);
+      case 'CompoundAssign': return this.isPure(e.target) && p(e.value) && !(e.concat && (this.mayPrintByProgram(e.target.type) || this.mayPrintByProgram(e.value.type)));
       case 'Conditional': return p(e.cond) && p(e.then) && p(e.else);
       case 'Convert': return p(e.expr);
       case 'InstanceOf': return p(e.expr);
       case 'SwitchExpr': return false;
     }
+  }
+
+  /** Could string conversion of a value of this type run a program's toString()? Not for a primitive, a String, a box or an array. */
+  private mayPrintByProgram(t: JType): boolean {
+    if (t.tag === 'primitive' || t.tag === 'null' || t.tag === 'array') return false;
+    return !(t.tag === 'class' && t.symbol.isLibrary && (t.symbol.name === 'String' || unboxedType(t) !== undefined));
   }
 
   /** Is a library method called on this receiver surely the library's (not a program class's implementation)? */
@@ -1547,7 +1602,7 @@ export class Evaluator {
       case 'Concat': {
         const l = this.isPure(e.left) ? this.pv(e.left) : yield* this.gv(e.left);
         const r = this.isPure(e.right) ? this.pv(e.right) : yield* this.gv(e.right);
-        return this.concat(l, r);
+        return javaString((yield* this.stringOf(l)) + (yield* this.stringOf(r)));
       }
       case 'Assign': {
         if (e.target.kind === 'StaticField') {
@@ -1563,6 +1618,7 @@ export class Evaluator {
         const ref = yield* this.refGen(e.target);
         const current = ref.get();
         const value = this.isPure(e.value) ? this.pv(e.value) : yield* this.gv(e.value);
+        if (e.concat) return ref.set(javaString((yield* this.stringOf(current)) + (yield* this.stringOf(value))));
         return ref.set(this.compound(e, current, value));
       }
       case 'Conditional': {
@@ -2662,13 +2718,30 @@ export class Evaluator {
 
   // ── Printing ──
 
-  /** A value as String.valueOf prints it, with a user class's own toString(). */
+  /** A value as String.valueOf prints it, with a user class's own toString() (which may return null: "null"). */
   stringify(value: JavaValue): string {
     if (value.kind === 'objectRef') {
       const user = this.invokeUser(value, 'toString', []);
-      if (user !== undefined && user.kind === 'string') return user.value;
+      if (user !== undefined) return user.kind === 'string' ? user.value : 'null';
     }
     return this.ownString(value);
+  }
+
+  /**
+   * A value as string conversion gives it (`"" + x`), on the explicit stack:
+   * a program's toString() runs as a frame the trampoline drives, so a
+   * toString that recurses through concatenation (`v + "," + next`) goes as
+   * deep as any recursion, not as deep as JavaScript's stack (#73).
+   */
+  private *stringOf(value: JavaValue): Gen<string> {
+    if (value.kind === 'objectRef') {
+      const code = this.programCode(value, 'toString', [], this.top()?.line ?? 0, this.callbackMethod('toString', 0));
+      if (code) {
+        const result = 'frame' in code ? ((yield code.frame) ?? javaNull()) : code.value;
+        return result.kind === 'string' ? result.value : 'null';
+      }
+    }
+    return this.stringify(value);
   }
 
   /** A value as the library's own toString() prints it: Object's `Main$Pt@hash` for a program's object, without its class's toString(). */

@@ -121,14 +121,38 @@ describe('frames on an explicit stack', () => {
   }
 }`;
 
-  it("recurse as deep as the limit allows, whatever JavaScript's stack is", () => {
-    const result = run(depth, { maxDepth: 5000, maxSteps: 100_000, maxWork: 10_000_000 });
+  it("recurse as deep as Java's stack allows, whatever JavaScript's stack is (#73)", () => {
+    const result = run(depth);
     expect(result.error).toBeUndefined();
     expect(result.stdout).toBe('3000');
+    expect(run(depth.replace('3000', '9000')).stdout).toBe('9000');
+    // Shown to the limit when the steps allow it.
+    const shown = run(depth, { shownDepth: 5000, maxSteps: 100_000, maxWork: 10_000_000 });
+    expect(shown.stdout).toBe('3000');
+    expect(shown.snapshots.some(s => s.label)).toBe(false);
+  });
+
+  it('run calls deeper than the steps can show without steps, and say so at the next step (#73)', () => {
+    const { snapshots, error } = run(depth);
+    expect(error).toBeUndefined();
+    // One-line frames: a step entering each shown one and one as it returns, within the step cap with steps to spare.
+    expect(snapshots.length).toBeLessThan(5000 - 200);
+    const labeled = snapshots.filter(s => s.label);
+    expect(labeled).toHaveLength(1);
+    const [, unshown] = /^([\d,]+) deeper calls ran without steps \(3,002 frames deep\)$/.exec(labeled[0].label!)!;
+    const deepestShown = Math.min(...snapshots.map(s => Number(value({ ...s, callStack: [s.callStack.at(-1)!] }, 'n')?.value ?? 3000)));
+    // depth(3000) … depth(0) are 3,001 calls: the shown ones, then the rest.
+    expect(3000 - deepestShown + 1 + Number(unshown.replace(/,/g, ''))).toBe(3001);
+    // The labeled step is the deepest shown frame returning, with the value from below.
+    expect(value({ ...labeled[0], callStack: [labeled[0].callStack.at(-1)!] }, RETURN_VALUE)).toEqual({ type: 'number', value: deepestShown });
+    // Past shownDepth, calls are quiet whatever steps are left.
+    const capped = run(depth, { shownDepth: 500, maxSteps: 100_000, maxWork: 10_000_000 });
+    expect(capped.stdout).toBe('3000');
+    expect(capped.snapshots.find(s => s.label)?.label).toBe('2,502 deeper calls ran without steps (3,002 frames deep)');
   });
 
   it('throw StackOverflowError past the limit, which a program can catch', () => {
-    expect(run(depth).error).toBe('Exception in thread "main" java.lang.StackOverflowError');
+    expect(run(depth, { maxDepth: 2500 }).error).toBe('Exception in thread "main" java.lang.StackOverflowError');
     const caught = run(`public class Main {
   static int down(int n) {
     return down(n + 1);
@@ -143,6 +167,34 @@ describe('frames on an explicit stack', () => {
 }`);
     expect(caught.error).toBeUndefined();
     expect(caught.stdout).toBe('caught');
+    // The catch's step says how deep the recursion went.
+    expect(caught.snapshots.find(s => s.label)?.label).toMatch(/^[\d,]+ deeper calls ran without steps \(10,000 frames deep\)$/);
+  });
+
+  it("run a toString that recurses through string concatenation on the explicit stack (#73)", () => {
+    const result = run(`public class Main {
+  static class Node {
+    int v;
+    Node next;
+    public String toString() { return next == null ? "" + v : v + "," + next; }
+  }
+  static class Nothing {
+    public String toString() { return null; }
+  }
+  public static void main(String[] args) {
+    Node head = null;
+    for (int i = 0; i < 1000; i++) { Node n = new Node(); n.v = i; n.next = head; head = n; }
+    String s = "list: ";
+    s += head;
+    System.out.println(s.length() + " " + s.substring(0, 16));
+    System.out.println("x" + new Nothing());
+  }
+}`);
+    expect(result.error).toBeUndefined();
+    expect(result.stdout).toBe('3895 list: 999,998,99\nxnull');
+    // Each toString is a frame on the stack, as deep as the list.
+    expect(Math.max(...result.snapshots.map(s => s.callStack.length))).toBe(100);
+    expect(result.snapshots.some(s => s.callStack.some(f => /^… [\d,]+ more frames$/.test(f.name)))).toBe(true);
   });
 
   it('show the outermost frame and the 98 deepest, with a note for the rest', () => {
@@ -163,6 +215,60 @@ describe('frames on an explicit stack', () => {
     expect(deepest.callStack[0].name).toBe('main');
     expect(deepest.callStack[1]).toEqual({ name: '… 53 more frames', variables: [] });
     expect(deepest.callStack[2].variables[0].value).toEqual({ type: 'number', value: 97 });
+  });
+});
+
+describe('the heap drawn incrementally (#73)', () => {
+  const program = `import java.util.*;
+public class Main {
+  static class P {
+    int x;
+    P next;
+  }
+  public static void main(String[] args) {
+    P a = new P();
+    P b = new P();
+    int[] arr = {1, 2};
+    List<Integer> list = new ArrayList<>();
+    Map<String, Integer> map = new HashMap<>();
+    a.x = 5;
+    a.next = b;
+    arr[1] = 7;
+    list.add(3);
+    map.put("k", 1);
+    map.put("k", 2);
+    StringBuilder sb = new StringBuilder();
+    sb.append("hi");
+    System.out.println(a.x + arr[1] + list.size() + map.get("k") + sb.toString());
+  }
+}`;
+  const { snapshots } = run(program);
+  const at = (line: number) => snapshots.find(s => s.line === line)!;
+  const object = (s: ExecutionSnapshot, name: string) => {
+    const ref = value(s, name);
+    return s.heap.find(o => ref?.type === 'ref' && o.id === ref.heapId)!;
+  };
+
+  it('draws each change at the step after it', () => {
+    expect(object(at(13), 'a').properties).toEqual([{ key: 'x', value: { type: 'number', value: 0 } }, { key: 'next', value: { type: 'null', value: null } }]);
+    expect(object(at(14), 'a').properties[0].value).toEqual({ type: 'number', value: 5 });
+    expect(object(at(15), 'a').properties[1].value).toEqual({ type: 'ref', heapId: object(at(15), 'b').id });
+    expect(object(at(15), 'arr').properties.map(p => p.value)).toEqual([{ type: 'number', value: 1 }, { type: 'number', value: 2 }]);
+    expect(object(at(16), 'arr').properties[1].value).toEqual({ type: 'number', value: 7 });
+    expect(object(at(16), 'list').properties).toEqual([]);
+    expect(object(at(17), 'list').properties).toEqual([{ key: '0', value: { type: 'number', value: 3 } }]);
+    expect(object(at(18), 'map').properties).toEqual([{ key: 'k', value: { type: 'number', value: 1 } }]);
+    expect(object(at(19), 'map').properties).toEqual([{ key: 'k', value: { type: 'number', value: 2 } }]);
+    expect(object(at(21), 'sb').properties).toEqual([{ key: 'value', value: expect.objectContaining({ value: 'hi' }) }]);
+  });
+
+  it('gives an unchanged object the very object the step before showed', () => {
+    expect(object(at(14), 'b')).toBe(object(at(13), 'b'));
+    expect(object(at(15), 'arr')).toBe(object(at(13), 'arr'));
+    expect(object(at(16), 'a')).toBe(object(at(15), 'a'));
+    expect(object(at(14), 'a')).not.toBe(object(at(13), 'a'));
+    // And keeps creation order.
+    expect(at(21).heap.map(o => Number(o.id))).toEqual([...at(21).heap.map(o => Number(o.id))].sort((x, y) => x - y));
   });
 });
 

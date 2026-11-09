@@ -1,0 +1,8 @@
+{
+  "stdout": "845650\n18003000\nendless recursion: StackOverflowError after more than 5000 calls: true\n",
+  "stderr": "",
+  "exitCode": 0,
+  "exception": null,
+  "compileError": null,
+  "sourceSha256": "3c4350ba0339ffacb169a6a2ea3b0eecaa6c5472c1324fd747f015d0aa1be4de"
+}

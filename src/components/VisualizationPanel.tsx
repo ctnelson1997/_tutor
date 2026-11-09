@@ -4,12 +4,18 @@ import HeapView from './HeapView';
 import ConsolePanel from './ConsolePanel';
 import PointerArrows from './PointerArrows';
 import { useStore } from '../store/useStore';
+import { stepLabelTitle } from '../utils/stepLabel';
 
-/** The current step's label: what started it when nothing on the stack called it, such as a timer's callback (#45). */
+/**
+ * The current step's label: what started it when nothing on the stack called
+ * it, such as a timer's callback (JS, #45), or the calls deeper than the
+ * steps show that ran before it (Java, #73).
+ */
 function StepLabel() {
   const label = useStore((s) => s.snapshots[s.currentStep]?.label);
+  const language = useStore((s) => s.language);
   if (!label) return null;
-  return <span className="step-label" title="This step starts a callback the event loop ran">{label}</span>;
+  return <span className="step-label" title={stepLabelTitle(language)}>{label}</span>;
 }
 
 export default function VisualizationPanel() {
