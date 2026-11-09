@@ -72,7 +72,7 @@ export function serializeArray(id: string, entry: JavaArray, heap: Heap): HeapOb
  */
 export function serializeObject(id: string, entry: JavaObject, heap: Heap): HeapObject {
   const cls = entry.className;
-  const fields = () => Array.from(entry.fields.entries()).map(([k, v]) => ({ key: k, value: javaToRuntime(v, heap) }));
+  const fields = () => [...throwableProperties(entry, heap), ...Array.from(entry.fields.entries()).map(([k, v]) => ({ key: k, value: javaToRuntime(v, heap) }))];
   // A lambda or method reference: its source, with the values it captured.
   if (entry.lambda) return { id, objectType: 'function', label: entry.lambda.text, properties: fields() };
   // An enum constant is labeled with its name.
@@ -101,8 +101,27 @@ export function serializeObject(id: string, entry: JavaObject, heap: Heap): Heap
   }
   return {
     id, objectType: 'object', label: cls,
-    properties: Array.from(entry.fields.entries()).filter(([k]) => !k.startsWith('__')).map(([k, v]) => ({ key: k, value: javaToRuntime(v, heap) })),
+    properties: [
+      ...throwableProperties(entry, heap),
+      ...Array.from(entry.fields.entries()).filter(([k]) => !k.startsWith('__')).map(([k, v]) => ({ key: k, value: javaToRuntime(v, heap) })),
+    ],
   };
+}
+
+/**
+ * A Throwable's own state, drawn before its class's fields (#64): its
+ * `message`, its `cause` and its suppressed exceptions when it has them.
+ * A field of the program's class with one of those names keeps it, and
+ * Throwable's is drawn as `Throwable.message`, as a hidden field is.
+ */
+function throwableProperties(entry: JavaObject, heap: Heap): HeapObject['properties'] {
+  const t = entry.throwable;
+  if (!t) return [];
+  const key = (name: string) => (entry.fields.has(name) ? `Throwable.${name}` : name);
+  const out = [{ key: key('message'), value: javaToRuntime(t.message, heap) }];
+  if (t.cause.kind !== 'null') out.push({ key: key('cause'), value: javaToRuntime(t.cause, heap) });
+  t.suppressed.forEach((s, i) => out.push({ key: `suppressed[${i}]`, value: javaToRuntime(s, heap) }));
+  return out;
 }
 
 /**

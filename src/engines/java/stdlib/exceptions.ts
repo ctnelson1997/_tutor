@@ -11,6 +11,7 @@
 import {
   type JavaValue,
   type JavaHeapEntry,
+  type ThrowableState,
   isJavaObject,
   javaValueToString,
   javaString,
@@ -88,66 +89,86 @@ export function qualifiedExceptionName(name: string): string {
   return isExceptionClass(name) ? `${EXCEPTION_PACKAGE[name] ?? 'java.lang'}.${name}` : name;
 }
 
-/** Construct a built-in exception object carrying an optional detail message. */
-export function newException(className: string, args: JavaValue[], ctx: StdlibContext): JavaValue {
-  const hasMsg = args.length > 0 && args[0].kind !== 'null';
-  const fields = new Map<string, JavaValue>([
-    // A String message is kept as it is, so getMessage() returns the same object.
-    ['message', hasMsg ? (args[0].kind === 'string' ? args[0] : javaString(javaValueToString(args[0], ctx.heap))) : javaNull()],
-  ]);
-  const heapId = ctx.allocObject(className, fields);
-  return { kind: 'objectRef', heapId, className };
-}
-
-/** Read the stored detail message of a (built-in or user) exception object, or null. */
-function messageOf(ref: JavaValue, ctx: StdlibContext): JavaValue {
-  if (ref.kind !== 'objectRef') return javaNull();
-  const obj = ctx.heap.get(ref.heapId);
-  if (obj && isJavaObject(obj)) {
-    const m = obj.fields.get('message') ?? obj.fields.get('detailMessage') ?? obj.fields.get('msg');
-    if (m) return m;
-  }
-  return javaNull();
+/** A Throwable's state (#64), made empty if the object has none yet; undefined for a value that isn't an object. */
+export function throwableState(ref: JavaValue, heap: Map<string, JavaHeapEntry>): ThrowableState | undefined {
+  if (ref.kind !== 'objectRef') return undefined;
+  const obj = heap.get(ref.heapId);
+  if (!obj || !isJavaObject(obj)) return undefined;
+  return (obj.throwable ??= { message: javaNull(), cause: javaNull(), causeSet: false, suppressed: [] });
 }
 
 /**
- * `ClassName` or `ClassName: message` — the format `Throwable.toString()` uses,
- * and what `System.out.println(exception)` shows. Returns undefined for a
- * non-object value.
+ * Throwable's state from its constructor's arguments, as the JDK's four
+ * constructors set it (#64): (), (String message), (String message, Throwable
+ * cause), and (Throwable cause), whose message is `cause.toString()` (null for
+ * a null cause). `causeConstructor` says which one-argument constructor ran;
+ * without it, an object is a cause and anything else a message.
+ */
+export function throwableFromArgs(args: JavaValue[], ctx: StdlibContext, causeConstructor?: boolean): ThrowableState {
+  const state: ThrowableState = { message: javaNull(), cause: javaNull(), causeSet: false, suppressed: [] };
+  // A String message is kept as it is, so getMessage() returns the same object.
+  const message = (v: JavaValue) => (v.kind === 'string' || v.kind === 'null' ? v : javaString(javaValueToString(v, ctx.heap)));
+  if (args.length >= 2) {
+    state.message = message(args[0]);
+    state.cause = args[1];
+    state.causeSet = true;
+  } else if (args.length === 1) {
+    if (causeConstructor ?? args[0].kind === 'objectRef') {
+      state.cause = args[0];
+      state.causeSet = true;
+      if (args[0].kind !== 'null') state.message = javaString(ctx.stringify ? ctx.stringify(args[0]) : formatException(args[0], ctx.heap, ctx.binaryName) ?? '');
+    } else {
+      state.message = message(args[0]);
+    }
+  }
+  return state;
+}
+
+/** Construct a library exception object, as its constructor with these arguments makes it (#64). */
+export function newException(className: string, args: JavaValue[], ctx: StdlibContext, causeConstructor?: boolean): JavaValue {
+  const heapId = ctx.allocObject(className, new Map());
+  const obj = ctx.heap.get(heapId);
+  if (obj && isJavaObject(obj)) obj.throwable = throwableFromArgs(args, ctx, causeConstructor);
+  return { kind: 'objectRef', heapId, className };
+}
+
+/**
+ * `ClassName` or `ClassName: message`, the format `Throwable.toString()`
+ * uses, and what `System.out.println(exception)` shows: with `message`, the
+ * one its getLocalizedMessage() returned (the evaluator calls a program's
+ * override, #64), else the detail message. Undefined for a non-object value.
  */
 export function formatException(
   ref: JavaValue,
   heap: Map<string, JavaHeapEntry>,
   binaryName: (className: string) => string = qualifiedExceptionName,
+  message?: JavaValue,
 ): string | undefined {
-  if (ref.kind !== 'objectRef') return undefined;
-  const obj = heap.get(ref.heapId);
-  if (!obj || !isJavaObject(obj)) return undefined;
-  const m = obj.fields.get('message') ?? obj.fields.get('detailMessage') ?? obj.fields.get('msg');
-  const msg = m && m.kind !== 'null' ? javaValueToString(m, heap) : null;
+  const m = message ?? throwableState(ref, heap)?.message;
+  if (ref.kind !== 'objectRef' || !m) return undefined;
   const name = binaryName(ref.className);
-  return msg === null ? name : `${name}: ${msg}`;
+  return m.kind === 'null' ? name : `${name}: ${javaValueToString(m, heap)}`;
 }
 
 /**
- * Instance methods common to all Throwables. Works for built-in exception
- * objects and, as a fallback, any object with a `message`-like field.
+ * Throwable's own instance methods on a library exception, for the stdlib's
+ * callers; the evaluator implements them itself, so a program's
+ * getMessage() override is called where Throwable calls it.
  */
 export function exceptionMethod(ref: JavaValue, method: string, ctx: StdlibContext): JavaValue | undefined {
+  const state = throwableState(ref, ctx.heap);
+  if (!state) return undefined;
   switch (method) {
     case 'getMessage':
     case 'getLocalizedMessage':
-      return messageOf(ref, ctx);
+      return state.message;
     case 'toString':
       return javaString(formatException(ref, ctx.heap, ctx.binaryName) ?? '');
     case 'printStackTrace':
       ctx.writeStdout((formatException(ref, ctx.heap, ctx.binaryName) ?? '') + '\n');
       return javaNull();
-    case 'getCause': {
-      if (ref.kind !== 'objectRef') return javaNull();
-      const obj = ctx.heap.get(ref.heapId);
-      return (obj && isJavaObject(obj) && obj.fields.get('cause')) || javaNull();
-    }
+    case 'getCause':
+      return state.cause;
     case 'getClass':
       // Minimal: a stand-in object whose getName()/toString the interpreter can stringify.
       return ref;

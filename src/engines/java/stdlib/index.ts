@@ -25,6 +25,8 @@ export {
   exceptionAssignable,
   formatException,
   qualifiedExceptionName,
+  throwableState,
+  throwableFromArgs,
 } from './exceptions';
 export { stringMethod, stringBuilderMethod, boxedMethod, newString, stringHashCode, boxedHashCode } from './strings';
 export { isLibrarySubtype, isStringType, isBoxedInstanceOf, isKnownLibraryType } from './hierarchy';

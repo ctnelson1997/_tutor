@@ -73,6 +73,20 @@ export interface JavaObject {
    * needs, the evaluator's business.
    */
   lambda?: { text: string; run: unknown };
+  /** A Throwable's own state (#64), apart from the fields its class declares (a field named `message` is the program's). */
+  throwable?: ThrowableState;
+}
+
+/**
+ * What Throwable keeps (#64): the detail message getMessage() returns, the
+ * cause (`causeSet` once a constructor or initCause() gave one, even null,
+ * as initCause() then refuses another) and the suppressed exceptions.
+ */
+export interface ThrowableState {
+  message: JavaValue;
+  cause: JavaValue;
+  causeSet: boolean;
+  suppressed: JavaValue[];
 }
 
 /**

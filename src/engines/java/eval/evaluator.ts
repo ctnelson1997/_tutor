@@ -73,8 +73,9 @@ import {
   newString,
   isExceptionClass,
   newException,
-  exceptionMethod,
   formatException,
+  throwableState,
+  throwableFromArgs,
   qualifiedExceptionName,
   isLibrarySubtype,
   isStringType,
@@ -266,7 +267,17 @@ const FUNCTION_METHODS: [string, number[]][] = [
  * overrides that method, so `equals(Point p)` (an overload) isn't called by a
  * HashSet, and `compareTo` only for a class that implements Comparable.
  */
-const CALLBACKS: Record<string, string> = { equals: 'Object', hashCode: 'Object', toString: 'Object', compareTo: 'Comparable', compare: 'Comparator' };
+const CALLBACKS: Record<string, string> = {
+  equals: 'Object', hashCode: 'Object', toString: 'Object', compareTo: 'Comparable', compare: 'Comparator',
+  getMessage: 'Throwable', getLocalizedMessage: 'Throwable',
+};
+
+/** Whether a Throwable constructor is the one taking just a cause, `(Throwable cause)`, whose message is the cause's toString() (#64). */
+function causeConstructor(ctor: MethodSymbol | undefined): boolean | undefined {
+  if (!ctor) return undefined;
+  const t = ctor.params[0]?.type;
+  return ctor.params.length === 1 && t?.tag === 'class' && t.symbol.name === 'Throwable';
+}
 
 const SYSTEM_OUT_ID = '__system_out__';
 const SYSTEM_ERR_ID = '__system_err__';
@@ -601,23 +612,35 @@ export class Evaluator {
     return s.split('\n');
   }
 
-  /** What printStackTrace() prints: the exception, the frames it was created in, and its causes ("... n more" for shared frames). */
-  private stackTraceText(exception: JavaValue): string {
+  /**
+   * What printStackTrace() prints, as Throwable's does: the exception, the
+   * frames it was created in (`trace` for one that has none recorded), then
+   * each suppressed exception (`Suppressed: `, indented a tab) and the cause
+   * (`Caused by: `), each with the frames it shares with the trace around it
+   * shortened to `... n more`, and one seen before as a circular reference (#64).
+   */
+  private stackTraceText(exception: JavaValue, trace?: string[]): string {
     const out: string[] = [];
-    let current: JavaValue | undefined = exception;
-    let enclosing: string[] = [];
-    for (let depth = 0; current?.kind === 'objectRef' && depth < 20; depth++) {
-      const trace = this.exceptionTraces.get(current.heapId) ?? [];
+    const seen = new Set<string>();
+    const frameLine = (prefix: string, frame: string) => (frame.startsWith('...') ? `${prefix}\t${frame}` : `${prefix}\tat ${frame}`);
+    const print = (current: JavaValue, enclosing: string[], caption: string, prefix: string) => {
+      if (current.kind !== 'objectRef') return;
+      if (seen.has(current.heapId)) {
+        out.push(`${prefix}${caption}[CIRCULAR REFERENCE: ${this.stringify(current)}]`);
+        return;
+      }
+      seen.add(current.heapId);
+      const own = this.exceptionTraces.get(current.heapId) ?? (current === exception ? trace ?? [] : []);
       let shared = 0;
-      while (shared < trace.length && shared < enclosing.length && trace[trace.length - 1 - shared] === enclosing[enclosing.length - 1 - shared]) shared++;
-      out.push((depth > 0 ? 'Caused by: ' : '') + this.stringify(current));
-      for (const frame of trace.slice(0, trace.length - shared)) out.push(`\tat ${frame}`);
-      if (shared > 0) out.push(`\t... ${shared} more`);
-      const obj = this.heap.get(current.heapId);
-      const cause = obj && isJavaObject(obj) ? obj.fields.get('cause') : undefined;
-      enclosing = trace;
-      current = cause && cause.kind === 'objectRef' && cause.heapId !== current.heapId ? cause : undefined;
-    }
+      while (shared < own.length && shared < enclosing.length && own[own.length - 1 - shared] === enclosing[enclosing.length - 1 - shared]) shared++;
+      out.push(prefix + caption + this.stringify(current));
+      for (const frame of own.slice(0, own.length - shared)) out.push(frameLine(prefix, frame));
+      if (shared > 0) out.push(`${prefix}\t... ${shared} more`);
+      const state = throwableState(current, this.heap);
+      for (const s of state?.suppressed ?? []) print(s, own, 'Suppressed: ', prefix + '\t');
+      if (state && state.cause.kind !== 'null') print(state.cause, own, 'Caused by: ', prefix);
+    };
+    print(exception, [], '', '');
     return out.join('\n') + '\n';
   }
 
@@ -634,11 +657,20 @@ export class Evaluator {
     const site = typeof e === 'object' && e !== null ? this.failureSites.get(e) : undefined;
     const at = site?.line ? { line: site.line } : {};
     if (this.exceptionClassOf(e) !== undefined) {
-      const text = this.describeException(e);
-      const summary = `Exception in thread "main" ${text}`;
-      const trace = site?.trace ?? [];
-      const stderr = [summary, ...trace.map(frame => (frame.startsWith('...') ? `\t${frame}` : `\tat ${frame}`))].join('\n');
-      return { snapshots, error: summary, failure: { kind: 'exception', message: text, ...at, stderr } };
+      // The program has ended: a toString() or getMessage() of its own runs without steps.
+      this.suppress++;
+      try {
+        const text = this.describeException(e);
+        const summary = `Exception in thread "main" ${text}`;
+        const trace = site?.trace ?? [];
+        // A thrown object prints as printStackTrace() prints it, with its causes and suppressed exceptions (#64).
+        const stderr = e instanceof JavaThrow && e.value.kind === 'objectRef'
+          ? `Exception in thread "main" ${this.stackTraceText(e.value, trace).slice(0, -1)}`
+          : [summary, ...trace.map(frame => (frame.startsWith('...') ? `\t${frame}` : `\tat ${frame}`))].join('\n');
+        return { snapshots, error: summary, failure: { kind: 'exception', message: text, ...at, stderr } };
+      } finally {
+        this.suppress--;
+      }
     }
     let message: string;
     if (e instanceof InterpreterError) message = e.reason;
@@ -720,6 +752,17 @@ export class Evaluator {
     if (e instanceof JavaRuntimeError) return e.className;
     if (e instanceof InterpreterError || e instanceof StdlibError) return parseRuntimeException(e.message)?.className;
     return undefined;
+  }
+
+  /** A Java exception as a thrown object (a runtime error made one, with its trace), so it can hold suppressed exceptions. */
+  private asThrow(e: unknown): unknown {
+    if (e instanceof JavaThrow) return e;
+    const value = this.toExceptionValue(e);
+    if (!value) return e;
+    const thrown = new JavaThrow(value);
+    const site = typeof e === 'object' && e !== null ? this.failureSites.get(e) : undefined;
+    if (site) this.failureSites.set(thrown, site);
+    return thrown;
   }
 
   /** The exception object a catch clause binds: the thrown value, or a new object for a runtime error. */
@@ -823,8 +866,9 @@ export class Evaluator {
   }
 
   private newThrowable(className: string, message: string | null, cause?: JavaValue): JavaValue {
-    const ref = newException(className, message === null ? [] : [javaString(message)], this.ctx);
-    if (cause && ref.kind === 'objectRef') (this.heap.get(ref.heapId) as JavaObject).fields.set('cause', cause);
+    const ref = newException(className, [message === null ? javaNull() : javaString(message), ...(cause ? [cause] : [])], this.ctx, false);
+    const trace = this.top() ? this.stackTrace(this.top().line) : undefined;
+    if (trace && ref.kind === 'objectRef') this.exceptionTraces.set(ref.heapId, trace);
     return ref;
   }
 
@@ -1220,12 +1264,19 @@ export class Evaluator {
     for (let i = opened.length - 1; i >= 0; i--) {
       const { value, name } = opened[i];
       if (value.kind === 'null') continue;
+      // javac puts the implicit close() calls on the try's line, which a stack trace shows (#64).
+      frame.line = s.range.line;
       try {
         yield* this.callByName(value, 'close', [], name, s.range.line);
       } catch (thrown) {
         const e = this.atFailureSite(thrown);
         if (e instanceof HaltSignal || this.exceptionClassOf(e) === undefined) throw e;
-        if (!hasPending) {
+        // An exception already on its way keeps going with this one suppressed (#64); a return or break gives way to it.
+        if (hasPending && this.exceptionClassOf(pending) !== undefined) {
+          pending = this.asThrow(pending);
+          const closed = this.toExceptionValue(e);
+          if (closed) throwableState((pending as JavaThrow).value, this.heap)!.suppressed.push(closed);
+        } else {
           pending = e;
           hasPending = true;
         }
@@ -2222,11 +2273,11 @@ export class Evaluator {
         const r = this.classMethod(target, name);
         if (r) return r;
       }
+      if (this.isThrowable(target)) {
+        const r = this.throwableMethod(target, name, args, line);
+        if (r !== undefined) return r;
+      }
       if (isBuiltinObject(obj)) {
-        if (name === 'printStackTrace' && args.length === 0 && this.isThrowable(target)) {
-          this.appendStderr(this.stackTraceText(target));
-          return javaNull();
-        }
         if (target.className === 'StringBuilder' || target.className === 'StringBuffer') {
           const r = this.stdlib(line, () => stringBuilderMethod(target, name, args, this.ctx));
           if (r !== undefined) return r;
@@ -2234,13 +2285,6 @@ export class Evaluator {
           const r = this.stdlib(line, () => callInstanceMethod(target, name, args, this.ctx));
           if (r !== undefined) return r;
         }
-      }
-      if (this.isThrowable(target)) {
-        if (name === 'printStackTrace') {
-          this.appendStderr(this.stackTraceText(target));
-          return javaNull();
-        }
-        if (['getMessage', 'getLocalizedMessage', 'toString', 'getCause'].includes(name)) return exceptionMethod(target, name, this.ctx) ?? javaNull();
       }
       // A functional interface's default methods on a lambda or a function object of the program's (cmp.reversed(), f.andThen(g)).
       if (!isBuiltinObject(obj)) {
@@ -2352,7 +2396,9 @@ export class Evaluator {
       const initial = args.length > 0 && args[0].kind !== 'primitive' ? javaValueToString(args[0], this.heap) : '';
       return { kind: 'objectRef', heapId: this.allocObject(name, new Map([['value', javaString(initial)]]), true), className: name };
     }
-    const built = this.stdlib(line, () => newBuiltin(name, args, this.ctx));
+    const built = isExceptionClass(name)
+      ? newException(name, args, this.ctx, causeConstructor(e.ctor))
+      : this.stdlib(line, () => newBuiltin(name, args, this.ctx));
     if (!built) throw new UnsupportedFeatureError(`The ${name} class`, line, true);
     if (built.kind === 'objectRef' && this.isThrowable(built)) this.exceptionTraces.set(built.heapId, this.stackTrace(line));
     return built;
@@ -2365,7 +2411,10 @@ export class Evaluator {
     for (const [f, key] of this.layout(cls)) fields.set(key, defaultValue(runtimeTypeName(f.type)));
     const heapId = this.allocObject(cls.name, fields);
     const self: JavaObjectRef = { kind: 'objectRef', heapId, className: cls.name };
-    if (this.isThrowable(self)) this.exceptionTraces.set(heapId, this.stackTrace(this.line(e)));
+    if (this.isThrowable(self)) {
+      this.exceptionTraces.set(heapId, this.stackTrace(this.line(e)));
+      throwableState(self, this.heap);
+    }
     // An inner class's enclosing instance, and a local or anonymous class's captured locals (#16), before its constructor runs.
     if (cls.outerField) {
       const outer = e.outer ? (this.isPure(e.outer) ? this.pv(e.outer) : yield* this.gv(e.outer)) : this.top()?.thisValue;
@@ -2388,7 +2437,7 @@ export class Evaluator {
     const sup = cls.superclass?.symbol;
     const programSuper = sup !== undefined && !sup.isLibrary;
     if (!programSuper && rt.bound.instanceInit.length === 0) {
-      this.superConstructor(cls, self, args);
+      this.superConstructor(cls, self, args, superCtor);
       return;
     }
     const frame = this.newFrame(cls.name, 'constructor', cls, self);
@@ -2398,7 +2447,7 @@ export class Evaluator {
 
   private *runAnonymousConstructor(frame: Frame, rt: ClassRuntime, sup: ClassSymbol | undefined, superCtor: MethodSymbol | undefined, self: JavaObjectRef, args: JavaValue[]): Gen<undefined> {
     if (sup) yield* this.construct(sup, superCtor, self, args);
-    else this.superConstructor(rt.bound.symbol, self, args);
+    else this.superConstructor(rt.bound.symbol, self, args, superCtor);
     yield* this.instanceInit(frame, rt);
     return undefined;
   }
@@ -2473,19 +2522,18 @@ export class Evaluator {
   private *superCall(call: NonNullable<B.BMethod['explicitCall']>, rt: ClassRuntime, self: JavaObjectRef, args: JavaValue[]): Gen<void> {
     const sup = call.ctor?.owner;
     if (sup && !sup.isLibrary) yield* this.construct(sup, call.ctor, self, args);
-    else this.superConstructor(rt.bound.symbol, self, args);
+    else this.superConstructor(rt.bound.symbol, self, args, call.ctor);
   }
 
-  /** The superclass constructor: Object's does nothing; a library exception's records the message and cause. */
-  private superConstructor(cls: ClassSymbol, self: JavaObjectRef, args: JavaValue[]): void {
+  /**
+   * The superclass constructor: Object's does nothing; a library
+   * exception's sets Throwable's state as that constructor does (#64), never
+   * a field of the program's class, whatever it is called.
+   */
+  private superConstructor(cls: ClassSymbol, self: JavaObjectRef, args: JavaValue[], ctor?: MethodSymbol): void {
     if (!cls.superclass || cls.superclass.symbol.name === 'Object') return;
-    const obj = this.heap.get(self.heapId) as JavaObject;
-    const [first, second] = args;
-    if (first) {
-      if (!obj.fields.has('message')) obj.fields.set('message', first.kind === 'null' ? javaNull() : javaString(this.stringify(first)));
-      if (this.isThrowable(first)) obj.fields.set('cause', first);
-    }
-    if (second) obj.fields.set('cause', second);
+    if (!this.isThrowable(self)) return;
+    (this.heap.get(self.heapId) as JavaObject).throwable = throwableFromArgs(args, this.ctx, ctor ? causeConstructor(ctor) : undefined);
   }
 
   /**
@@ -2517,6 +2565,42 @@ export class Evaluator {
     }
   }
 
+  // ── Throwable (#64) ──
+
+  /** What Throwable.toString() prints after the class name: the virtual getLocalizedMessage(), whose own implementation is the virtual getMessage(). */
+  private localizedMessage(ref: JavaValue): JavaValue {
+    return this.invokeUser(ref, 'getLocalizedMessage', []) ?? this.invokeUser(ref, 'getMessage', []) ?? throwableState(ref, this.heap)?.message ?? javaNull();
+  }
+
+  /** Throwable's own instance methods, for a library exception and a program's alike; undefined for another method. */
+  private throwableMethod(target: JavaObjectRef, name: string, args: JavaValue[], line: number): JavaValue | undefined {
+    const state = throwableState(target, this.heap)!;
+    const same = (v: JavaValue | undefined) => v?.kind === 'objectRef' && v.heapId === target.heapId;
+    switch (`${name}/${args.length}`) {
+      case 'printStackTrace/0':
+        this.appendStderr(this.stackTraceText(target));
+        return javaNull();
+      case 'getMessage/0': return state.message;
+      case 'getLocalizedMessage/0': return this.invokeUser(target, 'getMessage', []) ?? state.message;
+      case 'toString/0': return javaString(this.ownString(target));
+      case 'getCause/0': return state.cause;
+      case 'initCause/1': {
+        if (state.causeSet) throw new JavaRuntimeError('IllegalStateException', `Can't overwrite cause with ${args[0].kind === 'null' ? 'a null' : this.stringify(args[0])}`, line);
+        if (same(args[0])) throw new JavaRuntimeError('IllegalArgumentException', 'Self-causation not permitted', line);
+        state.cause = args[0];
+        state.causeSet = true;
+        return target;
+      }
+      case 'addSuppressed/1':
+        if (same(args[0])) throw new JavaRuntimeError('IllegalArgumentException', 'Self-suppression not permitted', line);
+        if (args[0].kind === 'null') throw new JavaRuntimeError('NullPointerException', 'Cannot suppress a null exception.', line);
+        state.suppressed.push(args[0]);
+        return javaNull();
+      case 'getSuppressed/0': return { kind: 'arrayRef', heapId: this.allocArray('Throwable', [...state.suppressed]) };
+    }
+    return undefined;
+  }
+
   // ── Printing ──
 
   /** A value as String.valueOf prints it, with a user class's own toString(). */
@@ -2534,7 +2618,7 @@ export class Evaluator {
       const obj = this.heap.get(value.heapId);
       if (obj && isJavaObject(obj)) {
         if (this.isThrowable(value)) {
-          const exc = formatException(value, this.heap, this.ctx.binaryName);
+          const exc = formatException(value, this.heap, this.ctx.binaryName, this.localizedMessage(value));
           if (exc !== undefined) return exc;
         }
         if (obj.enumConstant) return obj.enumConstant.name;
