@@ -86,6 +86,7 @@ import {
 } from '../stdlib';
 import { javaToRuntime, reachableHeap } from './display';
 import { functionalMethod, isOptionalClass, optionalText } from '../stdlib/functional';
+import { PatternSyntaxError } from '../stdlib/regex';
 
 // ── Limits ──
 
@@ -319,6 +320,8 @@ export class Evaluator {
   private stderrUsed = false;
   /** The stack trace each exception object was created with, by heap id (for printStackTrace). */
   private readonly exceptionTraces = new Map<string, string[]>();
+  /** The PatternSyntaxException behind an engine error made from it (#66), for its getDescription(), getIndex() and getPattern(). */
+  private readonly patternErrors = new WeakMap<object, PatternSyntaxError>();
   private readonly failureSites = new WeakMap<object, FailureSite>();
   /** Boxes of small values, shared as Integer.valueOf shares them. */
   private readonly boxCache = new Map<string, JavaPrimitive>();
@@ -772,6 +775,13 @@ export class Evaluator {
       const parsed = parseRuntimeException(e.message);
       if (parsed) {
         const value = newException(parsed.className, parsed.detail ? [javaString(parsed.detail)] : [], this.ctx);
+        const pse = e instanceof PatternSyntaxError ? e : this.patternErrors.get(e);
+        if (pse && value.kind === 'objectRef') {
+          const fields = (this.heap.get(value.heapId) as JavaObject).fields;
+          fields.set('__description__', javaString(pse.desc));
+          fields.set('__index__', javaInt(pse.index));
+          fields.set('__pattern__', javaString(pse.pattern));
+        }
         const trace = this.failureSites.get(e)?.trace;
         if (trace && value.kind === 'objectRef') this.exceptionTraces.set(value.heapId, trace);
         return value;
@@ -2380,7 +2390,11 @@ export class Evaluator {
     try {
       return call();
     } catch (e) {
-      if (e instanceof StdlibError) throw new InterpreterError(e.message, line);
+      if (e instanceof StdlibError) {
+        const err = new InterpreterError(e.message, line);
+        if (e instanceof PatternSyntaxError) this.patternErrors.set(err, e);
+        throw err;
+      }
       throw e;
     }
   }

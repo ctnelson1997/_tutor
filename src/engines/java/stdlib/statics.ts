@@ -55,7 +55,8 @@ import {
   charArrayText,
 } from './util';
 import { javaFormat } from './format';
-import { boxedHashCode } from './strings';
+import { boxedHashCode, charRange } from './strings';
+import { CHARACTER_TESTS, toUpperCaseChar, toLowerCaseChar, numericValue as characterValue } from './characters';
 import { hashCodeOf } from './hashing';
 import { comparing, functionStatic, optionalStatic } from './functional';
 import { streamStatic } from './streams';
@@ -324,20 +325,18 @@ function booleanWrapper(method: string, args: JavaValue[], ctx: StdlibContext): 
   return undefined;
 }
 
+/** Character's statics (#66): Unicode's tests and single-character case mappings, as the JDK defines them (characters.ts). */
 function characterWrapper(method: string, args: JavaValue[]): JavaValue | undefined {
   const code = args.length > 0 ? Math.trunc(javaValueToNumber(args[0])) : 0;
   const ch = String.fromCharCode(code);
+  const test = CHARACTER_TESTS[method];
+  if (test) return javaBool(test(code));
+  // A char in, a char out; a code point (int) in, an int out.
+  const sameKind = (v: number) => (args[0]?.kind === 'primitive' && args[0].javaType === 'int' ? javaInt(v) : javaChar(v));
   switch (method) {
-    case 'isDigit': return javaBool(ch >= '0' && ch <= '9');
-    case 'isLetter': return javaBool(/[a-zA-Z]/.test(ch));
-    case 'isLetterOrDigit': return javaBool(/[a-zA-Z0-9]/.test(ch));
-    case 'isAlphabetic': return javaBool(/[a-zA-Z]/.test(ch));
-    case 'isWhitespace': case 'isSpaceChar': return javaBool(/\s/.test(ch));
-    case 'isUpperCase': return javaBool(ch !== ch.toLowerCase() && ch === ch.toUpperCase());
-    case 'isLowerCase': return javaBool(ch !== ch.toUpperCase() && ch === ch.toLowerCase());
-    case 'toUpperCase': return javaChar(ch.toUpperCase().charCodeAt(0));
-    case 'toLowerCase': return javaChar(ch.toLowerCase().charCodeAt(0));
-    case 'getNumericValue': return javaInt(/[0-9]/.test(ch) ? code - 48 : /[a-z]/.test(ch) ? code - 87 : /[A-Z]/.test(ch) ? code - 55 : -1);
+    case 'toUpperCase': return sameKind(toUpperCaseChar(code));
+    case 'toLowerCase': return sameKind(toLowerCaseChar(code));
+    case 'getNumericValue': return javaInt(characterValue(code));
     case 'toString': return javaString(ch);
     case 'hashCode': return javaInt(code);
     case 'compare': return javaInt(code - Math.trunc(javaValueToNumber(args[1])));
@@ -348,18 +347,22 @@ function characterWrapper(method: string, args: JavaValue[]): JavaValue | undefi
 function stringStatic(method: string, args: JavaValue[], ctx: StdlibContext): JavaValue | undefined {
   switch (method) {
     case 'format': {
+      if (args[0]?.kind === 'null') throw new JavaRuntimeError('NullPointerException', 'Cannot invoke "String.length()" because "s" is null', 0);
       const fmt = javaValueToString(args[0], ctx.heap);
       return javaString(javaFormat(fmt, args.slice(1), ctx.heap, ctx.stringify));
     }
     case 'valueOf': case 'copyValueOf': {
       if (args.length === 0) return javaString('null');
       if (args[0].kind === 'string') return args[0]; // String.valueOf(s) is s itself
-      const chars = charArrayText(args[0], ctx); // String.valueOf(char[]) is the characters
+      const chars = charArrayText(args[0], ctx); // String.valueOf(char[]) is the characters, valueOf(char[], offset, count) some of them
+      if (chars !== undefined && args.length >= 3) return javaString(charRange(chars, args[1], args[2]));
       return javaString(chars ?? (ctx.stringify ? ctx.stringify(args[0]) : javaValueToString(args[0], ctx.heap)));
     }
     case 'join': {
+      if (args[0]?.kind === 'null') throw new JavaRuntimeError('NullPointerException', 'Cannot invoke "java.lang.CharSequence.toString()" because "delimiter" is null', 0);
       const delim = javaValueToString(args[0], ctx.heap);
       const rest = args.slice(1);
+      if (rest.length === 1 && rest[0].kind === 'null') throw new StdlibError('NullPointerException');
       // join(delim, array) or join(delim, a, b, c)
       let parts: JavaValue[] = rest;
       if (rest.length === 1 && rest[0].kind === 'arrayRef') {

@@ -27,6 +27,7 @@ export const EXCEPTION_SUPER: Record<string, string> = {
   RuntimeException: 'Exception',
   IllegalArgumentException: 'RuntimeException',
   NumberFormatException: 'IllegalArgumentException',
+  PatternSyntaxException: 'IllegalArgumentException',
   IllegalFormatException: 'IllegalArgumentException',
   IllegalFormatConversionException: 'IllegalFormatException',
   IllegalFormatPrecisionException: 'IllegalFormatException',
@@ -74,6 +75,7 @@ const EXCEPTION_PACKAGE: Record<string, string> = {
   UnknownFormatConversionException: 'java.util',
   IOException: 'java.io',
   FileNotFoundException: 'java.io',
+  PatternSyntaxException: 'java.util.regex',
 };
 
 /**
@@ -169,6 +171,11 @@ export function exceptionMethod(ref: JavaValue, method: string, ctx: StdlibConte
       return javaNull();
     case 'getCause':
       return state.cause;
+    // A PatternSyntaxException's parts (#66), kept as hidden fields.
+    case 'getDescription': case 'getIndex': case 'getPattern': {
+      const obj = ref.kind === 'objectRef' ? ctx.heap.get(ref.heapId) : undefined;
+      return (obj && isJavaObject(obj) && obj.fields.get(`__${method.slice(3).toLowerCase()}__`)) || undefined;
+    }
     case 'getClass':
       // Minimal: a stand-in object whose getName()/toString the interpreter can stringify.
       return ref;

@@ -82,9 +82,14 @@ export function collectionStream(ref: JavaValue, ctx: StdlibContext): JavaValue 
   return streamOf('ref', () => collectionElements(obj, ctx.heap) ?? [], 'stream()', ref, ctx);
 }
 
-/** String.chars(): its UTF-16 code units, as ints. */
+/** String.chars(): its UTF-16 code units, as ints (an emoji is two, #66). */
 export function charsStream(text: string, ctx: StdlibContext): JavaValue {
-  return streamOf('int', () => Array.from(text, (_, i) => javaInt(text.charCodeAt(i))), 'chars()', undefined, ctx);
+  return streamOf('int', () => Array.from({ length: text.length }, (_, i) => javaInt(text.charCodeAt(i))), 'chars()', undefined, ctx);
+}
+
+/** String.codePoints(): its code points, as ints (an emoji is one). */
+export function codePointsStream(text: string, ctx: StdlibContext): JavaValue {
+  return streamOf('int', () => Array.from(text, c => javaInt(c.codePointAt(0)!)), 'codePoints()', undefined, ctx);
 }
 
 function arrayItems(value: JavaValue, ctx: StdlibContext): JavaValue[] {

@@ -30,7 +30,9 @@ import { type StdlibContext, StdlibError } from './context';
 import { charArrayText } from './util';
 import { javaRegex, javaReplacement, javaSplit, groupCount } from './regex';
 import { javaFormat } from './format';
-import { charsStream, streamOf } from './streams';
+import { charsStream, codePointsStream, streamOf } from './streams';
+import { isJavaWhitespace } from './characters';
+import { JavaRuntimeError } from '../errors';
 
 // ── Shared ──
 
@@ -84,6 +86,38 @@ function valueText(value: JavaValue | undefined, ctx: StdlibContext): string {
   return charArrayText(value, ctx) ?? (ctx.stringify ? ctx.stringify(value) : javaValueToString(value, ctx.heap));
 }
 
+/** strip(), stripLeading(), stripTrailing(): the code points Character.isWhitespace calls whitespace removed (#66; not a non-breaking space). */
+function stripJava(s: string, leading: boolean, trailing: boolean): string {
+  const points = [...s];
+  let start = 0, end = points.length;
+  if (leading) while (start < end && isJavaWhitespace(points[start].codePointAt(0)!)) start++;
+  if (trailing) while (end > start && isJavaWhitespace(points[end - 1].codePointAt(0)!)) end--;
+  return points.slice(start, end).join('');
+}
+
+/**
+ * The NullPointerException a String method throws for a null argument (#66),
+ * with JDK 21's message, which names the parameter inside the JDK's code:
+ * each method's messages by argument position.
+ */
+const NULL_ARGUMENT: Record<string, string[]> = {
+  concat: ['Cannot invoke "String.isEmpty()" because "str" is null'],
+  contains: ['Cannot invoke "java.lang.CharSequence.toString()" because "s" is null'],
+  compareTo: ['Cannot read field "value" because "anotherString" is null'],
+  compareToIgnoreCase: ['Cannot read field "value" because "s2" is null'],
+  startsWith: ['Cannot invoke "String.length()" because "prefix" is null'],
+  endsWith: ['Cannot invoke "String.length()" because "suffix" is null'],
+  'indexOf/1': ['Cannot invoke "String.coder()" because "str" is null'],
+  'indexOf/2': ['Cannot invoke "String.length()" because "tgtStr" is null'],
+  lastIndexOf: ['Cannot read field "value" because "tgtStr" is null'],
+  replace: ['Cannot invoke "java.lang.CharSequence.toString()" because "target" is null', 'Cannot invoke "java.lang.CharSequence.toString()" because "replacement" is null'],
+  split: ['Cannot invoke "String.length()" because "regex" is null'],
+  contentEquals: ['Cannot invoke "java.lang.CharSequence.length()" because "cs" is null'],
+  matches: ['Cannot invoke "String.isEmpty()" because "this.pattern" is null'],
+  replaceAll: ['Cannot invoke "String.isEmpty()" because "this.pattern" is null', 'Cannot invoke "String.length()" because "replacement" is null'],
+  replaceFirst: ['Cannot invoke "String.isEmpty()" because "this.pattern" is null', 'replacement'],
+};
+
 /** Java's trim: chars up to the space (U+0020) removed from both ends. */
 function trimJava(s: string): string {
   let start = 0, end = s.length;
@@ -102,10 +136,17 @@ export function stringMethod(s: JavaString, method: string, args: JavaValue[], c
   const result = (value: string) => (value === str ? s : javaString(value));
   /** A search argument: a String, or a char (or int code point) as indexOf('n') takes. */
   const needle = (v: JavaValue | undefined) => (v?.kind === 'primitive' ? String.fromCodePoint(javaValueToNumber(v)) : textOf(v, ctx));
+  // A null argument where the JDK dereferences it: its NullPointerException, never "null" as text.
+  const key = Object.hasOwn(NULL_ARGUMENT, `${method}/${args.length}`) ? `${method}/${args.length}` : method;
+  const messages = Object.hasOwn(NULL_ARGUMENT, key) ? NULL_ARGUMENT[key] : undefined;
+  if (messages) {
+    const i = args.findIndex((a, k) => a.kind === 'null' && messages[k] !== undefined);
+    if (i >= 0) throw new JavaRuntimeError('NullPointerException', messages[i], 0);
+  }
   switch (method) {
     case 'length': return javaInt(str.length);
     case 'isEmpty': return javaBool(str.length === 0);
-    case 'isBlank': return javaBool(/^\s*$/.test(str));
+    case 'isBlank': return javaBool(stripJava(str, true, false) === '');
     case 'charAt': case 'codePointAt': {
       const i = int(0);
       if (i < 0 || i >= str.length) throw indexError(i, str.length);
@@ -135,9 +176,9 @@ export function stringMethod(s: JavaString, method: string, args: JavaValue[], c
     case 'toUpperCase': return result(str.toUpperCase());
     case 'toLowerCase': return result(str.toLowerCase());
     case 'trim': return result(trimJava(str));
-    case 'strip': return result(str.replace(/^\s+|\s+$/g, ''));
-    case 'stripLeading': return result(str.replace(/^\s+/, ''));
-    case 'stripTrailing': return result(str.replace(/\s+$/, ''));
+    case 'strip': return result(stripJava(str, true, true));
+    case 'stripLeading': return result(stripJava(str, true, false));
+    case 'stripTrailing': return result(stripJava(str, false, true));
     case 'replace': {
       if (args[0]?.kind === 'primitive' && args[1]?.kind === 'primitive') {
         return result(str.split(String.fromCharCode(javaValueToNumber(args[0]))).join(String.fromCharCode(javaValueToNumber(args[1]))));
@@ -156,8 +197,9 @@ export function stringMethod(s: JavaString, method: string, args: JavaValue[], c
       }));
     }
     case 'matches': {
+      // The whole string, whatever the pattern's flags: a lookbehind and a lookahead for no character, not ^ and $, which (?m) makes line anchors (#66).
       const re = javaRegex(textOf(args[0], ctx));
-      return javaBool(new RegExp(`^(?:${re.source})$`, re.flags).test(str));
+      return javaBool(new RegExp(`(?<![\\s\\S])(?:${re.source})(?![\\s\\S])`, re.flags).test(str));
     }
     case 'split': {
       const parts = javaSplit(str, textOf(args[0], ctx), args.length > 1 ? int(1) : 0);
@@ -174,29 +216,34 @@ export function stringMethod(s: JavaString, method: string, args: JavaValue[], c
       return count === 1 ? s : count === 0 || str === '' ? internedString('') : javaString(str.repeat(count));
     }
     case 'toCharArray':
-      return { kind: 'arrayRef', heapId: ctx.allocArray('char', Array.from(str, (_, i) => javaChar(str.charCodeAt(i)))) };
+      // Every UTF-16 code unit (an emoji is two chars, #66).
+      return { kind: 'arrayRef', heapId: ctx.allocArray('char', Array.from({ length: str.length }, (_, i) => javaChar(str.charCodeAt(i)))) };
     case 'hashCode': return javaInt(stringHashCode(str));
     case 'intern': return internedString(str);
     case 'toString': return s;
     case 'formatted': return javaString(javaFormat(str, args, ctx.heap, ctx.stringify));
-    case 'chars': case 'codePoints': return charsStream(str, ctx);
+    case 'chars': return charsStream(str, ctx);
+    case 'codePoints': return codePointsStream(str, ctx);
     case 'lines': return streamOf('ref', () => str.split(/\r\n|\r|\n/).filter((l, i, all) => i < all.length - 1 || l !== '').map(l => javaString(l)), 'lines()', undefined, ctx);
   }
   return undefined;
+}
+
+/** The chars `count` long from `offset` of a char[]'s text, for new String(chars, offset, count) and String.valueOf/copyValueOf (#66), with JDK 21's message for a range outside it. */
+export function charRange(chars: string, offsetValue: JavaValue, countValue: JavaValue): string {
+  const offset = javaValueToNumber(offsetValue) | 0, count = javaValueToNumber(countValue) | 0;
+  if (offset < 0 || count < 0 || offset > chars.length - count) {
+    throw new StdlibError(`StringIndexOutOfBoundsException: Range [${offset}, ${offset} + ${count}) out of bounds for length ${chars.length}`);
+  }
+  return chars.slice(offset, offset + count);
 }
 
 /** `new String(…)`: from nothing, a String (a copy: a new object), a char[] (optionally a range of it), or a StringBuilder. */
 export function newString(args: JavaValue[], ctx: StdlibContext): JavaValue {
   if (args.length === 0) return javaString('');
   const chars = charArrayText(args[0], ctx);
-  if (chars !== undefined && args.length >= 3) {
-    const offset = javaValueToNumber(args[1]) | 0, count = javaValueToNumber(args[2]) | 0;
-    if (offset < 0 || count < 0 || offset + count > chars.length) {
-      throw new StdlibError(`StringIndexOutOfBoundsException: offset ${offset}, count ${count}, length ${chars.length}`);
-    }
-    return javaString(chars.slice(offset, offset + count));
-  }
-  if (args[0].kind === 'null') throw new StdlibError('NullPointerException');
+  if (chars !== undefined && args.length >= 3) return javaString(charRange(chars, args[1], args[2]));
+  if (args[0].kind === 'null') throw new JavaRuntimeError('NullPointerException', 'Cannot read field "value" because "original" is null', 0);
   return javaString(chars ?? textOf(args[0], ctx));
 }
 

@@ -171,6 +171,7 @@ public interface CharSequence {
   String toString();
   default boolean isEmpty() {}
   default java.util.stream.IntStream chars() {}
+  default java.util.stream.IntStream codePoints() {}
 }
 public interface Iterable<T> {
   java.util.Iterator<T> iterator();
@@ -231,6 +232,7 @@ public final class String implements CharSequence, Comparable<String> {
 ${['Object', 'char[]', ...PRIMS].map(t => `  public static String valueOf(${t} x);`).join('\n')}
   public static String valueOf(char[] chars, int offset, int count);
   public static String copyValueOf(char[] chars);
+  public static String copyValueOf(char[] chars, int offset, int count);
   public static String format(String format, Object... args);
   public static String join(CharSequence delimiter, CharSequence... parts);
   public static String join(CharSequence delimiter, Iterable<? extends CharSequence> parts);
@@ -847,7 +849,9 @@ function exceptions(pkg: string): string {
     .map(([name, parent]) => {
       const head = name === 'Throwable' ? 'public class Throwable implements java.io.Serializable' : `public class ${name} extends ${parent}`;
       const ctors = `  public ${name}() {}\n  public ${name}(String message) {}\n  public ${name}(String message, Throwable cause) {}\n  public ${name}(Throwable cause) {}`;
-      const methods = name !== 'Throwable' ? '' : `
+      const methods = name === 'PatternSyntaxException'
+        ? `\n  public PatternSyntaxException(String desc, String regex, int index) {}\n  public String getDescription();\n  public int getIndex();\n  public String getPattern();`
+        : name !== 'Throwable' ? '' : `
   public String getMessage();
   public String getLocalizedMessage();
   public Throwable getCause();
@@ -868,5 +872,6 @@ export function libraryStubs(): { packageName: string; source: string }[] {
     { packageName: 'java.util', source: JAVA_UTIL + exceptions('java.util') },
     { packageName: 'java.util.function', source: JAVA_UTIL_FUNCTION },
     { packageName: 'java.util.stream', source: JAVA_UTIL_STREAM },
+    { packageName: 'java.util.regex', source: exceptions('java.util.regex') },
   ];
 }

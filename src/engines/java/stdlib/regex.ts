@@ -5,11 +5,14 @@
  * Most syntax students use is the same in both: character classes,
  * \d \w \s, quantifiers, groups, alternation, anchors, backreferences and
  * named groups. Translated: leading inline flags ((?i) (?s) (?m)), \Q…\E
- * quoting, \A \Z \z, \h, and the POSIX classes \p{Alpha} \p{Digit}
- * \p{Alnum} \p{Upper} \p{Lower} \p{Punct} \p{Space} (and \P{…}). Rejected
- * with an error rather than run differently: possessive quantifiers (a*+),
- * atomic groups ((?>…)), class intersections ([a-z&&[^aeiou]]), inline
- * flags after the start, and other \p{…} classes.
+ * quoting, \A \Z \z, \h, \R (any line break), Java's ASCII-only \s, class
+ * unions ([a-d[m-z]]), and the POSIX classes \p{Alpha} \p{Digit} \p{Alnum}
+ * \p{Upper} \p{Lower} \p{Punct} \p{Space} (and \P{…}). Rejected with an
+ * error rather than run differently: possessive quantifiers (a*+), atomic
+ * groups ((?>…)), class intersections ([a-z&&[^aeiou]]), inline flags after
+ * the start, and other \p{…} classes. A pattern Java's Pattern refuses is
+ * its PatternSyntaxException, with Java's description, index and message
+ * (#66: `split("+")` is "Dangling meta character '+' near index 0").
  */
 import { UnsupportedFeatureError } from '../errors';
 import { StdlibError } from './context';
@@ -23,8 +26,217 @@ function unsupported(what: string): never {
   throw new UnsupportedFeatureError(`Regular expressions with ${what}`, 0);
 }
 
+/** Java's \s: the ASCII whitespace characters only (JavaScript's \s is any Unicode space). */
+const JAVA_SPACE = ' \\t\\n\\x0B\\f\\r';
+
+/** PatternSyntaxException.getMessage(): the description, ` near index n`, the pattern, and a caret under the index when it is inside the pattern. */
+export function patternSyntaxMessage(desc: string, pattern: string, index: number): string {
+  const near = index >= 0 ? ` near index ${index}` : '';
+  const caret = index >= 0 && index < pattern.length ? `\n${' '.repeat(index)}^` : '';
+  return `${desc}${near}\n${pattern}${caret}`;
+}
+
+type PatternError = { desc: string; index: number };
+
+const CATEGORIES = new Set('L Lu Ll Lt Lm Lo LC M Mn Mc Me N Nd Nl No P Pc Pd Ps Pe Pi Pf Po S Sm Sc Sk So Z Zs Zl Zp C Cc Cf Co Cs Cn'.split(' '));
+
+/**
+ * Whether Java knows a \p{…} name (only the POSIX ones are translated; the
+ * rest are rejected as unsupported): a POSIX class, a general category, a
+ * script, block or binary property (Is…, In…, script=…), or a java… method.
+ */
+function isJavaProperty(name: string): boolean {
+  const bare = name.replace(/^Is/, '');
+  return POSIX[bare] !== undefined || CATEGORIES.has(bare) || /^(Is|In)\w+$|^java[A-Z]\w*$|^(script|sc|block|blk|general_category|gc)=\w+$/.test(name)
+    || ['ASCII', 'Graph', 'Print', 'Cntrl'].includes(bare);
+}
+
+/** A PatternSyntaxException the stdlib raises, with the parts its getDescription(), getIndex() and getPattern() return. */
+export class PatternSyntaxError extends StdlibError {
+  readonly desc: string;
+  readonly pattern: string;
+  readonly index: number;
+  constructor(desc: string, pattern: string, index: number) {
+    super(`PatternSyntaxException: ${patternSyntaxMessage(desc, pattern, index)}`);
+    this.desc = desc;
+    this.pattern = pattern;
+    this.index = index;
+  }
+}
+
+/** A character class from its `[` at `start`: the index of its `]`, or Java's error (an unclosed class, a range backwards). */
+function scanClass(p: string, start: number): { end: number } | PatternError {
+  let i = start + 1;
+  if (p[i] === '^') i++;
+  let first = true; // a ] right after [ or [^ is a literal
+  let prev: number | undefined; // the last single character, which a - may start a range from
+  for (; i < p.length; i++) {
+    const c = p[i];
+    if (c === ']' && !first) return { end: i };
+    first = false;
+    if (c === '[') {
+      const inner = scanClass(p, i);
+      if ('desc' in inner) return inner;
+      i = inner.end;
+      prev = undefined;
+    } else if (c === '\\') {
+      if (i + 1 >= p.length) return { desc: 'Unescaped trailing backslash', index: p.length };
+      const e = p[++i];
+      prev = /[a-zA-Z0-9]/.test(e) ? ({ t: 9, n: 10, r: 13, f: 12 } as Record<string, number>)[e] : e.charCodeAt(0);
+    } else if (c === '-' && prev !== undefined && p[i + 1] !== ']') {
+      if (i + 1 >= p.length) return { desc: 'Illegal character range', index: i + 1 };
+      let j = i + 1;
+      if (p[j] === '[') { prev = undefined; continue; }
+      let to = p.charCodeAt(j);
+      if (p[j] === '\\' && j + 1 < p.length && !/[a-zA-Z0-9]/.test(p[j + 1])) to = p.charCodeAt(++j);
+      if (to < prev) return { desc: 'Illegal character range', index: j };
+      i = j;
+      prev = undefined;
+    } else if (c === '&' && p[i + 1] === '&') {
+      i++;
+      prev = undefined;
+    } else {
+      prev = c.charCodeAt(0);
+    }
+  }
+  return { desc: 'Unclosed character class', index: p.length - 1 };
+}
+
+/**
+ * What Java's Pattern refuses in a pattern, as it reports it (#66): a
+ * quantifier with nothing to repeat, groups and classes left open or closed
+ * too often, a range backwards, a bad counted repetition, a trailing
+ * backslash, a bad group name; undefined if Java compiles it.
+ */
+export function patternError(p: string): PatternError | undefined {
+  // (Also what a PatternSyntaxError carries.)
+  let depth = 0;
+  let atom = false; // what is before could be repeated
+  let quantified = false; // just after a quantifier, which one ? or + may make lazy or possessive
+  let modified = false;
+  for (let i = 0; i < p.length; i++) {
+    const c = p[i];
+    const wasQuantified = quantified;
+    quantified = false;
+    if (c === '\\') {
+      if (i + 1 >= p.length) return { desc: 'Unescaped trailing backslash', index: p.length };
+      const e = p[i + 1];
+      if (e === 'Q') {
+        const end = p.indexOf('\\E', i + 2);
+        i = end < 0 ? p.length : end + 1;
+      } else if (e === 'k' && p[i + 2] !== '<') {
+        return { desc: "\\k is not followed by '<' for named capturing group", index: i + 2 };
+      } else if (e === 'x' && !/^[0-9a-fA-F]{2}|^\{/.test(p.slice(i + 2))) {
+        return { desc: 'Illegal hexadecimal escape sequence', index: i + 2 };
+      } else if (e === 'u' && !/^[0-9a-fA-F]{4}/.test(p.slice(i + 2))) {
+        return { desc: 'Illegal Unicode escape sequence', index: i + 2 + /^[0-9a-fA-F]*/.exec(p.slice(i + 2))![0].length };
+      } else if (e === 'c' && i + 2 >= p.length) {
+        return { desc: 'Illegal control escape sequence', index: i + 1 };
+      } else if (/[pPxN]/.test(e) && p[i + 2] === '{') {
+        // A property or code point in braces: \p{Alpha}, \x{1F600}; a property Java doesn't have is its error.
+        const close = p.indexOf('}', i + 3);
+        const name = p.slice(i + 3, close < 0 ? p.length : close);
+        if ((e === 'p' || e === 'P') && close >= 0 && !isJavaProperty(name)) return { desc: `Unknown character property name {${name}}`, index: close };
+        i = close < 0 ? p.length : close;
+      } else if (e === 'k') {
+        const close = p.indexOf('>', i + 3);
+        i = close < 0 ? p.length : close;
+      } else {
+        i++;
+      }
+      atom = true;
+      continue;
+    }
+    if (c === '[') {
+      const cls = scanClass(p, i);
+      if ('desc' in cls) return cls;
+      i = cls.end;
+      atom = true;
+      continue;
+    }
+    if (c === '(') {
+      if (p[i + 1] === '?') {
+        const flags = /^\(\?[idmsuxU-]*\)/.exec(p.slice(i));
+        if (flags) {
+          i += flags[0].length - 1;
+          atom = false;
+          continue;
+        }
+        if (p[i + 2] === '<' && p[i + 3] !== '=' && p[i + 3] !== '!') {
+          const close = p.indexOf('>', i + 3);
+          if (!/[a-zA-Z]/.test(p[i + 3] ?? '')) return { desc: 'capturing group name does not start with a Latin letter', index: i + 3 };
+          if (close < 0) return { desc: "named capturing group is missing trailing '>'", index: p.length };
+          i = close;
+        } else {
+          // (?: (?= (?! (?> (?<= (?<! and a flags group (?i: … ): the header isn't something to repeat.
+          const header = /^\(\?(?:[:=!>]|<[=!]|[idmsuxU-]*:)/.exec(p.slice(i));
+          if (header) i += header[0].length - 1;
+        }
+      }
+      depth++;
+      atom = false;
+      continue;
+    }
+    if (c === ')') {
+      if (depth === 0) return { desc: "Unmatched closing ')'", index: i - 1 };
+      depth--;
+      atom = true;
+      continue;
+    }
+    if (c === '*' || c === '+' || c === '?') {
+      if (wasQuantified && !modified && c !== '*') {
+        modified = true;
+        quantified = true;
+        continue;
+      }
+      if (!atom || wasQuantified) return { desc: `Dangling meta character '${c}'`, index: i };
+      atom = false;
+      quantified = true;
+      modified = false;
+      continue;
+    }
+    if (c === '{' && (atom || wasQuantified)) {
+      if (wasQuantified) return { desc: `Dangling meta character '{'`, index: i };
+      let j = i + 1;
+      // A count's digits, and where one past an int's range is (Java's error there).
+      const count = (from: number): { end: number; value: number; overflow?: number } => {
+        let k = from, value = 0;
+        while (k < p.length && /[0-9]/.test(p[k])) {
+          value = value * 10 + Number(p[k]);
+          if (value > 0x7fffffff) return { end: k, value, overflow: k };
+          k++;
+        }
+        return { end: k, value };
+      };
+      const min = count(j);
+      if (min.end === j) return { desc: 'Illegal repetition', index: i + 1 };
+      if (min.overflow !== undefined) return { desc: 'Illegal repetition range', index: min.overflow };
+      j = min.end;
+      let max = min.value;
+      if (p[j] === ',') {
+        const upper = count(j + 1);
+        if (upper.overflow !== undefined) return { desc: 'Illegal repetition range', index: upper.overflow };
+        max = upper.end === j + 1 ? Infinity : upper.value;
+        j = upper.end;
+      }
+      if (p[j] !== '}') return { desc: 'Unclosed counted closure', index: j };
+      if (max < min.value) return { desc: 'Illegal repetition range', index: j };
+      i = j;
+      atom = false;
+      quantified = true;
+      modified = false;
+      continue;
+    }
+    atom = c !== '|' && c !== '^' && c !== '$';
+  }
+  if (depth > 0) return { desc: 'Unclosed group', index: p.length };
+  return undefined;
+}
+
 /** A Java regex as a JavaScript RegExp; `extraFlags` are added (g for a global search). */
 export function javaRegex(pattern: string, extraFlags = ''): RegExp {
+  const error = patternError(pattern);
+  if (error) throw new PatternSyntaxError(error.desc, pattern, error.index);
   let flags = '';
   let source = pattern;
   const inline = /^\(\?([imsx]+)\)/.exec(source);
@@ -61,14 +273,26 @@ export function javaRegex(pattern: string, extraFlags = ''): RegExp {
       if (next === 'A') { out += '^'; i++; continue; }
       if (next === 'Z' || next === 'z') { out += '$'; i++; continue; }
       if (next === 'h') { out += inClass ? ' \\t\\xA0' : '[ \\t\\xA0]'; i++; continue; }
+      if (next === 's') { out += inClass ? JAVA_SPACE : `[${JAVA_SPACE}]`; i++; continue; }
+      if (next === 'S' && !inClass) { out += `[^${JAVA_SPACE}]`; i++; continue; }
+      // \R: any line break, \r\n as one.
+      if (next === 'R' && !inClass) { out += '(?:\\r\\n|[\\n\\x0B\\f\\r\\x85\\u2028\\u2029])'; i++; continue; }
       out += c + (next ?? '');
       i++;
       continue;
     }
     if (inClass) {
       if (c === '&' && source[i + 1] === '&') unsupported('character class intersections (&&)');
-      if (c === '[') inClass++;
-      if (c === ']') inClass--;
+      // A class inside a class is their union, [a-d[m-z]]: its members join the outer class.
+      if (c === '[') {
+        if (source[i + 1] === '^') unsupported('a negated class inside a class');
+        inClass++;
+        continue;
+      }
+      if (c === ']') {
+        inClass--;
+        if (inClass > 0) continue;
+      }
       out += c;
       continue;
     }
@@ -89,6 +313,11 @@ export function javaRegex(pattern: string, extraFlags = ''): RegExp {
       continue;
     }
     if (c === '+' && quantified) unsupported('possessive quantifiers (a*+)');
+    // A { with nothing before it to repeat is a literal { in Java (a syntax error in JavaScript).
+    if (c === '{' && (i === 0 || source[i - 1] === '(' || source[i - 1] === '|')) {
+      out += '\\{';
+      continue;
+    }
     // A lazy ? after a quantifier is itself not one.
     afterQuantifier = c === '*' || c === '+' || c === '}' || (c === '?' && !quantified);
     out += c;
@@ -96,7 +325,9 @@ export function javaRegex(pattern: string, extraFlags = ''): RegExp {
   try {
     return new RegExp(out, flags + extraFlags);
   } catch (e) {
-    throw new StdlibError(`PatternSyntaxException: ${(e as Error).message} near index 0\n${pattern}`);
+    // What Java accepts and the translation doesn't: the browser's reason, without its own wording around it.
+    const reason = (e as Error).message.replace(/^Invalid regular expression: \/.*\/[a-z]*: /s, '');
+    throw new PatternSyntaxError(reason, pattern, -1);
   }
 }
 

@@ -55,7 +55,7 @@ export interface BindResult {
 // ── Packages and the library ──
 
 /** Packages a program can name; their classes come from the stubs. */
-const LIBRARY_PACKAGES = ['java.lang', 'java.util', 'java.io', 'java.util.function', 'java.util.stream'];
+const LIBRARY_PACKAGES = ['java.lang', 'java.util', 'java.io', 'java.util.function', 'java.util.stream', 'java.util.regex'];
 const PACKAGE_PREFIXES = new Set(['java', ...LIBRARY_PACKAGES]);
 
 export interface Library {
