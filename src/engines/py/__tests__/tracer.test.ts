@@ -45,8 +45,12 @@ describe('getTracerCode', () => {
   });
 
   it('returns JSON from run_traced: each part once, the steps referring to them by index (#39)', () => {
-    expect(code).toContain('result = {"type": "result", "parts": _parts, "snapshots": _snapshots}');
-    expect(code).toContain("return _json_dumps(result, separators=(',', ':'))");
+    expect(code).toContain(`result = '{"type":"result","parts":[' + ','.join(_parts) + '],"snapshots":' + _encode(_snapshots)`);
+  });
+
+  it("writes each part as JSON text when it is made, so the reply keeps none of the program's objects (#78)", () => {
+    expect(code).toContain("_c_encoder = _json.make_encoder(None, _unencodable, _json.encode_basestring_ascii, None, ':', ',', False, False, True)");
+    expect(code).toContain('_parts.append(_encode(obj))');
   });
 
   // ── Trace function ──
@@ -102,11 +106,28 @@ describe('getTracerCode', () => {
   });
 
   it('draws each step from the parts of the step before that are unchanged (#39)', () => {
-    expect(code).toContain('def _draw_frame(frame_info, local_vars, live, return_value, has_return, visited, pending):');
-    expect(code).toContain('if not live and frame_info.get("drawn_from") is local_vars:');
+    expect(code).toContain('def _draw_frame(frame_info, top, return_value, has_return, visited, pending):');
     expect(code).toContain('if hit is not None and hit[0] is val:');
-    expect(code).toContain('ids = list(map(id, values))');
+    expect(code).toContain('ids = list(map(id, seq))');
     expect(code).toContain('_heap_cache = cache');
+  });
+
+  it("holds none of the program's objects between steps that CPython doesn't hold (#78; program.test.ts runs it)", () => {
+    // A heap object is remembered by the ids and types of what it showed, its numbers and strings held.
+    expect(code).toContain('tids = list(map(id, types))');
+    expect(code).toContain('held = list(_compress(seq, map(_is_primitive_type, types)))');
+    // The module's variables are compared by what they show; a function frame's held until its next event.
+    expect(code).toContain('key = value["heapId"] if value["type"] == "ref" else _encode(value)');
+    expect(code).toContain('holds = kind == "function"');
+    // Heap ids by address and type, per-type facts by weak reference.
+    expect(code).toContain('_heap_map[k] = (heap_id, tid)');
+    expect(code).toContain('cache[k] = (value, _weakref.ref(t))');
+  });
+
+  it('reads each frame from the frame itself, again whenever it may have changed (#80)', () => {
+    expect(code).toContain('local_vars = _frame_locals(frame_info["frame"])');
+    expect(code).toContain('_call_stack[-1]["stale"] = True');
+    expect(code).toContain('"cells": bool(code.co_cellvars or code.co_freevars)');
   });
 
   it('checks the time and work budgets while drawing a step (#39)', () => {
@@ -117,7 +138,7 @@ describe('getTracerCode', () => {
   it('serializes None and bools before ints (bool is a subclass of int)', () => {
     expect(code).toContain('return {"type": "null", "value": None, "display": "None"}');
     const trueCheck = code.indexOf('if val is True:');
-    const intCheck = code.indexOf('if issubclass(t, int):');
+    const intCheck = code.indexOf('if t is int:');
     expect(trueCheck).toBeGreaterThan(-1);
     expect(trueCheck).toBeLessThan(intCheck);
   });
@@ -131,7 +152,7 @@ describe('getTracerCode', () => {
 
   it("reads containers through their own methods, not the program's overrides", () => {
     expect(code).toContain('list.__getitem__(obj, slice(0, _MAX_SEQ_PROPS))');
-    expect(code).toContain('dict.items(obj)');
+    expect(code).toContain('_islice(dict.keys(obj), _MAX_DICT_PROPS)');
     expect(code).toContain("object.__getattribute__(obj, '__dict__')");
     expect(code).not.toMatch(/\bhasattr\(obj/);
     expect(code).not.toMatch(/\bgetattr\(obj/);
@@ -139,7 +160,12 @@ describe('getTracerCode', () => {
 
   it('draws each kind of heap object', () => {
     for (const kind of ['list', 'tuple', 'dict', 'set', 'function', 'method', 'class', 'module', 'enum']) expect(code).toContain(`("${kind}", `);
-    expect(code).toContain('return "object", _type_name(t), keys, values, None');
+    expect(code).toContain('return "object", _type_name(t), spec');
+  });
+
+  it('draws only these types inline, a subclass of one as an object (#78)', () => {
+    expect(code).toContain('_PRIMITIVE_TYPES = frozenset({int, float, str, bool, complex, _NoneType})');
+    expect(code).toContain('("primitive", (int, float, str, complex))');
   });
 
   // ── Limits ──
@@ -160,9 +186,11 @@ describe('getTracerCode', () => {
   // ── Output, captured at the streams (#31; output.test.ts runs it) ──
 
   it('captures output at sys.stdout and sys.stderr, not by replacing print', () => {
-    expect(code).toContain('class _TutorStream(_io.TextIOBase):');
-    expect(code).toContain("sys.stdout = sys.__stdout__ = _TutorStream('stdout', 'strict')");
-    expect(code).toContain("sys.stderr = sys.__stderr__ = _TutorStream('stderr', 'backslashreplace')");
+    // Real TextIOWrappers over a recording buffer (#78): reconfigure, buffer, line_buffering and write_through as CPython's.
+    expect(code).toContain('class _TutorBuffer(_io.BufferedIOBase):');
+    expect(code).toContain('class _TutorStdin(_io.TextIOWrapper):');
+    expect(code).toContain("sys.stdout = sys.__stdout__ = _output_stream('stdout', 'strict')");
+    expect(code).toContain("sys.stderr = sys.__stderr__ = _output_stream('stderr', 'backslashreplace')");
     expect(code).not.toContain("namespace['print']");
     expect(code).not.toContain('_capture_print');
   });
@@ -192,7 +220,7 @@ describe('getTracerCode', () => {
   });
 
   it("hides what a class body's namespace started with while it holds the same object", () => {
-    expect(code).toContain('frame_info["base"] = dict(params)');
+    expect(code).toContain('frame_info["base"] = dict(_frame_locals(frame))');
     expect(code).toContain('dict.__getitem__(local_vars, k) is base[k]');
   });
 
@@ -207,8 +235,8 @@ describe('getTracerCode', () => {
   });
 
   it('draws classes, modules and Enum members as themselves', () => {
-    expect(code).toContain('return "class", label, keys, values, None');
-    expect(code).toContain('return "module", _safe_name(obj), [], [], None');
+    expect(code).toContain('return "class", label, spec');
+    expect(code).toContain('return "module", seq[0], []');
     expect(code).toContain('("enum", _Enum)');
   });
 
@@ -268,7 +296,7 @@ describe('getTracerCode', () => {
 
   it('_capture_snapshot accepts column_range and condition parameters', () => {
     expect(code).toContain(
-      'def _capture_snapshot(line, current_locals, return_value=None, has_return=False, column_range=None, condition=None):',
+      'def _capture_snapshot(line, return_value=None, has_return=False, column_range=None, condition=None):',
     );
   });
 
@@ -315,12 +343,15 @@ describe('getTracerCode', () => {
 
   // ── Call stack management ──
 
-  it('pushes module frame on module call event', () => {
-    expect(code).toContain('_call_stack.append({"name": "<module>"');
+  it('pushes a frame on every call event, the module frame included', () => {
+    expect(code).toContain('frame_info = {"name": _COMP_DISPLAY_NAMES.get(fname, fname), "kind": _frame_kind(code), "frame": frame,');
+    expect(code).toContain('_call_stack.append(frame_info)');
   });
 
-  it('pushes named frame on function call event', () => {
-    expect(code).toContain('frame_info = {"name": display_name');
+  it("chains the program's own trace function and never lets it replace the tracer's (#78)", () => {
+    expect(code).toContain('sys.settrace = _program_settrace');
+    expect(code).toContain('sys.gettrace = _program_gettrace');
+    expect(code).toContain('return _chain(frame, event, arg, result)');
   });
 
   it('pops frame on return event', () => {

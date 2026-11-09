@@ -191,3 +191,61 @@ describe('the order of variables', () => {
     expect(names(all.at(-1)!.callStack[0])).toEqual(['warnings', '__version__', 'A', 'B']);
   });
 });
+
+describe('frames below the top (#80)', () => {
+  const valueOf = (f: StackFrame, name: string) => {
+    const v = f.variables.find(x => x.name === name)?.value;
+    return v && v.type !== 'ref' ? v.value : v;
+  };
+
+  it("shows a nonlocal variable as the closure changed it, in the frame it belongs to", () => {
+    const all = steps([
+      'def outer():',
+      '    count = 0',
+      '    def inc():',
+      '        nonlocal count',
+      '        count += 1',
+      '    inc()',
+      '    inc()',
+      '    return count',
+      'outer()',
+    ].join('\n'));
+    for (const s of all.filter(x => x.callStack.at(-1)!.name === 'inc')) {
+      const [, outerFrame, incFrame] = s.callStack;
+      // One variable, one value: the frame below shows what the closure sees.
+      expect(valueOf(outerFrame, 'count')).toBe(valueOf(incFrame, 'count'));
+    }
+  });
+
+  it('reads a caller again when it calls: a variable it set on the same line, an assignment expression', () => {
+    const all = steps([
+      'def f(v):',
+      '    return v * 2',
+      'def check(n):',
+      '    return n > 3',
+      'def g(data):',
+      '    x = 5; y = f(x)',
+      '    if (n := len(data)) > 3 and check(n):',
+      '        return y',
+      'g([1, 2, 3, 4])',
+    ].join('\n'));
+    const inF = all.find(s => s.callStack.at(-1)!.name === 'f')!;
+    expect(valueOf(inF.callStack[1], 'x')).toBe(5);
+    const inCheck = all.find(s => s.callStack.at(-1)!.name === 'check')!;
+    expect(valueOf(inCheck.callStack[1], 'n')).toBe(4);
+  });
+
+  it('keeps a deep recursion cheap: a frame that ran nothing since its last step is the same part', () => {
+    const all = steps([
+      'def down(n):',
+      '    if n == 0:',
+      '        return 0',
+      '    return down(n - 1)',
+      'down(30)',
+    ].join('\n'));
+    const deepest = all.find(s => s.callStack.length === 32)!;
+    const before = all[all.indexOf(deepest) - 1];
+    // The frames below the top are the same objects in consecutive steps (decodeReply shares a part).
+    expect(deepest.callStack.slice(0, 30).every((f, i) => f === before.callStack[i])).toBe(true);
+  });
+});

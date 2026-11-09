@@ -2,8 +2,11 @@
  * The program runs as `python main.py` runs it, in a real Pyodide: as the
  * `__main__` module (#77), so `unittest.main()`, `doctest.testmod()` and
  * pickle find what it defines, with the builtins module as `__builtins__`,
- * `__file__` and `sys.argv`.
+ * `__file__` and `sys.argv`; and tracing changes nothing it does (#78): its
+ * objects die where it releases them, its own trace function gets CPython's
+ * events, and its streams are CPython's TextIOWrappers.
  */
+import { readFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { ExecutionSnapshot, WorkerMessage } from '../../../types/snapshot';
 import { loadTracer, runProgram } from '../run';
@@ -111,5 +114,155 @@ describe('the program is the __main__ module (#77)', () => {
     expect(after).toEqual(before);
     // The next run's module is a new one.
     expect(consoleText(runFull('print("left_over" in globals())').snapshots)).toBe('False');
+  });
+});
+
+/**
+ * What the program prints run untraced in this interpreter, in a module of
+ * its own: what python main.py prints, which tracing must not change.
+ */
+function plainOutput(source: string): string {
+  py.globals.set('__plain_src', source);
+  const out = py.runPython([
+    'import io, sys, types, contextlib',
+    '_plain_buf = io.StringIO()',
+    "_plain_main = types.ModuleType('__main__')",
+    "_plain_main.__builtins__ = __import__('builtins')",
+    "_plain_saved = sys.modules['__main__']",
+    "sys.modules['__main__'] = _plain_main",
+    'try:',
+    '    with contextlib.redirect_stdout(_plain_buf):',
+    "        exec(compile(__plain_src, 'main.py', 'exec'), _plain_main.__dict__)",
+    'finally:',
+    "    sys.modules['__main__'] = _plain_saved",
+    '_plain_buf.getvalue()',
+  ].join('\n')) as string;
+  return out.replace(/\n$/, '');
+}
+
+describe("tracing changes nothing the program does (#78)", () => {
+  const lifetimes = readFileSync(new URL('./cpython/cases/extra/object-lifetimes.py', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+
+  it('objects die where the program releases them: __del__, weak references, generators, cycles (extra/object-lifetimes)', () => {
+    const steps = runFull(lifetimes).snapshots;
+    expect(consoleText(steps)).toBe(plainOutput(lifetimes));
+    expect(consoleText(steps).split('\n').slice(0, 2)).toEqual(['released a', 'after a']);
+  });
+
+  it('runs __del__ and an abandoned generator\'s finally block with their steps', () => {
+    const steps = runFull(lifetimes).snapshots;
+    const del = steps.filter(s => s.callStack.at(-1)!.name === '__del__');
+    expect(del.length).toBeGreaterThan(6);
+    expect(del[0].callStack.map(f => f.name)).toEqual(['<module>', '__del__']);
+    const finallyLine = lifetimes.split('\n').indexOf('        print("generator closed")') + 1;
+    expect(steps.some(s => s.callStack.at(-1)!.name === 'numbers' && s.line === finallyLine)).toBe(true);
+  });
+
+  it('counts references as python main.py does: lists, objects and numbers in module variables', () => {
+    const source = [
+      'import sys',
+      'class P: pass',
+      'p = P()',
+      'items = [p, p]',
+      'n = int("123456789")',
+      's = "".join(["ab", "cd"])',
+      'print(sys.getrefcount(items), sys.getrefcount(p), sys.getrefcount(n), sys.getrefcount(s))',
+      'other = items',
+      'print(sys.getrefcount(items))',
+    ].join('\n');
+    expect(consoleText(runFull(source).snapshots)).toBe(plainOutput(source));
+    expect(plainOutput(source)).toBe('2 4 2 2\n3');
+  });
+
+  it("gives the program's own trace function the events CPython gives it (extra/program-settrace)", () => {
+    const source = readFileSync(new URL('./cpython/cases/extra/program-settrace.py', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+    const steps = runFull(source).snapshots;
+    expect(consoleText(steps)).toBe(plainOutput(source));
+    // Its sys.settrace(None) ends only its own tracing: the steps go on to the end.
+    expect(steps.at(-1)!.line).toBe(source.trimEnd().split('\n').length);
+  });
+
+  it('goes on after sys.settrace(None), with the output written since', () => {
+    const steps = runFull('import sys\nsys.settrace(None)\na = 1\nprint(a)').snapshots;
+    expect(consoleText(steps)).toBe('1');
+    expect(steps.map(s => s.line)).toEqual([1, 2, 3, 4, 4]);
+  });
+
+  it('ends a trace function that raises, the exception reaching the program, as CPython does', () => {
+    const source = [
+      'import sys',
+      'def bad(frame, event, arg):',
+      '    raise ValueError("from the tracer")',
+      'def f():',
+      '    return 1',
+      'sys.settrace(bad)',
+      'try:',
+      '    f()',
+      'except ValueError as e:',
+      '    print("caught", e)',
+      'print(sys.gettrace(), f())',
+    ].join('\n');
+    const steps = runFull(source).snapshots;
+    expect(consoleText(steps)).toBe(plainOutput(source));
+    expect(consoleText(steps)).toBe('caught from the tracer\nNone 1');
+    // The tracer goes on.
+    expect(steps.at(-1)!.line).toBe(11);
+  });
+
+  it("makes sys.stdout and sys.stderr CPython's TextIOWrappers (extra/stream-features)", () => {
+    const steps = runFull([
+      'import io, sys',
+      'sys.stdout.reconfigure(encoding="utf-8")',
+      'sys.stdout.buffer.write(b"bytes\\n")',
+      'sys.stderr.buffer.write("caf\\u00e9\\n".encode())',
+      'print(type(sys.stdout).__name__, type(sys.stdout) is io.TextIOWrapper, sys.stdout.line_buffering, sys.stdout.write_through)',
+      'print(repr(sys.stdout), sys.stdout.name, sys.stderr.errors)',
+      'print("no newline", end="")',
+      'print("", "end", sep="|")',
+    ].join('\n')).snapshots;
+    expect(consoleText(steps)).toBe([
+      'bytes',
+      '! café',
+      'TextIOWrapper True False True',
+      "<_io.TextIOWrapper name='<stdout>' mode='w' encoding='utf-8'> <stdout> backslashreplace",
+      'no newline|end',
+    ].join('\n'));
+  });
+
+  it('refuses what CPython\'s streams refuse: str to the buffer, text it can\'t encode, writes after close', () => {
+    const reply = runProgram(py, [
+      'import sys',
+      'try:',
+      '    sys.stdout.buffer.write("text")',
+      'except TypeError as e:',
+      '    print(e)',
+      'try:',
+      '    print("\\udc80")',
+      'except UnicodeEncodeError as e:',
+      '    print(e.reason)',
+    ].join('\n'));
+    if (reply.type !== 'result') throw new Error(reply.message);
+    expect(consoleText(reply.snapshots)).toBe("a bytes-like object is required, not 'str'\nsurrogates not allowed");
+  });
+
+  it('reads the stdin panel through sys.stdin and sys.stdin.buffer, from one position, each read echoed', () => {
+    const reply = runProgram(py, [
+      'import io, sys',
+      'print(type(sys.stdin).__name__, isinstance(sys.stdin, io.TextIOWrapper), repr(sys.stdin))',
+      'first = sys.stdin.buffer.readline()',
+      'second = input()',
+      'third = sys.stdin.readline()',
+      'rest = [line.strip() for line in sys.stdin]',
+      'print(first, second, third, rest, sys.stdin.read())',
+    ].join('\n'), { stdin: 'one\ntwo\nthree\nfour\nfive' });
+    if (reply.type !== 'result') throw new Error(reply.message);
+    const s = last(reply.snapshots);
+    expect(s.stdout).toEqual([
+      "TextIOWrapper True <_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>",
+      "b'one\\n' two three",
+      " ['four', 'five'] ",
+    ]);
+    // What was read is echoed on the console, marked as input (#32).
+    expect(s.console!.filter(l => l.input?.length).map(l => l.text.slice(l.input![0][0], l.input![0][1]))).toEqual(['one', 'two', 'three', 'four', 'five']);
   });
 });

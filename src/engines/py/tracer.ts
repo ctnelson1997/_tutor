@@ -22,6 +22,10 @@ import traceback as _traceback
 import builtins as _builtins
 import warnings as _warnings
 import re as _re
+import codecs as _codecs
+import itertools as _itertools
+import operator as _operator
+import weakref as _weakref
 import enum as _enum
 from importlib.machinery import SourceFileLoader as _SourceFileLoader
 
@@ -30,11 +34,25 @@ from importlib.machinery import SourceFileLoader as _SourceFileLoader
 # tracer calls. (The program runs in a namespace of its own.)
 globals().update({_k: _v for _k, _v in vars(_builtins).items() if not _k.startswith('_')})
 _json_dumps = json.dumps
+# Every part is JSON text from the moment it is made (#78): the tracer keeps
+# none of the program's objects in the reply it builds. The encoder is json's
+# own C one, called directly: JSONEncoder.encode looks isinstance and str up
+# in the builtins, which a program may replace.
+import _json
+
+def _unencodable(o):
+    raise TypeError('not JSON serializable: ' + _type_name(type(o)))
+
+_c_encoder = _json.make_encoder(None, _unencodable, _json.encode_basestring_ascii, None, ':', ',', False, False, True)
+
+def _encode(obj):
+    return ''.join(_c_encoder(obj, 0))
 _isinf = math.isinf
 _isnan = math.isnan
 _now = time.time
 _settrace = sys.settrace
 _setprofile = sys.setprofile
+_gc_collect = __import__('gc').collect
 _getframe = sys._getframe
 _real_getlimit = sys.getrecursionlimit
 _real_setlimit = sys.setrecursionlimit
@@ -148,6 +166,56 @@ def _retrace(frame, event, arg):
     _setprofile(None)
     _settrace(_tracer)
 
+# ── The program's own trace function (#78) ──
+#
+# sys.settrace and sys.gettrace are the program's while it runs: a trace
+# function it sets gets the events CPython would give it, after the tracer has
+# taken its step (a tracing demo, the trace module, doctest restoring what it
+# found), and sys.settrace(None) ends only the program's tracing, never the
+# tracer's.
+_program_trace = None   # the program's global trace function
+_program_local = {}     # frame -> the program's local trace function for it
+
+def _program_settrace(function):
+    global _program_trace
+    _program_trace = function
+    if function is None:
+        _program_local.clear()
+
+def _program_gettrace():
+    return _program_trace
+
+_program_settrace.__name__ = _program_settrace.__qualname__ = 'settrace'
+_program_gettrace.__name__ = _program_gettrace.__qualname__ = 'gettrace'
+
+def _chain(frame, event, arg, result):
+    # Gives an event to the program's trace function, as CPython would, and
+    # returns the tracer's local trace function for the frame if either needs
+    # its events.
+    if frame.f_code.co_filename == _TRACER_FILE:
+        return result
+    try:
+        if event == 'call':
+            local = _program_trace(frame, event, arg) if _program_trace is not None else None
+            if local is not None:
+                _program_local[frame] = local
+        else:
+            local = _program_local.get(frame)
+            if local is not None:
+                local = local(frame, event, arg)
+                if local is None or event == 'return':
+                    _program_local.pop(frame, None)
+                else:
+                    _program_local[frame] = local
+    except BaseException:
+        # As CPython does when a trace function raises: the program's tracing
+        # ends and the exception reaches the program. Raising turns the
+        # tracer off too; _retrace turns it back on.
+        _program_settrace(None)
+        _setprofile(_retrace)
+        raise
+    return _tracer if frame in _program_local else result
+
 # ── What a frame shows (#38) ──
 #
 # Every variable the program has, in the order pythontutor.com shows them:
@@ -223,8 +291,8 @@ def _main_module():
 
 # ── Output: captured at the streams (#31) ──
 #
-# While the program runs, sys.stdout and sys.stderr are _TutorStreams, so the
-# real print (end, sep, file), sys.stdout.write, input()'s prompt, warnings,
+# While the program runs, sys.stdout and sys.stderr are TextIOWrappers over
+# _TutorBuffers (#78), so the real print (end, sep, file), sys.stdout.write, input()'s prompt, warnings,
 # traceback.print_exc() and contextlib.redirect_stdout all work as in CPython
 # run unbuffered (python -u). Each step shows stdout's lines, and once stderr
 # has been used, every line with its stream (a line belongs to the stream that
@@ -284,20 +352,13 @@ def _echo(s):
     _stdin_used = True
     _console_add('stdout', s, True)
 
-class _TutorStream(_io.TextIOBase):
-    # sys.stdout or sys.stderr while the program runs: a text stream that records what is written.
+class _TutorBuffer(_io.BufferedIOBase):
+    # The bytes under sys.stdout or sys.stderr while the program runs (#78):
+    # what is written reaches the console at once, as with python -u.
 
-    def __init__(self, stream, errors):
+    def __init__(self, stream):
         self._stream = stream
-        self._errors = errors
-
-    @property
-    def encoding(self):
-        return 'utf-8'
-
-    @property
-    def errors(self):
-        return self._errors
+        self._decode = _codecs.getincrementaldecoder('utf-8')('replace').decode
 
     @property
     def name(self):
@@ -305,7 +366,7 @@ class _TutorStream(_io.TextIOBase):
 
     @property
     def mode(self):
-        return 'w'
+        return 'wb'
 
     def writable(self):
         return True
@@ -313,36 +374,37 @@ class _TutorStream(_io.TextIOBase):
     def isatty(self):
         return False
 
-    def write(self, s):
-        if not isinstance(s, str):
-            raise TypeError('write() argument must be str, not ' + type(s).__name__)
+    def write(self, b):
+        if isinstance(b, str):
+            raise TypeError("a bytes-like object is required, not 'str'")
         if self.closed:
-            raise ValueError('I/O operation on closed file.')
-        if self._errors == 'strict':
-            s.encode('utf-8')  # what CPython's stdout can't encode raises here too
-        _write(self._stream, s)
-        return len(s)
+            raise ValueError('write to closed file')
+        data = bytes(memoryview(b))
+        text = self._decode(data)
+        if text:
+            _write(self._stream, text)
+        return len(data)
 
     def __repr__(self):
-        return "<_io.TextIOWrapper name='<" + self._stream + ">' mode='w' encoding='utf-8'>"
+        return "<_io.BufferedWriter name='<" + self._stream + ">'>"
 
-class _TutorStdin(_io.TextIOBase):
-    # sys.stdin while the program runs: the input typed in the stdin panel
-    # (#32). input() writes its prompt to sys.stdout and reads a line here, as
-    # CPython does when stdin isn't a terminal; at the end, EOFError. What is
-    # read is echoed on the console.
+def _output_stream(stream, errors):
+    # sys.stdout or sys.stderr while the program runs: a real TextIOWrapper,
+    # as CPython's (reconfigure, buffer, line_buffering, write_through), whose
+    # bytes are recorded. stdout is strict, stderr backslashreplace, as CPython's.
+    # (newline: a line ends with chr(10) wherever the tracer runs.)
+    text = _io.TextIOWrapper(_TutorBuffer(stream), encoding='utf-8', errors=errors, newline=chr(10), write_through=True)
+    text.mode = 'w'
+    return text
+
+class _TutorStdinBuffer(_io.BufferedIOBase):
+    # What the stdin panel holds (#32), read by sys.stdin and, as bytes, by
+    # sys.stdin.buffer (#78), from one position. What is read is echoed on the
+    # console.
 
     def __init__(self, text):
         self._text = text
         self._pos = 0
-
-    @property
-    def encoding(self):
-        return 'utf-8'
-
-    @property
-    def errors(self):
-        return 'strict'
 
     @property
     def name(self):
@@ -350,7 +412,7 @@ class _TutorStdin(_io.TextIOBase):
 
     @property
     def mode(self):
-        return 'r'
+        return 'rb'
 
     def readable(self):
         return True
@@ -359,6 +421,7 @@ class _TutorStdin(_io.TextIOBase):
         return False
 
     def _take(self, n):
+        # The next n characters (all of them for None or a negative n), echoed.
         if self.closed:
             raise ValueError('I/O operation on closed file.')
         end = len(self._text) if n is None or n < 0 else min(len(self._text), self._pos + n)
@@ -368,18 +431,84 @@ class _TutorStdin(_io.TextIOBase):
             _echo(s)
         return s
 
-    def read(self, size=-1):
-        return self._take(size)
-
-    def readline(self, size=-1):
+    def _line_length(self, size):
         newline = self._text.find(chr(10), self._pos)
         n = (len(self._text) if newline < 0 else newline + 1) - self._pos
+        return n if size is None or size < 0 else min(n, size)
+
+    def _chars_in(self, size):
+        # How many characters fit in size bytes (at least one, if any are left).
+        if size is None or size < 0:
+            return -1
+        rest = self._text[self._pos:self._pos + size].encode('utf-8', 'surrogatepass')[:size]
+        n = len(rest.decode('utf-8', 'ignore'))
+        return n if n or not size else 1
+
+    def read(self, size=-1):
+        return self._take(self._chars_in(size)).encode('utf-8', 'surrogatepass')
+
+    def read1(self, size=-1):
+        return self.read(size)
+
+    def readline(self, size=-1):
+        n = self._line_length(-1)
         if size is not None and size >= 0:
-            n = min(n, size)
-        return self._take(n)
+            n = min(n, self._chars_in(size) if size else 0)
+        return self._take(n).encode('utf-8', 'surrogatepass')
+
+    def readinto(self, b):
+        data = self.read(len(b))
+        b[:len(data)] = data
+        return len(data)
+
+    def __repr__(self):
+        return "<_io.BufferedReader name='<stdin>'>"
+
+class _TutorStdin(_io.TextIOWrapper):
+    # sys.stdin while the program runs: the input typed in the stdin panel
+    # (#32). input() writes its prompt to sys.stdout and reads a line here, as
+    # CPython does when stdin isn't a terminal; at the end, EOFError. A
+    # TextIOWrapper (#78), whose reads take what they need and no more, so the
+    # console echoes what each read consumed.
+
+    def __init__(self, text):
+        super().__init__(_TutorStdinBuffer(text), encoding='utf-8', errors='strict', newline=chr(10))
+        self.mode = 'r'
+
+    def _check(self):
+        if self.closed:
+            raise ValueError('I/O operation on closed file.')
+
+    def read(self, size=-1):
+        self._check()
+        return self.buffer._take(size)
+
+    def readline(self, size=-1):
+        self._check()
+        return self.buffer._take(self.buffer._line_length(size))
+
+    def readlines(self, hint=-1):
+        lines = []
+        total = 0
+        while hint is None or hint <= 0 or total < hint:
+            line = self.readline()
+            if not line:
+                break
+            lines.append(line)
+            total += len(line)
+        return lines
+
+    def __next__(self):
+        line = self.readline()
+        if not line:
+            raise StopIteration
+        return line
 
     def __repr__(self):
         return "<_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>"
+
+# Named as CPython's: type(sys.stdin).__name__ is 'TextIOWrapper'.
+_TutorStdin.__name__ = _TutorStdin.__qualname__ = 'TextIOWrapper'
 
 def _stdout_shown():
     # stdout's lines, without the empty line after a final newline
@@ -576,15 +705,33 @@ _FUNCTION_TYPES = (_types.FunctionType, _types.BuiltinFunctionType, _types.Metho
 _METHOD_WRAPPERS = (staticmethod, classmethod, property)
 # Ints JavaScript holds exactly: their text is the same in both languages.
 _EXACT_INT = 2 ** 53
+_NoneType = type(None)
+# The values drawn inline, as the snapshot's primitives: exactly these types
+# (#78). An instance of a subclass (an IntEnum member, a str subclass) is an
+# object of its own, as the reference trace has it.
+_PRIMITIVE_TYPES = frozenset({int, float, str, bool, complex, _NoneType})
+_is_primitive_type = _PRIMITIVE_TYPES.__contains__
+_compress = _itertools.compress
+_islice = _itertools.islice
+_MISSING = object()
+
+def _is_primitive(v):
+    return type(v) in _PRIMITIVE_TYPES
 
 def _get_heap_id(obj):
+    # A heap object's id, by its address and type. The tracer holds no object
+    # between steps (#78), so an address can be another object's later: one
+    # of another type gets a new id, one of the same type keeps it, as
+    # CPython's id() does.
     global _heap_counter
-    obj_id = id(obj)
-    if obj_id in _heap_map:
-        return _heap_map[obj_id]
+    k = id(obj)
+    tid = id(type(obj))
+    entry = _heap_map.get(k)
+    if entry is not None and entry[1] == tid:
+        return entry[0]
     _heap_counter += 1
     heap_id = str(_heap_counter)
-    _heap_map[obj_id] = heap_id
+    _heap_map[k] = (heap_id, tid)
     return heap_id
 
 def _digits(v):
@@ -597,7 +744,6 @@ def _digits(v):
 def _int_value(val):
     # An int as Python writes it (#37): a JSON number while JavaScript holds it
     # exactly, else its digits as text (a JSON number would lose them).
-    val = int.__int__(val)
     if -_EXACT_INT <= val <= _EXACT_INT:
         return {"type": "number", "value": val}
     try:
@@ -622,23 +768,21 @@ def _serialize_value(val):
     if val is False:
         return {"type": "boolean", "value": False, "display": "False"}
     t = type(val)
-    if issubclass(t, int):
+    if t is int:
         return _int_value(val)
-    if issubclass(t, float):
-        f = float.__float__(val)
-        text = float.__repr__(f)
-        if _isinf(f):
-            return {"type": "number", "value": "Infinity" if f > 0 else "-Infinity", "display": text}
-        if _isnan(f):
+    if t is float:
+        text = float.__repr__(val)
+        if _isinf(val):
+            return {"type": "number", "value": "Infinity" if val > 0 else "-Infinity", "display": text}
+        if _isnan(val):
             return {"type": "number", "value": "NaN", "display": text}
-        return {"type": "number", "value": f, "display": text}
-    if issubclass(t, str):
-        return {"type": "string", "value": str.__str__(val)}
-    if issubclass(t, complex):
+        return {"type": "number", "value": val, "display": text}
+    if t is str:
+        return {"type": "string", "value": val}
+    if t is complex:
         text = complex.__repr__(val)
         return {"type": "number", "value": text, "display": text}
-
-    # Heap objects: list, dict, tuple, set, function, class instances
+    # Heap objects: lists, dicts, tuples, sets, functions, instances, ...
     return {"type": "ref", "heapId": _get_heap_id(val)}
 
 def _safe_repr(v, depth=2):
@@ -665,12 +809,9 @@ def _safe_repr(v, depth=2):
     return '<' + _type_name(t) + ' object>'
 
 def _key_text(k):
-    if issubclass(type(k), str):
-        return str.__str__(k)
+    if type(k) is str:
+        return k
     return _safe_repr(k)
-
-def _is_primitive(v):
-    return v is None or issubclass(type(v), (bool, int, float, str, complex))
 
 def _safe_name(obj):
     # A function's or class's name, read through the data descriptor of its type.
@@ -690,30 +831,40 @@ def _object_dict(obj):
         return None
     return d if type(d) is dict else None
 
-def _slot_descriptors(t):
-    # (name, member descriptor, class) for the __slots__ of the Python classes
-    # in t's MRO, found once per class.
-    found = _slots_of.get(t)
-    if found is None:
-        found = []
-        for cls in _type_mro(t):
-            cls_dict = _type_dict(cls)
-            slots = cls_dict.get('__slots__')
-            if slots is None:
+def _per_type(cache, t, compute):
+    # What compute(t) gives, found once per type for this run. The cache holds
+    # the type only weakly (#78): a class the program drops can die.
+    k = id(t)
+    found = cache.get(k)
+    if found is not None and found[1]() is t:
+        return found[0]
+    value = compute(t)
+    cache[k] = (value, _weakref.ref(t))
+    return value
+
+def _find_slot_descriptors(t):
+    found = []
+    for cls in _type_mro(t):
+        cls_dict = _type_dict(cls)
+        slots = cls_dict.get('__slots__')
+        if slots is None:
+            continue
+        if type(slots) is str:
+            slots = (slots,)
+        for name in slots:
+            if type(name) is not str or name in ('__dict__', '__weakref__'):
                 continue
-            if type(slots) is str:
-                slots = (slots,)
-            for name in slots:
-                if type(name) is not str or name in ('__dict__', '__weakref__'):
-                    continue
-                stored = name
-                if name.startswith('__') and not name.endswith('__'):
-                    stored = '_' + _type_name(cls).lstrip('_') + name
-                descr = cls_dict.get(stored)
-                if type(descr) is _MemberDescriptor:
-                    found.append((name, descr, cls))
-        _slots_of[t] = found
+            stored = name
+            if name.startswith('__') and not name.endswith('__'):
+                stored = '_' + _type_name(cls).lstrip('_') + name
+            descr = cls_dict.get(stored)
+            if type(descr) is _MemberDescriptor:
+                found.append((name, descr, cls))
     return found
+
+def _slot_descriptors(t):
+    # (name, member descriptor, class) for the __slots__ of the Python classes in t's MRO.
+    return _per_type(_slots_of, t, _find_slot_descriptors)
 
 def _slot_values(obj):
     # (name, value) for obj's slots, read through their member descriptors
@@ -781,122 +932,163 @@ _KIND_TYPES = (
     ("list", list), ("tuple", tuple), ("dict", dict), ("set", (set, frozenset)),
     ("function", _FUNCTION_TYPES), ("method", _METHOD_WRAPPERS), ("class", type),
     ("module", _types.ModuleType), ("enum", _Enum),
+    ("primitive", (int, float, str, complex)),
 )
-_kinds = {}           # type -> its kind, for this run
-_slots_of = {}        # type -> its slots' descriptors, for this run
+_kinds = {}           # id(type) -> (its kind, a weak reference to it), for this run
+_slots_of = {}        # id(type) -> (its slots' descriptors, a weak reference to it), for this run
+
+def _find_kind(t):
+    for kind, types in _KIND_TYPES:
+        if issubclass(t, types):
+            return kind
+    return "instance"
 
 def _kind(t):
     # How a type's objects are drawn, found once per type.
-    kind = _kinds.get(t)
-    if kind is None:
-        for kind, types in _KIND_TYPES:
-            if issubclass(t, types):
-                break
-        else:
-            kind = "instance"
-        _kinds[t] = kind
-    return kind
+    return _per_type(_kinds, t, _find_kind)
 
-def _heap_contents(obj, t):
-    # What a heap object shows: (object type, label, keys, values, key
-    # objects), the key objects a list of a dict's keys that are drawn as
-    # arrows (None in other objects and for primitive keys).
-    kind = _kind(t)
-    if kind == "instance":
-        # An instance: its __dict__ and its __slots__, as stored.
-        keys, values = [], []
+def _primitive_base(obj):
+    # The value a subclass of int, float, str or complex holds, as its base type's own.
+    t = type(obj)
+    if issubclass(t, int):
+        return int.__int__(obj)
+    if issubclass(t, float):
+        return float.__float__(obj)
+    if issubclass(t, str):
+        return str.__str__(obj)
+    return complex.__complex__(obj)
+
+def _heap_read(obj, t, kind):
+    # What a heap object's drawing depends on, read through the types' own
+    # methods: the values it may show (seq), in a layout its kind fixes, and
+    # anything else (meta). Another step that reads the same objects (by id
+    # and type) and meta draws it as before, without building it again (#78).
+    if kind == "list":
+        return list.__getitem__(obj, slice(0, _MAX_SEQ_PROPS)), list.__len__(obj)
+    if kind == "tuple":
+        return list(tuple.__getitem__(obj, slice(0, _MAX_SEQ_PROPS))), tuple.__len__(obj)
+    if kind == "dict":
+        keys = list(_islice(dict.keys(obj), _MAX_DICT_PROPS))
+        return keys + list(_islice(dict.values(obj), _MAX_DICT_PROPS)), dict.__len__(obj)
+    if kind == "set":
+        if issubclass(t, set):
+            return list(_islice(set.__iter__(obj), _MAX_SEQ_PROPS)), set.__len__(obj)
+        return list(_islice(frozenset.__iter__(obj), _MAX_SEQ_PROPS)), frozenset.__len__(obj)
+    if kind == "instance" or kind == "enum" or kind == "primitive":
+        # Its __dict__'s keys, then values, then its slots' names and values;
+        # a subclass of a primitive type first holds its value.
+        seq = [_primitive_base(obj)] if kind == "primitive" else []
         d = _object_dict(obj)
+        n = 0
         if d is not None:
-            for k, v in dict.items(d):
-                if len(keys) >= _MAX_DICT_PROPS:
-                    break
-                if type(k) is str and _instance_attribute_shown(k):
-                    keys.append(k)
-                    values.append(v)
+            n = dict.__len__(d)
+            seq += list(dict.keys(d))
+            seq += list(dict.values(d))
         if _slot_descriptors(t):
             for name, v in _slot_values(obj):
-                if len(keys) >= _MAX_DICT_PROPS:
-                    break
-                if _instance_attribute_shown(name):
-                    keys.append(name)
-                    values.append(v)
-        return "object", _type_name(t), keys, values, None
-    if kind == "list":
-        values = list.__getitem__(obj, slice(0, _MAX_SEQ_PROPS))
-        return "list", "", _INDEX_KEYS[:len(values)], values, None
-    if kind == "tuple":
-        values = list(tuple.__getitem__(obj, slice(0, _MAX_SEQ_PROPS)))
-        return "tuple", "", _INDEX_KEYS[:len(values)], values, None
-    if kind == "dict":
-        keys, values, key_objects = [], [], []
-        drawn = False
-        for k, v in dict.items(obj):
-            if len(keys) >= _MAX_DICT_PROPS:
-                break
-            keys.append(_key_text(k))
-            values.append(v)
-            if _is_primitive(k):
-                key_objects.append(None)
-            else:
-                # An object key is drawn as a value: an arrow to it.
-                key_objects.append(k)
-                drawn = True
-        return "dict", "", keys, values, key_objects if drawn else None
-    if kind == "set":
-        items = set.__iter__(obj) if issubclass(t, set) else frozenset.__iter__(obj)
-        values = []
-        for item in items:
-            if len(values) >= _MAX_SEQ_PROPS:
-                break
-            values.append(item)
-        return "set", "", _INDEX_KEYS[:len(values)], values, None
-    if kind == "function":
-        return "function", _safe_name(obj), [], [], None
+                seq.append(name)
+                seq.append(v)
+        return seq, n
+    if kind == "class":
+        ns = _type_dict(obj)
+        keys = list(ns.keys())
+        bases = list(_type_bases(obj))
+        return keys + list(ns.values()) + bases + [_type_name(obj)], (len(keys), len(bases))
     if kind == "method":
-        # A staticmethod, classmethod or property in a class: drawn as its function.
         f = _wrapped_function(obj)
-        decorator = 'staticmethod' if issubclass(t, staticmethod) else 'classmethod' if issubclass(t, classmethod) else 'property'
-        return "function", '@' + decorator + ' ' + (_safe_name(f) if f is not None else ''), [], [], None
+        return [f, _safe_name(f) if f is not None else ''], None
+    # A function or module: its name.
+    return [_safe_name(obj)], None
+
+def _heap_build(obj, t, kind, seq, meta):
+    # How a heap object is drawn, from what _heap_read read: its object type,
+    # label and properties, each property (key text, index of its value in
+    # seq, index of its key in seq when the key is drawn as a value).
+    if kind == "list" or kind == "tuple" or kind == "set":
+        return kind, "", [(_INDEX_KEYS[i], i, None) for i in range(len(seq))]
+    if kind == "dict":
+        n = len(seq) // 2
+        spec = []
+        for i in range(n):
+            k = seq[i]
+            # An object key is drawn as a value: an arrow to it.
+            spec.append((_key_text(k), n + i, None if _is_primitive(k) else i))
+        return "dict", "", spec
+    if kind == "instance" or kind == "primitive":
+        # An instance: its __dict__ and its __slots__, as stored.
+        start = 1 if kind == "primitive" else 0
+        spec = [("value", 0, None)] if kind == "primitive" else []
+        n = meta
+        for i in range(start, start + n):
+            if len(spec) >= _MAX_DICT_PROPS:
+                break
+            k = seq[i]
+            if type(k) is str and _instance_attribute_shown(k):
+                spec.append((k, n + i, None))
+        for j in range(start + 2 * n, len(seq), 2):
+            if len(spec) >= _MAX_DICT_PROPS:
+                break
+            if _instance_attribute_shown(seq[j]):
+                spec.append((seq[j], j + 1, None))
+        return "object", _type_name(t), spec
     if kind == "class":
         # A class (#38): one the program defined with its bases, the methods it
         # wrote and its class attributes; a library's by its name only.
-        label = _type_name(obj)
-        keys, values = [], []
+        nk, nb = meta
+        label = seq[-1]
+        spec = []
         if _is_program_class(obj):
-            bases = [b for b in _type_bases(obj) if b is not object]
+            bases = [b for b in seq[2 * nk:2 * nk + nb] if b is not object]
             if bases:
                 label += '(' + ', '.join(_type_name(b) for b in bases) + ')'
-            for k, v in _type_dict(obj).items():
-                if len(keys) >= _MAX_DICT_PROPS:
+            for i in range(nk):
+                if len(spec) >= _MAX_DICT_PROPS:
                     break
-                if type(k) is str and _class_attribute_shown(k, v):
-                    keys.append(k)
-                    values.append(v)
-        return "class", label, keys, values, None
+                k = seq[i]
+                if type(k) is str and _class_attribute_shown(k, seq[nk + i]):
+                    spec.append((k, nk + i, None))
+        return "class", label, spec
+    if kind == "function":
+        return "function", seq[0], []
+    if kind == "method":
+        # A staticmethod, classmethod or property in a class: drawn as its function.
+        decorator = 'staticmethod' if issubclass(t, staticmethod) else 'classmethod' if issubclass(t, classmethod) else 'property'
+        return "function", '@' + decorator + ' ' + seq[1], []
     if kind == "module":
         # A module is one object, by its name, never drawn in full (#38).
-        return "module", _safe_name(obj), [], [], None
+        return "module", seq[0], []
     # An Enum member, as Python names it, with its value.
-    d = _object_dict(obj) or {}
-    member = d.get('_name_')
-    label = _type_name(t) + ('.' + member if type(member) is str else '')
-    if '_value_' in d:
-        return "object", label, ["value"], [d['_value_']], None
-    return "object", label, [], [], None
+    n = meta
+    label = _type_name(t)
+    spec = []
+    for i in range(n):
+        k = seq[i]
+        if type(k) is str and k == '_name_' and type(seq[n + i]) is str:
+            label += '.' + seq[n + i]
+        elif type(k) is str and k == '_value_':
+            spec.append(("value", n + i, None))
+    return "object", label, spec
 
-# ── Recording steps (#39) ──
+# ── Recording steps (#39, #78) ──
 #
 # A step shows every frame and every object they reach, but costs what
 # changed since the step before: each frame, variable, heap object and
 # property is a part (_part), made once and used again by every later step
-# that shows it unchanged, which identity checks find (a variable bound to the
-# same object, a list holding the same objects). The reply is the parts and
-# the steps referring to them by index; run.ts rebuilds the steps with those
-# parts shared, so the worker's postMessage (a structured clone) carries each
-# once. What a cache entry holds stays alive (a value replaced since the last
-# step), so an id in it is never another object's.
+# that shows it unchanged. The reply is the parts and the steps referring to
+# them by index; run.ts rebuilds the steps with those parts shared, so the
+# worker's postMessage (a structured clone) carries each once.
+#
+# The tracer holds none of the program's objects between steps that CPython
+# doesn't hold anyway (#78), so objects die where the program releases them
+# (a __del__ runs, with its steps; a weak reference empties; an abandoned
+# generator's finally runs) and sys.getrefcount counts what python main.py
+# counts. Parts are JSON text. A function frame's variables are held until
+# the frame's next event, as long as CPython's own tracing holds them (each
+# event refreshes the frame's f_locals); a heap object is remembered by the
+# ids and types of what it showed, and only the numbers and strings among
+# them are held, so an id is never another number's.
 
-_parts = []           # every frame, variable, heap object, property and output list, by index
+_parts = []           # every frame, variable, heap object, property and output list, by index, as JSON text
 _heap_cache = {}      # id(obj) -> what the last step drew of it, for the objects it drew
 _output_parts = None  # (_output_count, stdout part, console part) of the last step
 _stdout_last = None   # (part, lines) of the last stdout list
@@ -904,7 +1096,7 @@ _console_last = None  # (part, line parts) of the last console list
 _console_lines = []   # (key, part) of each console line
 
 def _part(obj):
-    _parts.append(obj)
+    _parts.append(_encode(obj))
     return len(_parts) - 1
 
 def _enqueue(v, visited, pending):
@@ -913,87 +1105,121 @@ def _enqueue(v, visited, pending):
         visited.add(k)
         pending.append(v)
 
-def _draw_frame(frame_info, local_vars, live, return_value, has_return, visited, pending):
-    # A frame as a part. A frame below the top shows the variables it had at
-    # its last line (a copy): the same part while that copy is the same.
-    if not live and frame_info.get("drawn_from") is local_vars:
+def _draw_frame(frame_info, top, return_value, has_return, visited, pending):
+    # A frame as a part, its variables read from the frame as it is (#80).
+    kind = frame_info["kind"]
+    if kind == "function" and not top and not frame_info["stale"] and not frame_info["cells"] and "part" in frame_info:
+        # A function frame below the top that hasn't run since it was drawn
+        # shows the same variables: only a closure, through a cell, could
+        # change them.
         for v in frame_info["heap_values"]:
             _enqueue(v, visited, pending)
         return frame_info["part"]
+    frame_info["stale"] = False
+    local_vars = _frame_locals(frame_info["frame"])
     old = frame_info.get("variable_parts") or {}
+    # A function frame's values are held until the frame's next event, as
+    # CPython's tracing holds them; the module's and a class body's aren't:
+    # their variables are compared by what they show.
+    holds = kind == "function"
     cache = {}
     parts = []
     heap_values = []
     for name in _shown_names(frame_info, local_vars):
         val = dict.__getitem__(local_vars, name)
         hit = old.get(name)
-        if hit is not None and hit[0] is val:
-            p = hit[1]
+        if holds:
+            if hit is not None and hit[0] is val:
+                p = hit[1]
+            else:
+                p = _part({"name": name, "value": _serialize_value(val)})
+            cache[name] = (val, p)
         else:
-            p = _part({"name": name, "value": _serialize_value(val)})
-        cache[name] = (val, p)
+            value = _serialize_value(val)
+            key = value["heapId"] if value["type"] == "ref" else _encode(value)
+            if hit is not None and hit[0] == key:
+                p = hit[1]
+            else:
+                p = _part({"name": name, "value": value})
+            cache[name] = (key, p)
         parts.append(p)
         if not _is_primitive(val):
             heap_values.append(val)
-    frame_info["variable_parts"] = cache
     if has_return:
         parts.append(_part({"name": "return \\u21b5", "value": _serialize_value(return_value)}))
         if not _is_primitive(return_value):
             heap_values.append(return_value)
+    frame_info["variable_parts"] = cache
+    frame_info["heap_values"] = heap_values if holds else None
     if parts != frame_info.get("parts"):
         frame_info["parts"] = parts
         frame_info["part"] = _part({"name": frame_info["name"], "variables": parts})
-    frame_info["drawn_from"] = None if has_return else local_vars
-    frame_info["heap_values"] = heap_values
     for v in heap_values:
         _enqueue(v, visited, pending)
     return frame_info["part"]
 
+def _drop_stale(frame_info):
+    # CPython's tracing read the frame's variables again for an event the
+    # tracer takes no step at (an exception passing through): the tracer stops
+    # holding what the frame has dropped since its last step.
+    old = frame_info.get("variable_parts")
+    if old and frame_info["kind"] == "function":
+        local_vars = _frame_locals(frame_info["frame"])
+        frame_info["variable_parts"] = {n: e for n, e in old.items() if local_vars.get(n, _MISSING) is e[0]}
+        frame_info["heap_values"] = None
+        frame_info["stale"] = True
+
+def _new_entry(obj, t, kind, seq, meta, ids, tids, types, old):
+    # A heap object drawn again: the properties that show the same objects as
+    # the last step's are its parts, the others new.
+    object_type, label, spec = _heap_build(obj, t, kind, seq, meta)
+    old_props = old[7] if old is not None and old[0] == id(t) else {}
+    props = []
+    sigs = {}
+    children = []
+    for key_text, vi, ki in spec:
+        sig = (key_text, ids[vi], tids[vi]) if ki is None else (key_text, ids[vi], tids[vi], ids[ki], tids[ki])
+        p = old_props.get(sig)
+        if p is None:
+            prop = {"key": key_text, "value": _serialize_value(seq[vi])}
+            if ki is not None:
+                prop["keyValue"] = _serialize_value(seq[ki])
+            p = _part(prop)
+        sigs[sig] = p
+        props.append(p)
+        if not _is_primitive_type(types[vi]):
+            children.append(vi)
+        if ki is not None:
+            children.append(ki)
+    if old is not None and old[8] == props and old[9] == object_type and old[10] == label:
+        part = old[5]
+    else:
+        heap_object = {"id": _get_heap_id(obj), "objectType": object_type, "properties": props}
+        if label:
+            heap_object["label"] = label
+        part = _part(heap_object)
+    # The numbers and strings it shows are held until the next step, so their
+    # ids stay theirs: an entry that shows the same ids shows the same values.
+    held = list(_compress(seq, map(_is_primitive_type, types)))
+    return (id(t), meta, ids, tids, held, part, children, sigs, props, object_type, label)
+
 def _draw_heap_object(obj, visited, pending, cache):
-    # A heap object as a part: the last step's while it shows the same
-    # objects; else its properties that did, with the ones that changed.
+    # A heap object as a part: the last step's while it shows the same objects
+    # (by id and type, its numbers and strings held) and the same meta.
     t = type(obj)
-    object_type, label, keys, values, key_objects = _heap_contents(obj, t)
-    ids = list(map(id, values))
-    key_ids = None if key_objects is None else list(map(id, key_objects))
+    kind = _kind(t)
+    seq, meta = _heap_read(obj, t, kind)
+    types = list(map(type, seq))
+    ids = list(map(id, seq))
+    tids = list(map(id, types))
     obj_id = id(obj)
     entry = _heap_cache.get(obj_id)
-    if entry is not None and entry[0] is t and entry[1] == object_type and entry[2] == label and entry[3] == keys and entry[5] == ids and entry[7] == key_ids:
-        # values and key_objects as this step read them, so they stay alive
-        entry = (t, object_type, label, keys, values, ids, key_objects, key_ids, entry[8], entry[9], entry[10])
-    else:
-        old_props = None
-        if entry is not None and entry[0] is t:
-            old_props = entry
-        props = []
-        children = []
-        for i in range(len(keys)):
-            v = values[i]
-            ko = None if key_objects is None else key_objects[i]
-            if (old_props is not None and i < len(old_props[3]) and old_props[3][i] == keys[i] and old_props[5][i] == ids[i]
-                    and (old_props[7][i] if old_props[7] is not None else None) == (None if ko is None else key_ids[i])):
-                props.append(old_props[8][i])
-            else:
-                prop = {"key": keys[i], "value": _serialize_value(v)}
-                if ko is not None:
-                    prop["keyValue"] = _serialize_value(ko)
-                props.append(_part(prop))
-            if not _is_primitive(v):
-                children.append(v)
-            if ko is not None:
-                children.append(ko)
-        if entry is not None and entry[8] == props and entry[1] == object_type and entry[2] == label:
-            part = entry[9]
-        else:
-            heap_object = {"id": _get_heap_id(obj), "objectType": object_type, "properties": props}
-            if label:
-                heap_object["label"] = label
-            part = _part(heap_object)
-        entry = (t, object_type, label, keys, values, ids, key_objects, key_ids, props, part, children)
+    if entry is None or entry[0] != id(t) or entry[1] != meta or entry[2] != ids or entry[3] != tids:
+        entry = _new_entry(obj, t, kind, seq, meta, ids, tids, types, entry)
     cache[obj_id] = entry
-    for c in entry[10]:
-        _enqueue(c, visited, pending)
-    return entry[9]
+    for i in entry[6]:
+        _enqueue(seq[i], visited, pending)
+    return entry[5]
 
 def _check_budgets():
     # The run stops with its steps before the worker's kill: at the time
@@ -1003,7 +1229,7 @@ def _check_budgets():
     if _now() - _start_time > _TIME_BUDGET:
         _stop("time")
 
-def _capture_snapshot(line, current_locals, return_value=None, has_return=False, column_range=None, condition=None):
+def _capture_snapshot(line, return_value=None, has_return=False, column_range=None, condition=None):
     """Capture a full execution snapshot at the given line."""
     global _step_counter, _heap_cache, _work
 
@@ -1014,14 +1240,14 @@ def _capture_snapshot(line, current_locals, return_value=None, has_return=False,
     visited = set()
     pending = []
 
-    # Every frame, the innermost with its live variables (and its return value).
+    # Every frame, the innermost with its return value when it returns.
     top = len(_call_stack) - 1
     stack = []
     for i, frame_info in enumerate(_call_stack):
         if i == top:
-            stack.append(_draw_frame(frame_info, current_locals, True, return_value, has_return, visited, pending))
+            stack.append(_draw_frame(frame_info, True, return_value, has_return, visited, pending))
         else:
-            stack.append(_draw_frame(frame_info, frame_info.get("locals", {}), frame_info["kind"] == "module", None, False, visited, pending))
+            stack.append(_draw_frame(frame_info, False, None, False, visited, pending))
     _work += _STEP_WORK + len(stack)
 
     # The heap objects the frames reach, each once, from the queue.
@@ -1079,12 +1305,15 @@ def _tracer(frame, event, arg):
     if frame in _refused:
         return None
     try:
-        return _trace_event(frame, event, arg)
+        result = _trace_event(frame, event, arg)
     except _TutorStop:
         raise
     except BaseException:
         # The tracer failed, not the program: its steps so far, and an engine error.
         _internal_failure()
+    if _program_trace is not None or _program_local:
+        return _chain(frame, event, arg, result)
+    return result
 
 def _trace_event(frame, event, arg):
     global _events
@@ -1105,27 +1334,30 @@ def _trace_event(frame, event, arg):
         _stop("time")
 
     if event == 'call':
-        if fname == '<module>':
-            # The module's variables are its globals, read as they are at each step.
-            _call_stack.append({"name": "<module>", "locals": frame.f_globals, "kind": "module"})
-        else:
-            display_name = _COMP_DISPLAY_NAMES.get(fname, fname)
-            # Capture function parameters from f_locals at call time
-            params = dict(_frame_locals(frame))
-            frame_info = {"name": display_name, "locals": params, "kind": _frame_kind(code)}
-            if frame_info["kind"] == "class":
-                # What the class's namespace started with, before its body ran.
-                frame_info["base"] = dict(params)
-            _call_stack.append(frame_info)
-            # A comprehension's frame first shows with its first iteration's variables.
-            if not _is_comprehension(code):
-                _capture_snapshot(frame.f_lineno, params)
+        if _call_stack:
+            # The caller ran since its last step (x = 5; y = f(x) on one line):
+            # its variables are read again (#80).
+            _call_stack[-1]["stale"] = True
+        # Each frame is drawn from the frame itself, its variables read as they
+        # are at each step (#78, #80): the module's are its globals.
+        frame_info = {"name": _COMP_DISPLAY_NAMES.get(fname, fname), "kind": _frame_kind(code), "frame": frame,
+                      "cells": bool(code.co_cellvars or code.co_freevars), "stale": False}
+        if frame_info["kind"] == "class":
+            # What the class's namespace started with, before its body ran.
+            frame_info["base"] = dict(_frame_locals(frame))
+        _call_stack.append(frame_info)
+        # A function's entry is a step, with its parameters; a comprehension's
+        # frame first shows with its first iteration's variables.
+        if fname != '<module>' and not _is_comprehension(code):
+            _capture_snapshot(frame.f_lineno)
         return _tracer
 
     elif event == 'exception':
         # An exception is passing through this frame. If the frame doesn't
         # handle it, its 'return' event is the frame unwinding, not a return.
         _unwinding.add(frame)
+        if _call_stack and _call_stack[-1]["frame"] is frame:
+            _drop_stale(_call_stack[-1])
         return _tracer
 
     elif event == 'line':
@@ -1146,10 +1378,7 @@ def _trace_event(frame, event, arg):
             return _tracer
 
         if _call_stack:
-            # Update stored locals for the current frame (the module's are its live globals)
-            local_vars = _frame_locals(frame)
-            _call_stack[-1]["locals"] = local_vars if fname == '<module>' else dict(local_vars)
-            _capture_snapshot(line, local_vars)
+            _capture_snapshot(line)
         return _tracer
 
     elif event == 'return':
@@ -1162,12 +1391,11 @@ def _trace_event(frame, event, arg):
             return _tracer
 
         if _call_stack:
-            local_vars = _frame_locals(frame)
             if fname == '<module>':
                 # Capture final state so stdout from the last line is visible
-                _capture_snapshot(frame.f_lineno, local_vars)
+                _capture_snapshot(frame.f_lineno)
             else:
-                _capture_snapshot(frame.f_lineno, local_vars, return_value=arg, has_return=True)
+                _capture_snapshot(frame.f_lineno, return_value=arg, has_return=True)
             _call_stack.pop()
         return _tracer
 
@@ -1259,7 +1487,7 @@ def run_traced(source_code, stdin_text=''):
     global _stop_reason, _start_time, _events, _unwinding, _work
     global _out_lines, _console, _console_open, _stderr_used, _stdin_used, _output_count, _output_seen
     global _parts, _heap_cache, _output_parts, _stdout_last, _console_last, _console_lines, _kinds, _slots_of
-    global _limit, _base, _refused
+    global _limit, _base, _refused, _program_trace, _program_local
     _stop_reason = None
     _start_time = _now()
     _events = 0
@@ -1267,6 +1495,8 @@ def run_traced(source_code, stdin_text=''):
     _unwinding = set()
     _refused = set()
     _limit = _DEFAULT_LIMIT
+    _program_trace = None
+    _program_local = {}
     _snapshots = []
     _out_lines = ['']
     _console = []
@@ -1302,11 +1532,14 @@ def run_traced(source_code, stdin_text=''):
     # source as main.py in the working directory.
     main_module = _main_module()
     namespace = main_module.__dict__
-    try:
-        with open(_USER_FILE, 'w', encoding='utf-8') as f:
-            f.write(source_code)
-    except OSError:
-        pass
+    if sys.platform == 'emscripten':
+        # In Pyodide's file system, a fresh one each run (#35); never a real
+        # one (the behavior-comparison tests run the tracer in CPython).
+        try:
+            with open(_USER_FILE, 'w', encoding='utf-8') as f:
+                f.write(source_code)
+        except OSError:
+            pass
 
     # The source, for tracebacks, warnings and traceback.print_exc(), as CPython has main.py's.
     _linecache.cache[_USER_FILE] = (len(source_code), None, source_code.splitlines(True), _USER_FILE)
@@ -1318,9 +1551,9 @@ def run_traced(source_code, stdin_text=''):
         stdin_text += chr(10)
     saved_streams = (sys.stdin, sys.stdout, sys.stderr, sys.__stdin__, sys.__stdout__, sys.__stderr__)
     sys.stdin = sys.__stdin__ = _TutorStdin(stdin_text)
-    sys.stdout = sys.__stdout__ = _TutorStream('stdout', 'strict')
-    sys.stderr = sys.__stderr__ = _TutorStream('stderr', 'backslashreplace')
-    saved_limit_functions = (sys.getrecursionlimit, sys.setrecursionlimit)
+    sys.stdout = sys.__stdout__ = _output_stream('stdout', 'strict')
+    sys.stderr = sys.__stderr__ = _output_stream('stderr', 'backslashreplace')
+    saved_sys_functions = (sys.getrecursionlimit, sys.setrecursionlimit, sys.settrace, sys.gettrace)
     saved_main = (sys.modules.get('__main__'), sys.argv, sys.path)
     sys.modules['__main__'] = main_module
     sys.argv = [_USER_FILE]
@@ -1340,10 +1573,16 @@ def run_traced(source_code, stdin_text=''):
         _base = _depth(_getframe())
         sys.getrecursionlimit = _getrecursionlimit
         sys.setrecursionlimit = _setrecursionlimit
+        sys.settrace = _program_settrace
+        sys.gettrace = _program_gettrace
         _real_setlimit(_limit + _base + _HEADROOM)
+        # The tracer's own garbage (its setup's) isn't the program's to collect.
+        _gc_collect()
         _settrace(_tracer)
         try:
             exec(code, namespace)
+            _settrace(None)
+            _finish_output()
         except _TutorStop:
             pass
         except SystemExit as e:
@@ -1367,7 +1606,7 @@ def run_traced(source_code, stdin_text=''):
             _setprofile(None)
     finally:
         sys.stdin, sys.stdout, sys.stderr, sys.__stdin__, sys.__stdout__, sys.__stderr__ = saved_streams
-        sys.getrecursionlimit, sys.setrecursionlimit = saved_limit_functions
+        sys.getrecursionlimit, sys.setrecursionlimit, sys.settrace, sys.gettrace = saved_sys_functions
         sys.modules['__main__'], sys.argv, sys.path = saved_main
         _real_setlimit(_DEFAULT_LIMIT)
 
@@ -1382,10 +1621,14 @@ def run_traced(source_code, stdin_text=''):
         if _snapshots:
             error["line"] = _snapshots[-1]["line"]
     # Each part once, the steps referring to them by index (run.ts decodes it).
-    result = {"type": "result", "parts": _parts, "snapshots": _snapshots}
+    result = '{"type":"result","parts":[' + ','.join(_parts) + '],"snapshots":' + _encode(_snapshots)
     if error is not None:
-        result["error"] = error
+        result += ',"error":' + _encode(error)
+    # Nothing of the program's is kept after the run.
     _heap_cache = {}
-    return _json_dumps(result, separators=(',', ':'))
+    _call_stack = []
+    _program_local = {}
+    _parts = []
+    return result + '}'
 `;
 }

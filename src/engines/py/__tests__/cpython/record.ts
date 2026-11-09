@@ -61,6 +61,7 @@ _limit = sys.getrecursionlimit()
 _base = 0
 _real_getlimit = sys.getrecursionlimit
 _real_setlimit = sys.setrecursionlimit
+_real_settrace = sys.settrace
 _refused = set()
 _unwinding = set()   # frames an exception is passing through: their 'return' event is the frame unwinding
 # A 'return' event at any other instruction is the frame unwinding too, after
@@ -86,7 +87,7 @@ def _depth(frame):
 def _retrace(frame, event, arg):
     # CPython turns tracing off when the trace function raises: back on at the next event.
     sys.setprofile(None)
-    sys.settrace(_trace)
+    _real_settrace(_trace)
 
 def _readable_locals(frame):
     # A class body whose code has fast locals (an inlined comprehension's,
@@ -132,7 +133,41 @@ def _user_stack(frame):
             runs.append([n, 1])
     return [n if c == 1 else '%s*%d' % (n, c) for n, c in runs]
 
+# A trace function the program sets (sys.settrace) gets the events CPython
+# gives it, after the recorder's own, so the reference trace goes on.
+_program_trace = None
+_program_local = {}
+
+def _program_settrace(function):
+    global _program_trace
+    _program_trace = function
+    if function is None:
+        _program_local.clear()
+
+def _program_gettrace():
+    return _program_trace
+
+def _forward(frame, event, arg, result):
+    if event == 'call':
+        if _program_trace is not None:
+            local = _program_trace(frame, event, arg)
+            if local is not None:
+                _program_local[frame] = local
+    elif frame in _program_local:
+        local = _program_local[frame](frame, event, arg)
+        if local is None or event == 'return':
+            del _program_local[frame]
+        else:
+            _program_local[frame] = local
+    return _trace if frame in _program_local else result
+
 def _trace(frame, event, arg):
+    result = _record(frame, event, arg)
+    if _program_trace is not None or _program_local:
+        return _forward(frame, event, arg, result)
+    return result
+
+def _record(frame, event, arg):
     global _truncated, _count
     if event == 'call' and _depth(frame) - _base > _limit:
         _refused.add(frame)
@@ -201,8 +236,13 @@ if _compile_error is None:
     sys.getrecursionlimit = _getrecursionlimit
     sys.setrecursionlimit = _setrecursionlimit
     _real_setlimit(_limit + _base + (_HEADROOM if __traced else 0))
+    # The recorder's own garbage isn't the program's to collect: python main.py has little.
+    import gc
+    gc.collect()
     if __traced:
-        sys.settrace(_trace)
+        sys.settrace = _program_settrace
+        sys.gettrace = _program_gettrace
+        _real_settrace(_trace)
     try:
         exec(_code, _g)
     except SystemExit as ex:
@@ -212,11 +252,11 @@ if _compile_error is None:
     except _Endless:
         _endless = True
     except BaseException as ex:
-        sys.settrace(None)
+        _real_settrace(None)
         _exc = {'class': type(ex).__name__, 'message': str(ex)}
         _tb = ''.join(l for l in traceback.format_exception(type(ex), ex, ex.__traceback__) if 'File "<exec>"' not in l)
     finally:
-        sys.settrace(None)
+        _real_settrace(None)
         sys.setprofile(None)
 _final = {}
 for _k, _v in list(_g.items()):
