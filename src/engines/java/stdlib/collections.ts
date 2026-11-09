@@ -990,8 +990,8 @@ function mapFind(c: Coll, key: JavaValue): number {
   return hashFind(tableOf(c), keysOf(c), key, spreadHash(key, c.ctx), c.ctx);
 }
 
-/** put(key, value): the old value, or null. */
-function mapPut(c: Coll, key: JavaValue, value: JavaValue): JavaValue {
+/** put(key, value): the old value, or null; `compute` inserts a new key as HashMap's compute, computeIfAbsent and merge do (#68). */
+function mapPut(c: Coll, key: JavaValue, value: JavaValue, compute = false): JavaValue {
   const ks = keysOf(c), vs = valuesOf(c);
   if (isTree(c.cls)) {
     if (ks.length === 0) checkFirstTreeKey(c, key);
@@ -1003,10 +1003,21 @@ function mapPut(c: Coll, key: JavaValue, value: JavaValue): JavaValue {
     const hash = spreadHash(key, c.ctx);
     const i = hashFind(tableOf(c), ks, key, hash, c.ctx);
     if (i >= 0) { const old = vs[i]; vs[i] = value; accessed(c, i); return old; }
-    hashInsert(tableOf(c), [ks, vs], [key, value], hash, bucketOrdered(c.cls));
+    hashInsert(tableOf(c), [ks, vs], [key, value], hash, bucketOrdered(c.cls), compute);
   }
   modified(c.obj);
   return javaNull();
+}
+
+/**
+ * A key put as HashMap's computeIfAbsent puts it (#68), for a hash map's
+ * compute, computeIfAbsent and merge, and Collectors.groupingBy, which
+ * collects through computeIfAbsent: a TreeMap's put is its own.
+ */
+export function computePut(ref: JavaValue, key: JavaValue, value: JavaValue, ctx: StdlibContext): void {
+  const c = collArg(ref, ctx);
+  if (isTree(c.cls)) callInstanceMethod(ref, 'put', [key, value], ctx);
+  else mapPut(c, key, value, true);
 }
 
 /** In an access-ordered LinkedHashMap, using an entry moves it to the end (and counts as a change). */
@@ -1421,7 +1432,7 @@ export function collectionFunctional(ref: JavaValue, method: string, args: JavaV
         const old = call('get', [args[0]]);
         if (old.kind !== 'null') return old;
         const value = applyFunction(args[1], 'apply', [args[0]], ctx);
-        if (value.kind !== 'null') call('put', [args[0], value]);
+        if (value.kind !== 'null') computePut(ref, args[0], value, ctx);
         return value;
       }
       case 'computeIfPresent': {
@@ -1437,7 +1448,7 @@ export function collectionFunctional(ref: JavaValue, method: string, args: JavaV
         if (value.kind === 'null') {
           if (old.kind !== 'null' || javaValueToBoolean(call('containsKey', [args[0]]))) call('remove', [args[0]]);
         } else {
-          call('put', [args[0], value]);
+          computePut(ref, args[0], value, ctx);
         }
         return value;
       }
@@ -1445,12 +1456,16 @@ export function collectionFunctional(ref: JavaValue, method: string, args: JavaV
         if (args[1]?.kind === 'null') throw nullPointer();
         const old = call('get', [args[0]]);
         const value = old.kind === 'null' ? args[1] : applyFunction(args[2], 'apply', [old, args[1]], ctx);
-        call(value.kind === 'null' ? 'remove' : 'put', value.kind === 'null' ? [args[0]] : [args[0], value]);
+        if (value.kind === 'null') call('remove', [args[0]]);
+        else computePut(ref, args[0], value, ctx);
         return value;
       }
       case 'replaceAll': {
-        const { keys, values } = mapContents(obj, ctx.heap)!;
-        [...keys].forEach((k, i) => call('put', [k, applyFunction(args[0], 'apply', [k, values[i]], ctx)]));
+        // Each value replaced where it is: no access reorders an access-ordered LinkedHashMap (#68); a change of the map's own is a ConcurrentModificationException.
+        const arrays = mapArrays(ref, ctx)!;
+        const before = obj.state?.modCount ?? 0;
+        arrays.keys.elements.forEach((k, i) => { arrays.values.elements[i] = applyFunction(args[0], 'apply', [k, arrays.values.elements[i]], ctx); });
+        if ((obj.state?.modCount ?? 0) !== before) throw failure('ConcurrentModificationException');
         return javaNull();
       }
     }

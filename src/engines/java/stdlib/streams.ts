@@ -35,7 +35,7 @@ import {
 import { type StdlibContext, StdlibError } from './context';
 import { allocCollection, compareWith, valuesEqual } from './util';
 import { applyFunction, makeOptional } from './functional';
-import { callInstanceMethod, newBuiltin, immutableList } from './collections';
+import { callInstanceMethod, newBuiltin, immutableList, computePut } from './collections';
 
 type Kind = 'ref' | 'int' | 'double';
 type Stage = (source: Iterator<JavaValue>) => Iterator<JavaValue>;
@@ -353,9 +353,10 @@ function collect(collectorRef: JavaValue, items: JavaValue[], ctx: StdlibContext
         if (group) group[1].push(v);
         else groups.push([key, [v]]);
       }
+      // Each key as computeIfAbsent puts it, where groupingBy's accumulator does (#68), in the order the keys first came.
       const downstream = fields.get('downstream');
       for (const [key, group] of groups) {
-        callInstanceMethod(map, 'put', [key, downstream ? collect(downstream, group, ctx) : allocCollection('ArrayList', group, 'Object', ctx)], ctx);
+        computePut(map, key, downstream ? collect(downstream, group, ctx) : allocCollection('ArrayList', group, 'Object', ctx), ctx);
       }
       return map;
     }

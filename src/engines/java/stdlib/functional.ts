@@ -134,7 +134,8 @@ export function functionalMethod(ref: JavaValue, method: string, args: JavaValue
     }
     case 'thenComparingInt': case 'thenComparingDouble': case 'thenComparingLong':
       if (!isComparator) return undefined;
-      return libraryComparator('then', ref, ctx, { then: comparing(args[0], undefined, method.replace('then', 'c') as ComparingKind, ctx) });
+      // thenComparingInt orders by comparingInt (#68: the name was cComparingInt, which ordered naturally).
+      return libraryComparator('then', ref, ctx, { then: comparing(args[0], undefined, `comparing${method.slice('thenComparing'.length)}` as ComparingKind, ctx) });
     case 'andThen':
       if (shape.name === 'accept') return libraryFunctionObject('Consumer', 'consumerAndThen', { first: ref, then: args[0] }, shape.arity, ctx);
       if (shape.name === 'apply') return libraryFunctionObject('Function', 'andThen', { first: ref, then: args[0] }, shape.arity, ctx);

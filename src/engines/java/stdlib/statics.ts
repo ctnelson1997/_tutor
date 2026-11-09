@@ -637,10 +637,11 @@ function collectionsMethod(method: string, args: JavaValue[], ctx: StdlibContext
       rewriteList(args[0], ctx, els => els.reverse());
       return javaNull();
     case 'shuffle':
+      // Java's: for i = size down to 2, swap i - 1 with rnd.nextInt(i), from the Random given (#68), so a seeded shuffle is the JDK's.
       rewriteList(args[0], ctx, els => {
-        for (let i = els.length - 1; i > 0; i--) {
-          const j = Math.floor(ctx.random() * (i + 1));
-          [els[i], els[j]] = [els[j], els[i]];
+        for (let i = els.length; i > 1; i--) {
+          const j = args[1] ? javaValueToNumber(callInstanceMethod(args[1], 'nextInt', [javaInt(i)], ctx)!) : Math.floor(ctx.random() * i);
+          [els[i - 1], els[j]] = [els[j], els[i - 1]];
         }
         return els;
       });
