@@ -48,6 +48,27 @@ function ArrayDisplay({ obj, changedKeys, step }: { obj: HeapObject; changedKeys
   );
 }
 
+/** A set's elements as cells without positions: a set has no order to show and no index to use (#81). */
+function SetDisplay({ obj, changedKeys, step }: { obj: HeapObject; changedKeys: Set<string>; step: number }) {
+  return (
+    <div className="array-cells">
+      {obj.properties.map((prop) => {
+        const isChanged = changedKeys.has(`heap:${obj.id}:${prop.key}`);
+        return (
+          <div key={isChanged ? `${prop.key}-${step}` : prop.key} className={`array-cell${isChanged ? ' value-changed' : ''}`}>
+            <ValueDisplay value={prop.value} />
+          </div>
+        );
+      })}
+      {obj.properties.length === 0 && (
+        <div className="array-cell text-muted" style={{ fontStyle: 'italic' }}>
+          empty
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ObjectDisplay({ obj, changedKeys, step, empty = 'empty object' }: { obj: HeapObject; changedKeys: Set<string>; step: number; empty?: string }) {
   return (
     <table className="w-100">
@@ -128,8 +149,9 @@ const defaultTypeConfig: Record<string, HeapTypeDisplay> = {
 function HeapCard({ obj, changedKeys, step, typeConfig }: { obj: HeapObject; changedKeys: Set<string>; step: number; typeConfig: Record<string, HeapTypeDisplay> }) {
   const config = typeConfig[obj.objectType] ?? { label: obj.objectType, variant: 'warning' };
 
+  // A type drawn by its label alone (a Python value such as range(0, 10), #81) has no type name in its header.
   const label = obj.label
-    ? `${config.label}: ${obj.label}`
+    ? (config.label ? `${config.label}: ${obj.label}` : obj.label)
     : config.label;
 
   const variant = config.variant;
@@ -146,8 +168,10 @@ function HeapCard({ obj, changedKeys, step, typeConfig }: { obj: HeapObject; cha
       {!(config.empty === null && obj.properties.length === 0) && <Card.Body>
         {PRIMITIVE_HEAP_TYPES.has(obj.objectType) ? (
           <PrimitiveDisplay obj={obj} />
-        ) : obj.objectType === 'array' || obj.objectType === 'list' || obj.objectType === 'tuple' ? (
+        ) : obj.objectType === 'array' || obj.objectType === 'list' || obj.objectType === 'tuple' || obj.objectType === 'deque' ? (
           <ArrayDisplay obj={obj} changedKeys={changedKeys} step={step} />
+        ) : obj.objectType === 'set' ? (
+          <SetDisplay obj={obj} changedKeys={changedKeys} step={step} />
         ) : obj.objectType === 'function' ? (
           <>
             <FunctionDisplay obj={obj} />

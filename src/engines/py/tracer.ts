@@ -27,6 +27,7 @@ import itertools as _itertools
 import operator as _operator
 import weakref as _weakref
 import enum as _enum
+import collections as _collections
 from importlib.machinery import SourceFileLoader as _SourceFileLoader
 
 # The tracer's own builtins and library functions (#34): a program that
@@ -515,8 +516,14 @@ class _TutorStdin(_io.TextIOWrapper):
     def __repr__(self):
         return "<_io.TextIOWrapper name='<stdin>' mode='r' encoding='utf-8'>"
 
-# Named as CPython's: type(sys.stdin).__name__ is 'TextIOWrapper'.
+# Named as CPython's (type(sys.stdin).__name__ is 'TextIOWrapper'), and
+# never taken for the program's classes, which are __main__'s.
 _TutorStdin.__name__ = _TutorStdin.__qualname__ = 'TextIOWrapper'
+_TutorBuffer.__name__ = _TutorBuffer.__qualname__ = 'BufferedWriter'
+_TutorStdinBuffer.__name__ = _TutorStdinBuffer.__qualname__ = 'BufferedReader'
+for _stream_class in (_TutorStdin, _TutorBuffer, _TutorStdinBuffer):
+    _stream_class.__module__ = '_io'
+del _stream_class
 
 def _stdout_shown():
     # stdout's lines, without the empty line after a final newline
@@ -937,20 +944,78 @@ def _instance_attribute_shown(name):
     return not name.startswith('_') or _is_source_word(name)
 
 _INDEX_KEYS = [str(i) for i in range(max(_MAX_SEQ_PROPS, _MAX_DICT_PROPS))]
+
+# Library types drawn by what they hold (#81).
+_deque = _collections.deque
+_OrderedDict = _collections.OrderedDict
+_defaultdict = _collections.defaultdict
+_GENERATOR_TYPES = (_types.GeneratorType, _types.CoroutineType, _types.AsyncGeneratorType)
+_GENERATOR_FRAME = {
+    _types.GeneratorType: _types.GeneratorType.__dict__['gi_frame'].__get__,
+    _types.CoroutineType: _types.CoroutineType.__dict__['cr_frame'].__get__,
+    _types.AsyncGeneratorType: _types.AsyncGeneratorType.__dict__['ag_frame'].__get__,
+}
+_GENERATOR_CODE = {
+    _types.GeneratorType: _types.GeneratorType.__dict__['gi_code'].__get__,
+    _types.CoroutineType: _types.CoroutineType.__dict__['cr_code'].__get__,
+    _types.AsyncGeneratorType: _types.AsyncGeneratorType.__dict__['ag_code'].__get__,
+}
+_DICT_VIEWS = {}
+for _view_dict in ({}, _OrderedDict()):
+    _DICT_VIEWS[type(_view_dict.keys())] = 'keys'
+    _DICT_VIEWS[type(_view_dict.values())] = 'values'
+    _DICT_VIEWS[type(_view_dict.items())] = 'items'
+del _view_dict
+# Iterators over a sequence, whose __reduce__ (theirs, in C) says what they
+# iterate over and where they are, without moving them.
+_SEQUENCE_ITERATORS = frozenset(type(i) for i in (
+    iter([]), iter(()), iter(range(1)), iter(range(2 ** 70)), iter('a'), iter('\u00e9'), reversed([]), reversed(range(1)),
+))
+_exception_args = BaseException.__dict__['args'].__get__
+_method_function = _types.MethodType.__dict__['__func__'].__get__
+_method_self = _types.MethodType.__dict__['__self__'].__get__
+_builtin_self = _types.BuiltinMethodType.__dict__['__self__'].__get__
+_type_module = type.__dict__['__module__'].__get__
+_type_qualname = type.__dict__['__qualname__'].__get__
+_function_qualname = _types.FunctionType.__dict__['__qualname__'].__get__
+# Library values drawn by their own type's repr, which reads only what they
+# hold: an exact instance of one of these (a subclass could change what the
+# repr reads).
+_VALUE_TYPES = frozenset({
+    ('builtins', 'range'), ('builtins', 'bytes'), ('builtins', 'bytearray'),
+    ('fractions', 'Fraction'), ('decimal', 'Decimal'),
+    ('datetime', 'date'), ('datetime', 'datetime'), ('datetime', 'time'), ('datetime', 'timedelta'), ('datetime', 'timezone'),
+    ('re', 'Pattern'), ('re', 'Match'),
+    ('_io', 'TextIOWrapper'), ('_io', 'BufferedReader'), ('_io', 'BufferedWriter'), ('_io', 'FileIO'),
+})
+_CONTAINER_TYPES = (list, tuple, dict, set, frozenset, _deque)
+
 # How each type's objects are drawn, in the order they are tried.
 _KIND_TYPES = (
-    ("list", list), ("tuple", tuple), ("dict", dict), ("set", (set, frozenset)),
+    ("list", list), ("deque", _deque), ("tuple", tuple), ("dict", dict), ("set", (set, frozenset)),
     ("function", _FUNCTION_TYPES), ("method", _METHOD_WRAPPERS), ("class", type),
-    ("module", _types.ModuleType), ("enum", _Enum),
+    ("module", _types.ModuleType), ("enum", _Enum), ("exception", BaseException),
+    ("generator", _GENERATOR_TYPES),
     ("primitive", (int, float, str, complex)),
 )
 _kinds = {}           # id(type) -> (its kind, a weak reference to it), for this run
 _slots_of = {}        # id(type) -> (its slots' descriptors, a weak reference to it), for this run
 
 def _find_kind(t):
+    if t in _DICT_VIEWS:
+        return "dictview"
+    if t in _SEQUENCE_ITERATORS:
+        return "seqiter"
+    if (_type_module(t), _type_qualname(t)) in _VALUE_TYPES:
+        return "value"
+    if _type_module(t) == 'functools' and _type_qualname(t) == '_lru_cache_wrapper':
+        return "cached"
     for kind, types in _KIND_TYPES:
         if issubclass(t, types):
             return kind
+    if not _is_program_class(t) and not _slot_descriptors(t) and any('__next__' in _type_dict(c) for c in _type_mro(t)):
+        # A library's iterator (zip, map, enumerate, ...): it can't be read without moving it.
+        return "iterator"
     return "instance"
 
 def _kind(t):
@@ -968,32 +1033,65 @@ def _primitive_base(obj):
         return str.__str__(obj)
     return complex.__complex__(obj)
 
+def _attributes(obj, seq):
+    # Appends an object's __dict__ keys, then values, to seq; how many.
+    d = _object_dict(obj)
+    if d is None:
+        return 0
+    seq += list(dict.keys(d))
+    seq += list(dict.values(d))
+    return dict.__len__(d)
+
+def _function_label(f):
+    # A function by the name it was defined with, a method by its class too:
+    # its qualified name, without the functions it was defined in.
+    try:
+        name = _function_qualname(f)
+    except Exception:
+        return _safe_name(f)
+    return name.rsplit('<locals>.', 1)[-1] if type(name) is str else _safe_name(f)
+
 def _heap_read(obj, t, kind):
     # What a heap object's drawing depends on, read through the types' own
     # methods: the values it may show (seq), in a layout its kind fixes, and
     # anything else (meta). Another step that reads the same objects (by id
     # and type) and meta draws it as before, without building it again (#78).
-    if kind == "list":
-        return list.__getitem__(obj, slice(0, _MAX_SEQ_PROPS)), list.__len__(obj)
-    if kind == "tuple":
-        return list(tuple.__getitem__(obj, slice(0, _MAX_SEQ_PROPS))), tuple.__len__(obj)
+    if kind == "list" or kind == "tuple" or kind == "deque":
+        if kind == "list":
+            seq = list.__getitem__(obj, slice(0, _MAX_SEQ_PROPS))
+            n = list.__len__(obj)
+        elif kind == "tuple":
+            seq = list(tuple.__getitem__(obj, slice(0, _MAX_SEQ_PROPS)))
+            n = tuple.__len__(obj)
+        else:
+            seq = list(_islice(_deque.__iter__(obj), _MAX_SEQ_PROPS))
+            n = _deque.__len__(obj)
+        # A subclass's attributes after the items (#81).
+        shown = len(seq)
+        return seq, (n, shown, _attributes(obj, seq) if t not in _CONTAINER_TYPES else 0)
     if kind == "dict":
-        keys = list(_islice(dict.keys(obj), _MAX_DICT_PROPS))
-        return keys + list(_islice(dict.values(obj), _MAX_DICT_PROPS)), dict.__len__(obj)
+        # An OrderedDict in its own order (move_to_end), read by its own C views.
+        source = _OrderedDict if issubclass(t, _OrderedDict) else dict
+        seq = list(_islice(source.keys(obj), _MAX_DICT_PROPS))
+        shown = len(seq)
+        seq += list(_islice(source.values(obj), _MAX_DICT_PROPS))
+        factory = _defaultdict.__dict__['default_factory'].__get__(obj) if issubclass(t, _defaultdict) else None
+        seq.append(factory)
+        return seq, (dict.__len__(obj), shown, _attributes(obj, seq) if t not in _CONTAINER_TYPES else 0)
     if kind == "set":
         if issubclass(t, set):
-            return list(_islice(set.__iter__(obj), _MAX_SEQ_PROPS)), set.__len__(obj)
-        return list(_islice(frozenset.__iter__(obj), _MAX_SEQ_PROPS)), frozenset.__len__(obj)
-    if kind == "instance" or kind == "enum" or kind == "primitive":
+            seq = list(_islice(set.__iter__(obj), _MAX_SEQ_PROPS))
+            n = set.__len__(obj)
+        else:
+            seq = list(_islice(frozenset.__iter__(obj), _MAX_SEQ_PROPS))
+            n = frozenset.__len__(obj)
+        shown = len(seq)
+        return seq, (n, shown, _attributes(obj, seq) if t not in _CONTAINER_TYPES else 0)
+    if kind == "instance" or kind == "enum" or kind == "primitive" or kind == "exception":
         # Its __dict__'s keys, then values, then its slots' names and values;
-        # a subclass of a primitive type first holds its value.
-        seq = [_primitive_base(obj)] if kind == "primitive" else []
-        d = _object_dict(obj)
-        n = 0
-        if d is not None:
-            n = dict.__len__(d)
-            seq += list(dict.keys(d))
-            seq += list(dict.values(d))
+        # first a subclass of a primitive type's value, an exception's args.
+        seq = [_primitive_base(obj)] if kind == "primitive" else [_exception_args(obj)] if kind == "exception" else []
+        n = _attributes(obj, seq)
         if _slot_descriptors(t):
             for name, v in _slot_values(obj):
                 seq.append(name)
@@ -1004,37 +1102,134 @@ def _heap_read(obj, t, kind):
         keys = list(ns.keys())
         bases = list(_type_bases(obj))
         return keys + list(ns.values()) + bases + [_type_name(obj)], (len(keys), len(bases))
+    if kind == "function":
+        if t is _types.MethodType:
+            # A bound method: its function and the object it is bound to.
+            f = _method_function(obj)
+            return [_function_label(f) if type(f) is _types.FunctionType else _safe_name(f), _method_self(obj)], "bound"
+        if t is _types.BuiltinMethodType:
+            return [_safe_name(obj), _builtin_self(obj)], "bound"
+        return [_function_label(obj) if t is _types.FunctionType else _safe_name(obj)], None
     if kind == "method":
         f = _wrapped_function(obj)
         return [f, _safe_name(f) if f is not None else ''], None
-    # A function or module: its name.
-    return [_safe_name(obj)], None
+    if kind == "generator":
+        # A generator (coroutine, async generator): its function, and while it
+        # is suspended, its variables (a program's; a library's aren't shown).
+        code = _GENERATOR_CODE[t](obj)
+        frame = _GENERATOR_FRAME[t](obj)
+        seq = [code.co_name]
+        n = 0
+        if frame is not None and code.co_filename == _USER_FILE:
+            local_vars = _frame_locals(frame)
+            names = [k for k in dict.keys(local_vars) if type(k) is str and not k.startswith('.') and k not in _FUNCTION_BOOKKEEPING]
+            n = len(names)
+            seq += names
+            seq += [dict.__getitem__(local_vars, k) for k in names]
+        return seq, (frame is None, n)
+    if kind == "dictview":
+        # A dict's keys(), values() or items(), read through the view's own iterator.
+        which = _DICT_VIEWS[t]
+        items = list(_islice(t.__iter__(obj), _MAX_DICT_PROPS))
+        n = t.__len__(obj)
+        if which == 'items':
+            return [kv[0] for kv in items] + [kv[1] for kv in items], (which, n, len(items))
+        return items, (which, n, len(items))
+    if kind == "seqiter":
+        # What a list (tuple, range, str) iterator iterates over, and the next index.
+        reduced = t.__reduce__(obj)
+        if type(reduced) is tuple and len(reduced) == 3 and type(reduced[1]) is tuple and len(reduced[1]) == 1:
+            return [_type_name(t), reduced[1][0], reduced[2]], True
+        return [_type_name(t)], False
+    if kind == "value":
+        text = next(_type_dict(c)['__repr__'] for c in _type_mro(t) if '__repr__' in _type_dict(c))(obj)
+        return [text if type(text) is str else _type_name(t)], None
+    if kind == "cached":
+        # An @lru_cache (@cache) function: the function it caches, and how many results it holds.
+        d = _object_dict(obj) or {}
+        wrapped = d.get('__wrapped__')
+        info = t.__dict__['cache_info'](obj)
+        return [_function_label(wrapped) if type(wrapped) is _types.FunctionType else _safe_name(obj), tuple.__getitem__(info, 3), tuple.__getitem__(info, 2)], None
+    # A module or a library's iterator: its name.
+    return [_safe_name(obj) if kind == "module" else _type_name(t)], None
+
+def _more(key, count, n):
+    # The last property of an object drawn in part: how many more it holds (#81).
+    return (key, None, {"type": "empty", "value": None, "display": '\u2026 %d more (%d in all)' % (count, n)})
+
+def _length_label(label, n, shown):
+    # The length in an object's label, when not every item is drawn.
+    if n <= shown:
+        return label
+    return (label + ', ' if label else '') + 'len %d' % n
+
+def _subclass_label(t, base):
+    # A subclass of a container drawn as its base, by its own name (#81).
+    return '' if t is base else _type_name(t)
+
+def _attribute_spec(seq, start, n, spec, prefix=''):
+    for i in range(start, start + n):
+        if len(spec) >= _MAX_DICT_PROPS:
+            break
+        k = seq[i]
+        if type(k) is str and _instance_attribute_shown(k):
+            spec.append((prefix + k, n + i, None))
+
+def _element_key(v):
+    # A set element's key: what tells it from the others, not a position (#81).
+    if _is_primitive(v):
+        return _safe_repr(v)
+    return '#' + _get_heap_id(v)
 
 def _heap_build(obj, t, kind, seq, meta):
     # How a heap object is drawn, from what _heap_read read: its object type,
     # label and properties, each property (key text, index of its value in
-    # seq, index of its key in seq when the key is drawn as a value).
-    if kind == "list" or kind == "tuple" or kind == "set":
-        return kind, "", [(_INDEX_KEYS[i], i, None) for i in range(len(seq))]
-    if kind == "dict":
-        n = len(seq) // 2
+    # seq, index of its key in seq when the key is drawn as a value), or for a
+    # "more" marker (key text, None, its value).
+    if kind == "list" or kind == "tuple" or kind == "deque":
+        n, shown, attrs = meta
         spec = []
-        for i in range(n):
+        label = _subclass_label(t, list if kind == "list" else tuple if kind == "tuple" else _deque)
+        fields = next((_type_dict(c)['_fields'] for c in _type_mro(t) if '_fields' in _type_dict(c)), None) if kind == "tuple" and t is not tuple else None
+        if type(fields) is tuple and len(fields) == n and all(type(f) is str for f in fields):
+            # A named tuple: its fields' names.
+            spec = [(fields[i], i, None) for i in range(shown)]
+        else:
+            spec = [(_INDEX_KEYS[i], i, None) for i in range(shown)]
+        if n > shown:
+            spec.append(_more('\u2026', n - shown, n))
+        # A subclass's own attributes, after its items, as .name.
+        _attribute_spec(seq, shown, attrs, spec, '.')
+        return ("list" if kind == "list" else kind), _length_label(label, n, shown), spec
+    if kind == "dict":
+        n, shown, attrs = meta
+        spec = []
+        for i in range(shown):
             k = seq[i]
             # An object key is drawn as a value: an arrow to it.
-            spec.append((_key_text(k), n + i, None if _is_primitive(k) else i))
-        return "dict", "", spec
-    if kind == "instance" or kind == "primitive":
-        # An instance: its __dict__ and its __slots__, as stored.
-        start = 1 if kind == "primitive" else 0
-        spec = [("value", 0, None)] if kind == "primitive" else []
+            spec.append((_key_text(k), shown + i, None if _is_primitive(k) else i))
+        if n > shown:
+            spec.append(_more('\u2026', n - shown, n))
+        label = _subclass_label(t, dict)
+        factory = seq[2 * shown]
+        if issubclass(t, _defaultdict):
+            label += '(' + (_safe_name(factory) or _type_name(type(factory))) + ')' if factory is not None else '(None)'
+        _attribute_spec(seq, 2 * shown + 1, attrs, spec, '.')
+        return "dict", _length_label(label, n, shown), spec
+    if kind == "set":
+        n, shown, attrs = meta
+        spec = [(_element_key(seq[i]), i, None) for i in range(shown)]
+        if n > shown:
+            spec.append(_more('\u2026', n - shown, n))
+        _attribute_spec(seq, shown, attrs, spec, '.')
+        return "set", _length_label(_subclass_label(t, set), n, shown), spec
+    if kind == "instance" or kind == "primitive" or kind == "exception":
+        # An instance: its __dict__ and its __slots__, as stored; a subclass of
+        # a primitive type with its value, an exception with its args.
+        start = 0 if kind == "instance" else 1
+        spec = [] if kind == "instance" else [("value" if kind == "primitive" else "args", 0, None)]
         n = meta
-        for i in range(start, start + n):
-            if len(spec) >= _MAX_DICT_PROPS:
-                break
-            k = seq[i]
-            if type(k) is str and _instance_attribute_shown(k):
-                spec.append((k, n + i, None))
+        _attribute_spec(seq, start, n, spec)
         for j in range(start + 2 * n, len(seq), 2):
             if len(spec) >= _MAX_DICT_PROPS:
                 break
@@ -1059,6 +1254,14 @@ def _heap_build(obj, t, kind, seq, meta):
                     spec.append((k, nk + i, None))
         return "class", label, spec
     if kind == "function":
+        if meta == "bound":
+            # A bound method, named through its function, and the object it is
+            # bound to when that is the program's (#81): not a module, nor a
+            # library's hidden instance (random.randint's).
+            bound = seq[1]
+            bt = type(bound)
+            shown = bound is not None and not issubclass(bt, _types.ModuleType) and (_is_program_class(bt) or bt in _CONTAINER_TYPES)
+            return "function", seq[0], [("__self__", 1, None)] if shown else []
         return "function", seq[0], []
     if kind == "method":
         # A staticmethod, classmethod or property in a class: drawn as its function.
@@ -1067,6 +1270,33 @@ def _heap_build(obj, t, kind, seq, meta):
     if kind == "module":
         # A module is one object, by its name, never drawn in full (#38).
         return "module", seq[0], []
+    if kind == "generator":
+        finished, n = meta
+        name = _COMP_DISPLAY_NAMES.get(seq[0], seq[0])
+        if finished:
+            name += ' (finished)'
+        return "generator", name, [(seq[1 + i], 1 + n + i, None) for i in range(n)]
+    if kind == "dictview":
+        which, n, shown = meta
+        if which == 'items':
+            spec = [(_key_text(seq[i]), shown + i, None if _is_primitive(seq[i]) else i) for i in range(shown)]
+            object_type = "dict"
+        else:
+            spec = [(_INDEX_KEYS[i], i, None) for i in range(shown)]
+            object_type = "list"
+        if n > shown:
+            spec.append(_more('\u2026', n - shown, n))
+        return object_type, 'dict_' + which, spec
+    if kind == "seqiter":
+        if meta:
+            return "iterator", seq[0], [("over", 1, None), ("next index", 2, None)]
+        return "iterator", seq[0] + ' (exhausted)', []
+    if kind == "iterator":
+        return "iterator", seq[0], []
+    if kind == "value":
+        return "value", seq[0][:_LABEL_LIMIT], []
+    if kind == "cached":
+        return "function", ('@cache ' if seq[2] is None else '@lru_cache ') + seq[0], [("cached results", 1, None)]
     # An Enum member, as Python names it, with its value.
     n = meta
     label = _type_name(t)
@@ -1188,6 +1418,15 @@ def _new_entry(obj, t, kind, seq, meta, ids, tids, types, old):
     sigs = {}
     children = []
     for key_text, vi, ki in spec:
+        if vi is None:
+            # A "more" marker (#81): ki is its value.
+            sig = (key_text, ki["display"])
+            p = old_props.get(sig)
+            if p is None:
+                p = _part({"key": key_text, "value": ki})
+            sigs[sig] = p
+            props.append(p)
+            continue
         sig = (key_text, ids[vi], tids[vi]) if ki is None else (key_text, ids[vi], tids[vi], ids[ki], tids[ki])
         p = old_props.get(sig)
         if p is None:

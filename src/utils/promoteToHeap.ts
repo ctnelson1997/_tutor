@@ -46,7 +46,8 @@ export function promoteToHeap(snapshot: ExecutionSnapshot): ExecutionSnapshot {
   let nextId = 90000; // high range to avoid collisions with engine-assigned IDs
 
   function promote(value: RuntimeValue): RuntimeValue {
-    if (value.type === 'ref') return value;
+    // A reference already is one; 'empty' is no value at all (a "… n more" marker, #81).
+    if (value.type === 'ref' || value.type === 'empty') return value;
 
     const prim = value as PrimitiveValue;
     // One object per value as Python writes it: 5 and 5.0 are two objects.

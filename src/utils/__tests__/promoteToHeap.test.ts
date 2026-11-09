@@ -60,4 +60,13 @@ describe('promoteToHeap (Python reference mode)', () => {
     const list = s.heap.find(h => h.id === '1')!;
     expect(list.properties[0].value).toEqual(byName.five);
   });
+
+  it('leaves a "… n more" marker alone: it is no value (#81)', () => {
+    const snapshot = snapshotOf({});
+    const more: PrimitiveValue = { type: 'empty', value: null, display: '… 50 more (150 in all)' };
+    snapshot.heap[0].properties.push({ key: '…', value: more });
+    const s = promoteToHeap(snapshot);
+    expect(s.heap.find(h => h.id === '1')!.properties[1].value).toEqual(more);
+    expect(s.heap.some(h => h.label === '… 50 more (150 in all)')).toBe(false);
+  });
 });

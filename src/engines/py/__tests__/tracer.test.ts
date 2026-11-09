@@ -152,7 +152,8 @@ describe('getTracerCode', () => {
 
   it("reads containers through their own methods, not the program's overrides", () => {
     expect(code).toContain('list.__getitem__(obj, slice(0, _MAX_SEQ_PROPS))');
-    expect(code).toContain('_islice(dict.keys(obj), _MAX_DICT_PROPS)');
+    expect(code).toContain('_islice(source.keys(obj), _MAX_DICT_PROPS)');
+    expect(code).toContain('_deque.__iter__(obj)');
     expect(code).toContain("object.__getattribute__(obj, '__dict__')");
     expect(code).not.toMatch(/\bhasattr\(obj/);
     expect(code).not.toMatch(/\bgetattr\(obj/);

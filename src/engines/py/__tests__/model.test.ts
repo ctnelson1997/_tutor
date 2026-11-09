@@ -152,7 +152,8 @@ describe('objects and modules', () => {
       'half = Fraction(1, 2)',
     ].join('\n') + '\n');
     expect(keys(drawn(s, 'Account', 'object'))).toEqual(['_balance', '_Account__pin', 'owner']);
-    expect(keys(drawn(s, 'Fraction', 'object'))).toEqual([]);
+    // A library value is drawn by its own repr, none of its private attributes (#81).
+    expect(keys(drawn(s, 'Fraction(1, 2)', 'value'))).toEqual([]);
   });
 
   it('draws a module as one object, by its name', () => {
@@ -342,5 +343,133 @@ describe('steps where CPython has events (#80, extra/steps-and-labels)', () => {
     const genSteps = all.filter(s => s.callStack.at(-1)!.name === 'gen' && returnOf(s));
     expect(genSteps.map(s => returnOf(s)!.name)).toEqual(['yield ↵', 'return ↵']);
     for (const s of all.filter(x => ['Base', 'Child'].includes(x.callStack.at(-1)!.name))) expect(returnOf(s)).toBeUndefined();
+  });
+});
+
+describe('heap objects drawn as what they hold (#81, extra/heap-objects)', () => {
+  const at = (s: ExecutionSnapshot, name: string): HeapObject => {
+    const v = s.callStack[0].variables.find(x => x.name === name)?.value;
+    if (v?.type !== 'ref') throw new Error(`${name} isn't a reference`);
+    return s.heap.find(h => h.id === v.heapId)!;
+  };
+  const text = (h: HeapObject) => h.properties.map(p => {
+    const v = p.value;
+    return `${p.key}=${v.type === 'ref' ? 'ref' : v.display ?? JSON.stringify(v.value)}`;
+  });
+
+  it('marks what a container holds past what is drawn, with its length in its label', () => {
+    const s = last('nums = list(range(150))\nwords = {str(i): i for i in range(60)}\n');
+    const nums = at(s, 'nums');
+    expect([nums.label, nums.properties.length]).toEqual(['len 150', 101]);
+    expect(text(nums).at(-1)).toBe('…=… 50 more (150 in all)');
+    expect(text(at(s, 'words')).at(-1)).toBe('…=… 10 more (60 in all)');
+  });
+
+  it('draws library containers and values by what they hold: a deque, a range, a Fraction, a date, bytes', () => {
+    const s = last([
+      'from collections import deque',
+      'from datetime import date',
+      'from decimal import Decimal',
+      'from fractions import Fraction',
+      'q = deque([1, 2])',
+      'r = range(0, 10, 2)',
+      'f = Fraction(3, 4)',
+      'd = Decimal("1.10")',
+      'day = date(2024, 1, 2)',
+      'b = b"abc"',
+    ].join('\n'));
+    expect([at(s, 'q').objectType, text(at(s, 'q'))]).toEqual(['deque', ['0=1', '1=2']]);
+    expect(['r', 'f', 'd', 'day', 'b'].map(n => [at(s, n).objectType, at(s, n).label])).toEqual([
+      ['value', 'range(0, 10, 2)'], ['value', 'Fraction(3, 4)'], ['value', "Decimal('1.10')"], ['value', 'datetime.date(2024, 1, 2)'], ['value', "b'abc'"],
+    ]);
+  });
+
+  it('keeps a subclass\'s class and attributes, and a library dict\'s: Counter, defaultdict, OrderedDict in its order, a named tuple', () => {
+    const s = last([
+      'from collections import Counter, OrderedDict, defaultdict, namedtuple',
+      'class Stack(list):',
+      '    def __init__(self, name):',
+      '        super().__init__()',
+      '        self.name = name',
+      's = Stack("plates")',
+      's.append(1)',
+      'c = Counter("aab")',
+      'dd = defaultdict(list)',
+      'od = OrderedDict(a=1, b=2)',
+      'od.move_to_end("a")',
+      'Point = namedtuple("Point", "x y")',
+      'p = Point(1, 2)',
+    ].join('\n'));
+    expect([at(s, 's').objectType, at(s, 's').label, text(at(s, 's'))]).toEqual(['list', 'Stack', ['0=1', '.name="plates"']]);
+    expect([at(s, 'c').label, text(at(s, 'c'))]).toEqual(['Counter', ['a=2', 'b=1']]);
+    expect(at(s, 'dd').label).toBe('defaultdict(list)');
+    expect(text(at(s, 'od'))).toEqual(['b=2', 'a=1']);
+    expect([at(s, 'p').label, text(at(s, 'p'))]).toEqual(['Point', ['x=1', 'y=2']]);
+  });
+
+  it('draws a set\'s elements by what they are, not a position, and labels a frozenset', () => {
+    const s = last('s = {3, 1}\nf = frozenset({"x"})\n');
+    expect(at(s, 's').properties.map(p => p.key).sort()).toEqual(['1', '3']);
+    expect([at(s, 'f').label, at(s, 'f').properties.map(p => p.key)]).toEqual(['frozenset', ["'x'"]]);
+  });
+
+  it("draws an exception's args, a generator's variables, an iterator's position, a dict view's keys", () => {
+    const s = last([
+      'err = ValueError("bad", 3)',
+      'def gen():',
+      '    total = 5',
+      '    yield total',
+      'g = gen()',
+      'next(g)',
+      'it = iter([10, 20])',
+      'next(it)',
+      'z = zip([1], [2])',
+      'ks = {"a": 1}.keys()',
+    ].join('\n'));
+    expect([at(s, 'err').label, text(at(s, 'err'))]).toEqual(['ValueError', ['args=ref']]);
+    expect([at(s, 'g').objectType, at(s, 'g').label, text(at(s, 'g'))]).toEqual(['generator', 'gen', ['total=5']]);
+    expect([at(s, 'it').label, text(at(s, 'it'))]).toEqual(['list_iterator', ['over=ref', 'next index=1']]);
+    expect([at(s, 'z').objectType, at(s, 'z').label]).toEqual(['iterator', 'zip']);
+    expect([at(s, 'ks').label, text(at(s, 'ks'))]).toEqual(['dict_keys', ['0="a"']]);
+  });
+
+  it('names bound methods and @lru_cache functions, a bound method with its object', () => {
+    const s = last([
+      'import functools',
+      'from random import randint',
+      'class P:',
+      '    def move(self): pass',
+      'p = P()',
+      'm = p.move',
+      'ri = randint',
+      '@functools.lru_cache',
+      'def fib(n):',
+      '    return n if n < 2 else fib(n - 1) + fib(n - 2)',
+      'fib(4)',
+    ].join('\n'));
+    expect([at(s, 'm').label, text(at(s, 'm'))]).toEqual(['P.move', ['__self__=ref']]);
+    // A library's hidden instance (random.randint's) isn't drawn.
+    expect([at(s, 'ri').label, text(at(s, 'ri'))]).toEqual(['Random.randint', []]);
+    expect([at(s, 'fib').label, text(at(s, 'fib'))]).toEqual(['@lru_cache fib', ['cached results=5']]);
+  });
+
+  it("draws a subclass of int or str as an object with its value, and runs none of the program's code doing it", () => {
+    const reply = runProgram(py, [
+      'class Celsius(float):',
+      '    def __repr__(self):',
+      '        print("repr ran")',
+      '        return "C"',
+      'class Loud(list):',
+      '    def __iter__(self):',
+      '        print("iter ran")',
+      '        return iter([])',
+      't = Celsius(21.5)',
+      'l = Loud([1])',
+    ].join('\n'));
+    if (reply.type !== 'result') throw new Error(reply.message);
+    const s = reply.snapshots.at(-1)!;
+    expect(s.stdout).toEqual([]);
+    expect([at(s, 't').label, text(at(s, 't'))]).toEqual(['Celsius', ['value=21.5']]);
+    expect(text(at(s, 'l'))).toEqual(['0=1']);
   });
 });
